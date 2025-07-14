@@ -4,7 +4,7 @@ import '../models/table_column.dart';
 import '../models/table_theme.dart';
 
 /// A widget that renders the header row of the table.
-class TablePlusHeader extends StatelessWidget {
+class TablePlusHeader extends StatefulWidget {
   /// Creates a [TablePlusHeader] with the specified configuration.
   const TablePlusHeader({
     super.key,
@@ -16,6 +16,7 @@ class TablePlusHeader extends StatelessWidget {
     this.totalRowCount = 0,
     this.selectionTheme = const TablePlusSelectionTheme(),
     this.onSelectAll,
+    this.onColumnReorder,
   });
 
   /// The list of columns to display in the header.
@@ -42,15 +43,23 @@ class TablePlusHeader extends StatelessWidget {
   /// Callback when the select-all state changes.
   final void Function(bool selectAll)? onSelectAll;
 
+  /// Callback when columns are reordered.
+  final void Function(int oldIndex, int newIndex)? onColumnReorder;
+
+  @override
+  State<TablePlusHeader> createState() => _TablePlusHeaderState();
+}
+
+class _TablePlusHeaderState extends State<TablePlusHeader> {
   /// Calculate the actual width for each column based on available space.
   List<double> _calculateColumnWidths() {
-    if (columns.isEmpty) return [];
+    if (widget.columns.isEmpty) return [];
 
     // Separate selection column from regular columns
     List<TablePlusColumn> regularColumns = [];
     TablePlusColumn? selectionColumn;
 
-    for (final column in columns) {
+    for (final column in widget.columns) {
       if (column.key == '__selection__') {
         selectionColumn = column;
       } else {
@@ -59,7 +68,7 @@ class TablePlusHeader extends StatelessWidget {
     }
 
     // Calculate available width for regular columns (excluding selection column)
-    double availableWidth = totalWidth;
+    double availableWidth = widget.totalWidth;
     if (selectionColumn != null) {
       availableWidth -=
           selectionColumn.width; // Subtract fixed selection column width
@@ -73,7 +82,7 @@ class TablePlusHeader extends StatelessWidget {
     List<double> allWidths = [];
     int regularIndex = 0;
 
-    for (final column in columns) {
+    for (final column in widget.columns) {
       if (column.key == '__selection__') {
         allWidths.add(column.width); // Fixed width for selection
       } else {
@@ -142,56 +151,109 @@ class TablePlusHeader extends StatelessWidget {
 
   /// Determine the state of the select-all checkbox.
   bool? _getSelectAllState() {
-    if (totalRowCount == 0) return false;
-    if (selectedRows.isEmpty) return false;
-    if (selectedRows.length == totalRowCount) return true;
+    if (widget.totalRowCount == 0) return false;
+    if (widget.selectedRows.isEmpty) return false;
+    if (widget.selectedRows.length == widget.totalRowCount) return true;
     return null; // Indeterminate state
+  }
+
+  /// Get reorderable columns (excludes selection column)
+  List<TablePlusColumn> _getReorderableColumns() {
+    return widget.columns
+        .where((column) => column.key != '__selection__')
+        .toList();
+  }
+
+  /// Get reorderable column widths (excludes selection column width)
+  List<double> _getReorderableColumnWidths(List<double> allWidths) {
+    List<double> reorderableWidths = [];
+    for (int i = 0; i < widget.columns.length; i++) {
+      if (widget.columns[i].key != '__selection__') {
+        reorderableWidths.add(allWidths[i]);
+      }
+    }
+    return reorderableWidths;
+  }
+
+  /// Handle column reorder
+  void _handleColumnReorder(int oldIndex, int newIndex) {
+    if (widget.onColumnReorder == null) return;
+
+    // Adjust newIndex if dragging down
+    if (oldIndex < newIndex) {
+      newIndex -= 1;
+    }
+
+    widget.onColumnReorder!(oldIndex, newIndex);
   }
 
   @override
   Widget build(BuildContext context) {
     final columnWidths = _calculateColumnWidths();
+    final reorderableColumns = _getReorderableColumns();
+    final reorderableWidths = _getReorderableColumnWidths(columnWidths);
 
     return Container(
-      height: theme.height,
-      width: totalWidth,
+      height: widget.theme.height,
+      width: widget.totalWidth,
       decoration: BoxDecoration(
-        color: theme.backgroundColor,
-        border: theme.decoration != null
+        color: widget.theme.backgroundColor,
+        border: widget.theme.decoration != null
             ? null
-            : (theme.showBottomDivider
+            : (widget.theme.showBottomDivider
                 ? Border(
                     bottom: BorderSide(
-                      color: theme.dividerColor,
+                      color: widget.theme.dividerColor,
                       width: 1.0,
                     ),
                   )
                 : null),
       ),
       child: Row(
-        children: List.generate(columns.length, (index) {
-          final column = columns[index];
-          final width =
-              columnWidths.isNotEmpty ? columnWidths[index] : column.width;
-
-          // Special handling for selection column
-          if (isSelectable && column.key == '__selection__') {
-            return _SelectionHeaderCell(
-              width: width,
-              theme: theme,
-              selectionTheme: selectionTheme,
+        children: [
+          // Selection column (fixed, non-reorderable)
+          if (widget.isSelectable &&
+              widget.columns.any((col) => col.key == '__selection__'))
+            _SelectionHeaderCell(
+              width: widget.selectionTheme.checkboxColumnWidth,
+              theme: widget.theme,
+              selectionTheme: widget.selectionTheme,
               selectAllState: _getSelectAllState(),
-              selectedRows: selectedRows,
-              onSelectAll: onSelectAll,
-            );
-          }
+              selectedRows: widget.selectedRows,
+              onSelectAll: widget.onSelectAll,
+            ),
 
-          return _HeaderCell(
-            column: column,
-            width: width,
-            theme: theme,
-          );
-        }),
+          // Reorderable columns
+          if (reorderableColumns.isNotEmpty)
+            Expanded(
+              child: SizedBox(
+                height: widget.theme.height,
+                child: ReorderableListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  buildDefaultDragHandles:
+                      false, // Disable default drag handles
+                  onReorder: _handleColumnReorder,
+                  itemCount: reorderableColumns.length,
+                  itemBuilder: (context, index) {
+                    final column = reorderableColumns[index];
+                    final width = reorderableWidths.isNotEmpty
+                        ? reorderableWidths[index]
+                        : column.width;
+
+                    return ReorderableDragStartListener(
+                      key: ValueKey(column.key),
+                      index: index,
+                      child: _HeaderCell(
+                        column: column,
+                        width: width,
+                        theme: widget.theme,
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

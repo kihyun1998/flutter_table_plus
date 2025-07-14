@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
 
 import '../data/sample_data.dart';
-import '../widgets/employee_table.dart';
 import '../widgets/table_controls.dart';
 
 class TableExamplePage extends StatefulWidget {
@@ -16,6 +15,138 @@ class _TableExamplePageState extends State<TableExamplePage> {
   bool _isSelectable = false;
   final Set<String> _selectedRows = <String>{};
   bool _showVerticalDividers = true; // 세로줄 표시 여부
+
+  // Column reorder를 위한 컬럼 정의 (Map으로 변경)
+  late Map<String, TablePlusColumn> _columns;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeColumns();
+  }
+
+  /// Initialize columns with default order
+  void _initializeColumns() {
+    _columns = TableColumnsBuilder()
+        .addColumn(
+          'id',
+          const TablePlusColumn(
+            key: 'id',
+            label: 'ID',
+            order: 0,
+            width: 60,
+            minWidth: 50,
+            textAlign: TextAlign.center,
+            alignment: Alignment.center,
+          ),
+        )
+        .addColumn(
+          'name',
+          const TablePlusColumn(
+            key: 'name',
+            label: 'Full Name',
+            order: 0,
+            width: 150,
+            minWidth: 120,
+          ),
+        )
+        .addColumn(
+          'email',
+          const TablePlusColumn(
+            key: 'email',
+            label: 'Email Address',
+            order: 0,
+            width: 200,
+            minWidth: 150,
+          ),
+        )
+        .addColumn(
+          'age',
+          const TablePlusColumn(
+            key: 'age',
+            label: 'Age',
+            order: 0,
+            width: 60,
+            minWidth: 50,
+            textAlign: TextAlign.center,
+            alignment: Alignment.center,
+          ),
+        )
+        .addColumn(
+          'department',
+          const TablePlusColumn(
+            key: 'department',
+            label: 'Department',
+            order: 0,
+            width: 120,
+            minWidth: 100,
+          ),
+        )
+        .addColumn(
+          'salary',
+          TablePlusColumn(
+            key: 'salary',
+            label: 'Salary',
+            order: 0,
+            width: 100,
+            minWidth: 80,
+            textAlign: TextAlign.right,
+            alignment: Alignment.centerRight,
+            cellBuilder: _buildSalaryCell,
+          ),
+        )
+        .addColumn(
+          'active',
+          TablePlusColumn(
+            key: 'active',
+            label: 'Status',
+            order: 0,
+            width: 80,
+            minWidth: 70,
+            textAlign: TextAlign.center,
+            alignment: Alignment.center,
+            cellBuilder: _buildStatusCell,
+          ),
+        )
+        .build();
+  }
+
+  /// Custom cell builder for salary
+  Widget _buildSalaryCell(BuildContext context, Map<String, dynamic> rowData) {
+    final salary = rowData['salary'] as int?;
+    return Text(
+      salary != null
+          ? '\$${salary.toString().replaceAllMapped(
+                RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+                (Match m) => '${m[1]},',
+              )}'
+          : '',
+      style: const TextStyle(
+        fontWeight: FontWeight.w600,
+        color: Colors.green,
+      ),
+    );
+  }
+
+  /// Custom cell builder for status
+  Widget _buildStatusCell(BuildContext context, Map<String, dynamic> rowData) {
+    final isActive = rowData['active'] as bool? ?? false;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: isActive ? Colors.green.shade100 : Colors.red.shade100,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        isActive ? 'Active' : 'Inactive',
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: isActive ? Colors.green.shade800 : Colors.red.shade800,
+        ),
+      ),
+    );
+  }
 
   /// Handle row selection change
   void _onRowSelectionChanged(String rowId, bool isSelected) {
@@ -40,6 +171,78 @@ class _TableExamplePageState extends State<TableExamplePage> {
         _selectedRows.clear();
       }
     });
+  }
+
+  /// Handle column reorder
+  void _onColumnReorder(int oldIndex, int newIndex) {
+    setState(() {
+      // Get visible columns (excluding selection column) sorted by order
+      final visibleColumns = _columns.values
+          .where((col) => col.visible)
+          .toList()
+        ..sort((a, b) => a.order.compareTo(b.order));
+
+      if (oldIndex < 0 ||
+          oldIndex >= visibleColumns.length ||
+          newIndex < 0 ||
+          newIndex >= visibleColumns.length) {
+        return;
+      }
+
+      // Get the column being moved
+      final movingColumn = visibleColumns[oldIndex];
+      final targetColumn = visibleColumns[newIndex];
+
+      // Create new builder and rebuild with new order
+      final builder = TableColumnsBuilder();
+
+      // Add all columns except the moving one, adjusting orders
+      for (int i = 0; i < visibleColumns.length; i++) {
+        final column = visibleColumns[i];
+
+        if (column.key == movingColumn.key) {
+          continue; // Skip the moving column for now
+        }
+
+        int newOrder;
+        if (oldIndex < newIndex) {
+          // Moving down: shift columns up
+          if (i <= oldIndex) {
+            newOrder = i + 1;
+          } else if (i <= newIndex) {
+            newOrder = i;
+          } else {
+            newOrder = i + 1;
+          }
+        } else {
+          // Moving up: shift columns down
+          if (i < newIndex) {
+            newOrder = i + 1;
+          } else if (i < oldIndex) {
+            newOrder = i + 2;
+          } else {
+            newOrder = i + 1;
+          }
+        }
+
+        builder.addColumn(column.key, column.copyWith(order: 0));
+      }
+
+      // Insert the moved column at the new position
+      final newOrder = newIndex + 1;
+      builder.insertColumn(
+          movingColumn.key, movingColumn.copyWith(order: 0), newOrder);
+
+      _columns = builder.build();
+    });
+
+    // Show feedback
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Column reordered: ${oldIndex + 1} → ${newIndex + 1}'),
+        duration: const Duration(milliseconds: 1500),
+      ),
+    );
   }
 
   /// Toggle selection mode
@@ -131,6 +334,20 @@ class _TableExamplePageState extends State<TableExamplePage> {
     );
   }
 
+  /// Reset column order to default
+  void _resetColumnOrder() {
+    setState(() {
+      _initializeColumns();
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Column order reset to default'),
+        duration: Duration(milliseconds: 1500),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -138,6 +355,12 @@ class _TableExamplePageState extends State<TableExamplePage> {
         title: const Text('Flutter Table Plus Example'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         actions: [
+          // Reset column order button
+          IconButton(
+            onPressed: _resetColumnOrder,
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Reset Column Order',
+          ),
           // Toggle vertical dividers button
           IconButton(
             onPressed: _toggleVerticalDividers,
@@ -218,13 +441,21 @@ class _TableExamplePageState extends State<TableExamplePage> {
             // Table with fixed height
             SizedBox(
               height: 600, // Fixed height for table
-              child: EmployeeTable(
-                data: SampleData.employeeData,
-                isSelectable: _isSelectable,
-                selectedRows: _selectedRows,
-                onRowSelectionChanged: _onRowSelectionChanged,
-                onSelectAll: _onSelectAll,
-                theme: _currentTheme, // 동적 테마 적용
+              child: Card(
+                elevation: 2,
+                child: Padding(
+                  padding: const EdgeInsets.all(1.0),
+                  child: FlutterTablePlus(
+                    columns: _columns,
+                    data: SampleData.employeeData,
+                    isSelectable: _isSelectable,
+                    selectedRows: _selectedRows,
+                    onRowSelectionChanged: _onRowSelectionChanged,
+                    onSelectAll: _onSelectAll,
+                    onColumnReorder: _onColumnReorder,
+                    theme: _currentTheme,
+                  ),
+                ),
               ),
             ),
 
@@ -251,6 +482,9 @@ class _TableExamplePageState extends State<TableExamplePage> {
                 '• Customizable table borders (${_showVerticalDividers ? "Grid" : "Horizontal only"})',
                 style: const TextStyle(
                     fontWeight: FontWeight.bold, color: Colors.purple)),
+            const Text('• Column reordering via drag and drop',
+                style: TextStyle(
+                    fontWeight: FontWeight.bold, color: Colors.orange)),
             if (_isSelectable) ...[
               const SizedBox(height: 8),
               const Text('Selection Features:',
@@ -281,10 +515,12 @@ class _TableExamplePageState extends State<TableExamplePage> {
                   ),
             ),
             const SizedBox(height: 8),
+            const Text('• 🔄 Reset column order to default'),
             const Text(
                 '• 🔲 Toggle vertical dividers (Grid vs Horizontal-only design)'),
             const Text(
                 '• ☑️ Toggle selection mode (Row selection with checkboxes)'),
+            const Text('• 🖱️ Drag column headers to reorder'),
             if (_isSelectable) ...[
               const Text('• 🧹 Clear all selections'),
               const Text('• 👥 Select only active employees'),
@@ -318,6 +554,10 @@ FlutterTablePlus(
   data: data,
   isSelectable: true,
   selectedRows: selectedRowIds,
+  onColumnReorder: (oldIndex, newIndex) {
+    // Handle column reordering
+    // Use TableColumnsBuilder.reorderColumn()
+  },
   theme: TablePlusTheme(
     bodyTheme: TablePlusBodyTheme(
       showVerticalDividers: false, // Horizontal only

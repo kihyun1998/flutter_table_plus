@@ -27,6 +27,7 @@ class FlutterTablePlus extends StatefulWidget {
     this.selectedRows = const <String>{},
     this.onRowSelectionChanged,
     this.onSelectAll,
+    this.onColumnReorder,
   });
 
   /// The map of columns to display in the table.
@@ -59,6 +60,11 @@ class FlutterTablePlus extends StatefulWidget {
   /// Callback when the select-all state changes.
   /// Called when the header checkbox is toggled.
   final void Function(bool selectAll)? onSelectAll;
+
+  /// Callback when columns are reordered via drag and drop.
+  /// Provides the old index and new index of the reordered column.
+  /// Note: Selection column (if present) is excluded from reordering.
+  final void Function(int oldIndex, int newIndex)? onColumnReorder;
 
   @override
   State<FlutterTablePlus> createState() => _FlutterTablePlusState();
@@ -329,6 +335,7 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                               totalRowCount: widget.data.length,
                               selectionTheme: theme.selectionTheme,
                               onSelectAll: widget.onSelectAll,
+                              onColumnReorder: widget.onColumnReorder,
                             ),
 
                             // Table Data
