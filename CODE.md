@@ -5,14 +5,25 @@
 flutter_table_plus/
 ├── example/
     ├── lib/
+    │   ├── data/
+    │   │   └── sample_data.dart
+    │   ├── models/
+    │   │   └── employee.dart
+    │   ├── pages/
+    │   │   └── table_example_page.dart
+    │   ├── widgets/
+    │   │   ├── employee_table.dart
+    │   │   └── table_controls.dart
     │   └── main.dart
     └── pubspec.yaml
 ├── lib/
     ├── src/
     │   ├── models/
     │   │   ├── table_column.dart
+    │   │   ├── table_columns_builder.dart
     │   │   └── table_theme.dart
     │   └── widgets/
+    │   │   ├── custom_ink_well.dart
     │   │   ├── flutter_table_plus.dart
     │   │   ├── synced_scroll_controllers.dart
     │   │   ├── table_body.dart
@@ -35,10 +46,101 @@ flutter_table_plus/
 TODO: Add your license here.
 
 ```
+## example/lib/data/sample_data.dart
+```dart
+import '../models/employee.dart';
+
+class SampleData {
+  static final List<Employee> employees = [
+    const Employee(
+      id: 1,
+      name: 'John Doe',
+      email: 'john.doe@example.com',
+      age: 28,
+      department: 'Engineering',
+      salary: 75000,
+      active: true,
+    ),
+    const Employee(
+      id: 2,
+      name: 'Jane Smith',
+      email: 'jane.smith@example.com',
+      age: 32,
+      department: 'Marketing',
+      salary: 68000,
+      active: true,
+    ),
+    const Employee(
+      id: 3,
+      name: 'Bob Johnson',
+      email: 'bob.johnson@example.com',
+      age: 45,
+      department: 'Sales',
+      salary: 82000,
+      active: false,
+    ),
+    const Employee(
+      id: 4,
+      name: 'Alice Brown',
+      email: 'alice.brown@example.com',
+      age: 29,
+      department: 'Engineering',
+      salary: 79000,
+      active: true,
+    ),
+    const Employee(
+      id: 5,
+      name: 'Charlie Wilson',
+      email: 'charlie.wilson@example.com',
+      age: 38,
+      department: 'HR',
+      salary: 65000,
+      active: true,
+    ),
+    const Employee(
+      id: 6,
+      name: 'Diana Davis',
+      email: 'diana.davis@example.com',
+      age: 31,
+      department: 'Finance',
+      salary: 72000,
+      active: true,
+    ),
+    const Employee(
+      id: 7,
+      name: 'Eva Garcia',
+      email: 'eva.garcia@example.com',
+      age: 26,
+      department: 'Design',
+      salary: 63000,
+      active: false,
+    ),
+    const Employee(
+      id: 8,
+      name: 'Frank Miller',
+      email: 'frank.miller@example.com',
+      age: 42,
+      department: 'Operations',
+      salary: 71000,
+      active: true,
+    ),
+  ];
+
+  /// Get employees as List<Map<String, dynamic>> for table
+  static List<Map<String, dynamic>> get employeeData =>
+      employees.map((e) => e.toMap()).toList();
+
+  /// Get active employees only
+  static List<Employee> get activeEmployees =>
+      employees.where((e) => e.active).toList();
+}
+
+```
 ## example/lib/main.dart
 ```dart
 import 'package:flutter/material.dart';
-import 'package:flutter_table_plus/flutter_table_plus.dart';
+
+import 'pages/table_example_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -51,6 +153,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Table Plus Example',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.blue,
         useMaterial3: true,
@@ -60,6 +163,65 @@ class MyApp extends StatelessWidget {
   }
 }
 
+```
+## example/lib/models/employee.dart
+```dart
+class Employee {
+  final int id;
+  final String name;
+  final String email;
+  final int age;
+  final String department;
+  final int salary;
+  final bool active;
+
+  const Employee({
+    required this.id,
+    required this.name,
+    required this.email,
+    required this.age,
+    required this.department,
+    required this.salary,
+    required this.active,
+  });
+
+  /// Convert Employee to Map for table usage
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'name': name,
+      'email': email,
+      'age': age,
+      'department': department,
+      'salary': salary,
+      'active': active,
+    };
+  }
+
+  /// Create Employee from Map
+  factory Employee.fromMap(Map<String, dynamic> map) {
+    return Employee(
+      id: map['id'] as int,
+      name: map['name'] as String,
+      email: map['email'] as String,
+      age: map['age'] as int,
+      department: map['department'] as String,
+      salary: map['salary'] as int,
+      active: map['active'] as bool,
+    );
+  }
+}
+
+```
+## example/lib/pages/table_example_page.dart
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_table_plus/flutter_table_plus.dart';
+
+import '../data/sample_data.dart';
+import '../widgets/employee_table.dart';
+import '../widgets/table_controls.dart';
+
 class TableExamplePage extends StatefulWidget {
   const TableExamplePage({super.key});
 
@@ -68,168 +230,123 @@ class TableExamplePage extends StatefulWidget {
 }
 
 class _TableExamplePageState extends State<TableExamplePage> {
-  // Sample data for the table
-  final List<Map<String, dynamic>> _sampleData = [
-    {
-      'id': 1,
-      'name': 'John Doe',
-      'email': 'john.doe@example.com',
-      'age': 28,
-      'department': 'Engineering',
-      'salary': 75000,
-      'active': true,
-    },
-    {
-      'id': 2,
-      'name': 'Jane Smith',
-      'email': 'jane.smith@example.com',
-      'age': 32,
-      'department': 'Marketing',
-      'salary': 68000,
-      'active': true,
-    },
-    {
-      'id': 3,
-      'name': 'Bob Johnson',
-      'email': 'bob.johnson@example.com',
-      'age': 45,
-      'department': 'Sales',
-      'salary': 82000,
-      'active': false,
-    },
-    {
-      'id': 4,
-      'name': 'Alice Brown',
-      'email': 'alice.brown@example.com',
-      'age': 29,
-      'department': 'Engineering',
-      'salary': 79000,
-      'active': true,
-    },
-    {
-      'id': 5,
-      'name': 'Charlie Wilson',
-      'email': 'charlie.wilson@example.com',
-      'age': 38,
-      'department': 'HR',
-      'salary': 65000,
-      'active': true,
-    },
-    {
-      'id': 6,
-      'name': 'Diana Davis',
-      'email': 'diana.davis@example.com',
-      'age': 31,
-      'department': 'Finance',
-      'salary': 72000,
-      'active': true,
-    },
-    {
-      'id': 7,
-      'name': 'Eva Garcia',
-      'email': 'eva.garcia@example.com',
-      'age': 26,
-      'department': 'Design',
-      'salary': 63000,
-      'active': false,
-    },
-    {
-      'id': 8,
-      'name': 'Frank Miller',
-      'email': 'frank.miller@example.com',
-      'age': 42,
-      'department': 'Operations',
-      'salary': 71000,
-      'active': true,
-    },
-  ];
+  bool _isSelectable = false;
+  final Set<String> _selectedRows = <String>{};
+  bool _showVerticalDividers = true; // 세로줄 표시 여부
 
-  // Define table columns
-  final List<TablePlusColumn> _columns = [
-    const TablePlusColumn(
-      key: 'id',
-      label: 'ID',
-      width: 60,
-      minWidth: 50,
-      textAlign: TextAlign.center,
-      alignment: Alignment.center,
-    ),
-    const TablePlusColumn(
-      key: 'name',
-      label: 'Full Name',
-      width: 150,
-      minWidth: 120,
-    ),
-    const TablePlusColumn(
-      key: 'email',
-      label: 'Email Address',
-      width: 200,
-      minWidth: 150,
-    ),
-    const TablePlusColumn(
-      key: 'age',
-      label: 'Age',
-      width: 60,
-      minWidth: 50,
-      textAlign: TextAlign.center,
-      alignment: Alignment.center,
-    ),
-    const TablePlusColumn(
-      key: 'department',
-      label: 'Department',
-      width: 120,
-      minWidth: 100,
-    ),
-    TablePlusColumn(
-      key: 'salary',
-      label: 'Salary',
-      width: 100,
-      minWidth: 80,
-      textAlign: TextAlign.right,
-      alignment: Alignment.centerRight,
-      cellBuilder: (context, rowData) {
-        final salary = rowData['salary'] as int?;
-        return Text(
-          salary != null
-              ? '\$${salary.toString().replaceAllMapped(
-                    RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-                    (Match m) => '${m[1]},',
-                  )}'
-              : '',
-          style: const TextStyle(
-            fontWeight: FontWeight.w600,
-            color: Colors.green,
-          ),
+  /// Handle row selection change
+  void _onRowSelectionChanged(String rowId, bool isSelected) {
+    setState(() {
+      if (isSelected) {
+        _selectedRows.add(rowId);
+      } else {
+        _selectedRows.remove(rowId);
+      }
+    });
+  }
+
+  /// Handle select all/none
+  void _onSelectAll(bool selectAll) {
+    setState(() {
+      if (selectAll) {
+        _selectedRows.clear();
+        _selectedRows.addAll(
+          SampleData.employeeData.map((row) => row['id'].toString()),
         );
-      },
-    ),
-    TablePlusColumn(
-      key: 'active',
-      label: 'Status',
-      width: 80,
-      minWidth: 70,
-      textAlign: TextAlign.center,
-      alignment: Alignment.center,
-      cellBuilder: (context, rowData) {
-        final isActive = rowData['active'] as bool? ?? false;
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration: BoxDecoration(
-            color: isActive ? Colors.green.shade100 : Colors.red.shade100,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Text(
-            isActive ? 'Active' : 'Inactive',
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: isActive ? Colors.green.shade800 : Colors.red.shade800,
-            ),
-          ),
-        );
-      },
-    ),
-  ];
+      } else {
+        _selectedRows.clear();
+      }
+    });
+  }
+
+  /// Toggle selection mode
+  void _toggleSelectionMode() {
+    setState(() {
+      _isSelectable = !_isSelectable;
+      if (!_isSelectable) {
+        _selectedRows.clear();
+      }
+    });
+  }
+
+  /// Toggle vertical dividers
+  void _toggleVerticalDividers() {
+    setState(() {
+      _showVerticalDividers = !_showVerticalDividers;
+    });
+  }
+
+  /// Clear all selections
+  void _clearSelections() {
+    setState(() => _selectedRows.clear());
+  }
+
+  /// Select active employees only
+  void _selectActiveEmployees() {
+    setState(() {
+      _selectedRows.clear();
+      _selectedRows.addAll(
+        SampleData.activeEmployees.map((e) => e.id.toString()),
+      );
+    });
+  }
+
+  /// Get selected employee names
+  List<String> get _selectedNames {
+    return SampleData.employeeData
+        .where((row) => _selectedRows.contains(row['id'].toString()))
+        .map((row) => row['name'].toString())
+        .toList();
+  }
+
+  /// Get current table theme based on settings
+  TablePlusTheme get _currentTheme {
+    return TablePlusTheme(
+      headerTheme: TablePlusHeaderTheme(
+        height: 48,
+        backgroundColor: Colors.blue.shade50, // 헤더 배경색 변경!
+        textStyle: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w700,
+          color: Color(0xFF495057),
+        ),
+        showVerticalDividers: _showVerticalDividers,
+        showBottomDivider: true,
+        dividerColor: Colors.grey.shade300,
+      ),
+      bodyTheme: TablePlusBodyTheme(
+        rowHeight: 56,
+        alternateRowColor: null, // null로 설정하면 모든 행이 같은 색!
+        backgroundColor: Colors.white, // 모든 행이 흰색
+        textStyle: const TextStyle(
+          fontSize: 14,
+          color: Color(0xFF212529),
+        ),
+        showVerticalDividers: _showVerticalDividers,
+        showHorizontalDividers: true,
+        dividerColor: Colors.grey.shade300,
+        dividerThickness: 1.0,
+      ),
+      scrollbarTheme: const TablePlusScrollbarTheme(
+        hoverOnly: true,
+        opacity: 0.8,
+      ),
+      selectionTheme: const TablePlusSelectionTheme(
+        selectedRowColor: Color(0xFFE3F2FD),
+        checkboxColor: Color(0xFF2196F3),
+        checkboxSize: 18.0,
+      ),
+    );
+  }
+
+  /// Show selected employees dialog
+  void _showSelectedEmployees() {
+    SelectionDialog.show(
+      context,
+      selectedCount: _selectedRows.length,
+      selectedNames: _selectedNames,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -237,12 +354,35 @@ class _TableExamplePageState extends State<TableExamplePage> {
       appBar: AppBar(
         title: const Text('Flutter Table Plus Example'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        actions: [
+          // Toggle vertical dividers button
+          IconButton(
+            onPressed: _toggleVerticalDividers,
+            icon: Icon(
+              _showVerticalDividers
+                  ? Icons.grid_on
+                  : Icons.format_list_bulleted,
+            ),
+            tooltip: _showVerticalDividers
+                ? 'Hide Vertical Lines'
+                : 'Show Vertical Lines',
+          ),
+          // Toggle selection mode button
+          IconButton(
+            onPressed: _toggleSelectionMode,
+            icon: Icon(
+              _isSelectable ? Icons.check_box : Icons.check_box_outline_blank,
+            ),
+            tooltip: _isSelectable ? 'Disable Selection' : 'Enable Selection',
+          ),
+        ],
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Header
             Text(
               'Employee Directory',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -250,49 +390,64 @@ class _TableExamplePageState extends State<TableExamplePage> {
                   ),
             ),
             const SizedBox(height: 8),
-            Text(
-              'Showing ${_sampleData.length} employees',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey.shade600,
-                  ),
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: Card(
-                elevation: 2,
-                child: Padding(
-                  padding: const EdgeInsets.all(1.0),
-                  child: FlutterTablePlus(
-                    columns: _columns,
-                    data: _sampleData,
-                    theme: const TablePlusTheme(
-                      headerTheme: TablePlusHeaderTheme(
-                        height: 48,
-                        backgroundColor: Color(0xFFF8F9FA),
-                        textStyle: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF495057),
-                        ),
+
+            // Status info
+            Row(
+              children: [
+                Text(
+                  'Showing ${SampleData.employees.length} employees',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.grey.shade600,
                       ),
-                      bodyTheme: TablePlusBodyTheme(
-                        rowHeight: 56,
-                        alternateRowColor: Color(0xFFFAFAFA),
-                        textStyle: TextStyle(
-                          fontSize: 14,
-                          color: Color(0xFF212529),
-                        ),
-                      ),
-                      scrollbarTheme: TablePlusScrollbarTheme(
-                        hoverOnly: true,
-                        opacity: 0.8,
+                ),
+                if (_isSelectable) ...[
+                  const SizedBox(width: 16),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade100,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '${_selectedRows.length} selected',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.blue.shade800,
                       ),
                     ),
                   ),
-                ),
+                ],
+              ],
+            ),
+
+            // Controls
+            TableControls(
+              isSelectable: _isSelectable,
+              selectedCount: _selectedRows.length,
+              selectedNames: _selectedNames,
+              onClearSelections: _clearSelections,
+              onSelectActive: _selectActiveEmployees,
+              onShowSelected: _showSelectedEmployees,
+            ),
+
+            // Table with fixed height
+            SizedBox(
+              height: 600, // Fixed height for table
+              child: EmployeeTable(
+                data: SampleData.employeeData,
+                isSelectable: _isSelectable,
+                selectedRows: _selectedRows,
+                onRowSelectionChanged: _onRowSelectionChanged,
+                onSelectAll: _onSelectAll,
+                theme: _currentTheme, // 동적 테마 적용
               ),
             ),
-            const SizedBox(height: 16),
+
+            const SizedBox(height: 24),
+
+            // Features info
             Text(
               'Features demonstrated:',
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
@@ -300,14 +455,425 @@ class _TableExamplePageState extends State<TableExamplePage> {
                   ),
             ),
             const SizedBox(height: 8),
-            const Text('• Column width management'),
-            const Text('• Custom cell builders (Salary, Status)'),
-            const Text('• Alternating row colors'),
-            const Text('• Synchronized scrolling'),
-            const Text('• Responsive layout'),
+            const Text(
+                '• Map-based column management with TableColumnsBuilder'),
+            const Text('• Automatic order assignment and conflict prevention'),
+            const Text(
+                '• Custom cell builders (Salary formatting, Status badges)'),
+            const Text('• Alternating row colors and responsive layout'),
+            const Text('• Synchronized horizontal and vertical scrolling'),
+            const Text('• Hover-based scrollbar visibility'),
+            const Text('• Column width management with min/max constraints'),
+            Text(
+                '• Customizable table borders (${_showVerticalDividers ? "Grid" : "Horizontal only"})',
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold, color: Colors.purple)),
+            if (_isSelectable) ...[
+              const SizedBox(height: 8),
+              const Text('Selection Features:',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, color: Colors.blue)),
+              const Text('• Individual row selection with checkboxes',
+                  style: TextStyle(color: Colors.blue)),
+              const Text('• Tap anywhere on row to toggle selection',
+                  style: TextStyle(color: Colors.blue)),
+              const Text('• Select all/none with header checkbox',
+                  style: TextStyle(color: Colors.blue)),
+              const Text(
+                  '• Intuitive select-all behavior (any selected → clear all)',
+                  style: TextStyle(color: Colors.blue)),
+              const Text('• Custom selection actions and callbacks',
+                  style: TextStyle(color: Colors.blue)),
+              const Text('• Selection state management by parent widget',
+                  style: TextStyle(color: Colors.blue)),
+            ],
+
+            const SizedBox(height: 16),
+
+            // Controls info
+            Text(
+              'Interactive Controls:',
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+                '• 🔲 Toggle vertical dividers (Grid vs Horizontal-only design)'),
+            const Text(
+                '• ☑️ Toggle selection mode (Row selection with checkboxes)'),
+            if (_isSelectable) ...[
+              const Text('• 🧹 Clear all selections'),
+              const Text('• 👥 Select only active employees'),
+              const Text('• ℹ️ Show selected employee details'),
+            ],
+
+            const SizedBox(height: 16),
+
+            // API Usage Example
+            Text(
+              'Code Example:',
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Text(
+                '''final columns = TableColumnsBuilder()
+  .addColumn('id', TablePlusColumn(...))
+  .addColumn('name', TablePlusColumn(...))
+  .build();
+
+FlutterTablePlus(
+  columns: columns,
+  data: data,
+  isSelectable: true,
+  selectedRows: selectedRowIds,
+  theme: TablePlusTheme(
+    bodyTheme: TablePlusBodyTheme(
+      showVerticalDividers: false, // Horizontal only
+      showHorizontalDividers: true,
+    ),
+  ),
+  onRowSelectionChanged: (rowId, isSelected) {
+    // Handle selection
+  },
+)''',
+                style: TextStyle(
+                  fontFamily: 'monospace',
+                  fontSize: 12,
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 32), // Extra space at bottom
           ],
         ),
       ),
+    );
+  }
+}
+
+```
+## example/lib/widgets/employee_table.dart
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_table_plus/flutter_table_plus.dart';
+
+class EmployeeTable extends StatelessWidget {
+  const EmployeeTable({
+    super.key,
+    required this.data,
+    required this.isSelectable,
+    required this.selectedRows,
+    required this.onRowSelectionChanged,
+    required this.onSelectAll,
+    this.theme,
+  });
+
+  final List<Map<String, dynamic>> data;
+  final bool isSelectable;
+  final Set<String> selectedRows;
+  final void Function(String rowId, bool isSelected) onRowSelectionChanged;
+  final void Function(bool selectAll) onSelectAll;
+  final TablePlusTheme? theme;
+
+  /// Define table columns using TableColumnsBuilder
+  Map<String, TablePlusColumn> get _columns {
+    return TableColumnsBuilder()
+        .addColumn(
+          'id',
+          const TablePlusColumn(
+            key: 'id',
+            label: 'ID',
+            order: 0,
+            width: 60,
+            minWidth: 50,
+            textAlign: TextAlign.center,
+            alignment: Alignment.center,
+          ),
+        )
+        .addColumn(
+          'name',
+          const TablePlusColumn(
+            key: 'name',
+            label: 'Full Name',
+            order: 0,
+            width: 150,
+            minWidth: 120,
+          ),
+        )
+        .addColumn(
+          'email',
+          const TablePlusColumn(
+            key: 'email',
+            label: 'Email Address',
+            order: 0,
+            width: 200,
+            minWidth: 150,
+          ),
+        )
+        .addColumn(
+          'age',
+          const TablePlusColumn(
+            key: 'age',
+            label: 'Age',
+            order: 0,
+            width: 60,
+            minWidth: 50,
+            textAlign: TextAlign.center,
+            alignment: Alignment.center,
+          ),
+        )
+        .addColumn(
+          'department',
+          const TablePlusColumn(
+            key: 'department',
+            label: 'Department',
+            order: 0,
+            width: 120,
+            minWidth: 100,
+          ),
+        )
+        .addColumn(
+          'salary',
+          TablePlusColumn(
+            key: 'salary',
+            label: 'Salary',
+            order: 0,
+            width: 100,
+            minWidth: 80,
+            textAlign: TextAlign.right,
+            alignment: Alignment.centerRight,
+            cellBuilder: _buildSalaryCell,
+          ),
+        )
+        .addColumn(
+          'active',
+          TablePlusColumn(
+            key: 'active',
+            label: 'Status',
+            order: 0,
+            width: 80,
+            minWidth: 70,
+            textAlign: TextAlign.center,
+            alignment: Alignment.center,
+            cellBuilder: _buildStatusCell,
+          ),
+        )
+        .build();
+  }
+
+  /// Custom cell builder for salary
+  Widget _buildSalaryCell(BuildContext context, Map<String, dynamic> rowData) {
+    final salary = rowData['salary'] as int?;
+    return Text(
+      salary != null
+          ? '\$${salary.toString().replaceAllMapped(
+                RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+                (Match m) => '${m[1]},',
+              )}'
+          : '',
+      style: const TextStyle(
+        fontWeight: FontWeight.w600,
+        color: Colors.green,
+      ),
+    );
+  }
+
+  /// Custom cell builder for status
+  Widget _buildStatusCell(BuildContext context, Map<String, dynamic> rowData) {
+    final isActive = rowData['active'] as bool? ?? false;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: isActive ? Colors.green.shade100 : Colors.red.shade100,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        isActive ? 'Active' : 'Inactive',
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: isActive ? Colors.green.shade800 : Colors.red.shade800,
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Use provided theme or default theme
+    final tableTheme = theme ??
+        const TablePlusTheme(
+          headerTheme: TablePlusHeaderTheme(
+            height: 48,
+            backgroundColor: Color(0xFFF8F9FA),
+            textStyle: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF495057),
+            ),
+          ),
+          bodyTheme: TablePlusBodyTheme(
+            rowHeight: 56,
+            alternateRowColor: Color(0xFFFAFAFA),
+            textStyle: TextStyle(
+              fontSize: 14,
+              color: Color(0xFF212529),
+            ),
+          ),
+          scrollbarTheme: TablePlusScrollbarTheme(
+            hoverOnly: true,
+            opacity: 0.8,
+          ),
+          selectionTheme: TablePlusSelectionTheme(
+            selectedRowColor: Color(0xFFE3F2FD),
+            checkboxColor: Color(0xFF2196F3),
+            checkboxSize: 18.0,
+          ),
+        );
+
+    return Card(
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(1.0),
+        child: FlutterTablePlus(
+          columns: _columns,
+          data: data,
+          isSelectable: isSelectable,
+          selectedRows: selectedRows,
+          onRowSelectionChanged: onRowSelectionChanged,
+          onSelectAll: onSelectAll,
+          theme: tableTheme,
+        ),
+      ),
+    );
+  }
+}
+
+```
+## example/lib/widgets/table_controls.dart
+```dart
+import 'package:flutter/material.dart';
+
+class TableControls extends StatelessWidget {
+  const TableControls({
+    super.key,
+    required this.isSelectable,
+    required this.selectedCount,
+    required this.selectedNames,
+    required this.onClearSelections,
+    required this.onSelectActive,
+    required this.onShowSelected,
+  });
+
+  final bool isSelectable;
+  final int selectedCount;
+  final List<String> selectedNames;
+  final VoidCallback onClearSelections;
+  final VoidCallback onSelectActive;
+  final VoidCallback onShowSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!isSelectable) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 12),
+
+        // Selection actions
+        Wrap(
+          spacing: 8,
+          children: [
+            ElevatedButton.icon(
+              onPressed: onClearSelections,
+              icon: const Icon(Icons.clear_all, size: 16),
+              label: const Text('Clear All'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.grey.shade100,
+                foregroundColor: Colors.grey.shade700,
+              ),
+            ),
+            ElevatedButton.icon(
+              onPressed: onSelectActive,
+              icon: const Icon(Icons.people, size: 16),
+              label: const Text('Select Active'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green.shade100,
+                foregroundColor: Colors.green.shade700,
+              ),
+            ),
+            if (selectedCount > 0)
+              ElevatedButton.icon(
+                onPressed: onShowSelected,
+                icon: const Icon(Icons.info, size: 16),
+                label: const Text('Show Selected'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue.shade100,
+                  foregroundColor: Colors.blue.shade700,
+                ),
+              ),
+          ],
+        ),
+
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+}
+
+class SelectionDialog extends StatelessWidget {
+  const SelectionDialog({
+    super.key,
+    required this.selectedCount,
+    required this.selectedNames,
+  });
+
+  final int selectedCount;
+  final List<String> selectedNames;
+
+  static void show(
+    BuildContext context, {
+    required int selectedCount,
+    required List<String> selectedNames,
+  }) {
+    showDialog(
+      context: context,
+      builder: (context) => SelectionDialog(
+        selectedCount: selectedCount,
+        selectedNames: selectedNames,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Selected Employees'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Selected $selectedCount employees:'),
+          const SizedBox(height: 8),
+          ...selectedNames.map((name) => Text('• $name')),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Close'),
+        ),
+      ],
     );
   }
 }
@@ -349,8 +915,10 @@ library;
 
 // Models
 export 'src/models/table_column.dart';
+export 'src/models/table_columns_builder.dart';
 export 'src/models/table_theme.dart';
-// Main widget
+// Widgets
+export 'src/widgets/custom_ink_well.dart';
 export 'src/widgets/flutter_table_plus.dart';
 
 ```
@@ -364,6 +932,7 @@ class TablePlusColumn {
   const TablePlusColumn({
     required this.key,
     required this.label,
+    required this.order,
     this.width = 100.0,
     this.minWidth = 50.0,
     this.maxWidth,
@@ -380,6 +949,11 @@ class TablePlusColumn {
 
   /// The display label for the column header.
   final String label;
+
+  /// The order position of this column in the table.
+  /// Columns are sorted by this value in ascending order.
+  /// Selection column uses order: -1 to appear first.
+  final int order;
 
   /// The preferred width of the column in pixels.
   final double width;
@@ -413,6 +987,7 @@ class TablePlusColumn {
   TablePlusColumn copyWith({
     String? key,
     String? label,
+    int? order,
     double? width,
     double? minWidth,
     double? maxWidth,
@@ -426,6 +1001,7 @@ class TablePlusColumn {
     return TablePlusColumn(
       key: key ?? this.key,
       label: label ?? this.label,
+      order: order ?? this.order,
       width: width ?? this.width,
       minWidth: minWidth ?? this.minWidth,
       maxWidth: maxWidth ?? this.maxWidth,
@@ -443,6 +1019,7 @@ class TablePlusColumn {
     return other is TablePlusColumn &&
         other.key == key &&
         other.label == label &&
+        other.order == order &&
         other.width == width &&
         other.minWidth == minWidth &&
         other.maxWidth == maxWidth &&
@@ -457,6 +1034,7 @@ class TablePlusColumn {
     return Object.hash(
       key,
       label,
+      order,
       width,
       minWidth,
       maxWidth,
@@ -469,7 +1047,211 @@ class TablePlusColumn {
 
   @override
   String toString() {
-    return 'TableColumn(key: $key, label: $label, width: $width, visible: $visible)';
+    return 'TableColumn(key: $key, label: $label, order: $order, width: $width, visible: $visible)';
+  }
+}
+
+```
+## lib/src/models/table_columns_builder.dart
+```dart
+import 'table_column.dart';
+
+/// A builder class for creating ordered table columns with automatic order management.
+///
+/// This builder prevents order conflicts by automatically assigning sequential orders
+/// and handling insertions by shifting existing column orders as needed.
+///
+/// Example usage:
+/// ```dart
+/// final columns = TableColumnsBuilder()
+///   .addColumn('id', TablePlusColumn(key: 'id', label: 'ID', order: 0))
+///   .addColumn('name', TablePlusColumn(key: 'name', label: 'Name', order: 0))
+///   .insertColumn('email', TablePlusColumn(key: 'email', label: 'Email', order: 0), 1)
+///   .build();
+/// ```
+class TableColumnsBuilder {
+  final Map<String, TablePlusColumn> _columns = {};
+  int _nextOrder = 1;
+
+  /// Adds a column to the end of the table with automatically assigned order.
+  ///
+  /// The [column]'s order value will be ignored and replaced with the next available order.
+  ///
+  /// Returns this builder for method chaining.
+  TableColumnsBuilder addColumn(String key, TablePlusColumn column) {
+    if (_columns.containsKey(key)) {
+      throw ArgumentError('Column with key "$key" already exists');
+    }
+
+    _columns[key] = column.copyWith(order: _nextOrder++);
+    return this;
+  }
+
+  /// Inserts a column at the specified order position.
+  ///
+  /// All existing columns with order >= [targetOrder] will be shifted by +1.
+  /// The [column]'s order value will be ignored and replaced with [targetOrder].
+  ///
+  /// Returns this builder for method chaining.
+  TableColumnsBuilder insertColumn(
+      String key, TablePlusColumn column, int targetOrder) {
+    if (_columns.containsKey(key)) {
+      throw ArgumentError('Column with key "$key" already exists');
+    }
+
+    if (targetOrder < 1) {
+      throw ArgumentError(
+          'Order must be >= 1 (order 0 and negative values are reserved)');
+    }
+
+    // Shift existing columns that have order >= targetOrder
+    _shiftOrdersFrom(targetOrder);
+
+    // Insert the new column at the target order
+    _columns[key] = column.copyWith(order: targetOrder);
+
+    // Update _nextOrder if necessary
+    _nextOrder = _getMaxOrder() + 1;
+
+    return this;
+  }
+
+  /// Removes a column by key.
+  ///
+  /// Returns this builder for method chaining.
+  TableColumnsBuilder removeColumn(String key) {
+    if (!_columns.containsKey(key)) {
+      throw ArgumentError('Column with key "$key" does not exist');
+    }
+
+    final removedOrder = _columns[key]!.order;
+    _columns.remove(key);
+
+    // Shift down columns that had order > removedOrder
+    _shiftOrdersDown(removedOrder);
+
+    // Update _nextOrder
+    _nextOrder = _getMaxOrder() + 1;
+
+    return this;
+  }
+
+  /// Reorders an existing column to a new position.
+  ///
+  /// Returns this builder for method chaining.
+  TableColumnsBuilder reorderColumn(String key, int newOrder) {
+    if (!_columns.containsKey(key)) {
+      throw ArgumentError('Column with key "$key" does not exist');
+    }
+
+    if (newOrder < 1) {
+      throw ArgumentError(
+          'Order must be >= 1 (order 0 and negative values are reserved)');
+    }
+
+    final currentColumn = _columns[key]!;
+    final currentOrder = currentColumn.order;
+
+    if (currentOrder == newOrder) {
+      return this; // No change needed
+    }
+
+    // Remove the column temporarily
+    _columns.remove(key);
+
+    // Adjust orders based on movement direction
+    if (newOrder < currentOrder) {
+      // Moving up: shift down columns in range [newOrder, currentOrder)
+      for (final entry in _columns.entries) {
+        final order = entry.value.order;
+        if (order >= newOrder && order < currentOrder) {
+          _columns[entry.key] = entry.value.copyWith(order: order + 1);
+        }
+      }
+    } else {
+      // Moving down: shift up columns in range (currentOrder, newOrder]
+      for (final entry in _columns.entries) {
+        final order = entry.value.order;
+        if (order > currentOrder && order <= newOrder) {
+          _columns[entry.key] = entry.value.copyWith(order: order - 1);
+        }
+      }
+    }
+
+    // Re-insert the column at new position
+    _columns[key] = currentColumn.copyWith(order: newOrder);
+
+    return this;
+  }
+
+  /// Returns the current number of columns.
+  int get length => _columns.length;
+
+  /// Returns true if the builder is empty.
+  bool get isEmpty => _columns.isEmpty;
+
+  /// Returns true if the builder is not empty.
+  bool get isNotEmpty => _columns.isNotEmpty;
+
+  /// Returns true if a column with the given key exists.
+  bool containsKey(String key) => _columns.containsKey(key);
+
+  /// Builds and returns an unmodifiable map of columns.
+  ///
+  /// ⚠️ After calling build(), this builder should not be used again.
+  Map<String, TablePlusColumn> build() {
+    _validateOrders();
+    return Map.unmodifiable(_columns);
+  }
+
+  /// Shifts all columns with order >= fromOrder by +1.
+  void _shiftOrdersFrom(int fromOrder) {
+    for (final entry in _columns.entries) {
+      if (entry.value.order >= fromOrder) {
+        _columns[entry.key] = entry.value.copyWith(
+          order: entry.value.order + 1,
+        );
+      }
+    }
+  }
+
+  /// Shifts all columns with order > fromOrder by -1.
+  void _shiftOrdersDown(int fromOrder) {
+    for (final entry in _columns.entries) {
+      if (entry.value.order > fromOrder) {
+        _columns[entry.key] = entry.value.copyWith(
+          order: entry.value.order - 1,
+        );
+      }
+    }
+  }
+
+  /// Returns the maximum order value, or 0 if no columns exist.
+  int _getMaxOrder() {
+    if (_columns.isEmpty) return 0;
+    return _columns.values.map((c) => c.order).reduce((a, b) => a > b ? a : b);
+  }
+
+  /// Validates that all orders are unique and sequential starting from 1.
+  void _validateOrders() {
+    if (_columns.isEmpty) return;
+
+    final orders = _columns.values.map((c) => c.order).toList();
+    orders.sort();
+
+    // Check for duplicates
+    final uniqueOrders = orders.toSet();
+    if (orders.length != uniqueOrders.length) {
+      throw StateError('Internal error: Duplicate orders found in builder');
+    }
+
+    // Check for proper sequence (should start from 1 and be consecutive)
+    for (int i = 0; i < orders.length; i++) {
+      if (orders[i] != i + 1) {
+        throw StateError(
+            'Internal error: Orders are not consecutive starting from 1');
+      }
+    }
   }
 }
 
@@ -485,6 +1267,7 @@ class TablePlusTheme {
     this.headerTheme = const TablePlusHeaderTheme(),
     this.bodyTheme = const TablePlusBodyTheme(),
     this.scrollbarTheme = const TablePlusScrollbarTheme(),
+    this.selectionTheme = const TablePlusSelectionTheme(),
   });
 
   /// Theme configuration for the table header.
@@ -496,16 +1279,21 @@ class TablePlusTheme {
   /// Theme configuration for the scrollbars.
   final TablePlusScrollbarTheme scrollbarTheme;
 
+  /// Theme configuration for row selection.
+  final TablePlusSelectionTheme selectionTheme;
+
   /// Creates a copy of this theme with the given fields replaced with new values.
   TablePlusTheme copyWith({
     TablePlusHeaderTheme? headerTheme,
     TablePlusBodyTheme? bodyTheme,
     TablePlusScrollbarTheme? scrollbarTheme,
+    TablePlusSelectionTheme? selectionTheme,
   }) {
     return TablePlusTheme(
       headerTheme: headerTheme ?? this.headerTheme,
       bodyTheme: bodyTheme ?? this.bodyTheme,
       scrollbarTheme: scrollbarTheme ?? this.scrollbarTheme,
+      selectionTheme: selectionTheme ?? this.selectionTheme,
     );
   }
 
@@ -526,6 +1314,9 @@ class TablePlusHeaderTheme {
     ),
     this.padding = const EdgeInsets.symmetric(horizontal: 16.0),
     this.decoration,
+    this.showVerticalDividers = true,
+    this.showBottomDivider = true,
+    this.dividerColor = const Color(0xFFE0E0E0),
   });
 
   /// The height of the header row.
@@ -543,6 +1334,15 @@ class TablePlusHeaderTheme {
   /// Optional decoration for the header.
   final Decoration? decoration;
 
+  /// Whether to show vertical dividers between header columns.
+  final bool showVerticalDividers;
+
+  /// Whether to show bottom divider below header.
+  final bool showBottomDivider;
+
+  /// The color of header dividers.
+  final Color dividerColor;
+
   /// Creates a copy of this theme with the given fields replaced with new values.
   TablePlusHeaderTheme copyWith({
     double? height,
@@ -550,6 +1350,9 @@ class TablePlusHeaderTheme {
     TextStyle? textStyle,
     EdgeInsets? padding,
     Decoration? decoration,
+    bool? showVerticalDividers,
+    bool? showBottomDivider,
+    Color? dividerColor,
   }) {
     return TablePlusHeaderTheme(
       height: height ?? this.height,
@@ -557,6 +1360,9 @@ class TablePlusHeaderTheme {
       textStyle: textStyle ?? this.textStyle,
       padding: padding ?? this.padding,
       decoration: decoration ?? this.decoration,
+      showVerticalDividers: showVerticalDividers ?? this.showVerticalDividers,
+      showBottomDivider: showBottomDivider ?? this.showBottomDivider,
+      dividerColor: dividerColor ?? this.dividerColor,
     );
   }
 }
@@ -575,6 +1381,8 @@ class TablePlusBodyTheme {
     this.padding = const EdgeInsets.symmetric(horizontal: 16.0),
     this.dividerColor = const Color(0xFFE0E0E0),
     this.dividerThickness = 1.0,
+    this.showVerticalDividers = true,
+    this.showHorizontalDividers = true,
   });
 
   /// The height of each data row.
@@ -599,6 +1407,12 @@ class TablePlusBodyTheme {
   /// The thickness of row dividers.
   final double dividerThickness;
 
+  /// Whether to show vertical dividers between columns.
+  final bool showVerticalDividers;
+
+  /// Whether to show horizontal dividers between rows.
+  final bool showHorizontalDividers;
+
   /// Creates a copy of this theme with the given fields replaced with new values.
   TablePlusBodyTheme copyWith({
     double? rowHeight,
@@ -608,6 +1422,8 @@ class TablePlusBodyTheme {
     EdgeInsets? padding,
     Color? dividerColor,
     double? dividerThickness,
+    bool? showVerticalDividers,
+    bool? showHorizontalDividers,
   }) {
     return TablePlusBodyTheme(
       rowHeight: rowHeight ?? this.rowHeight,
@@ -617,6 +1433,9 @@ class TablePlusBodyTheme {
       padding: padding ?? this.padding,
       dividerColor: dividerColor ?? this.dividerColor,
       dividerThickness: dividerThickness ?? this.dividerThickness,
+      showVerticalDividers: showVerticalDividers ?? this.showVerticalDividers,
+      showHorizontalDividers:
+          showHorizontalDividers ?? this.showHorizontalDividers,
     );
   }
 }
@@ -683,6 +1502,157 @@ class TablePlusScrollbarTheme {
   }
 }
 
+/// Theme configuration for row selection.
+class TablePlusSelectionTheme {
+  /// Creates a [TablePlusSelectionTheme] with the specified styling properties.
+  const TablePlusSelectionTheme({
+    this.selectedRowColor = const Color(0xFFE3F2FD),
+    this.checkboxColor = const Color(0xFF2196F3),
+    this.checkboxSize = 18.0,
+    this.showCheckboxColumn = true,
+    this.checkboxColumnWidth = 60.0,
+  });
+
+  /// The background color for selected rows.
+  final Color selectedRowColor;
+
+  /// The color of the selection checkboxes.
+  final Color checkboxColor;
+
+  /// The size of the selection checkboxes.
+  final double checkboxSize;
+
+  /// Whether to show the checkbox column.
+  /// If false, rows can only be selected by tapping.
+  final bool showCheckboxColumn;
+
+  /// The width of the checkbox column.
+  final double checkboxColumnWidth;
+
+  /// Creates a copy of this theme with the given fields replaced with new values.
+  TablePlusSelectionTheme copyWith({
+    Color? selectedRowColor,
+    Color? checkboxColor,
+    double? checkboxSize,
+    bool? showCheckboxColumn,
+    double? checkboxColumnWidth,
+  }) {
+    return TablePlusSelectionTheme(
+      selectedRowColor: selectedRowColor ?? this.selectedRowColor,
+      checkboxColor: checkboxColor ?? this.checkboxColor,
+      checkboxSize: checkboxSize ?? this.checkboxSize,
+      showCheckboxColumn: showCheckboxColumn ?? this.showCheckboxColumn,
+      checkboxColumnWidth: checkboxColumnWidth ?? this.checkboxColumnWidth,
+    );
+  }
+}
+
+```
+## lib/src/widgets/custom_ink_well.dart
+```dart
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+
+/// A custom [InkWell] widget that provides enhanced tap, double-tap, and secondary-tap
+/// functionalities without delaying single taps when double-tap is enabled.
+class CustomInkWell extends StatefulWidget {
+  /// The widget below this widget in the tree.
+  final Widget child;
+
+  /// Called when the user taps this [CustomInkWell].
+  final VoidCallback? onTap;
+
+  /// Called when the user double-taps this [CustomInkWell].
+  final VoidCallback? onDoubleTap;
+
+  /// Called when the user performs a secondary tap (e.g., right-click on desktop)
+  /// on this [CustomInkWell].
+  final VoidCallback? onSecondaryTap;
+
+  /// The maximum duration between two taps for them to be considered a double-tap.
+  /// Defaults to 300 milliseconds.
+  final Duration doubleClickTime;
+
+  /// The color of the ink splash when the [CustomInkWell] is tapped.
+  final Color? splashColor;
+
+  /// The highlight color of the [CustomInkWell] when it's pressed.
+  final Color? highlightColor;
+
+  /// The border radius of the ink splash and highlight.
+  final BorderRadius? borderRadius;
+
+  /// Creates a [CustomInkWell] instance.
+  const CustomInkWell({
+    super.key,
+    required this.child,
+    this.onTap,
+    this.onDoubleTap,
+    this.onSecondaryTap,
+    this.doubleClickTime = const Duration(milliseconds: 300),
+    this.splashColor,
+    this.highlightColor,
+    this.borderRadius,
+  });
+
+  @override
+  State<CustomInkWell> createState() => _CustomInkWellState();
+}
+
+class _CustomInkWellState extends State<CustomInkWell> {
+  int _clickCount = 0;
+  Timer? _timer;
+
+  void _handleTap() {
+    _clickCount++;
+
+    if (_clickCount == 1) {
+      // 첫 번째 클릭 - 즉시 처리 (지연 없음!)
+      widget.onTap?.call();
+
+      if (widget.onDoubleTap != null) {
+        // 더블클릭 콜백이 있으면 타이머 시작
+        _timer = Timer(widget.doubleClickTime, () {
+          _clickCount = 0;
+        });
+      } else {
+        _clickCount = 0;
+      }
+    } else if (_clickCount == 2) {
+      // 두 번째 클릭 - 더블클릭 처리
+      _timer?.cancel();
+      widget.onDoubleTap?.call();
+      _clickCount = 0;
+    }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onSecondaryTap: widget.onSecondaryTap,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: (widget.onTap != null || widget.onDoubleTap != null)
+              ? _handleTap
+              : null,
+          splashColor: widget.splashColor,
+          highlightColor: widget.highlightColor,
+          borderRadius: widget.borderRadius,
+          child: widget.child,
+        ),
+      ),
+    );
+  }
+}
+
 ```
 ## lib/src/widgets/flutter_table_plus.dart
 ```dart
@@ -700,6 +1670,10 @@ import 'table_header.dart';
 ///
 /// This widget provides a feature-rich table implementation with synchronized
 /// scrolling, theming support, and flexible data handling through Map-based data.
+///
+/// ⚠️ **Important for selection feature:**
+/// Each row data must have a unique 'id' field when using selection features.
+/// Duplicate IDs will cause unexpected selection behavior.
 class FlutterTablePlus extends StatefulWidget {
   /// Creates a [FlutterTablePlus] with the specified configuration.
   const FlutterTablePlus({
@@ -707,18 +1681,42 @@ class FlutterTablePlus extends StatefulWidget {
     required this.columns,
     required this.data,
     this.theme,
+    this.isSelectable = false,
+    this.selectedRows = const <String>{},
+    this.onRowSelectionChanged,
+    this.onSelectAll,
   });
 
-  /// The list of columns to display in the table.
-  final List<TablePlusColumn> columns;
+  /// The map of columns to display in the table.
+  /// Columns are ordered by their `order` field in ascending order.
+  /// Use [TableColumnsBuilder] to easily create ordered columns without conflicts.
+  final Map<String, TablePlusColumn> columns;
 
   /// The data to display in the table.
   /// Each map represents a row, with keys corresponding to column keys.
+  ///
+  /// ⚠️ **For selection features**: Each row must have a unique 'id' field.
   final List<Map<String, dynamic>> data;
 
   /// The theme configuration for the table.
   /// If not provided, [TablePlusTheme.defaultTheme] will be used.
   final TablePlusTheme? theme;
+
+  /// Whether the table supports row selection.
+  /// When true, adds selection checkboxes and enables row selection.
+  final bool isSelectable;
+
+  /// The set of currently selected row IDs.
+  /// Row IDs are extracted from `rowData['id']`.
+  final Set<String> selectedRows;
+
+  /// Callback when a row's selection state changes.
+  /// Provides the row ID and the new selection state.
+  final void Function(String rowId, bool isSelected)? onRowSelectionChanged;
+
+  /// Callback when the select-all state changes.
+  /// Called when the header checkbox is toggled.
+  final void Function(bool selectAll)? onSelectAll;
 
   @override
   State<FlutterTablePlus> createState() => _FlutterTablePlusState();
@@ -727,13 +1725,83 @@ class FlutterTablePlus extends StatefulWidget {
 class _FlutterTablePlusState extends State<FlutterTablePlus> {
   bool _isHovered = false;
 
+  @override
+  void initState() {
+    super.initState();
+    _validateUniqueIds();
+  }
+
+  @override
+  void didUpdateWidget(FlutterTablePlus oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.data != oldWidget.data) {
+      _validateUniqueIds();
+    }
+  }
+
+  /// Validates that all row IDs are unique when selection is enabled.
+  /// ⚠️ This check only runs in debug mode for performance.
+  void _validateUniqueIds() {
+    if (!widget.isSelectable) return;
+
+    assert(() {
+      final ids = widget.data
+          .map((row) => row['id']?.toString())
+          .where((id) => id != null)
+          .toList();
+
+      final uniqueIds = ids.toSet();
+
+      if (ids.length != uniqueIds.length) {
+        final duplicates = <String>[];
+        for (final id in ids) {
+          if (ids.where((x) => x == id).length > 1 &&
+              !duplicates.contains(id)) {
+            duplicates.add(id!);
+          }
+        }
+
+        print('⚠️ FlutterTablePlus: Duplicate row IDs detected: $duplicates');
+        print('   This will cause unexpected selection behavior.');
+        print('   Please ensure each row has a unique "id" field.');
+      }
+
+      return true;
+    }());
+  }
+
   /// Get the current theme, using default if not provided.
   TablePlusTheme get _currentTheme =>
       widget.theme ?? TablePlusTheme.defaultTheme;
 
-  /// Get only visible columns.
-  List<TablePlusColumn> get _visibleColumns =>
-      widget.columns.where((col) => col.visible).toList();
+  /// Get only visible columns, including selection column if enabled.
+  /// Columns are sorted by their order field in ascending order.
+  List<TablePlusColumn> get _visibleColumns {
+    // Get visible columns from the map and sort by order
+    final visibleColumns = widget.columns.values
+        .where((col) => col.visible)
+        .toList()
+      ..sort((a, b) => a.order.compareTo(b.order));
+
+    // Add selection column at the beginning if selectable
+    if (widget.isSelectable &&
+        _currentTheme.selectionTheme.showCheckboxColumn) {
+      final selectionColumn = TablePlusColumn(
+        key: '__selection__', // Special key for selection column
+        label: '', // Empty label, will show select-all checkbox
+        order: -1, // Always first
+        width: _currentTheme.selectionTheme.checkboxColumnWidth,
+        minWidth: _currentTheme.selectionTheme.checkboxColumnWidth,
+        maxWidth: _currentTheme.selectionTheme.checkboxColumnWidth,
+        alignment: Alignment.center,
+        textAlign: TextAlign.center,
+      );
+
+      return [selectionColumn, ...visibleColumns];
+    }
+
+    return visibleColumns;
+  }
 
   /// Calculate the total height of all data rows.
   double _calculateTotalDataHeight() {
@@ -745,14 +1813,58 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
     final visibleColumns = _visibleColumns;
     if (visibleColumns.isEmpty) return [];
 
+    // Separate selection column from regular columns
+    List<TablePlusColumn> regularColumns = [];
+    TablePlusColumn? selectionColumn;
+
+    for (final column in visibleColumns) {
+      if (column.key == '__selection__') {
+        selectionColumn = column;
+      } else {
+        regularColumns.add(column);
+      }
+    }
+
+    // Calculate available width for regular columns (excluding selection column)
+    double availableWidth = totalWidth;
+    if (selectionColumn != null) {
+      availableWidth -=
+          selectionColumn.width; // Subtract fixed selection column width
+    }
+
+    // Calculate widths for regular columns only
+    List<double> regularWidths =
+        _calculateRegularColumnWidths(regularColumns, availableWidth);
+
+    // Combine selection column width with regular column widths
+    List<double> allWidths = [];
+    int regularIndex = 0;
+
+    for (final column in visibleColumns) {
+      if (column.key == '__selection__') {
+        allWidths.add(column.width); // Fixed width for selection
+      } else {
+        allWidths.add(regularWidths[regularIndex]);
+        regularIndex++;
+      }
+    }
+
+    return allWidths;
+  }
+
+  /// Calculate widths for regular columns (excluding selection column)
+  List<double> _calculateRegularColumnWidths(
+      List<TablePlusColumn> columns, double totalWidth) {
+    if (columns.isEmpty) return [];
+
     // Calculate total preferred width
-    final double totalPreferredWidth = visibleColumns.fold(
+    final double totalPreferredWidth = columns.fold(
       0.0,
       (sum, col) => sum + col.width,
     );
 
     // Calculate total minimum width
-    final double totalMinWidth = visibleColumns.fold(
+    final double totalMinWidth = columns.fold(
       0.0,
       (sum, col) => sum + col.minWidth,
     );
@@ -762,10 +1874,10 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
     if (totalPreferredWidth <= totalWidth) {
       // If preferred widths fit, distribute extra space proportionally
       final double extraSpace = totalWidth - totalPreferredWidth;
-      final double totalWeight = visibleColumns.length.toDouble();
+      final double totalWeight = columns.length.toDouble();
 
-      for (int i = 0; i < visibleColumns.length; i++) {
-        final column = visibleColumns[i];
+      for (int i = 0; i < columns.length; i++) {
+        final column = columns[i];
         final double extraWidth = extraSpace / totalWeight;
         double finalWidth = column.width + extraWidth;
 
@@ -780,8 +1892,8 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
       // Scale down proportionally but respect minimum widths
       final double scale = totalWidth / totalPreferredWidth;
 
-      for (int i = 0; i < visibleColumns.length; i++) {
-        final column = visibleColumns[i];
+      for (int i = 0; i < columns.length; i++) {
+        final column = columns[i];
         final double scaledWidth = column.width * scale;
         final double finalWidth = scaledWidth.clamp(
             column.minWidth, column.maxWidth ?? double.infinity);
@@ -789,7 +1901,7 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
       }
     } else {
       // Use minimum widths (table will be wider than available space)
-      widths = visibleColumns.map((col) => col.minWidth).toList();
+      widths = columns.map((col) => col.minWidth).toList();
     }
 
     return widths;
@@ -870,6 +1982,11 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                               columns: visibleColumns,
                               totalWidth: contentWidth,
                               theme: theme.headerTheme,
+                              isSelectable: widget.isSelectable,
+                              selectedRows: widget.selectedRows,
+                              totalRowCount: widget.data.length,
+                              selectionTheme: theme.selectionTheme,
+                              onSelectAll: widget.onSelectAll,
                             ),
 
                             // Table Data
@@ -880,6 +1997,11 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                 columnWidths: columnWidths,
                                 theme: theme.bodyTheme,
                                 verticalController: verticalScrollController,
+                                isSelectable: widget.isSelectable,
+                                selectedRows: widget.selectedRows,
+                                selectionTheme: theme.selectionTheme,
+                                onRowSelectionChanged:
+                                    widget.onRowSelectionChanged,
                               ),
                             ),
                           ],
@@ -1193,6 +2315,7 @@ import 'package:flutter/material.dart';
 
 import '../models/table_column.dart';
 import '../models/table_theme.dart';
+import 'custom_ink_well.dart';
 
 /// A widget that renders the data rows of the table.
 class TablePlusBody extends StatelessWidget {
@@ -1204,6 +2327,10 @@ class TablePlusBody extends StatelessWidget {
     required this.columnWidths,
     required this.theme,
     required this.verticalController,
+    this.isSelectable = false,
+    this.selectedRows = const <String>{},
+    this.selectionTheme = const TablePlusSelectionTheme(),
+    this.onRowSelectionChanged,
   });
 
   /// The list of columns for the table.
@@ -1221,20 +2348,44 @@ class TablePlusBody extends StatelessWidget {
   /// The scroll controller for vertical scrolling.
   final ScrollController verticalController;
 
+  /// Whether the table supports row selection.
+  final bool isSelectable;
+
+  /// The set of currently selected row IDs.
+  final Set<String> selectedRows;
+
+  /// The theme configuration for selection.
+  final TablePlusSelectionTheme selectionTheme;
+
+  /// Callback when a row's selection state changes.
+  final void Function(String rowId, bool isSelected)? onRowSelectionChanged;
+
   /// Get the background color for a row at the given index.
-  Color _getRowColor(int index) {
+  Color _getRowColor(int index, bool isSelected) {
+    // Selected rows get selection color
+    if (isSelected && isSelectable) {
+      return selectionTheme.selectedRowColor;
+    }
+
+    // Alternate row colors
     if (theme.alternateRowColor != null && index.isOdd) {
       return theme.alternateRowColor!;
     }
+
     return theme.backgroundColor;
   }
 
-  /// Extract the display value for a cell.
-  String _getCellDisplayValue(
-      Map<String, dynamic> rowData, TablePlusColumn column) {
-    final value = rowData[column.key];
-    if (value == null) return '';
-    return value.toString();
+  /// Extract the row ID from row data.
+  String? _getRowId(Map<String, dynamic> rowData) {
+    return rowData['id']?.toString();
+  }
+
+  /// Handle row selection toggle.
+  void _handleRowSelectionToggle(String rowId) {
+    if (onRowSelectionChanged == null) return;
+
+    final isCurrentlySelected = selectedRows.contains(rowId);
+    onRowSelectionChanged!(rowId, !isCurrentlySelected);
   }
 
   @override
@@ -1263,14 +2414,21 @@ class TablePlusBody extends StatelessWidget {
       itemCount: data.length,
       itemBuilder: (context, index) {
         final rowData = data[index];
+        final rowId = _getRowId(rowData);
+        final isSelected = rowId != null && selectedRows.contains(rowId);
 
         return _TablePlusRow(
           rowData: rowData,
+          rowId: rowId,
           columns: columns,
           columnWidths: columnWidths,
           theme: theme,
-          backgroundColor: _getRowColor(index),
+          backgroundColor: _getRowColor(index, isSelected),
           isLastRow: index == data.length - 1,
+          isSelectable: isSelectable,
+          isSelected: isSelected,
+          selectionTheme: selectionTheme,
+          onRowSelectionChanged: _handleRowSelectionToggle,
         );
       },
     );
@@ -1281,27 +2439,43 @@ class TablePlusBody extends StatelessWidget {
 class _TablePlusRow extends StatelessWidget {
   const _TablePlusRow({
     required this.rowData,
+    required this.rowId,
     required this.columns,
     required this.columnWidths,
     required this.theme,
     required this.backgroundColor,
     required this.isLastRow,
+    required this.isSelectable,
+    required this.isSelected,
+    required this.selectionTheme,
+    required this.onRowSelectionChanged,
   });
 
   final Map<String, dynamic> rowData;
+  final String? rowId;
   final List<TablePlusColumn> columns;
   final List<double> columnWidths;
   final TablePlusBodyTheme theme;
   final Color backgroundColor;
   final bool isLastRow;
+  final bool isSelectable;
+  final bool isSelected;
+  final TablePlusSelectionTheme selectionTheme;
+  final void Function(String rowId) onRowSelectionChanged;
+
+  /// Handle row tap for selection.
+  void _handleRowTap() {
+    if (!isSelectable || rowId == null) return;
+    onRowSelectionChanged(rowId!);
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    Widget rowContent = Container(
       height: theme.rowHeight,
       decoration: BoxDecoration(
         color: backgroundColor,
-        border: !isLastRow
+        border: (!isLastRow && theme.showHorizontalDividers)
             ? Border(
                 bottom: BorderSide(
                   color: theme.dividerColor,
@@ -1316,6 +2490,18 @@ class _TablePlusRow extends StatelessWidget {
           final width =
               columnWidths.isNotEmpty ? columnWidths[index] : column.width;
 
+          // Special handling for selection column
+          if (isSelectable && column.key == '__selection__') {
+            return _SelectionCell(
+              width: width,
+              rowId: rowId,
+              isSelected: isSelected,
+              theme: theme,
+              selectionTheme: selectionTheme,
+              onSelectionChanged: onRowSelectionChanged,
+            );
+          }
+
           return _TablePlusCell(
             column: column,
             rowData: rowData,
@@ -1323,6 +2509,68 @@ class _TablePlusRow extends StatelessWidget {
             theme: theme,
           );
         }),
+      ),
+    );
+
+    // Wrap with CustomInkWell for row selection if selectable
+    if (isSelectable && rowId != null) {
+      return CustomInkWell(
+        onTap: _handleRowTap,
+        child: rowContent,
+      );
+    }
+
+    return rowContent;
+  }
+}
+
+/// A selection cell with checkbox.
+class _SelectionCell extends StatelessWidget {
+  const _SelectionCell({
+    required this.width,
+    required this.rowId,
+    required this.isSelected,
+    required this.theme,
+    required this.selectionTheme,
+    required this.onSelectionChanged,
+  });
+
+  final double width;
+  final String? rowId;
+  final bool isSelected;
+  final TablePlusBodyTheme theme;
+  final TablePlusSelectionTheme selectionTheme;
+  final void Function(String rowId) onSelectionChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: width,
+      height: theme.rowHeight,
+      padding: theme.padding,
+      decoration: BoxDecoration(
+        border: theme.showVerticalDividers
+            ? Border(
+                right: BorderSide(
+                  color: theme.dividerColor.withOpacity(0.5),
+                  width: 0.5,
+                ),
+              )
+            : null,
+      ),
+      child: Center(
+        child: SizedBox(
+          width: selectionTheme.checkboxSize,
+          height: selectionTheme.checkboxSize,
+          child: Checkbox(
+            value: isSelected,
+            onChanged:
+                rowId != null ? (value) => onSelectionChanged(rowId!) : null,
+            activeColor: selectionTheme.checkboxColor,
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            visualDensity: VisualDensity.compact,
+          ),
+        ),
       ),
     );
   }
@@ -1358,12 +2606,14 @@ class _TablePlusCell extends StatelessWidget {
         height: theme.rowHeight,
         padding: theme.padding,
         decoration: BoxDecoration(
-          border: Border(
-            right: BorderSide(
-              color: theme.dividerColor.withOpacity(0.5),
-              width: 0.5,
-            ),
-          ),
+          border: theme.showVerticalDividers
+              ? Border(
+                  right: BorderSide(
+                    color: theme.dividerColor.withOpacity(0.5),
+                    width: 0.5,
+                  ),
+                )
+              : null,
         ),
         child: Align(
           alignment: column.alignment,
@@ -1380,12 +2630,14 @@ class _TablePlusCell extends StatelessWidget {
       height: theme.rowHeight,
       padding: theme.padding,
       decoration: BoxDecoration(
-        border: Border(
-          right: BorderSide(
-            color: theme.dividerColor.withOpacity(0.5),
-            width: 0.5,
-          ),
-        ),
+        border: theme.showVerticalDividers
+            ? Border(
+                right: BorderSide(
+                  color: theme.dividerColor.withOpacity(0.5),
+                  width: 0.5,
+                ),
+              )
+            : null,
       ),
       child: Align(
         alignment: column.alignment,
@@ -1416,6 +2668,11 @@ class TablePlusHeader extends StatelessWidget {
     required this.columns,
     required this.totalWidth,
     required this.theme,
+    this.isSelectable = false,
+    this.selectedRows = const <String>{},
+    this.totalRowCount = 0,
+    this.selectionTheme = const TablePlusSelectionTheme(),
+    this.onSelectAll,
   });
 
   /// The list of columns to display in the header.
@@ -1427,8 +2684,67 @@ class TablePlusHeader extends StatelessWidget {
   /// The theme configuration for the header.
   final TablePlusHeaderTheme theme;
 
+  /// Whether the table supports row selection.
+  final bool isSelectable;
+
+  /// The set of currently selected row IDs.
+  final Set<String> selectedRows;
+
+  /// The total number of rows in the table.
+  final int totalRowCount;
+
+  /// The theme configuration for selection.
+  final TablePlusSelectionTheme selectionTheme;
+
+  /// Callback when the select-all state changes.
+  final void Function(bool selectAll)? onSelectAll;
+
   /// Calculate the actual width for each column based on available space.
   List<double> _calculateColumnWidths() {
+    if (columns.isEmpty) return [];
+
+    // Separate selection column from regular columns
+    List<TablePlusColumn> regularColumns = [];
+    TablePlusColumn? selectionColumn;
+
+    for (final column in columns) {
+      if (column.key == '__selection__') {
+        selectionColumn = column;
+      } else {
+        regularColumns.add(column);
+      }
+    }
+
+    // Calculate available width for regular columns (excluding selection column)
+    double availableWidth = totalWidth;
+    if (selectionColumn != null) {
+      availableWidth -=
+          selectionColumn.width; // Subtract fixed selection column width
+    }
+
+    // Calculate widths for regular columns only
+    List<double> regularWidths =
+        _calculateRegularColumnWidths(regularColumns, availableWidth);
+
+    // Combine selection column width with regular column widths
+    List<double> allWidths = [];
+    int regularIndex = 0;
+
+    for (final column in columns) {
+      if (column.key == '__selection__') {
+        allWidths.add(column.width); // Fixed width for selection
+      } else {
+        allWidths.add(regularWidths[regularIndex]);
+        regularIndex++;
+      }
+    }
+
+    return allWidths;
+  }
+
+  /// Calculate widths for regular columns (excluding selection column)
+  List<double> _calculateRegularColumnWidths(
+      List<TablePlusColumn> columns, double totalWidth) {
     if (columns.isEmpty) return [];
 
     // Calculate total preferred width
@@ -1481,6 +2797,14 @@ class TablePlusHeader extends StatelessWidget {
     return widths;
   }
 
+  /// Determine the state of the select-all checkbox.
+  bool? _getSelectAllState() {
+    if (totalRowCount == 0) return false;
+    if (selectedRows.isEmpty) return false;
+    if (selectedRows.length == totalRowCount) return true;
+    return null; // Indeterminate state
+  }
+
   @override
   Widget build(BuildContext context) {
     final columnWidths = _calculateColumnWidths();
@@ -1492,18 +2816,32 @@ class TablePlusHeader extends StatelessWidget {
         color: theme.backgroundColor,
         border: theme.decoration != null
             ? null
-            : Border(
-                bottom: BorderSide(
-                  color: Colors.grey.shade300,
-                  width: 1.0,
-                ),
-              ),
+            : (theme.showBottomDivider
+                ? Border(
+                    bottom: BorderSide(
+                      color: theme.dividerColor,
+                      width: 1.0,
+                    ),
+                  )
+                : null),
       ),
       child: Row(
         children: List.generate(columns.length, (index) {
           final column = columns[index];
           final width =
               columnWidths.isNotEmpty ? columnWidths[index] : column.width;
+
+          // Special handling for selection column
+          if (isSelectable && column.key == '__selection__') {
+            return _SelectionHeaderCell(
+              width: width,
+              theme: theme,
+              selectionTheme: selectionTheme,
+              selectAllState: _getSelectAllState(),
+              selectedRows: selectedRows,
+              onSelectAll: onSelectAll,
+            );
+          }
 
           return _HeaderCell(
             column: column,
@@ -1535,12 +2873,14 @@ class _HeaderCell extends StatelessWidget {
       height: theme.height,
       padding: theme.padding,
       decoration: BoxDecoration(
-        border: Border(
-          right: BorderSide(
-            color: Colors.grey.shade300,
-            width: 0.5,
-          ),
-        ),
+        border: theme.showVerticalDividers
+            ? Border(
+                right: BorderSide(
+                  color: theme.dividerColor,
+                  width: 0.5,
+                ),
+              )
+            : null,
       ),
       child: Align(
         alignment: column.alignment,
@@ -1549,6 +2889,65 @@ class _HeaderCell extends StatelessWidget {
           style: theme.textStyle,
           overflow: TextOverflow.ellipsis,
           textAlign: column.textAlign,
+        ),
+      ),
+    );
+  }
+}
+
+/// A header cell with select-all checkbox.
+class _SelectionHeaderCell extends StatelessWidget {
+  const _SelectionHeaderCell({
+    required this.width,
+    required this.theme,
+    required this.selectionTheme,
+    required this.selectAllState,
+    required this.onSelectAll,
+    required this.selectedRows,
+  });
+
+  final double width;
+  final TablePlusHeaderTheme theme;
+  final TablePlusSelectionTheme selectionTheme;
+  final bool? selectAllState;
+  final void Function(bool selectAll)? onSelectAll;
+  final Set<String> selectedRows;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: width,
+      height: theme.height,
+      padding: theme.padding,
+      decoration: BoxDecoration(
+        border: theme.showVerticalDividers
+            ? Border(
+                right: BorderSide(
+                  color: theme.dividerColor,
+                  width: 0.5,
+                ),
+              )
+            : null,
+      ),
+      child: Center(
+        child: SizedBox(
+          width: selectionTheme.checkboxSize,
+          height: selectionTheme.checkboxSize,
+          child: Checkbox(
+            value: selectAllState,
+            tristate: true, // Allows indeterminate state
+            onChanged: onSelectAll != null
+                ? (value) {
+                    // Improved logic: if any rows are selected, deselect all
+                    // If no rows are selected, select all
+                    final shouldSelectAll = selectedRows.isEmpty;
+                    onSelectAll!(shouldSelectAll);
+                  }
+                : null,
+            activeColor: selectionTheme.checkboxColor,
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            visualDensity: VisualDensity.compact,
+          ),
         ),
       ),
     );
