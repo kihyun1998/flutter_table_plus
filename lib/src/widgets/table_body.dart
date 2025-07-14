@@ -162,7 +162,7 @@ class _TablePlusRow extends StatelessWidget {
       height: theme.rowHeight,
       decoration: BoxDecoration(
         color: backgroundColor,
-        border: !isLastRow
+        border: (!isLastRow && theme.showHorizontalDividers)
             ? Border(
                 bottom: BorderSide(
                   color: theme.dividerColor,
@@ -236,12 +236,14 @@ class _SelectionCell extends StatelessWidget {
       height: theme.rowHeight,
       padding: theme.padding,
       decoration: BoxDecoration(
-        border: Border(
-          right: BorderSide(
-            color: theme.dividerColor.withOpacity(0.5),
-            width: 0.5,
-          ),
-        ),
+        border: theme.showVerticalDividers
+            ? Border(
+                right: BorderSide(
+                  color: theme.dividerColor.withOpacity(0.5),
+                  width: 0.5,
+                ),
+              )
+            : null,
       ),
       child: Center(
         child: SizedBox(
@@ -291,12 +293,14 @@ class _TablePlusCell extends StatelessWidget {
         height: theme.rowHeight,
         padding: theme.padding,
         decoration: BoxDecoration(
-          border: Border(
-            right: BorderSide(
-              color: theme.dividerColor.withOpacity(0.5),
-              width: 0.5,
-            ),
-          ),
+          border: theme.showVerticalDividers
+              ? Border(
+                  right: BorderSide(
+                    color: theme.dividerColor.withOpacity(0.5),
+                    width: 0.5,
+                  ),
+                )
+              : null,
         ),
         child: Align(
           alignment: column.alignment,
@@ -313,12 +317,14 @@ class _TablePlusCell extends StatelessWidget {
       height: theme.rowHeight,
       padding: theme.padding,
       decoration: BoxDecoration(
-        border: Border(
-          right: BorderSide(
-            color: theme.dividerColor.withOpacity(0.5),
-            width: 0.5,
-          ),
-        ),
+        border: theme.showVerticalDividers
+            ? Border(
+                right: BorderSide(
+                  color: theme.dividerColor.withOpacity(0.5),
+                  width: 0.5,
+                ),
+              )
+            : null,
       ),
       child: Align(
         alignment: column.alignment,

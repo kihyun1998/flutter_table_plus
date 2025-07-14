@@ -159,12 +159,14 @@ class TablePlusHeader extends StatelessWidget {
         color: theme.backgroundColor,
         border: theme.decoration != null
             ? null
-            : Border(
-                bottom: BorderSide(
-                  color: Colors.grey.shade300,
-                  width: 1.0,
-                ),
-              ),
+            : (theme.showBottomDivider
+                ? Border(
+                    bottom: BorderSide(
+                      color: theme.dividerColor,
+                      width: 1.0,
+                    ),
+                  )
+                : null),
       ),
       child: Row(
         children: List.generate(columns.length, (index) {
@@ -214,12 +216,14 @@ class _HeaderCell extends StatelessWidget {
       height: theme.height,
       padding: theme.padding,
       decoration: BoxDecoration(
-        border: Border(
-          right: BorderSide(
-            color: Colors.grey.shade300,
-            width: 0.5,
-          ),
-        ),
+        border: theme.showVerticalDividers
+            ? Border(
+                right: BorderSide(
+                  color: theme.dividerColor,
+                  width: 0.5,
+                ),
+              )
+            : null,
       ),
       child: Align(
         alignment: column.alignment,
@@ -259,12 +263,14 @@ class _SelectionHeaderCell extends StatelessWidget {
       height: theme.height,
       padding: theme.padding,
       decoration: BoxDecoration(
-        border: Border(
-          right: BorderSide(
-            color: Colors.grey.shade300,
-            width: 0.5,
-          ),
-        ),
+        border: theme.showVerticalDividers
+            ? Border(
+                right: BorderSide(
+                  color: theme.dividerColor,
+                  width: 0.5,
+                ),
+              )
+            : null,
       ),
       child: Center(
         child: SizedBox(

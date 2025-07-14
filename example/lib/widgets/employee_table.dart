@@ -9,6 +9,7 @@ class EmployeeTable extends StatelessWidget {
     required this.selectedRows,
     required this.onRowSelectionChanged,
     required this.onSelectAll,
+    this.theme,
   });
 
   final List<Map<String, dynamic>> data;
@@ -16,6 +17,7 @@ class EmployeeTable extends StatelessWidget {
   final Set<String> selectedRows;
   final void Function(String rowId, bool isSelected) onRowSelectionChanged;
   final void Function(bool selectAll) onSelectAll;
+  final TablePlusTheme? theme;
 
   /// Define table columns using TableColumnsBuilder
   Map<String, TablePlusColumn> get _columns {
@@ -142,6 +144,37 @@ class EmployeeTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Use provided theme or default theme
+    final tableTheme = theme ??
+        const TablePlusTheme(
+          headerTheme: TablePlusHeaderTheme(
+            height: 48,
+            backgroundColor: Color(0xFFF8F9FA),
+            textStyle: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF495057),
+            ),
+          ),
+          bodyTheme: TablePlusBodyTheme(
+            rowHeight: 56,
+            alternateRowColor: Color(0xFFFAFAFA),
+            textStyle: TextStyle(
+              fontSize: 14,
+              color: Color(0xFF212529),
+            ),
+          ),
+          scrollbarTheme: TablePlusScrollbarTheme(
+            hoverOnly: true,
+            opacity: 0.8,
+          ),
+          selectionTheme: TablePlusSelectionTheme(
+            selectedRowColor: Color(0xFFE3F2FD),
+            checkboxColor: Color(0xFF2196F3),
+            checkboxSize: 18.0,
+          ),
+        );
+
     return Card(
       elevation: 2,
       child: Padding(
@@ -153,34 +186,7 @@ class EmployeeTable extends StatelessWidget {
           selectedRows: selectedRows,
           onRowSelectionChanged: onRowSelectionChanged,
           onSelectAll: onSelectAll,
-          theme: const TablePlusTheme(
-            headerTheme: TablePlusHeaderTheme(
-              height: 48,
-              backgroundColor: Color(0xFFF8F9FA),
-              textStyle: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF495057),
-              ),
-            ),
-            bodyTheme: TablePlusBodyTheme(
-              rowHeight: 56,
-              alternateRowColor: Color(0xFFFAFAFA),
-              textStyle: TextStyle(
-                fontSize: 14,
-                color: Color(0xFF212529),
-              ),
-            ),
-            scrollbarTheme: TablePlusScrollbarTheme(
-              hoverOnly: true,
-              opacity: 0.8,
-            ),
-            selectionTheme: TablePlusSelectionTheme(
-              selectedRowColor: Color(0xFFE3F2FD),
-              checkboxColor: Color(0xFF2196F3),
-              checkboxSize: 18.0,
-            ),
-          ),
+          theme: tableTheme,
         ),
       ),
     );

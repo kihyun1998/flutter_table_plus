@@ -54,6 +54,9 @@ class TablePlusHeaderTheme {
     ),
     this.padding = const EdgeInsets.symmetric(horizontal: 16.0),
     this.decoration,
+    this.showVerticalDividers = true,
+    this.showBottomDivider = true,
+    this.dividerColor = const Color(0xFFE0E0E0),
   });
 
   /// The height of the header row.
@@ -71,6 +74,15 @@ class TablePlusHeaderTheme {
   /// Optional decoration for the header.
   final Decoration? decoration;
 
+  /// Whether to show vertical dividers between header columns.
+  final bool showVerticalDividers;
+
+  /// Whether to show bottom divider below header.
+  final bool showBottomDivider;
+
+  /// The color of header dividers.
+  final Color dividerColor;
+
   /// Creates a copy of this theme with the given fields replaced with new values.
   TablePlusHeaderTheme copyWith({
     double? height,
@@ -78,6 +90,9 @@ class TablePlusHeaderTheme {
     TextStyle? textStyle,
     EdgeInsets? padding,
     Decoration? decoration,
+    bool? showVerticalDividers,
+    bool? showBottomDivider,
+    Color? dividerColor,
   }) {
     return TablePlusHeaderTheme(
       height: height ?? this.height,
@@ -85,6 +100,9 @@ class TablePlusHeaderTheme {
       textStyle: textStyle ?? this.textStyle,
       padding: padding ?? this.padding,
       decoration: decoration ?? this.decoration,
+      showVerticalDividers: showVerticalDividers ?? this.showVerticalDividers,
+      showBottomDivider: showBottomDivider ?? this.showBottomDivider,
+      dividerColor: dividerColor ?? this.dividerColor,
     );
   }
 }
@@ -103,6 +121,8 @@ class TablePlusBodyTheme {
     this.padding = const EdgeInsets.symmetric(horizontal: 16.0),
     this.dividerColor = const Color(0xFFE0E0E0),
     this.dividerThickness = 1.0,
+    this.showVerticalDividers = true,
+    this.showHorizontalDividers = true,
   });
 
   /// The height of each data row.
@@ -127,6 +147,12 @@ class TablePlusBodyTheme {
   /// The thickness of row dividers.
   final double dividerThickness;
 
+  /// Whether to show vertical dividers between columns.
+  final bool showVerticalDividers;
+
+  /// Whether to show horizontal dividers between rows.
+  final bool showHorizontalDividers;
+
   /// Creates a copy of this theme with the given fields replaced with new values.
   TablePlusBodyTheme copyWith({
     double? rowHeight,
@@ -136,6 +162,8 @@ class TablePlusBodyTheme {
     EdgeInsets? padding,
     Color? dividerColor,
     double? dividerThickness,
+    bool? showVerticalDividers,
+    bool? showHorizontalDividers,
   }) {
     return TablePlusBodyTheme(
       rowHeight: rowHeight ?? this.rowHeight,
@@ -145,6 +173,9 @@ class TablePlusBodyTheme {
       padding: padding ?? this.padding,
       dividerColor: dividerColor ?? this.dividerColor,
       dividerThickness: dividerThickness ?? this.dividerThickness,
+      showVerticalDividers: showVerticalDividers ?? this.showVerticalDividers,
+      showHorizontalDividers:
+          showHorizontalDividers ?? this.showHorizontalDividers,
     );
   }
 }
