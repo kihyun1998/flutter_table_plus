@@ -29,6 +29,10 @@ class TableExamplePage extends StatefulWidget {
 }
 
 class _TableExamplePageState extends State<TableExamplePage> {
+  // Selection state management
+  bool _isSelectable = false;
+  final Set<String> _selectedRows = <String>{};
+
   // Sample data for the table
   final List<Map<String, dynamic>> _sampleData = [
     {
@@ -192,12 +196,100 @@ class _TableExamplePageState extends State<TableExamplePage> {
     ),
   ];
 
+  /// Handle row selection change
+  void _onRowSelectionChanged(String rowId, bool isSelected) {
+    setState(() {
+      if (isSelected) {
+        _selectedRows.add(rowId);
+      } else {
+        _selectedRows.remove(rowId);
+      }
+    });
+
+    // Debug print
+    print('Row $rowId ${isSelected ? 'selected' : 'deselected'}');
+    print('Total selected: ${_selectedRows.length}');
+  }
+
+  /// Handle select all/none
+  void _onSelectAll(bool selectAll) {
+    setState(() {
+      if (selectAll) {
+        // Select all rows
+        _selectedRows.clear();
+        for (final row in _sampleData) {
+          final id = row['id']?.toString();
+          if (id != null) {
+            _selectedRows.add(id);
+          }
+        }
+      } else {
+        // Deselect all rows
+        _selectedRows.clear();
+      }
+    });
+
+    // Debug print
+    print('Select all: $selectAll');
+    print('Total selected: ${_selectedRows.length}');
+  }
+
+  /// Toggle selection mode
+  void _toggleSelectionMode() {
+    setState(() {
+      _isSelectable = !_isSelectable;
+      if (!_isSelectable) {
+        _selectedRows.clear(); // Clear selections when disabling
+      }
+    });
+  }
+
+  /// Clear all selections
+  void _clearSelections() {
+    setState(() {
+      _selectedRows.clear();
+    });
+  }
+
+  /// Select active employees only
+  void _selectActiveEmployees() {
+    setState(() {
+      _selectedRows.clear();
+      for (final row in _sampleData) {
+        if (row['active'] == true) {
+          final id = row['id']?.toString();
+          if (id != null) {
+            _selectedRows.add(id);
+          }
+        }
+      }
+    });
+  }
+
+  /// Get selected employee names for display
+  List<String> _getSelectedNames() {
+    return _sampleData
+        .where((row) => _selectedRows.contains(row['id']?.toString()))
+        .map((row) => row['name']?.toString() ?? '')
+        .toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Flutter Table Plus Example'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        actions: [
+          // Toggle selection mode button
+          IconButton(
+            onPressed: _toggleSelectionMode,
+            icon: Icon(
+              _isSelectable ? Icons.check_box : Icons.check_box_outline_blank,
+            ),
+            tooltip: _isSelectable ? 'Disable Selection' : 'Enable Selection',
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -211,13 +303,105 @@ class _TableExamplePageState extends State<TableExamplePage> {
                   ),
             ),
             const SizedBox(height: 8),
-            Text(
-              'Showing ${_sampleData.length} employees',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey.shade600,
+
+            // Status info
+            Row(
+              children: [
+                Text(
+                  'Showing ${_sampleData.length} employees',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.grey.shade600,
+                      ),
+                ),
+                if (_isSelectable) ...[
+                  const SizedBox(width: 16),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade100,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '${_selectedRows.length} selected',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.blue.shade800,
+                      ),
+                    ),
                   ),
+                ],
+              ],
             ),
+
+            // Selection controls (only show when selectable)
+            if (_isSelectable) ...[
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: _clearSelections,
+                    icon: const Icon(Icons.clear_all, size: 16),
+                    label: const Text('Clear All'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey.shade100,
+                      foregroundColor: Colors.grey.shade700,
+                    ),
+                  ),
+                  ElevatedButton.icon(
+                    onPressed: _selectActiveEmployees,
+                    icon: const Icon(Icons.people, size: 16),
+                    label: const Text('Select Active'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green.shade100,
+                      foregroundColor: Colors.green.shade700,
+                    ),
+                  ),
+                  if (_selectedRows.isNotEmpty)
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        // Example action with selected items
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('Selected Employees'),
+                            content: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                    'Selected ${_selectedRows.length} employees:'),
+                                const SizedBox(height: 8),
+                                ..._getSelectedNames().map(
+                                  (name) => Text('• $name'),
+                                ),
+                              ],
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: const Text('Close'),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.info, size: 16),
+                      label: const Text('Show Selected'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue.shade100,
+                        foregroundColor: Colors.blue.shade700,
+                      ),
+                    ),
+                ],
+              ),
+            ],
+
             const SizedBox(height: 16),
+
+            // Table
             Expanded(
               child: Card(
                 elevation: 2,
@@ -226,6 +410,10 @@ class _TableExamplePageState extends State<TableExamplePage> {
                   child: FlutterTablePlus(
                     columns: _columns,
                     data: _sampleData,
+                    isSelectable: _isSelectable,
+                    selectedRows: _selectedRows,
+                    onRowSelectionChanged: _onRowSelectionChanged,
+                    onSelectAll: _onSelectAll,
                     theme: const TablePlusTheme(
                       headerTheme: TablePlusHeaderTheme(
                         height: 48,
@@ -248,12 +436,20 @@ class _TableExamplePageState extends State<TableExamplePage> {
                         hoverOnly: true,
                         opacity: 0.8,
                       ),
+                      selectionTheme: TablePlusSelectionTheme(
+                        selectedRowColor: Color(0xFFE3F2FD),
+                        checkboxColor: Color(0xFF2196F3),
+                        checkboxSize: 18.0,
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
+
             const SizedBox(height: 16),
+
+            // Features info
             Text(
               'Features demonstrated:',
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
@@ -266,6 +462,20 @@ class _TableExamplePageState extends State<TableExamplePage> {
             const Text('• Alternating row colors'),
             const Text('• Synchronized scrolling'),
             const Text('• Responsive layout'),
+            if (_isSelectable) ...[
+              const Text('• Row selection with checkboxes',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, color: Colors.blue)),
+              const Text('• Tap to select rows',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, color: Colors.blue)),
+              const Text('• Select all/none functionality',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, color: Colors.blue)),
+              const Text('• Custom selection actions',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, color: Colors.blue)),
+            ],
           ],
         ),
       ),

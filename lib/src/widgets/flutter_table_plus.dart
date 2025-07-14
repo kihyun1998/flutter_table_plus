@@ -12,6 +12,10 @@ import 'table_header.dart';
 ///
 /// This widget provides a feature-rich table implementation with synchronized
 /// scrolling, theming support, and flexible data handling through Map-based data.
+///
+/// ⚠️ **Important for selection feature:**
+/// Each row data must have a unique 'id' field when using selection features.
+/// Duplicate IDs will cause unexpected selection behavior.
 class FlutterTablePlus extends StatefulWidget {
   /// Creates a [FlutterTablePlus] with the specified configuration.
   const FlutterTablePlus({
@@ -19,6 +23,10 @@ class FlutterTablePlus extends StatefulWidget {
     required this.columns,
     required this.data,
     this.theme,
+    this.isSelectable = false,
+    this.selectedRows = const <String>{},
+    this.onRowSelectionChanged,
+    this.onSelectAll,
   });
 
   /// The list of columns to display in the table.
@@ -26,11 +34,29 @@ class FlutterTablePlus extends StatefulWidget {
 
   /// The data to display in the table.
   /// Each map represents a row, with keys corresponding to column keys.
+  ///
+  /// ⚠️ **For selection features**: Each row must have a unique 'id' field.
   final List<Map<String, dynamic>> data;
 
   /// The theme configuration for the table.
   /// If not provided, [TablePlusTheme.defaultTheme] will be used.
   final TablePlusTheme? theme;
+
+  /// Whether the table supports row selection.
+  /// When true, adds selection checkboxes and enables row selection.
+  final bool isSelectable;
+
+  /// The set of currently selected row IDs.
+  /// Row IDs are extracted from `rowData['id']`.
+  final Set<String> selectedRows;
+
+  /// Callback when a row's selection state changes.
+  /// Provides the row ID and the new selection state.
+  final void Function(String rowId, bool isSelected)? onRowSelectionChanged;
+
+  /// Callback when the select-all state changes.
+  /// Called when the header checkbox is toggled.
+  final void Function(bool selectAll)? onSelectAll;
 
   @override
   State<FlutterTablePlus> createState() => _FlutterTablePlusState();
@@ -39,13 +65,78 @@ class FlutterTablePlus extends StatefulWidget {
 class _FlutterTablePlusState extends State<FlutterTablePlus> {
   bool _isHovered = false;
 
+  @override
+  void initState() {
+    super.initState();
+    _validateUniqueIds();
+  }
+
+  @override
+  void didUpdateWidget(FlutterTablePlus oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.data != oldWidget.data) {
+      _validateUniqueIds();
+    }
+  }
+
+  /// Validates that all row IDs are unique when selection is enabled.
+  /// ⚠️ This check only runs in debug mode for performance.
+  void _validateUniqueIds() {
+    if (!widget.isSelectable) return;
+
+    assert(() {
+      final ids = widget.data
+          .map((row) => row['id']?.toString())
+          .where((id) => id != null)
+          .toList();
+
+      final uniqueIds = ids.toSet();
+
+      if (ids.length != uniqueIds.length) {
+        final duplicates = <String>[];
+        for (final id in ids) {
+          if (ids.where((x) => x == id).length > 1 &&
+              !duplicates.contains(id)) {
+            duplicates.add(id!);
+          }
+        }
+
+        print('⚠️ FlutterTablePlus: Duplicate row IDs detected: $duplicates');
+        print('   This will cause unexpected selection behavior.');
+        print('   Please ensure each row has a unique "id" field.');
+      }
+
+      return true;
+    }());
+  }
+
   /// Get the current theme, using default if not provided.
   TablePlusTheme get _currentTheme =>
       widget.theme ?? TablePlusTheme.defaultTheme;
 
-  /// Get only visible columns.
-  List<TablePlusColumn> get _visibleColumns =>
-      widget.columns.where((col) => col.visible).toList();
+  /// Get only visible columns, including selection column if enabled.
+  List<TablePlusColumn> get _visibleColumns {
+    final columns = widget.columns.where((col) => col.visible).toList();
+
+    // Add selection column at the beginning if selectable
+    if (widget.isSelectable &&
+        _currentTheme.selectionTheme.showCheckboxColumn) {
+      return [
+        TablePlusColumn(
+          key: '__selection__', // Special key for selection column
+          label: '', // Empty label, will show select-all checkbox
+          width: _currentTheme.selectionTheme.checkboxColumnWidth,
+          minWidth: _currentTheme.selectionTheme.checkboxColumnWidth,
+          maxWidth: _currentTheme.selectionTheme.checkboxColumnWidth,
+          alignment: Alignment.center,
+          textAlign: TextAlign.center,
+        ),
+        ...columns,
+      ];
+    }
+
+    return columns;
+  }
 
   /// Calculate the total height of all data rows.
   double _calculateTotalDataHeight() {
@@ -182,6 +273,11 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                               columns: visibleColumns,
                               totalWidth: contentWidth,
                               theme: theme.headerTheme,
+                              isSelectable: widget.isSelectable,
+                              selectedRows: widget.selectedRows,
+                              totalRowCount: widget.data.length,
+                              selectionTheme: theme.selectionTheme,
+                              onSelectAll: widget.onSelectAll,
                             ),
 
                             // Table Data
@@ -192,6 +288,11 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                 columnWidths: columnWidths,
                                 theme: theme.bodyTheme,
                                 verticalController: verticalScrollController,
+                                isSelectable: widget.isSelectable,
+                                selectedRows: widget.selectedRows,
+                                selectionTheme: theme.selectionTheme,
+                                onRowSelectionChanged:
+                                    widget.onRowSelectionChanged,
                               ),
                             ),
                           ],

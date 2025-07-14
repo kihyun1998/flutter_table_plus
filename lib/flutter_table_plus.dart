@@ -7,5 +7,6 @@ library;
 // Models
 export 'src/models/table_column.dart';
 export 'src/models/table_theme.dart';
-// Main widget
+// Widgets
+export 'src/widgets/custom_ink_well.dart';
 export 'src/widgets/flutter_table_plus.dart';

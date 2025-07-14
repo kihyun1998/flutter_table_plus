@@ -11,6 +11,11 @@ class TablePlusHeader extends StatelessWidget {
     required this.columns,
     required this.totalWidth,
     required this.theme,
+    this.isSelectable = false,
+    this.selectedRows = const <String>{},
+    this.totalRowCount = 0,
+    this.selectionTheme = const TablePlusSelectionTheme(),
+    this.onSelectAll,
   });
 
   /// The list of columns to display in the header.
@@ -21,6 +26,21 @@ class TablePlusHeader extends StatelessWidget {
 
   /// The theme configuration for the header.
   final TablePlusHeaderTheme theme;
+
+  /// Whether the table supports row selection.
+  final bool isSelectable;
+
+  /// The set of currently selected row IDs.
+  final Set<String> selectedRows;
+
+  /// The total number of rows in the table.
+  final int totalRowCount;
+
+  /// The theme configuration for selection.
+  final TablePlusSelectionTheme selectionTheme;
+
+  /// Callback when the select-all state changes.
+  final void Function(bool selectAll)? onSelectAll;
 
   /// Calculate the actual width for each column based on available space.
   List<double> _calculateColumnWidths() {
@@ -76,6 +96,14 @@ class TablePlusHeader extends StatelessWidget {
     return widths;
   }
 
+  /// Determine the state of the select-all checkbox.
+  bool? _getSelectAllState() {
+    if (totalRowCount == 0) return false;
+    if (selectedRows.isEmpty) return false;
+    if (selectedRows.length == totalRowCount) return true;
+    return null; // Indeterminate state
+  }
+
   @override
   Widget build(BuildContext context) {
     final columnWidths = _calculateColumnWidths();
@@ -99,6 +127,18 @@ class TablePlusHeader extends StatelessWidget {
           final column = columns[index];
           final width =
               columnWidths.isNotEmpty ? columnWidths[index] : column.width;
+
+          // Special handling for selection column
+          if (isSelectable && column.key == '__selection__') {
+            return _SelectionHeaderCell(
+              width: width,
+              theme: theme,
+              selectionTheme: selectionTheme,
+              selectAllState: _getSelectAllState(),
+              selectedRows: selectedRows,
+              onSelectAll: onSelectAll,
+            );
+          }
 
           return _HeaderCell(
             column: column,
@@ -144,6 +184,63 @@ class _HeaderCell extends StatelessWidget {
           style: theme.textStyle,
           overflow: TextOverflow.ellipsis,
           textAlign: column.textAlign,
+        ),
+      ),
+    );
+  }
+}
+
+/// A header cell with select-all checkbox.
+class _SelectionHeaderCell extends StatelessWidget {
+  const _SelectionHeaderCell({
+    required this.width,
+    required this.theme,
+    required this.selectionTheme,
+    required this.selectAllState,
+    required this.onSelectAll,
+    required this.selectedRows,
+  });
+
+  final double width;
+  final TablePlusHeaderTheme theme;
+  final TablePlusSelectionTheme selectionTheme;
+  final bool? selectAllState;
+  final void Function(bool selectAll)? onSelectAll;
+  final Set<String> selectedRows;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: width,
+      height: theme.height,
+      padding: theme.padding,
+      decoration: BoxDecoration(
+        border: Border(
+          right: BorderSide(
+            color: Colors.grey.shade300,
+            width: 0.5,
+          ),
+        ),
+      ),
+      child: Center(
+        child: SizedBox(
+          width: selectionTheme.checkboxSize,
+          height: selectionTheme.checkboxSize,
+          child: Checkbox(
+            value: selectAllState,
+            tristate: true, // Allows indeterminate state
+            onChanged: onSelectAll != null
+                ? (value) {
+                    // Improved logic: if any rows are selected, deselect all
+                    // If no rows are selected, select all
+                    final shouldSelectAll = selectedRows.isEmpty;
+                    onSelectAll!(shouldSelectAll);
+                  }
+                : null,
+            activeColor: selectionTheme.checkboxColor,
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            visualDensity: VisualDensity.compact,
+          ),
         ),
       ),
     );

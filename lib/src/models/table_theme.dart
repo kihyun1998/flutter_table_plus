@@ -7,6 +7,7 @@ class TablePlusTheme {
     this.headerTheme = const TablePlusHeaderTheme(),
     this.bodyTheme = const TablePlusBodyTheme(),
     this.scrollbarTheme = const TablePlusScrollbarTheme(),
+    this.selectionTheme = const TablePlusSelectionTheme(),
   });
 
   /// Theme configuration for the table header.
@@ -18,16 +19,21 @@ class TablePlusTheme {
   /// Theme configuration for the scrollbars.
   final TablePlusScrollbarTheme scrollbarTheme;
 
+  /// Theme configuration for row selection.
+  final TablePlusSelectionTheme selectionTheme;
+
   /// Creates a copy of this theme with the given fields replaced with new values.
   TablePlusTheme copyWith({
     TablePlusHeaderTheme? headerTheme,
     TablePlusBodyTheme? bodyTheme,
     TablePlusScrollbarTheme? scrollbarTheme,
+    TablePlusSelectionTheme? selectionTheme,
   }) {
     return TablePlusTheme(
       headerTheme: headerTheme ?? this.headerTheme,
       bodyTheme: bodyTheme ?? this.bodyTheme,
       scrollbarTheme: scrollbarTheme ?? this.scrollbarTheme,
+      selectionTheme: selectionTheme ?? this.selectionTheme,
     );
   }
 
@@ -201,6 +207,51 @@ class TablePlusScrollbarTheme {
       opacity: opacity ?? this.opacity,
       hoverOnly: hoverOnly ?? this.hoverOnly,
       animationDuration: animationDuration ?? this.animationDuration,
+    );
+  }
+}
+
+/// Theme configuration for row selection.
+class TablePlusSelectionTheme {
+  /// Creates a [TablePlusSelectionTheme] with the specified styling properties.
+  const TablePlusSelectionTheme({
+    this.selectedRowColor = const Color(0xFFE3F2FD),
+    this.checkboxColor = const Color(0xFF2196F3),
+    this.checkboxSize = 18.0,
+    this.showCheckboxColumn = true,
+    this.checkboxColumnWidth = 60.0,
+  });
+
+  /// The background color for selected rows.
+  final Color selectedRowColor;
+
+  /// The color of the selection checkboxes.
+  final Color checkboxColor;
+
+  /// The size of the selection checkboxes.
+  final double checkboxSize;
+
+  /// Whether to show the checkbox column.
+  /// If false, rows can only be selected by tapping.
+  final bool showCheckboxColumn;
+
+  /// The width of the checkbox column.
+  final double checkboxColumnWidth;
+
+  /// Creates a copy of this theme with the given fields replaced with new values.
+  TablePlusSelectionTheme copyWith({
+    Color? selectedRowColor,
+    Color? checkboxColor,
+    double? checkboxSize,
+    bool? showCheckboxColumn,
+    double? checkboxColumnWidth,
+  }) {
+    return TablePlusSelectionTheme(
+      selectedRowColor: selectedRowColor ?? this.selectedRowColor,
+      checkboxColor: checkboxColor ?? this.checkboxColor,
+      checkboxSize: checkboxSize ?? this.checkboxSize,
+      showCheckboxColumn: showCheckboxColumn ?? this.showCheckboxColumn,
+      checkboxColumnWidth: checkboxColumnWidth ?? this.checkboxColumnWidth,
     );
   }
 }

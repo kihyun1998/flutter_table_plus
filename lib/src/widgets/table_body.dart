@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/table_column.dart';
 import '../models/table_theme.dart';
+import 'custom_ink_well.dart';
 
 /// A widget that renders the data rows of the table.
 class TablePlusBody extends StatelessWidget {
@@ -13,6 +14,10 @@ class TablePlusBody extends StatelessWidget {
     required this.columnWidths,
     required this.theme,
     required this.verticalController,
+    this.isSelectable = false,
+    this.selectedRows = const <String>{},
+    this.selectionTheme = const TablePlusSelectionTheme(),
+    this.onRowSelectionChanged,
   });
 
   /// The list of columns for the table.
@@ -30,20 +35,44 @@ class TablePlusBody extends StatelessWidget {
   /// The scroll controller for vertical scrolling.
   final ScrollController verticalController;
 
+  /// Whether the table supports row selection.
+  final bool isSelectable;
+
+  /// The set of currently selected row IDs.
+  final Set<String> selectedRows;
+
+  /// The theme configuration for selection.
+  final TablePlusSelectionTheme selectionTheme;
+
+  /// Callback when a row's selection state changes.
+  final void Function(String rowId, bool isSelected)? onRowSelectionChanged;
+
   /// Get the background color for a row at the given index.
-  Color _getRowColor(int index) {
+  Color _getRowColor(int index, bool isSelected) {
+    // Selected rows get selection color
+    if (isSelected && isSelectable) {
+      return selectionTheme.selectedRowColor;
+    }
+
+    // Alternate row colors
     if (theme.alternateRowColor != null && index.isOdd) {
       return theme.alternateRowColor!;
     }
+
     return theme.backgroundColor;
   }
 
-  /// Extract the display value for a cell.
-  String _getCellDisplayValue(
-      Map<String, dynamic> rowData, TablePlusColumn column) {
-    final value = rowData[column.key];
-    if (value == null) return '';
-    return value.toString();
+  /// Extract the row ID from row data.
+  String? _getRowId(Map<String, dynamic> rowData) {
+    return rowData['id']?.toString();
+  }
+
+  /// Handle row selection toggle.
+  void _handleRowSelectionToggle(String rowId) {
+    if (onRowSelectionChanged == null) return;
+
+    final isCurrentlySelected = selectedRows.contains(rowId);
+    onRowSelectionChanged!(rowId, !isCurrentlySelected);
   }
 
   @override
@@ -72,14 +101,21 @@ class TablePlusBody extends StatelessWidget {
       itemCount: data.length,
       itemBuilder: (context, index) {
         final rowData = data[index];
+        final rowId = _getRowId(rowData);
+        final isSelected = rowId != null && selectedRows.contains(rowId);
 
         return _TablePlusRow(
           rowData: rowData,
+          rowId: rowId,
           columns: columns,
           columnWidths: columnWidths,
           theme: theme,
-          backgroundColor: _getRowColor(index),
+          backgroundColor: _getRowColor(index, isSelected),
           isLastRow: index == data.length - 1,
+          isSelectable: isSelectable,
+          isSelected: isSelected,
+          selectionTheme: selectionTheme,
+          onRowSelectionChanged: _handleRowSelectionToggle,
         );
       },
     );
@@ -90,23 +126,39 @@ class TablePlusBody extends StatelessWidget {
 class _TablePlusRow extends StatelessWidget {
   const _TablePlusRow({
     required this.rowData,
+    required this.rowId,
     required this.columns,
     required this.columnWidths,
     required this.theme,
     required this.backgroundColor,
     required this.isLastRow,
+    required this.isSelectable,
+    required this.isSelected,
+    required this.selectionTheme,
+    required this.onRowSelectionChanged,
   });
 
   final Map<String, dynamic> rowData;
+  final String? rowId;
   final List<TablePlusColumn> columns;
   final List<double> columnWidths;
   final TablePlusBodyTheme theme;
   final Color backgroundColor;
   final bool isLastRow;
+  final bool isSelectable;
+  final bool isSelected;
+  final TablePlusSelectionTheme selectionTheme;
+  final void Function(String rowId) onRowSelectionChanged;
+
+  /// Handle row tap for selection.
+  void _handleRowTap() {
+    if (!isSelectable || rowId == null) return;
+    onRowSelectionChanged(rowId!);
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    Widget rowContent = Container(
       height: theme.rowHeight,
       decoration: BoxDecoration(
         color: backgroundColor,
@@ -125,6 +177,18 @@ class _TablePlusRow extends StatelessWidget {
           final width =
               columnWidths.isNotEmpty ? columnWidths[index] : column.width;
 
+          // Special handling for selection column
+          if (isSelectable && column.key == '__selection__') {
+            return _SelectionCell(
+              width: width,
+              rowId: rowId,
+              isSelected: isSelected,
+              theme: theme,
+              selectionTheme: selectionTheme,
+              onSelectionChanged: onRowSelectionChanged,
+            );
+          }
+
           return _TablePlusCell(
             column: column,
             rowData: rowData,
@@ -132,6 +196,66 @@ class _TablePlusRow extends StatelessWidget {
             theme: theme,
           );
         }),
+      ),
+    );
+
+    // Wrap with CustomInkWell for row selection if selectable
+    if (isSelectable && rowId != null) {
+      return CustomInkWell(
+        onTap: _handleRowTap,
+        child: rowContent,
+      );
+    }
+
+    return rowContent;
+  }
+}
+
+/// A selection cell with checkbox.
+class _SelectionCell extends StatelessWidget {
+  const _SelectionCell({
+    required this.width,
+    required this.rowId,
+    required this.isSelected,
+    required this.theme,
+    required this.selectionTheme,
+    required this.onSelectionChanged,
+  });
+
+  final double width;
+  final String? rowId;
+  final bool isSelected;
+  final TablePlusBodyTheme theme;
+  final TablePlusSelectionTheme selectionTheme;
+  final void Function(String rowId) onSelectionChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: width,
+      height: theme.rowHeight,
+      padding: theme.padding,
+      decoration: BoxDecoration(
+        border: Border(
+          right: BorderSide(
+            color: theme.dividerColor.withOpacity(0.5),
+            width: 0.5,
+          ),
+        ),
+      ),
+      child: Center(
+        child: SizedBox(
+          width: selectionTheme.checkboxSize,
+          height: selectionTheme.checkboxSize,
+          child: Checkbox(
+            value: isSelected,
+            onChanged:
+                rowId != null ? (value) => onSelectionChanged(rowId!) : null,
+            activeColor: selectionTheme.checkboxColor,
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            visualDensity: VisualDensity.compact,
+          ),
+        ),
       ),
     );
   }
