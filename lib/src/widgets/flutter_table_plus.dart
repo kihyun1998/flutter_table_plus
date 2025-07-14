@@ -155,14 +155,58 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
     final visibleColumns = _visibleColumns;
     if (visibleColumns.isEmpty) return [];
 
+    // Separate selection column from regular columns
+    List<TablePlusColumn> regularColumns = [];
+    TablePlusColumn? selectionColumn;
+
+    for (final column in visibleColumns) {
+      if (column.key == '__selection__') {
+        selectionColumn = column;
+      } else {
+        regularColumns.add(column);
+      }
+    }
+
+    // Calculate available width for regular columns (excluding selection column)
+    double availableWidth = totalWidth;
+    if (selectionColumn != null) {
+      availableWidth -=
+          selectionColumn.width; // Subtract fixed selection column width
+    }
+
+    // Calculate widths for regular columns only
+    List<double> regularWidths =
+        _calculateRegularColumnWidths(regularColumns, availableWidth);
+
+    // Combine selection column width with regular column widths
+    List<double> allWidths = [];
+    int regularIndex = 0;
+
+    for (final column in visibleColumns) {
+      if (column.key == '__selection__') {
+        allWidths.add(column.width); // Fixed width for selection
+      } else {
+        allWidths.add(regularWidths[regularIndex]);
+        regularIndex++;
+      }
+    }
+
+    return allWidths;
+  }
+
+  /// Calculate widths for regular columns (excluding selection column)
+  List<double> _calculateRegularColumnWidths(
+      List<TablePlusColumn> columns, double totalWidth) {
+    if (columns.isEmpty) return [];
+
     // Calculate total preferred width
-    final double totalPreferredWidth = visibleColumns.fold(
+    final double totalPreferredWidth = columns.fold(
       0.0,
       (sum, col) => sum + col.width,
     );
 
     // Calculate total minimum width
-    final double totalMinWidth = visibleColumns.fold(
+    final double totalMinWidth = columns.fold(
       0.0,
       (sum, col) => sum + col.minWidth,
     );
@@ -172,10 +216,10 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
     if (totalPreferredWidth <= totalWidth) {
       // If preferred widths fit, distribute extra space proportionally
       final double extraSpace = totalWidth - totalPreferredWidth;
-      final double totalWeight = visibleColumns.length.toDouble();
+      final double totalWeight = columns.length.toDouble();
 
-      for (int i = 0; i < visibleColumns.length; i++) {
-        final column = visibleColumns[i];
+      for (int i = 0; i < columns.length; i++) {
+        final column = columns[i];
         final double extraWidth = extraSpace / totalWeight;
         double finalWidth = column.width + extraWidth;
 
@@ -190,8 +234,8 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
       // Scale down proportionally but respect minimum widths
       final double scale = totalWidth / totalPreferredWidth;
 
-      for (int i = 0; i < visibleColumns.length; i++) {
-        final column = visibleColumns[i];
+      for (int i = 0; i < columns.length; i++) {
+        final column = columns[i];
         final double scaledWidth = column.width * scale;
         final double finalWidth = scaledWidth.clamp(
             column.minWidth, column.maxWidth ?? double.infinity);
@@ -199,7 +243,7 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
       }
     } else {
       // Use minimum widths (table will be wider than available space)
-      widths = visibleColumns.map((col) => col.minWidth).toList();
+      widths = columns.map((col) => col.minWidth).toList();
     }
 
     return widths;

@@ -46,6 +46,50 @@ class TablePlusHeader extends StatelessWidget {
   List<double> _calculateColumnWidths() {
     if (columns.isEmpty) return [];
 
+    // Separate selection column from regular columns
+    List<TablePlusColumn> regularColumns = [];
+    TablePlusColumn? selectionColumn;
+
+    for (final column in columns) {
+      if (column.key == '__selection__') {
+        selectionColumn = column;
+      } else {
+        regularColumns.add(column);
+      }
+    }
+
+    // Calculate available width for regular columns (excluding selection column)
+    double availableWidth = totalWidth;
+    if (selectionColumn != null) {
+      availableWidth -=
+          selectionColumn.width; // Subtract fixed selection column width
+    }
+
+    // Calculate widths for regular columns only
+    List<double> regularWidths =
+        _calculateRegularColumnWidths(regularColumns, availableWidth);
+
+    // Combine selection column width with regular column widths
+    List<double> allWidths = [];
+    int regularIndex = 0;
+
+    for (final column in columns) {
+      if (column.key == '__selection__') {
+        allWidths.add(column.width); // Fixed width for selection
+      } else {
+        allWidths.add(regularWidths[regularIndex]);
+        regularIndex++;
+      }
+    }
+
+    return allWidths;
+  }
+
+  /// Calculate widths for regular columns (excluding selection column)
+  List<double> _calculateRegularColumnWidths(
+      List<TablePlusColumn> columns, double totalWidth) {
+    if (columns.isEmpty) return [];
+
     // Calculate total preferred width
     final double totalPreferredWidth = columns.fold(
       0.0,
