@@ -73,7 +73,7 @@ class TablePlusBody extends StatelessWidget {
       itemBuilder: (context, index) {
         final rowData = data[index];
 
-        return _TableRow(
+        return _TablePlusRow(
           rowData: rowData,
           columns: columns,
           columnWidths: columnWidths,
@@ -87,8 +87,8 @@ class TablePlusBody extends StatelessWidget {
 }
 
 /// A single table row widget.
-class _TableRow extends StatelessWidget {
-  const _TableRow({
+class _TablePlusRow extends StatelessWidget {
+  const _TablePlusRow({
     required this.rowData,
     required this.columns,
     required this.columnWidths,
@@ -125,7 +125,7 @@ class _TableRow extends StatelessWidget {
           final width =
               columnWidths.isNotEmpty ? columnWidths[index] : column.width;
 
-          return _TableCell(
+          return _TablePlusCell(
             column: column,
             rowData: rowData,
             width: width,
@@ -138,8 +138,8 @@ class _TableRow extends StatelessWidget {
 }
 
 /// A single table cell widget.
-class _TableCell extends StatelessWidget {
-  const _TableCell({
+class _TablePlusCell extends StatelessWidget {
+  const _TablePlusCell({
     required this.column,
     required this.rowData,
     required this.width,
