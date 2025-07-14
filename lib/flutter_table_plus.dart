@@ -6,6 +6,7 @@ library;
 
 // Models
 export 'src/models/table_column.dart';
+export 'src/models/table_columns_builder.dart';
 export 'src/models/table_theme.dart';
 // Widgets
 export 'src/widgets/custom_ink_well.dart';

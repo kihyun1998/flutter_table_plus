@@ -6,6 +6,7 @@ class TablePlusColumn {
   const TablePlusColumn({
     required this.key,
     required this.label,
+    required this.order,
     this.width = 100.0,
     this.minWidth = 50.0,
     this.maxWidth,
@@ -22,6 +23,11 @@ class TablePlusColumn {
 
   /// The display label for the column header.
   final String label;
+
+  /// The order position of this column in the table.
+  /// Columns are sorted by this value in ascending order.
+  /// Selection column uses order: -1 to appear first.
+  final int order;
 
   /// The preferred width of the column in pixels.
   final double width;
@@ -55,6 +61,7 @@ class TablePlusColumn {
   TablePlusColumn copyWith({
     String? key,
     String? label,
+    int? order,
     double? width,
     double? minWidth,
     double? maxWidth,
@@ -68,6 +75,7 @@ class TablePlusColumn {
     return TablePlusColumn(
       key: key ?? this.key,
       label: label ?? this.label,
+      order: order ?? this.order,
       width: width ?? this.width,
       minWidth: minWidth ?? this.minWidth,
       maxWidth: maxWidth ?? this.maxWidth,
@@ -85,6 +93,7 @@ class TablePlusColumn {
     return other is TablePlusColumn &&
         other.key == key &&
         other.label == label &&
+        other.order == order &&
         other.width == width &&
         other.minWidth == minWidth &&
         other.maxWidth == maxWidth &&
@@ -99,6 +108,7 @@ class TablePlusColumn {
     return Object.hash(
       key,
       label,
+      order,
       width,
       minWidth,
       maxWidth,
@@ -111,6 +121,6 @@ class TablePlusColumn {
 
   @override
   String toString() {
-    return 'TableColumn(key: $key, label: $label, width: $width, visible: $visible)';
+    return 'TableColumn(key: $key, label: $label, order: $order, width: $width, visible: $visible)';
   }
 }

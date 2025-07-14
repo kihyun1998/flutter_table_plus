@@ -29,8 +29,10 @@ class FlutterTablePlus extends StatefulWidget {
     this.onSelectAll,
   });
 
-  /// The list of columns to display in the table.
-  final List<TablePlusColumn> columns;
+  /// The map of columns to display in the table.
+  /// Columns are ordered by their `order` field in ascending order.
+  /// Use [TableColumnsBuilder] to easily create ordered columns without conflicts.
+  final Map<String, TablePlusColumn> columns;
 
   /// The data to display in the table.
   /// Each map represents a row, with keys corresponding to column keys.
@@ -115,27 +117,32 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
       widget.theme ?? TablePlusTheme.defaultTheme;
 
   /// Get only visible columns, including selection column if enabled.
+  /// Columns are sorted by their order field in ascending order.
   List<TablePlusColumn> get _visibleColumns {
-    final columns = widget.columns.where((col) => col.visible).toList();
+    // Get visible columns from the map and sort by order
+    final visibleColumns = widget.columns.values
+        .where((col) => col.visible)
+        .toList()
+      ..sort((a, b) => a.order.compareTo(b.order));
 
     // Add selection column at the beginning if selectable
     if (widget.isSelectable &&
         _currentTheme.selectionTheme.showCheckboxColumn) {
-      return [
-        TablePlusColumn(
-          key: '__selection__', // Special key for selection column
-          label: '', // Empty label, will show select-all checkbox
-          width: _currentTheme.selectionTheme.checkboxColumnWidth,
-          minWidth: _currentTheme.selectionTheme.checkboxColumnWidth,
-          maxWidth: _currentTheme.selectionTheme.checkboxColumnWidth,
-          alignment: Alignment.center,
-          textAlign: TextAlign.center,
-        ),
-        ...columns,
-      ];
+      final selectionColumn = TablePlusColumn(
+        key: '__selection__', // Special key for selection column
+        label: '', // Empty label, will show select-all checkbox
+        order: -1, // Always first
+        width: _currentTheme.selectionTheme.checkboxColumnWidth,
+        minWidth: _currentTheme.selectionTheme.checkboxColumnWidth,
+        maxWidth: _currentTheme.selectionTheme.checkboxColumnWidth,
+        alignment: Alignment.center,
+        textAlign: TextAlign.center,
+      );
+
+      return [selectionColumn, ...visibleColumns];
     }
 
-    return columns;
+    return visibleColumns;
   }
 
   /// Calculate the total height of all data rows.

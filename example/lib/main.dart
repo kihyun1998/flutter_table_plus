@@ -109,92 +109,123 @@ class _TableExamplePageState extends State<TableExamplePage> {
     },
   ];
 
-  // Define table columns
-  final List<TablePlusColumn> _columns = [
-    const TablePlusColumn(
-      key: 'id',
-      label: 'ID',
-      width: 60,
-      minWidth: 50,
-      textAlign: TextAlign.center,
-      alignment: Alignment.center,
-    ),
-    const TablePlusColumn(
-      key: 'name',
-      label: 'Full Name',
-      width: 150,
-      minWidth: 120,
-    ),
-    const TablePlusColumn(
-      key: 'email',
-      label: 'Email Address',
-      width: 200,
-      minWidth: 150,
-    ),
-    const TablePlusColumn(
-      key: 'age',
-      label: 'Age',
-      width: 60,
-      minWidth: 50,
-      textAlign: TextAlign.center,
-      alignment: Alignment.center,
-    ),
-    const TablePlusColumn(
-      key: 'department',
-      label: 'Department',
-      width: 120,
-      minWidth: 100,
-    ),
-    TablePlusColumn(
-      key: 'salary',
-      label: 'Salary',
-      width: 100,
-      minWidth: 80,
-      textAlign: TextAlign.right,
-      alignment: Alignment.centerRight,
-      cellBuilder: (context, rowData) {
-        final salary = rowData['salary'] as int?;
-        return Text(
-          salary != null
-              ? '\$${salary.toString().replaceAllMapped(
-                    RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-                    (Match m) => '${m[1]},',
-                  )}'
-              : '',
-          style: const TextStyle(
-            fontWeight: FontWeight.w600,
-            color: Colors.green,
+  // Define table columns using the new Map + Builder pattern
+  Map<String, TablePlusColumn> get _columns {
+    return TableColumnsBuilder()
+        .addColumn(
+          'id',
+          const TablePlusColumn(
+            key: 'id',
+            label: 'ID',
+            order: 0, // Will be auto-assigned
+            width: 60,
+            minWidth: 50,
+            textAlign: TextAlign.center,
+            alignment: Alignment.center,
           ),
-        );
-      },
-    ),
-    TablePlusColumn(
-      key: 'active',
-      label: 'Status',
-      width: 80,
-      minWidth: 70,
-      textAlign: TextAlign.center,
-      alignment: Alignment.center,
-      cellBuilder: (context, rowData) {
-        final isActive = rowData['active'] as bool? ?? false;
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration: BoxDecoration(
-            color: isActive ? Colors.green.shade100 : Colors.red.shade100,
-            borderRadius: BorderRadius.circular(12),
+        )
+        .addColumn(
+          'name',
+          const TablePlusColumn(
+            key: 'name',
+            label: 'Full Name',
+            order: 0, // Will be auto-assigned
+            width: 150,
+            minWidth: 120,
           ),
-          child: Text(
-            isActive ? 'Active' : 'Inactive',
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: isActive ? Colors.green.shade800 : Colors.red.shade800,
-            ),
+        )
+        .addColumn(
+          'email',
+          const TablePlusColumn(
+            key: 'email',
+            label: 'Email Address',
+            order: 0, // Will be auto-assigned
+            width: 200,
+            minWidth: 150,
           ),
-        );
-      },
-    ),
-  ];
+        )
+        .addColumn(
+          'age',
+          const TablePlusColumn(
+            key: 'age',
+            label: 'Age',
+            order: 0, // Will be auto-assigned
+            width: 60,
+            minWidth: 50,
+            textAlign: TextAlign.center,
+            alignment: Alignment.center,
+          ),
+        )
+        .addColumn(
+          'department',
+          const TablePlusColumn(
+            key: 'department',
+            label: 'Department',
+            order: 0, // Will be auto-assigned
+            width: 120,
+            minWidth: 100,
+          ),
+        )
+        .addColumn(
+          'salary',
+          TablePlusColumn(
+            key: 'salary',
+            label: 'Salary',
+            order: 0, // Will be auto-assigned
+            width: 100,
+            minWidth: 80,
+            textAlign: TextAlign.right,
+            alignment: Alignment.centerRight,
+            cellBuilder: (context, rowData) {
+              final salary = rowData['salary'] as int?;
+              return Text(
+                salary != null
+                    ? '\$${salary.toString().replaceAllMapped(
+                          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+                          (Match m) => '${m[1]},',
+                        )}'
+                    : '',
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: Colors.green,
+                ),
+              );
+            },
+          ),
+        )
+        .addColumn(
+          'active',
+          TablePlusColumn(
+            key: 'active',
+            label: 'Status',
+            order: 0, // Will be auto-assigned
+            width: 80,
+            minWidth: 70,
+            textAlign: TextAlign.center,
+            alignment: Alignment.center,
+            cellBuilder: (context, rowData) {
+              final isActive = rowData['active'] as bool? ?? false;
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: isActive ? Colors.green.shade100 : Colors.red.shade100,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  isActive ? 'Active' : 'Inactive',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color:
+                        isActive ? Colors.green.shade800 : Colors.red.shade800,
+                  ),
+                ),
+              );
+            },
+          ),
+        )
+        .build();
+  }
 
   /// Handle row selection change
   void _onRowSelectionChanged(String rowId, bool isSelected) {
@@ -206,7 +237,6 @@ class _TableExamplePageState extends State<TableExamplePage> {
       }
     });
 
-    // Debug print
     print('Row $rowId ${isSelected ? 'selected' : 'deselected'}');
     print('Total selected: ${_selectedRows.length}');
   }
@@ -229,7 +259,6 @@ class _TableExamplePageState extends State<TableExamplePage> {
       }
     });
 
-    // Debug print
     print('Select all: $selectAll');
     print('Total selected: ${_selectedRows.length}');
   }
@@ -457,6 +486,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
                   ),
             ),
             const SizedBox(height: 8),
+            const Text('• Map-based column management with automatic ordering'),
             const Text('• Column width management'),
             const Text('• Custom cell builders (Salary, Status)'),
             const Text('• Alternating row colors'),
