@@ -1,30 +1,30 @@
 import 'package:flutter/material.dart';
 
 /// Theme configuration for the table components.
-class TableTheme {
-  /// Creates a [TableTheme] with the specified styling properties.
-  const TableTheme({
-    this.headerTheme = const HeaderTheme(),
-    this.bodyTheme = const BodyTheme(),
-    this.scrollbarTheme = const ScrollbarTheme(),
+class TablePlusTheme {
+  /// Creates a [TablePlusTheme] with the specified styling properties.
+  const TablePlusTheme({
+    this.headerTheme = const TablePlusHeaderTheme(),
+    this.bodyTheme = const TablePlusBodyTheme(),
+    this.scrollbarTheme = const TablePlusScrollbarTheme(),
   });
 
   /// Theme configuration for the table header.
-  final HeaderTheme headerTheme;
+  final TablePlusHeaderTheme headerTheme;
 
   /// Theme configuration for the table body.
-  final BodyTheme bodyTheme;
+  final TablePlusBodyTheme bodyTheme;
 
   /// Theme configuration for the scrollbars.
-  final ScrollbarTheme scrollbarTheme;
+  final TablePlusScrollbarTheme scrollbarTheme;
 
   /// Creates a copy of this theme with the given fields replaced with new values.
-  TableTheme copyWith({
-    HeaderTheme? headerTheme,
-    BodyTheme? bodyTheme,
-    ScrollbarTheme? scrollbarTheme,
+  TablePlusTheme copyWith({
+    TablePlusHeaderTheme? headerTheme,
+    TablePlusBodyTheme? bodyTheme,
+    TablePlusScrollbarTheme? scrollbarTheme,
   }) {
-    return TableTheme(
+    return TablePlusTheme(
       headerTheme: headerTheme ?? this.headerTheme,
       bodyTheme: bodyTheme ?? this.bodyTheme,
       scrollbarTheme: scrollbarTheme ?? this.scrollbarTheme,
@@ -32,13 +32,13 @@ class TableTheme {
   }
 
   /// Default table theme.
-  static const TableTheme defaultTheme = TableTheme();
+  static const TablePlusTheme defaultTheme = TablePlusTheme();
 }
 
 /// Theme configuration for the table header.
-class HeaderTheme {
-  /// Creates a [HeaderTheme] with the specified styling properties.
-  const HeaderTheme({
+class TablePlusHeaderTheme {
+  /// Creates a [TablePlusHeaderTheme] with the specified styling properties.
+  const TablePlusHeaderTheme({
     this.height = 56.0,
     this.backgroundColor = const Color(0xFFF5F5F5),
     this.textStyle = const TextStyle(
@@ -66,14 +66,14 @@ class HeaderTheme {
   final Decoration? decoration;
 
   /// Creates a copy of this theme with the given fields replaced with new values.
-  HeaderTheme copyWith({
+  TablePlusHeaderTheme copyWith({
     double? height,
     Color? backgroundColor,
     TextStyle? textStyle,
     EdgeInsets? padding,
     Decoration? decoration,
   }) {
-    return HeaderTheme(
+    return TablePlusHeaderTheme(
       height: height ?? this.height,
       backgroundColor: backgroundColor ?? this.backgroundColor,
       textStyle: textStyle ?? this.textStyle,
@@ -84,9 +84,9 @@ class HeaderTheme {
 }
 
 /// Theme configuration for the table body.
-class BodyTheme {
-  /// Creates a [BodyTheme] with the specified styling properties.
-  const BodyTheme({
+class TablePlusBodyTheme {
+  /// Creates a [TablePlusBodyTheme] with the specified styling properties.
+  const TablePlusBodyTheme({
     this.rowHeight = 48.0,
     this.backgroundColor = Colors.white,
     this.alternateRowColor,
@@ -122,7 +122,7 @@ class BodyTheme {
   final double dividerThickness;
 
   /// Creates a copy of this theme with the given fields replaced with new values.
-  BodyTheme copyWith({
+  TablePlusBodyTheme copyWith({
     double? rowHeight,
     Color? backgroundColor,
     Color? alternateRowColor,
@@ -131,7 +131,7 @@ class BodyTheme {
     Color? dividerColor,
     double? dividerThickness,
   }) {
-    return BodyTheme(
+    return TablePlusBodyTheme(
       rowHeight: rowHeight ?? this.rowHeight,
       backgroundColor: backgroundColor ?? this.backgroundColor,
       alternateRowColor: alternateRowColor ?? this.alternateRowColor,
@@ -144,9 +144,9 @@ class BodyTheme {
 }
 
 /// Theme configuration for scrollbars.
-class ScrollbarTheme {
-  /// Creates a [ScrollbarTheme] with the specified styling properties.
-  const ScrollbarTheme({
+class TablePlusScrollbarTheme {
+  /// Creates a [TablePlusScrollbarTheme] with the specified styling properties.
+  const TablePlusScrollbarTheme({
     this.showVertical = true,
     this.showHorizontal = true,
     this.width = 12.0,
@@ -182,7 +182,7 @@ class ScrollbarTheme {
   final Duration animationDuration;
 
   /// Creates a copy of this theme with the given fields replaced with new values.
-  ScrollbarTheme copyWith({
+  TablePlusScrollbarTheme copyWith({
     bool? showVertical,
     bool? showHorizontal,
     double? width,
@@ -192,7 +192,7 @@ class ScrollbarTheme {
     bool? hoverOnly,
     Duration? animationDuration,
   }) {
-    return ScrollbarTheme(
+    return TablePlusScrollbarTheme(
       showVertical: showVertical ?? this.showVertical,
       showHorizontal: showHorizontal ?? this.showHorizontal,
       width: width ?? this.width,

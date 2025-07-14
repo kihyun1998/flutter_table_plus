@@ -22,15 +22,15 @@ class FlutterTablePlus extends StatefulWidget {
   });
 
   /// The list of columns to display in the table.
-  final List<TableColumn> columns;
+  final List<TablePlusColumn> columns;
 
   /// The data to display in the table.
   /// Each map represents a row, with keys corresponding to column keys.
   final List<Map<String, dynamic>> data;
 
   /// The theme configuration for the table.
-  /// If not provided, [TableTheme.defaultTheme] will be used.
-  final TableTheme? theme;
+  /// If not provided, [TablePlusTheme.defaultTheme] will be used.
+  final TablePlusTheme? theme;
 
   @override
   State<FlutterTablePlus> createState() => _FlutterTablePlusState();
@@ -40,10 +40,11 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
   bool _isHovered = false;
 
   /// Get the current theme, using default if not provided.
-  TableTheme get _currentTheme => widget.theme ?? TableTheme.defaultTheme;
+  TablePlusTheme get _currentTheme =>
+      widget.theme ?? TablePlusTheme.defaultTheme;
 
   /// Get only visible columns.
-  List<TableColumn> get _visibleColumns =>
+  List<TablePlusColumn> get _visibleColumns =>
       widget.columns.where((col) => col.visible).toList();
 
   /// Calculate the total height of all data rows.
@@ -177,7 +178,7 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                         child: Column(
                           children: [
                             // Table Header
-                            TableHeader(
+                            TablePlusHeader(
                               columns: visibleColumns,
                               totalWidth: contentWidth,
                               theme: theme.headerTheme,
@@ -185,7 +186,7 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
 
                             // Table Data
                             Expanded(
-                              child: TableBody(
+                              child: TablePlusBody(
                                 columns: visibleColumns,
                                 data: widget.data,
                                 columnWidths: columnWidths,

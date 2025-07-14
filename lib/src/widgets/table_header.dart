@@ -4,9 +4,9 @@ import '../models/table_column.dart';
 import '../models/table_theme.dart';
 
 /// A widget that renders the header row of the table.
-class TableHeader extends StatelessWidget {
-  /// Creates a [TableHeader] with the specified configuration.
-  const TableHeader({
+class TablePlusHeader extends StatelessWidget {
+  /// Creates a [TablePlusHeader] with the specified configuration.
+  const TablePlusHeader({
     super.key,
     required this.columns,
     required this.totalWidth,
@@ -14,13 +14,13 @@ class TableHeader extends StatelessWidget {
   });
 
   /// The list of columns to display in the header.
-  final List<TableColumn> columns;
+  final List<TablePlusColumn> columns;
 
   /// The total width available for the table.
   final double totalWidth;
 
   /// The theme configuration for the header.
-  final HeaderTheme theme;
+  final TablePlusHeaderTheme theme;
 
   /// Calculate the actual width for each column based on available space.
   List<double> _calculateColumnWidths() {
@@ -119,9 +119,9 @@ class _HeaderCell extends StatelessWidget {
     required this.theme,
   });
 
-  final TableColumn column;
+  final TablePlusColumn column;
   final double width;
-  final HeaderTheme theme;
+  final TablePlusHeaderTheme theme;
 
   @override
   Widget build(BuildContext context) {

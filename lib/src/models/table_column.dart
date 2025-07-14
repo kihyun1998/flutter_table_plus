@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 /// Defines a column in the table with its properties and behavior.
-class TableColumn {
-  /// Creates a [TableColumn] with the specified properties.
-  const TableColumn({
+class TablePlusColumn {
+  /// Creates a [TablePlusColumn] with the specified properties.
+  const TablePlusColumn({
     required this.key,
     required this.label,
     this.width = 100.0,
@@ -52,7 +52,7 @@ class TableColumn {
       cellBuilder;
 
   /// Creates a copy of this column with the given fields replaced with new values.
-  TableColumn copyWith({
+  TablePlusColumn copyWith({
     String? key,
     String? label,
     double? width,
@@ -65,7 +65,7 @@ class TableColumn {
     Widget Function(BuildContext context, Map<String, dynamic> rowData)?
         cellBuilder,
   }) {
-    return TableColumn(
+    return TablePlusColumn(
       key: key ?? this.key,
       label: label ?? this.label,
       width: width ?? this.width,
@@ -82,7 +82,7 @@ class TableColumn {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is TableColumn &&
+    return other is TablePlusColumn &&
         other.key == key &&
         other.label == label &&
         other.width == width &&

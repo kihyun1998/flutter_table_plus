@@ -106,8 +106,8 @@ class _TableExamplePageState extends State<TableExamplePage> {
   ];
 
   // Define table columns
-  final List<TableColumn> _columns = [
-    const TableColumn(
+  final List<TablePlusColumn> _columns = [
+    const TablePlusColumn(
       key: 'id',
       label: 'ID',
       width: 60,
@@ -115,19 +115,19 @@ class _TableExamplePageState extends State<TableExamplePage> {
       textAlign: TextAlign.center,
       alignment: Alignment.center,
     ),
-    const TableColumn(
+    const TablePlusColumn(
       key: 'name',
       label: 'Full Name',
       width: 150,
       minWidth: 120,
     ),
-    const TableColumn(
+    const TablePlusColumn(
       key: 'email',
       label: 'Email Address',
       width: 200,
       minWidth: 150,
     ),
-    const TableColumn(
+    const TablePlusColumn(
       key: 'age',
       label: 'Age',
       width: 60,
@@ -135,13 +135,13 @@ class _TableExamplePageState extends State<TableExamplePage> {
       textAlign: TextAlign.center,
       alignment: Alignment.center,
     ),
-    const TableColumn(
+    const TablePlusColumn(
       key: 'department',
       label: 'Department',
       width: 120,
       minWidth: 100,
     ),
-    TableColumn(
+    TablePlusColumn(
       key: 'salary',
       label: 'Salary',
       width: 100,
@@ -164,7 +164,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
         );
       },
     ),
-    TableColumn(
+    TablePlusColumn(
       key: 'active',
       label: 'Status',
       width: 80,
@@ -226,8 +226,8 @@ class _TableExamplePageState extends State<TableExamplePage> {
                   child: FlutterTablePlus(
                     columns: _columns,
                     data: _sampleData,
-                    theme: const TableTheme(
-                      headerTheme: HeaderTheme(
+                    theme: const TablePlusTheme(
+                      headerTheme: TablePlusHeaderTheme(
                         height: 48,
                         backgroundColor: Color(0xFFF8F9FA),
                         textStyle: TextStyle(
@@ -236,7 +236,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
                           color: Color(0xFF495057),
                         ),
                       ),
-                      bodyTheme: BodyTheme(
+                      bodyTheme: TablePlusBodyTheme(
                         rowHeight: 56,
                         alternateRowColor: Color(0xFFFAFAFA),
                         textStyle: TextStyle(
@@ -244,10 +244,10 @@ class _TableExamplePageState extends State<TableExamplePage> {
                           color: Color(0xFF212529),
                         ),
                       ),
-                      // scrollbarTheme: ScrollbarTheme(
-                      //   hoverOnly: true,
-                      //   opacity: 0.8,
-                      // ),
+                      scrollbarTheme: TablePlusScrollbarTheme(
+                        hoverOnly: true,
+                        opacity: 0.8,
+                      ),
                     ),
                   ),
                 ),

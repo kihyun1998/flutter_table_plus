@@ -4,9 +4,9 @@ import '../models/table_column.dart';
 import '../models/table_theme.dart';
 
 /// A widget that renders the data rows of the table.
-class TableBody extends StatelessWidget {
-  /// Creates a [TableBody] with the specified configuration.
-  const TableBody({
+class TablePlusBody extends StatelessWidget {
+  /// Creates a [TablePlusBody] with the specified configuration.
+  const TablePlusBody({
     super.key,
     required this.columns,
     required this.data,
@@ -16,7 +16,7 @@ class TableBody extends StatelessWidget {
   });
 
   /// The list of columns for the table.
-  final List<TableColumn> columns;
+  final List<TablePlusColumn> columns;
 
   /// The data to display in the table rows.
   final List<Map<String, dynamic>> data;
@@ -25,7 +25,7 @@ class TableBody extends StatelessWidget {
   final List<double> columnWidths;
 
   /// The theme configuration for the table body.
-  final BodyTheme theme;
+  final TablePlusBodyTheme theme;
 
   /// The scroll controller for vertical scrolling.
   final ScrollController verticalController;
@@ -40,7 +40,7 @@ class TableBody extends StatelessWidget {
 
   /// Extract the display value for a cell.
   String _getCellDisplayValue(
-      Map<String, dynamic> rowData, TableColumn column) {
+      Map<String, dynamic> rowData, TablePlusColumn column) {
     final value = rowData[column.key];
     if (value == null) return '';
     return value.toString();
@@ -98,9 +98,9 @@ class _TableRow extends StatelessWidget {
   });
 
   final Map<String, dynamic> rowData;
-  final List<TableColumn> columns;
+  final List<TablePlusColumn> columns;
   final List<double> columnWidths;
-  final BodyTheme theme;
+  final TablePlusBodyTheme theme;
   final Color backgroundColor;
   final bool isLastRow;
 
@@ -146,10 +146,10 @@ class _TableCell extends StatelessWidget {
     required this.theme,
   });
 
-  final TableColumn column;
+  final TablePlusColumn column;
   final Map<String, dynamic> rowData;
   final double width;
-  final BodyTheme theme;
+  final TablePlusBodyTheme theme;
 
   /// Extract the display value for this cell.
   String _getCellDisplayValue() {
