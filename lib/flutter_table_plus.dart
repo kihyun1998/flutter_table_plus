@@ -1,5 +1,11 @@
-/// A Calculator.
-class Calculator {
-  /// Returns [value] plus 1.
-  int addOne(int value) => value + 1;
-}
+/// A highly customizable and efficient table widget for Flutter.
+///
+/// This library provides a feature-rich table implementation with synchronized
+/// scrolling, theming support, and flexible data handling through Map-based data.
+library;
+
+// Models
+export 'src/models/table_column.dart';
+export 'src/models/table_theme.dart';
+// Main widget
+export 'src/widgets/flutter_table_plus.dart';
