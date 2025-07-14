@@ -28,6 +28,9 @@ class FlutterTablePlus extends StatefulWidget {
     this.onRowSelectionChanged,
     this.onSelectAll,
     this.onColumnReorder,
+    this.sortColumnKey,
+    this.sortDirection = SortDirection.none,
+    this.onSort,
   });
 
   /// The map of columns to display in the table.
@@ -65,6 +68,21 @@ class FlutterTablePlus extends StatefulWidget {
   /// Provides the old index and new index of the reordered column.
   /// Note: Selection column (if present) is excluded from reordering.
   final void Function(int oldIndex, int newIndex)? onColumnReorder;
+
+  /// The key of the currently sorted column.
+  /// If null, no column is currently sorted.
+  final String? sortColumnKey;
+
+  /// The current sort direction for the sorted column.
+  /// Ignored if [sortColumnKey] is null.
+  final SortDirection sortDirection;
+
+  /// Callback when a sortable column header is clicked.
+  /// Provides the column key and the requested sort direction.
+  ///
+  /// The table widget does not handle sorting internally - it's up to the
+  /// parent widget to sort the data and update [sortColumnKey] and [sortDirection].
+  final void Function(String columnKey, SortDirection direction)? onSort;
 
   @override
   State<FlutterTablePlus> createState() => _FlutterTablePlusState();
@@ -336,6 +354,10 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                               selectionTheme: theme.selectionTheme,
                               onSelectAll: widget.onSelectAll,
                               onColumnReorder: widget.onColumnReorder,
+                              // Sort-related properties
+                              sortColumnKey: widget.sortColumnKey,
+                              sortDirection: widget.sortDirection,
+                              onSort: widget.onSort,
                             ),
 
                             // Table Data

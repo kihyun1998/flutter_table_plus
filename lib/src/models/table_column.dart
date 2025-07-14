@@ -1,5 +1,50 @@
 import 'package:flutter/material.dart';
 
+/// Enum representing the sorting state of a column.
+enum SortDirection {
+  /// No sorting applied to this column.
+  none,
+
+  /// Column is sorted in ascending order (A-Z, 1-9).
+  ascending,
+
+  /// Column is sorted in descending order (Z-A, 9-1).
+  descending,
+}
+
+/// Configuration for sort icons in table headers.
+class SortIcons {
+  /// Creates a [SortIcons] with the specified icon widgets.
+  const SortIcons({
+    required this.ascending,
+    required this.descending,
+    this.unsorted,
+  });
+
+  /// The icon to display when column is sorted in ascending order.
+  final Widget ascending;
+
+  /// The icon to display when column is sorted in descending order.
+  final Widget descending;
+
+  /// The icon to display when column is not sorted.
+  /// If null, no icon will be shown for unsorted columns.
+  final Widget? unsorted;
+
+  /// Default sort icons using Material Design icons.
+  static const SortIcons defaultIcons = SortIcons(
+    ascending: Icon(Icons.arrow_upward, size: 16),
+    descending: Icon(Icons.arrow_downward, size: 16),
+    unsorted: Icon(Icons.unfold_more, size: 16, color: Colors.grey),
+  );
+
+  /// Simple sort icons without unsorted state.
+  static const SortIcons simple = SortIcons(
+    ascending: Icon(Icons.arrow_upward, size: 16),
+    descending: Icon(Icons.arrow_downward, size: 16),
+  );
+}
+
 /// Defines a column in the table with its properties and behavior.
 class TablePlusColumn {
   /// Creates a [TablePlusColumn] with the specified properties.
@@ -121,6 +166,6 @@ class TablePlusColumn {
 
   @override
   String toString() {
-    return 'TableColumn(key: $key, label: $label, order: $order, width: $width, visible: $visible)';
+    return 'TableColumn(key: $key, label: $label, order: $order, width: $width, visible: $visible, sortable: $sortable)';
   }
 }

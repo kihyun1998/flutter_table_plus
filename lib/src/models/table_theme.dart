@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'table_column.dart';
+
 /// Theme configuration for the table components.
 class TablePlusTheme {
   /// Creates a [TablePlusTheme] with the specified styling properties.
@@ -57,6 +59,11 @@ class TablePlusHeaderTheme {
     this.showVerticalDividers = true,
     this.showBottomDivider = true,
     this.dividerColor = const Color(0xFFE0E0E0),
+    // Sort-related styling
+    this.sortedColumnBackgroundColor,
+    this.sortedColumnTextStyle,
+    this.sortIcons = SortIcons.defaultIcons,
+    this.sortIconSpacing = 4.0,
   });
 
   /// The height of the header row.
@@ -83,6 +90,20 @@ class TablePlusHeaderTheme {
   /// The color of header dividers.
   final Color dividerColor;
 
+  /// Background color for columns that are currently sorted.
+  /// If null, uses [backgroundColor] for all columns.
+  final Color? sortedColumnBackgroundColor;
+
+  /// Text style for columns that are currently sorted.
+  /// If null, uses [textStyle] for all columns.
+  final TextStyle? sortedColumnTextStyle;
+
+  /// Icons to display for different sort states.
+  final SortIcons sortIcons;
+
+  /// Spacing between the column label and sort icon.
+  final double sortIconSpacing;
+
   /// Creates a copy of this theme with the given fields replaced with new values.
   TablePlusHeaderTheme copyWith({
     double? height,
@@ -93,6 +114,10 @@ class TablePlusHeaderTheme {
     bool? showVerticalDividers,
     bool? showBottomDivider,
     Color? dividerColor,
+    Color? sortedColumnBackgroundColor,
+    TextStyle? sortedColumnTextStyle,
+    SortIcons? sortIcons,
+    double? sortIconSpacing,
   }) {
     return TablePlusHeaderTheme(
       height: height ?? this.height,
@@ -103,6 +128,12 @@ class TablePlusHeaderTheme {
       showVerticalDividers: showVerticalDividers ?? this.showVerticalDividers,
       showBottomDivider: showBottomDivider ?? this.showBottomDivider,
       dividerColor: dividerColor ?? this.dividerColor,
+      sortedColumnBackgroundColor:
+          sortedColumnBackgroundColor ?? this.sortedColumnBackgroundColor,
+      sortedColumnTextStyle:
+          sortedColumnTextStyle ?? this.sortedColumnTextStyle,
+      sortIcons: sortIcons ?? this.sortIcons,
+      sortIconSpacing: sortIconSpacing ?? this.sortIconSpacing,
     );
   }
 }

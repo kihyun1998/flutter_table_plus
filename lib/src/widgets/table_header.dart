@@ -17,6 +17,9 @@ class TablePlusHeader extends StatefulWidget {
     this.selectionTheme = const TablePlusSelectionTheme(),
     this.onSelectAll,
     this.onColumnReorder,
+    this.sortColumnKey,
+    this.sortDirection = SortDirection.none,
+    this.onSort,
   });
 
   /// The list of columns to display in the header.
@@ -45,6 +48,15 @@ class TablePlusHeader extends StatefulWidget {
 
   /// Callback when columns are reordered.
   final void Function(int oldIndex, int newIndex)? onColumnReorder;
+
+  /// The key of the currently sorted column.
+  final String? sortColumnKey;
+
+  /// The current sort direction for the sorted column.
+  final SortDirection sortDirection;
+
+  /// Callback when a sortable column header is clicked.
+  final void Function(String columnKey, SortDirection direction)? onSort;
 
   @override
   State<TablePlusHeader> createState() => _TablePlusHeaderState();
@@ -187,6 +199,33 @@ class _TablePlusHeaderState extends State<TablePlusHeader> {
     widget.onColumnReorder!(oldIndex, newIndex);
   }
 
+  /// Handle sort click for a column
+  void _handleSortClick(String columnKey) {
+    if (widget.onSort == null) return;
+
+    // Determine next sort direction
+    SortDirection nextDirection;
+    if (widget.sortColumnKey == columnKey) {
+      // Same column - cycle through directions
+      switch (widget.sortDirection) {
+        case SortDirection.none:
+          nextDirection = SortDirection.ascending;
+          break;
+        case SortDirection.ascending:
+          nextDirection = SortDirection.descending;
+          break;
+        case SortDirection.descending:
+          nextDirection = SortDirection.none;
+          break;
+      }
+    } else {
+      // Different column - start with ascending
+      nextDirection = SortDirection.ascending;
+    }
+
+    widget.onSort!(columnKey, nextDirection);
+  }
+
   @override
   Widget build(BuildContext context) {
     final columnWidths = _calculateColumnWidths();
@@ -247,6 +286,13 @@ class _TablePlusHeaderState extends State<TablePlusHeader> {
                         column: column,
                         width: width,
                         theme: widget.theme,
+                        isSorted: widget.sortColumnKey == column.key,
+                        sortDirection: widget.sortColumnKey == column.key
+                            ? widget.sortDirection
+                            : SortDirection.none,
+                        onSortClick: column.sortable
+                            ? () => _handleSortClick(column.key)
+                            : null,
                       ),
                     );
                   },
@@ -265,19 +311,60 @@ class _HeaderCell extends StatelessWidget {
     required this.column,
     required this.width,
     required this.theme,
+    required this.isSorted,
+    required this.sortDirection,
+    this.onSortClick,
   });
 
   final TablePlusColumn column;
   final double width;
   final TablePlusHeaderTheme theme;
+  final bool isSorted;
+  final SortDirection sortDirection;
+  final VoidCallback? onSortClick;
+
+  /// Get the sort icon widget for current state
+  Widget? _getSortIcon() {
+    if (!column.sortable) return null;
+
+    switch (sortDirection) {
+      case SortDirection.ascending:
+        return theme.sortIcons.ascending;
+      case SortDirection.descending:
+        return theme.sortIcons.descending;
+      case SortDirection.none:
+        return theme.sortIcons.unsorted;
+    }
+  }
+
+  /// Get the background color for this header cell
+  Color _getBackgroundColor() {
+    if (isSorted && theme.sortedColumnBackgroundColor != null) {
+      return theme.sortedColumnBackgroundColor!;
+    }
+    return theme.backgroundColor;
+  }
+
+  /// Get the text style for this header cell
+  TextStyle _getTextStyle() {
+    if (isSorted && theme.sortedColumnTextStyle != null) {
+      return theme.sortedColumnTextStyle!;
+    }
+    return theme.textStyle;
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final sortIcon = _getSortIcon();
+    final backgroundColor = _getBackgroundColor();
+    final textStyle = _getTextStyle();
+
+    Widget content = Container(
       width: width,
       height: theme.height,
       padding: theme.padding,
       decoration: BoxDecoration(
+        color: backgroundColor,
         border: theme.showVerticalDividers
             ? Border(
                 right: BorderSide(
@@ -289,14 +376,41 @@ class _HeaderCell extends StatelessWidget {
       ),
       child: Align(
         alignment: column.alignment,
-        child: Text(
-          column.label,
-          style: theme.textStyle,
-          overflow: TextOverflow.ellipsis,
-          textAlign: column.textAlign,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Column label
+            Flexible(
+              child: Text(
+                column.label,
+                style: textStyle,
+                overflow: TextOverflow.ellipsis,
+                textAlign: column.textAlign,
+              ),
+            ),
+
+            // Sort icon
+            if (sortIcon != null) ...[
+              SizedBox(width: theme.sortIconSpacing),
+              sortIcon,
+            ],
+          ],
         ),
       ),
     );
+
+    // Wrap with GestureDetector for sortable columns
+    if (column.sortable && onSortClick != null) {
+      return GestureDetector(
+        onTap: onSortClick,
+        child: MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: content,
+        ),
+      );
+    }
+
+    return content;
   }
 }
 
