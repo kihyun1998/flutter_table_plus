@@ -155,7 +155,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
 
             // Table with fixed height
             SizedBox(
-              height: 600, // Fixed height for table
+              height: 400, // Fixed height for table
               child: EmployeeTable(
                 data: SampleData.employeeData,
                 isSelectable: _isSelectable,
