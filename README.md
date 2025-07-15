@@ -1,5 +1,11 @@
 # Flutter Table Plus
 
+[![pub version](https://img.shields.io/pub/v/flutter_table_plus.svg)](https://pub.dev/packages/flutter_table_plus)
+[![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/kihyun1998/flutter_table_plus/blob/main/LICENSE)
+![Flutter platforms](https://img.shields.io/badge/platform-flutter%20%7C%20android%20%7C%20ios%20%7C%20linux%20%7C%20macos%20%7C%20windows%20%7C%20web-blue)
+[![style: flutter lint](https://img.shields.io/badge/style-flutter__lints-blue)](https://pub.dev/packages/flutter_lints)
+[![github stars](https://img.shields.io/github/stars/kihyun1998/flutter_table_plus.svg?style=social)](https://github.com/kihyun1998/flutter_table_plus)
+
 A highly customizable and efficient table widget for Flutter. It provides a rich set of features including synchronized scrolling, sorting, selection, and advanced theming, making it easy to display complex data sets.
 
 ---
@@ -13,12 +19,6 @@ A highly customizable and efficient table widget for Flutter. It provides a rich
 - **Column Reordering**: Easily reorder columns with drag-and-drop.
 - **Custom Cell Widgets**: Render any widget inside a cell using `cellBuilder` for maximum flexibility.
 - **Safe Column Management**: Use `TableColumnsBuilder` to define columns and manage their order without conflicts.
-
-## Demo
-
-*(Here you can add a GIF or a screenshot of the table in action)*
-
-`![Flutter Table Plus Demo](https://raw.githubusercontent.com/kihyun1998/flutter_table_plus/main/art/demo.gif)`
 
 ## Installation
 
