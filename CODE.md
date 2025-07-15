@@ -233,6 +233,11 @@ class _TableExamplePageState extends State<TableExamplePage> {
   final Set<String> _selectedRows = <String>{};
   bool _showVerticalDividers = true; // 세로줄 표시 여부
 
+  // Sort state
+  String? _sortColumnKey;
+  SortDirection _sortDirection = SortDirection.none;
+  List<Map<String, dynamic>> _sortedData = [];
+
   // Column reorder를 위한 컬럼 정의 (Map으로 변경)
   late Map<String, TablePlusColumn> _columns;
 
@@ -240,6 +245,12 @@ class _TableExamplePageState extends State<TableExamplePage> {
   void initState() {
     super.initState();
     _initializeColumns();
+    _initializeSortedData();
+  }
+
+  /// Initialize sorted data with original data
+  void _initializeSortedData() {
+    _sortedData = List.from(SampleData.employeeData);
   }
 
   /// Initialize columns with default order
@@ -255,6 +266,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
             minWidth: 50,
             textAlign: TextAlign.center,
             alignment: Alignment.center,
+            sortable: true, // Enable sorting
           ),
         )
         .addColumn(
@@ -265,6 +277,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
             order: 0,
             width: 150,
             minWidth: 120,
+            sortable: true, // Enable sorting
           ),
         )
         .addColumn(
@@ -275,6 +288,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
             order: 0,
             width: 200,
             minWidth: 150,
+            sortable: true, // Enable sorting
           ),
         )
         .addColumn(
@@ -287,6 +301,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
             minWidth: 50,
             textAlign: TextAlign.center,
             alignment: Alignment.center,
+            sortable: true, // Enable sorting
           ),
         )
         .addColumn(
@@ -297,6 +312,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
             order: 0,
             width: 120,
             minWidth: 100,
+            sortable: true, // Enable sorting
           ),
         )
         .addColumn(
@@ -309,6 +325,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
             minWidth: 80,
             textAlign: TextAlign.right,
             alignment: Alignment.centerRight,
+            sortable: true, // Enable sorting
             cellBuilder: _buildSalaryCell,
           ),
         )
@@ -322,10 +339,81 @@ class _TableExamplePageState extends State<TableExamplePage> {
             minWidth: 70,
             textAlign: TextAlign.center,
             alignment: Alignment.center,
+            sortable: true, // Enable sorting
             cellBuilder: _buildStatusCell,
           ),
         )
         .build();
+  }
+
+  /// Handle sort callback
+  void _handleSort(String columnKey, SortDirection direction) {
+    setState(() {
+      if (direction == SortDirection.none) {
+        // Reset to original order
+        _sortColumnKey = null;
+        _sortDirection = SortDirection.none;
+        _sortedData = List.from(SampleData.employeeData);
+      } else {
+        // Sort data
+        _sortColumnKey = columnKey;
+        _sortDirection = direction;
+        _sortData(columnKey, direction);
+      }
+    });
+
+    // Show feedback
+    String message;
+    switch (direction) {
+      case SortDirection.ascending:
+        message = 'Sorted by $columnKey (A-Z)';
+        break;
+      case SortDirection.descending:
+        message = 'Sorted by $columnKey (Z-A)';
+        break;
+      case SortDirection.none:
+        message = 'Sort cleared - showing original order';
+        break;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(milliseconds: 1500),
+      ),
+    );
+  }
+
+  /// Sort data based on column key and direction
+  void _sortData(String columnKey, SortDirection direction) {
+    _sortedData.sort((a, b) {
+      final aValue = a[columnKey];
+      final bValue = b[columnKey];
+
+      // Handle null values
+      if (aValue == null && bValue == null) return 0;
+      if (aValue == null) return direction == SortDirection.ascending ? -1 : 1;
+      if (bValue == null) return direction == SortDirection.ascending ? 1 : -1;
+
+      int comparison;
+
+      // Type-specific comparison
+      if (aValue is int && bValue is int) {
+        comparison = aValue.compareTo(bValue);
+      } else if (aValue is double && bValue is double) {
+        comparison = aValue.compareTo(bValue);
+      } else if (aValue is bool && bValue is bool) {
+        comparison = aValue == bValue ? 0 : (aValue ? 1 : -1);
+      } else {
+        // String comparison (default)
+        comparison = aValue.toString().toLowerCase().compareTo(
+              bValue.toString().toLowerCase(),
+            );
+      }
+
+      // Reverse for descending
+      return direction == SortDirection.ascending ? comparison : -comparison;
+    });
   }
 
   /// Custom cell builder for salary
@@ -382,7 +470,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
       if (selectAll) {
         _selectedRows.clear();
         _selectedRows.addAll(
-          SampleData.employeeData.map((row) => row['id'].toString()),
+          _sortedData.map((row) => row['id'].toString()),
         );
       } else {
         _selectedRows.clear();
@@ -496,7 +584,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
 
   /// Get selected employee names
   List<String> get _selectedNames {
-    return SampleData.employeeData
+    return _sortedData
         .where((row) => _selectedRows.contains(row['id'].toString()))
         .map((row) => row['name'].toString())
         .toList();
@@ -516,6 +604,20 @@ class _TableExamplePageState extends State<TableExamplePage> {
         showVerticalDividers: _showVerticalDividers,
         showBottomDivider: true,
         dividerColor: Colors.grey.shade300,
+        // Sort styling
+        sortedColumnBackgroundColor: Colors.blue.shade100,
+        sortedColumnTextStyle: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w800,
+          color: Color(0xFF1976D2),
+        ),
+        sortIcons: const SortIcons(
+          ascending:
+              Icon(Icons.arrow_upward, size: 14, color: Color(0xFF1976D2)),
+          descending:
+              Icon(Icons.arrow_downward, size: 14, color: Color(0xFF1976D2)),
+          unsorted: Icon(Icons.unfold_more, size: 14, color: Colors.grey),
+        ),
       ),
       bodyTheme: TablePlusBodyTheme(
         rowHeight: 56,
@@ -565,6 +667,22 @@ class _TableExamplePageState extends State<TableExamplePage> {
     );
   }
 
+  /// Reset sort to original order
+  void _resetSort() {
+    setState(() {
+      _sortColumnKey = null;
+      _sortDirection = SortDirection.none;
+      _sortedData = List.from(SampleData.employeeData);
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Sort cleared - showing original order'),
+        duration: Duration(milliseconds: 1500),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -572,6 +690,13 @@ class _TableExamplePageState extends State<TableExamplePage> {
         title: const Text('Flutter Table Plus Example'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         actions: [
+          // Reset sort button
+          if (_sortColumnKey != null)
+            IconButton(
+              onPressed: _resetSort,
+              icon: const Icon(Icons.sort_outlined),
+              tooltip: 'Clear Sort',
+            ),
           // Reset column order button
           IconButton(
             onPressed: _resetColumnOrder,
@@ -623,6 +748,25 @@ class _TableExamplePageState extends State<TableExamplePage> {
                         color: Colors.grey.shade600,
                       ),
                 ),
+                if (_sortColumnKey != null) ...[
+                  const SizedBox(width: 16),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.shade100,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      'Sorted by $_sortColumnKey (${_sortDirection.name})',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.orange.shade800,
+                      ),
+                    ),
+                  ),
+                ],
                 if (_isSelectable) ...[
                   const SizedBox(width: 16),
                   Container(
@@ -664,13 +808,17 @@ class _TableExamplePageState extends State<TableExamplePage> {
                   padding: const EdgeInsets.all(1.0),
                   child: FlutterTablePlus(
                     columns: _columns,
-                    data: SampleData.employeeData,
+                    data: _sortedData, // Use sorted data instead of original
                     isSelectable: _isSelectable,
                     selectedRows: _selectedRows,
                     onRowSelectionChanged: _onRowSelectionChanged,
                     onSelectAll: _onSelectAll,
                     onColumnReorder: _onColumnReorder,
                     theme: _currentTheme,
+                    // Sort-related properties
+                    sortColumnKey: _sortColumnKey,
+                    sortDirection: _sortDirection,
+                    onSort: _handleSort,
                   ),
                 ),
               ),
@@ -702,6 +850,9 @@ class _TableExamplePageState extends State<TableExamplePage> {
             const Text('• Column reordering via drag and drop',
                 style: TextStyle(
                     fontWeight: FontWeight.bold, color: Colors.orange)),
+            const Text('• Column sorting (click header to sort: ↑ ↓ clear)',
+                style: TextStyle(
+                    fontWeight: FontWeight.bold, color: Colors.green)),
             if (_isSelectable) ...[
               const SizedBox(height: 8),
               const Text('Selection Features:',
@@ -733,11 +884,13 @@ class _TableExamplePageState extends State<TableExamplePage> {
             ),
             const SizedBox(height: 8),
             const Text('• 🔄 Reset column order to default'),
+            const Text('• 🔀 Clear sort (reset to original order)'),
             const Text(
                 '• 🔲 Toggle vertical dividers (Grid vs Horizontal-only design)'),
             const Text(
                 '• ☑️ Toggle selection mode (Row selection with checkboxes)'),
             const Text('• 🖱️ Drag column headers to reorder'),
+            const Text('• 🔤 Click sortable column headers to sort'),
             if (_isSelectable) ...[
               const Text('• 🧹 Clear all selections'),
               const Text('• 👥 Select only active employees'),
@@ -762,27 +915,37 @@ class _TableExamplePageState extends State<TableExamplePage> {
               ),
               child: const Text(
                 '''final columns = TableColumnsBuilder()
-  .addColumn('id', TablePlusColumn(...))
-  .addColumn('name', TablePlusColumn(...))
+  .addColumn('id', TablePlusColumn(
+    sortable: true, // Enable sorting
+    ...
+  ))
+  .addColumn('name', TablePlusColumn(
+    sortable: true,
+    ...
+  ))
   .build();
 
 FlutterTablePlus(
   columns: columns,
-  data: data,
+  data: sortedData, // Use your sorted data
   isSelectable: true,
   selectedRows: selectedRowIds,
+  sortColumnKey: currentSortColumn,
+  sortDirection: currentSortDirection,
+  onSort: (columnKey, direction) {
+    // Handle sorting: none → asc → desc → none
+    setState(() {
+      if (direction == SortDirection.none) {
+        // Reset to original order
+        resetData();
+      } else {
+        // Sort your data
+        sortData(columnKey, direction);
+      }
+    });
+  },
   onColumnReorder: (oldIndex, newIndex) {
     // Handle column reordering
-    // Use TableColumnsBuilder.reorderColumn()
-  },
-  theme: TablePlusTheme(
-    bodyTheme: TablePlusBodyTheme(
-      showVerticalDividers: false, // Horizontal only
-      showHorizontalDividers: true,
-    ),
-  ),
-  onRowSelectionChanged: (rowId, isSelected) {
-    // Handle selection
   },
 )''',
                 style: TextStyle(
@@ -1166,6 +1329,51 @@ export 'src/widgets/flutter_table_plus.dart';
 ```dart
 import 'package:flutter/material.dart';
 
+/// Enum representing the sorting state of a column.
+enum SortDirection {
+  /// No sorting applied to this column.
+  none,
+
+  /// Column is sorted in ascending order (A-Z, 1-9).
+  ascending,
+
+  /// Column is sorted in descending order (Z-A, 9-1).
+  descending,
+}
+
+/// Configuration for sort icons in table headers.
+class SortIcons {
+  /// Creates a [SortIcons] with the specified icon widgets.
+  const SortIcons({
+    required this.ascending,
+    required this.descending,
+    this.unsorted,
+  });
+
+  /// The icon to display when column is sorted in ascending order.
+  final Widget ascending;
+
+  /// The icon to display when column is sorted in descending order.
+  final Widget descending;
+
+  /// The icon to display when column is not sorted.
+  /// If null, no icon will be shown for unsorted columns.
+  final Widget? unsorted;
+
+  /// Default sort icons using Material Design icons.
+  static const SortIcons defaultIcons = SortIcons(
+    ascending: Icon(Icons.arrow_upward, size: 16),
+    descending: Icon(Icons.arrow_downward, size: 16),
+    unsorted: Icon(Icons.unfold_more, size: 16, color: Colors.grey),
+  );
+
+  /// Simple sort icons without unsorted state.
+  static const SortIcons simple = SortIcons(
+    ascending: Icon(Icons.arrow_upward, size: 16),
+    descending: Icon(Icons.arrow_downward, size: 16),
+  );
+}
+
 /// Defines a column in the table with its properties and behavior.
 class TablePlusColumn {
   /// Creates a [TablePlusColumn] with the specified properties.
@@ -1287,7 +1495,7 @@ class TablePlusColumn {
 
   @override
   String toString() {
-    return 'TableColumn(key: $key, label: $label, order: $order, width: $width, visible: $visible)';
+    return 'TableColumn(key: $key, label: $label, order: $order, width: $width, visible: $visible, sortable: $sortable)';
   }
 }
 
@@ -1500,6 +1708,8 @@ class TableColumnsBuilder {
 ```dart
 import 'package:flutter/material.dart';
 
+import 'table_column.dart';
+
 /// Theme configuration for the table components.
 class TablePlusTheme {
   /// Creates a [TablePlusTheme] with the specified styling properties.
@@ -1557,6 +1767,11 @@ class TablePlusHeaderTheme {
     this.showVerticalDividers = true,
     this.showBottomDivider = true,
     this.dividerColor = const Color(0xFFE0E0E0),
+    // Sort-related styling
+    this.sortedColumnBackgroundColor,
+    this.sortedColumnTextStyle,
+    this.sortIcons = SortIcons.defaultIcons,
+    this.sortIconSpacing = 4.0,
   });
 
   /// The height of the header row.
@@ -1583,6 +1798,20 @@ class TablePlusHeaderTheme {
   /// The color of header dividers.
   final Color dividerColor;
 
+  /// Background color for columns that are currently sorted.
+  /// If null, uses [backgroundColor] for all columns.
+  final Color? sortedColumnBackgroundColor;
+
+  /// Text style for columns that are currently sorted.
+  /// If null, uses [textStyle] for all columns.
+  final TextStyle? sortedColumnTextStyle;
+
+  /// Icons to display for different sort states.
+  final SortIcons sortIcons;
+
+  /// Spacing between the column label and sort icon.
+  final double sortIconSpacing;
+
   /// Creates a copy of this theme with the given fields replaced with new values.
   TablePlusHeaderTheme copyWith({
     double? height,
@@ -1593,6 +1822,10 @@ class TablePlusHeaderTheme {
     bool? showVerticalDividers,
     bool? showBottomDivider,
     Color? dividerColor,
+    Color? sortedColumnBackgroundColor,
+    TextStyle? sortedColumnTextStyle,
+    SortIcons? sortIcons,
+    double? sortIconSpacing,
   }) {
     return TablePlusHeaderTheme(
       height: height ?? this.height,
@@ -1603,6 +1836,12 @@ class TablePlusHeaderTheme {
       showVerticalDividers: showVerticalDividers ?? this.showVerticalDividers,
       showBottomDivider: showBottomDivider ?? this.showBottomDivider,
       dividerColor: dividerColor ?? this.dividerColor,
+      sortedColumnBackgroundColor:
+          sortedColumnBackgroundColor ?? this.sortedColumnBackgroundColor,
+      sortedColumnTextStyle:
+          sortedColumnTextStyle ?? this.sortedColumnTextStyle,
+      sortIcons: sortIcons ?? this.sortIcons,
+      sortIconSpacing: sortIconSpacing ?? this.sortIconSpacing,
     );
   }
 }
@@ -1926,6 +2165,9 @@ class FlutterTablePlus extends StatefulWidget {
     this.onRowSelectionChanged,
     this.onSelectAll,
     this.onColumnReorder,
+    this.sortColumnKey,
+    this.sortDirection = SortDirection.none,
+    this.onSort,
   });
 
   /// The map of columns to display in the table.
@@ -1963,6 +2205,21 @@ class FlutterTablePlus extends StatefulWidget {
   /// Provides the old index and new index of the reordered column.
   /// Note: Selection column (if present) is excluded from reordering.
   final void Function(int oldIndex, int newIndex)? onColumnReorder;
+
+  /// The key of the currently sorted column.
+  /// If null, no column is currently sorted.
+  final String? sortColumnKey;
+
+  /// The current sort direction for the sorted column.
+  /// Ignored if [sortColumnKey] is null.
+  final SortDirection sortDirection;
+
+  /// Callback when a sortable column header is clicked.
+  /// Provides the column key and the requested sort direction.
+  ///
+  /// The table widget does not handle sorting internally - it's up to the
+  /// parent widget to sort the data and update [sortColumnKey] and [sortDirection].
+  final void Function(String columnKey, SortDirection direction)? onSort;
 
   @override
   State<FlutterTablePlus> createState() => _FlutterTablePlusState();
@@ -2234,6 +2491,10 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                               selectionTheme: theme.selectionTheme,
                               onSelectAll: widget.onSelectAll,
                               onColumnReorder: widget.onColumnReorder,
+                              // Sort-related properties
+                              sortColumnKey: widget.sortColumnKey,
+                              sortDirection: widget.sortDirection,
+                              onSort: widget.onSort,
                             ),
 
                             // Table Data
@@ -2921,6 +3182,9 @@ class TablePlusHeader extends StatefulWidget {
     this.selectionTheme = const TablePlusSelectionTheme(),
     this.onSelectAll,
     this.onColumnReorder,
+    this.sortColumnKey,
+    this.sortDirection = SortDirection.none,
+    this.onSort,
   });
 
   /// The list of columns to display in the header.
@@ -2949,6 +3213,15 @@ class TablePlusHeader extends StatefulWidget {
 
   /// Callback when columns are reordered.
   final void Function(int oldIndex, int newIndex)? onColumnReorder;
+
+  /// The key of the currently sorted column.
+  final String? sortColumnKey;
+
+  /// The current sort direction for the sorted column.
+  final SortDirection sortDirection;
+
+  /// Callback when a sortable column header is clicked.
+  final void Function(String columnKey, SortDirection direction)? onSort;
 
   @override
   State<TablePlusHeader> createState() => _TablePlusHeaderState();
@@ -3091,6 +3364,33 @@ class _TablePlusHeaderState extends State<TablePlusHeader> {
     widget.onColumnReorder!(oldIndex, newIndex);
   }
 
+  /// Handle sort click for a column
+  void _handleSortClick(String columnKey) {
+    if (widget.onSort == null) return;
+
+    // Determine next sort direction
+    SortDirection nextDirection;
+    if (widget.sortColumnKey == columnKey) {
+      // Same column - cycle through directions
+      switch (widget.sortDirection) {
+        case SortDirection.none:
+          nextDirection = SortDirection.ascending;
+          break;
+        case SortDirection.ascending:
+          nextDirection = SortDirection.descending;
+          break;
+        case SortDirection.descending:
+          nextDirection = SortDirection.none;
+          break;
+      }
+    } else {
+      // Different column - start with ascending
+      nextDirection = SortDirection.ascending;
+    }
+
+    widget.onSort!(columnKey, nextDirection);
+  }
+
   @override
   Widget build(BuildContext context) {
     final columnWidths = _calculateColumnWidths();
@@ -3151,6 +3451,13 @@ class _TablePlusHeaderState extends State<TablePlusHeader> {
                         column: column,
                         width: width,
                         theme: widget.theme,
+                        isSorted: widget.sortColumnKey == column.key,
+                        sortDirection: widget.sortColumnKey == column.key
+                            ? widget.sortDirection
+                            : SortDirection.none,
+                        onSortClick: column.sortable
+                            ? () => _handleSortClick(column.key)
+                            : null,
                       ),
                     );
                   },
@@ -3169,19 +3476,60 @@ class _HeaderCell extends StatelessWidget {
     required this.column,
     required this.width,
     required this.theme,
+    required this.isSorted,
+    required this.sortDirection,
+    this.onSortClick,
   });
 
   final TablePlusColumn column;
   final double width;
   final TablePlusHeaderTheme theme;
+  final bool isSorted;
+  final SortDirection sortDirection;
+  final VoidCallback? onSortClick;
+
+  /// Get the sort icon widget for current state
+  Widget? _getSortIcon() {
+    if (!column.sortable) return null;
+
+    switch (sortDirection) {
+      case SortDirection.ascending:
+        return theme.sortIcons.ascending;
+      case SortDirection.descending:
+        return theme.sortIcons.descending;
+      case SortDirection.none:
+        return theme.sortIcons.unsorted;
+    }
+  }
+
+  /// Get the background color for this header cell
+  Color _getBackgroundColor() {
+    if (isSorted && theme.sortedColumnBackgroundColor != null) {
+      return theme.sortedColumnBackgroundColor!;
+    }
+    return theme.backgroundColor;
+  }
+
+  /// Get the text style for this header cell
+  TextStyle _getTextStyle() {
+    if (isSorted && theme.sortedColumnTextStyle != null) {
+      return theme.sortedColumnTextStyle!;
+    }
+    return theme.textStyle;
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final sortIcon = _getSortIcon();
+    final backgroundColor = _getBackgroundColor();
+    final textStyle = _getTextStyle();
+
+    Widget content = Container(
       width: width,
       height: theme.height,
       padding: theme.padding,
       decoration: BoxDecoration(
+        color: backgroundColor,
         border: theme.showVerticalDividers
             ? Border(
                 right: BorderSide(
@@ -3193,14 +3541,41 @@ class _HeaderCell extends StatelessWidget {
       ),
       child: Align(
         alignment: column.alignment,
-        child: Text(
-          column.label,
-          style: theme.textStyle,
-          overflow: TextOverflow.ellipsis,
-          textAlign: column.textAlign,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Column label
+            Flexible(
+              child: Text(
+                column.label,
+                style: textStyle,
+                overflow: TextOverflow.ellipsis,
+                textAlign: column.textAlign,
+              ),
+            ),
+
+            // Sort icon
+            if (sortIcon != null) ...[
+              SizedBox(width: theme.sortIconSpacing),
+              sortIcon,
+            ],
+          ],
         ),
       ),
     );
+
+    // Wrap with GestureDetector for sortable columns
+    if (column.sortable && onSortClick != null) {
+      return GestureDetector(
+        onTap: onSortClick,
+        child: MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: content,
+        ),
+      );
+    }
+
+    return content;
   }
 }
 
