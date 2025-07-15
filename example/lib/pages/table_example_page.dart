@@ -270,57 +270,16 @@ class _TableExamplePageState extends State<TableExamplePage> {
           .toList()
         ..sort((a, b) => a.order.compareTo(b.order));
 
-      if (oldIndex < 0 ||
-          oldIndex >= visibleColumns.length ||
-          newIndex < 0 ||
-          newIndex >= visibleColumns.length) {
-        return;
-      }
+      // Remove the moving column and re-insert it at the new position
+      final movingColumn = visibleColumns.removeAt(oldIndex);
+      visibleColumns.insert(newIndex, movingColumn);
 
-      // Get the column being moved
-      final movingColumn = visibleColumns[oldIndex];
-      final targetColumn = visibleColumns[newIndex];
-
-      // Create new builder and rebuild with new order
+      // Rebuild the columns map using the new order
       final builder = TableColumnsBuilder();
-
-      // Add all columns except the moving one, adjusting orders
-      for (int i = 0; i < visibleColumns.length; i++) {
-        final column = visibleColumns[i];
-
-        if (column.key == movingColumn.key) {
-          continue; // Skip the moving column for now
-        }
-
-        int newOrder;
-        if (oldIndex < newIndex) {
-          // Moving down: shift columns up
-          if (i <= oldIndex) {
-            newOrder = i + 1;
-          } else if (i <= newIndex) {
-            newOrder = i;
-          } else {
-            newOrder = i + 1;
-          }
-        } else {
-          // Moving up: shift columns down
-          if (i < newIndex) {
-            newOrder = i + 1;
-          } else if (i < oldIndex) {
-            newOrder = i + 2;
-          } else {
-            newOrder = i + 1;
-          }
-        }
-
+      for (final column in visibleColumns) {
+        // The order property is ignored and reassigned by the builder
         builder.addColumn(column.key, column.copyWith(order: 0));
       }
-
-      // Insert the moved column at the new position
-      final newOrder = newIndex + 1;
-      builder.insertColumn(
-          movingColumn.key, movingColumn.copyWith(order: 0), newOrder);
-
       _columns = builder.build();
     });
 
