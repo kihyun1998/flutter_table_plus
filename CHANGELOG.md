@@ -1,3 +1,15 @@
+## 1.1.0
+
+* **Added Cell Editing Feature**
+
+### Features
+
+*   **Editable Cells:** Introduced `isEditable` property in `FlutterTablePlus` to enable or disable cell editing.
+*   **Column-Specific Editing:** Added `editable` property to `TablePlusColumn` to control which columns can be edited.
+*   **Cell Change Callback:** Implemented `onCellChanged` to notify when a cell's value is updated.
+*   **Theming for Editing:** Added `TablePlusEditableTheme` to customize the appearance of cells in editing mode (background color, text style, borders, etc.).
+*   **Keyboard Support:** Press `Enter` to save changes or `Escape` to cancel editing. Editing also stops when the cell loses focus.
+
 ## 1.0.0
 
 * **Initial release of `flutter_table_plus`**

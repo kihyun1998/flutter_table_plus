@@ -45,6 +45,7 @@ class TableState with _$TableState {
     // UI options
     @Default(true) bool showVerticalDividers,
     @Default(false) bool isSelectable,
+    @Default(false) bool isEditable, // New: For editing mode
     
     // Loading/Error state
     @Default(true) bool isLoading,
@@ -123,6 +124,28 @@ class EmployeeTableNotifier extends _$EmployeeTableNotifier {
       state = state.copyWith(selectedRowIds: {});
     }
   }
+
+  /// Updates a cell's value
+  void handleCellChange(String columnKey, int rowIndex, dynamic newValue) {
+    // Note: The `sortedEmployeesProvider` provides the view's current row index.
+    // We need to find the corresponding item in the original `allEmployees` list to modify it.
+    final sortedData = ref.read(sortedEmployeesProvider);
+    final originalItem = state.allEmployees.firstWhere(
+      (e) => e['id'] == sortedData[rowIndex]['id'],
+    );
+
+    // Create a new list with the updated item
+    final newList = state.allEmployees.map((item) {
+      if (item['id'] == originalItem['id']) {
+        final newRow = Map<String, dynamic>.from(item);
+        newRow[columnKey] = newValue;
+        return newRow;
+      }
+      return item;
+    }).toList();
+
+    state = state.copyWith(allEmployees: newList);
+  }
   
   // --- Other UI-related methods ---
   
@@ -132,6 +155,10 @@ class EmployeeTableNotifier extends _$EmployeeTableNotifier {
       // Clear selections when disabling selection mode
       selectedRowIds: state.isSelectable ? {} : state.selectedRowIds,
     );
+  }
+
+  void toggleEditMode() {
+    state = state.copyWith(isEditable: !state.isEditable);
   }
 }
 ```
@@ -216,8 +243,14 @@ class EmployeeTablePage extends ConsumerWidget {
         title: const Text('Riverpod Table Example'),
         actions: [
           IconButton(
+            icon: Icon(tableState.isEditable ? Icons.edit : Icons.edit_off),
+            onPressed: () => notifier.toggleEditMode(),
+            tooltip: 'Toggle Edit Mode',
+          ),
+          IconButton(
             icon: Icon(tableState.isSelectable ? Icons.check_box : Icons.check_box_outline_blank),
             onPressed: () => notifier.toggleSelectionMode(),
+            tooltip: 'Toggle Selection Mode',
           ),
         ],
       ),
@@ -226,6 +259,7 @@ class EmployeeTablePage extends ConsumerWidget {
         data: sortedData,
         
         // Connect state properties
+        isEditable: tableState.isEditable,
         isSelectable: tableState.isSelectable,
         selectedRows: tableState.selectedRowIds,
         sortColumnKey: tableState.sortColumnKey,
@@ -235,6 +269,8 @@ class EmployeeTablePage extends ConsumerWidget {
         onSort: (columnKey, _) => notifier.handleSort(columnKey),
         onRowSelectionChanged: (rowId, isSelected) => notifier.selectRow(rowId, isSelected),
         onSelectAll: (select) => notifier.selectAllRows(select),
+        onCellChanged: (columnKey, rowIndex, oldValue, newValue) =>
+            notifier.handleCellChange(columnKey, rowIndex, newValue),
       ),
     );
   }

@@ -16,6 +16,7 @@ A highly customizable and efficient table widget for Flutter. It provides a rich
 - **Advanced Theming**: Customize headers, rows, scrollbars, and selection styles with `TablePlusTheme`.
 - **Column Sorting**: Supports multi-state sorting (ascending, descending, none).
 - **Row Selection**: Enable single or multi-row selection with checkboxes.
+- **Cell Editing**: Enable editing for individual cells with callbacks to handle data changes.
 - **Column Reordering**: Easily reorder columns with drag-and-drop.
 - **Custom Cell Widgets**: Render any widget inside a cell using `cellBuilder` for maximum flexibility.
 - **Safe Column Management**: Use `TableColumnsBuilder` to define columns and manage their order without conflicts.
@@ -81,6 +82,7 @@ For more advanced use cases and detailed guides, please refer to our documentati
   - [Integrating with Riverpod (Code Generator)](documentation/RIVERPOD_GENERATOR_GUIDE.md)
 
 - **Feature Guides**
+  - [Cell Editing](documentation/EDITING.md)
   - [Sorting](documentation/SORTING.md)
   - [Row Selection](documentation/SELECTION.md)
   - [Theming and Styling](documentation/THEMING.md)
