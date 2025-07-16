@@ -415,21 +415,66 @@ class _TablePlusCellState extends State<_TablePlusCell> {
 
   /// Build the editing text field
   Widget _buildEditingTextField() {
-    return KeyboardListener(
-      focusNode: FocusNode(), // Separate focus node for keyboard listener
-      onKeyEvent: _handleKeyPress,
-      child: TextField(
-        controller: widget.cellController,
-        focusNode: _focusNode,
-        style: widget.editableTheme.editingTextStyle,
-        decoration: InputDecoration(
-          border: InputBorder.none,
-          contentPadding: widget.editableTheme.textFieldPadding,
-          isDense: true,
+    final theme = widget.editableTheme;
+
+    return Align(
+      alignment: widget.column.alignment, // 컬럼 정렬 설정에 맞춰 TextField 정렬
+      child: KeyboardListener(
+        focusNode: FocusNode(), // Separate focus node for keyboard listener
+        onKeyEvent: _handleKeyPress,
+        child: TextField(
+          controller: widget.cellController,
+          focusNode: _focusNode,
+          style: theme.editingTextStyle,
+          textAlign: widget.column.textAlign,
+          textAlignVertical: theme.textAlignVertical,
+          cursorColor: theme.cursorColor,
+          decoration: InputDecoration(
+            contentPadding: theme.textFieldPadding,
+            isDense: theme.isDense,
+            filled: theme.filled,
+            fillColor: theme.fillColor ?? theme.editingCellColor,
+            // Border configuration
+            border: OutlineInputBorder(
+              borderRadius: theme.borderRadius ?? theme.editingBorderRadius,
+              borderSide: BorderSide(
+                color: theme.enabledBorderColor ??
+                    theme.editingBorderColor.withOpacity(0.5),
+                width: 1.0,
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: theme.borderRadius ?? theme.editingBorderRadius,
+              borderSide: BorderSide(
+                color: theme.enabledBorderColor ??
+                    theme.editingBorderColor.withOpacity(0.5),
+                width: 1.0,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: theme.borderRadius ?? theme.editingBorderRadius,
+              borderSide: BorderSide(
+                color: theme.focusedBorderColor ?? theme.editingBorderColor,
+                width: theme.editingBorderWidth,
+              ),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: theme.borderRadius ?? theme.editingBorderRadius,
+              borderSide: BorderSide(
+                color: Colors.red.shade400,
+                width: 1.0,
+              ),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: theme.borderRadius ?? theme.editingBorderRadius,
+              borderSide: BorderSide(
+                color: Colors.red.shade600,
+                width: theme.editingBorderWidth,
+              ),
+            ),
+          ),
+          onSubmitted: (_) => widget.onStopEditing?.call(save: true),
         ),
-        textAlign: widget.column.textAlign,
-        cursorColor: widget.editableTheme.cursorColor,
-        onSubmitted: (_) => widget.onStopEditing?.call(save: true),
       ),
     );
   }
@@ -466,33 +511,32 @@ class _TablePlusCellState extends State<_TablePlusCell> {
         widget.column.cellBuilder ==
             null; // Don't edit cells with custom builders
 
-    // Choose background color based on editing state
+    // For editing cells, we don't need special background/border as TextField handles it
     Color backgroundColor = Colors.transparent;
     BoxBorder? border;
 
-    if (widget.isCellEditing) {
-      backgroundColor = widget.editableTheme.editingCellColor;
-      border = Border.all(
-        color: widget.editableTheme.editingBorderColor,
-        width: widget.editableTheme.editingBorderWidth,
-      );
+    // Only apply cell-level styling when not editing
+    if (!widget.isCellEditing) {
+      // Apply normal vertical divider if needed
+      if (widget.theme.showVerticalDividers) {
+        border = Border(
+          right: BorderSide(
+            color: widget.theme.dividerColor.withOpacity(0.5),
+            width: 0.5,
+          ),
+        );
+      }
     }
 
     Widget cellContent = Container(
       width: widget.width,
       height: widget.theme.rowHeight,
-      padding: widget.theme.padding,
+      padding: widget.isCellEditing
+          ? EdgeInsets.zero // TextField handles its own padding
+          : widget.theme.padding,
       decoration: BoxDecoration(
         color: backgroundColor,
-        border: border ??
-            (widget.theme.showVerticalDividers
-                ? Border(
-                    right: BorderSide(
-                      color: widget.theme.dividerColor.withOpacity(0.5),
-                      width: 0.5,
-                    ),
-                  )
-                : null),
+        border: border,
       ),
       child:
           widget.isCellEditing ? _buildEditingTextField() : _buildRegularCell(),

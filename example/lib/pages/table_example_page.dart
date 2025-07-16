@@ -466,15 +466,24 @@ class _TableExamplePageState extends State<TableExamplePage> {
         checkboxSize: 18.0,
       ),
       editableTheme: const TablePlusEditableTheme(
-        editingCellColor: Color(0xFFFFF9C4), // 연한 노란색
-        editingBorderColor: Color(0xFF2196F3), // 파란색 테두리
-        editingBorderWidth: 2.0,
+        editingCellColor: Color(0xFFFFFDE7), // 연한 노란색
         editingTextStyle: TextStyle(
           fontSize: 14,
           color: Color(0xFF212529),
           fontWeight: FontWeight.w500,
         ),
+        editingBorderColor: Color(0xFF2196F3), // 파란색 테두리
+        editingBorderWidth: 2.0,
+        editingBorderRadius: BorderRadius.all(Radius.circular(6.0)), // 둥근 모서리
+        textFieldPadding:
+            EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0), // 더 넉넉한 패딩
         cursorColor: Color(0xFF2196F3),
+        textAlignVertical: TextAlignVertical.center, // 수직 가운데 정렬
+        focusedBorderColor: Color(0xFF1976D2), // 포커스 시 더 진한 파란색
+        enabledBorderColor: Color(0xFFBBBBBB), // 비활성 시 회색
+        fillColor: Color(0xFFFFFDE7), // TextField 배경색
+        filled: true, // 배경색 채우기
+        isDense: true, // 컴팩트한 레이아웃
       ),
     );
   }
@@ -748,6 +757,10 @@ class _TableExamplePageState extends State<TableExamplePage> {
                       fontWeight: FontWeight.bold, color: Colors.orange)),
               const Text('• Click on editable cells to start editing',
                   style: TextStyle(color: Colors.orange)),
+              const Text('• Beautifully styled inline text fields',
+                  style: TextStyle(color: Colors.orange)),
+              const Text('• Vertically centered text with rounded borders',
+                  style: TextStyle(color: Colors.orange)),
               const Text('• Press Enter or click away to save changes',
                   style: TextStyle(color: Colors.orange)),
               const Text('• Press Escape to cancel editing',
@@ -820,6 +833,19 @@ FlutterTablePlus(
   columns: columns,
   data: data,
   isEditable: true, // Enable editing mode
+  theme: TablePlusTheme(
+    editableTheme: TablePlusEditableTheme(
+      textAlignVertical: TextAlignVertical.center, // Vertical center
+      editingBorderRadius: BorderRadius.circular(6.0), // Rounded
+      textFieldPadding: EdgeInsets.symmetric(
+        horizontal: 12.0, 
+        vertical: 8.0
+      ),
+      filled: true, // Fill background
+      focusedBorderColor: Colors.blue,
+      enabledBorderColor: Colors.grey,
+    ),
+  ),
   onCellChanged: (columnKey, rowIndex, oldValue, newValue) {
     // Handle cell value changes
     print('Updated \$columnKey: \$oldValue → \$newValue');
