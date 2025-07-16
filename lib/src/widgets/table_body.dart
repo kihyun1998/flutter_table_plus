@@ -506,10 +506,7 @@ class _TablePlusCellState extends State<_TablePlusCell> {
   @override
   Widget build(BuildContext context) {
     // Determine if this cell can be edited
-    final canEdit = widget.isEditable &&
-        widget.column.editable &&
-        widget.column.cellBuilder ==
-            null; // Don't edit cells with custom builders
+    final canEdit = widget.isEditable && widget.column.editable;
 
     // For editing cells, we don't need special background/border as TextField handles it
     Color backgroundColor = Colors.transparent;

@@ -115,7 +115,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
             textAlign: TextAlign.right,
             alignment: Alignment.centerRight,
             sortable: true, // Enable sorting
-            editable: false, // cellBuilder가 있어서 편집 불가
+            editable: true, // 이제 편집 가능! (custom cell이어도)
             cellBuilder: _buildSalaryCell,
           ),
         )
@@ -130,7 +130,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
             textAlign: TextAlign.center,
             alignment: Alignment.center,
             sortable: true, // Enable sorting
-            editable: false, // cellBuilder가 있어서 편집 불가
+            editable: true, // 이제 편집 가능! (custom cell이어도)
             cellBuilder: _buildStatusCell,
           ),
         )
@@ -210,15 +210,40 @@ class _TableExamplePageState extends State<TableExamplePage> {
   /// Handle cell value change in editable mode
   void _handleCellChanged(
       String columnKey, int rowIndex, dynamic oldValue, dynamic newValue) {
+    // Convert newValue based on column type
+    dynamic convertedValue = newValue;
     setState(() {
+      if (columnKey == 'salary') {
+        // Convert salary string to int (remove commas and dollar signs)
+        final cleanValue = newValue.toString().replaceAll(RegExp(r'[^\d]'), '');
+        convertedValue = int.tryParse(cleanValue) ?? oldValue;
+      } else if (columnKey == 'active') {
+        // Convert status string to boolean
+        final lowerValue = newValue.toString().toLowerCase();
+        if (lowerValue == 'true' ||
+            lowerValue == 'active' ||
+            lowerValue == '1') {
+          convertedValue = true;
+        } else if (lowerValue == 'false' ||
+            lowerValue == 'inactive' ||
+            lowerValue == '0') {
+          convertedValue = false;
+        } else {
+          convertedValue = oldValue; // Keep old value if can't parse
+        }
+      } else if (columnKey == 'age') {
+        // Convert age string to int
+        convertedValue = int.tryParse(newValue.toString()) ?? oldValue;
+      }
+
       // Update the data
-      _sortedData[rowIndex][columnKey] = newValue;
+      _sortedData[rowIndex][columnKey] = convertedValue;
     });
 
     // Show feedback
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Updated $columnKey: "$oldValue" → "$newValue"'),
+        content: Text('Updated $columnKey: "$oldValue" → "$convertedValue"'),
         duration: const Duration(milliseconds: 2000),
       ),
     );
@@ -728,7 +753,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
             const Text('• Column sorting (click header to sort: ↑ ↓ clear)',
                 style: TextStyle(
                     fontWeight: FontWeight.bold, color: Colors.green)),
-            const Text('• Cell editing mode (click cells to edit)',
+            const Text('• Cell editing mode (even custom cells!)',
                 style: TextStyle(
                     fontWeight: FontWeight.bold, color: Colors.orange)),
             if (_isSelectable) ...[
@@ -755,7 +780,16 @@ class _TableExamplePageState extends State<TableExamplePage> {
               const Text('Editing Features:',
                   style: TextStyle(
                       fontWeight: FontWeight.bold, color: Colors.orange)),
-              const Text('• Click on editable cells to start editing',
+              const Text('• Click on ANY editable cell to start editing',
+                  style: TextStyle(color: Colors.orange)),
+              const Text('• Custom cells (Salary, Status) also editable!',
+                  style: TextStyle(
+                      color: Colors.orange, fontWeight: FontWeight.bold)),
+              const Text('• Salary: Enter numbers (e.g., 80000)',
+                  style: TextStyle(color: Colors.orange)),
+              const Text('• Status: Enter "true/false" or "active/inactive"',
+                  style: TextStyle(color: Colors.orange)),
+              const Text('• Age: Enter numbers only',
                   style: TextStyle(color: Colors.orange)),
               const Text('• Beautifully styled inline text fields',
                   style: TextStyle(color: Colors.orange)),
@@ -765,9 +799,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
                   style: TextStyle(color: Colors.orange)),
               const Text('• Press Escape to cancel editing',
                   style: TextStyle(color: Colors.orange)),
-              const Text('• Only specified columns are editable',
-                  style: TextStyle(color: Colors.orange)),
-              const Text('• Custom cell builders cannot be edited',
+              const Text('• Smart data conversion (string → number/boolean)',
                   style: TextStyle(color: Colors.orange)),
               const Text('• Row selection disabled in editing mode',
                   style: TextStyle(color: Colors.orange)),
@@ -823,8 +855,9 @@ class _TableExamplePageState extends State<TableExamplePage> {
     ...
   ))
   .addColumn('salary', TablePlusColumn(
-    editable: false, // Disable editing (has cellBuilder)
-    cellBuilder: customBuilder,
+    editable: true, // Custom cells can also be edited!
+    cellBuilder: customSalaryBuilder, // Shows formatted in view mode
+    // In edit mode: shows raw number for editing
     ...
   ))
   .build();
@@ -837,20 +870,19 @@ FlutterTablePlus(
     editableTheme: TablePlusEditableTheme(
       textAlignVertical: TextAlignVertical.center, // Vertical center
       editingBorderRadius: BorderRadius.circular(6.0), // Rounded
-      textFieldPadding: EdgeInsets.symmetric(
-        horizontal: 12.0, 
-        vertical: 8.0
-      ),
       filled: true, // Fill background
-      focusedBorderColor: Colors.blue,
-      enabledBorderColor: Colors.grey,
     ),
   ),
   onCellChanged: (columnKey, rowIndex, oldValue, newValue) {
-    // Handle cell value changes
-    print('Updated \$columnKey: \$oldValue → \$newValue');
+    // Handle data type conversion
+    dynamic convertedValue = newValue;
+    if (columnKey == 'salary') {
+      convertedValue = int.tryParse(newValue) ?? oldValue;
+    } else if (columnKey == 'active') {
+      convertedValue = newValue.toLowerCase() == 'true';
+    }
+    // Update your data with convertedValue
   },
-  // Note: Row selection is disabled in editing mode
 )''',
                 style: TextStyle(
                   fontFamily: 'monospace',
