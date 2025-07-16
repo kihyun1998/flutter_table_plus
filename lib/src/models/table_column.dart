@@ -12,6 +12,19 @@ enum SortDirection {
   descending,
 }
 
+/// Callback type for when a cell value is changed in editable mode.
+///
+/// [columnKey]: The key of the column that was edited.
+/// [rowIndex]: The index of the row that was edited.
+/// [oldValue]: The previous value of the cell.
+/// [newValue]: The new value of the cell.
+typedef CellChangedCallback = void Function(
+  String columnKey,
+  int rowIndex,
+  dynamic oldValue,
+  dynamic newValue,
+);
+
 /// Configuration for sort icons in table headers.
 class SortIcons {
   /// Creates a [SortIcons] with the specified icon widgets.
@@ -58,6 +71,7 @@ class TablePlusColumn {
     this.alignment = Alignment.centerLeft,
     this.textAlign = TextAlign.left,
     this.sortable = false,
+    this.editable = false,
     this.visible = true,
     this.cellBuilder,
   });
@@ -93,12 +107,19 @@ class TablePlusColumn {
   /// Whether this column can be sorted.
   final bool sortable;
 
+  /// Whether this column can be edited when the table is in editable mode.
+  /// When true, cells in this column will become editable text fields when clicked.
+  final bool editable;
+
   /// Whether this column is visible in the table.
   final bool visible;
 
   /// Optional custom cell builder for this column.
   /// If provided, this will be used instead of the default cell rendering.
   /// The function receives the row data and should return a Widget.
+  ///
+  /// Note: If [editable] is true and [cellBuilder] is provided,
+  /// the cell will not be editable unless the custom builder handles editing.
   final Widget Function(BuildContext context, Map<String, dynamic> rowData)?
       cellBuilder;
 
@@ -113,6 +134,7 @@ class TablePlusColumn {
     Alignment? alignment,
     TextAlign? textAlign,
     bool? sortable,
+    bool? editable,
     bool? visible,
     Widget Function(BuildContext context, Map<String, dynamic> rowData)?
         cellBuilder,
@@ -127,6 +149,7 @@ class TablePlusColumn {
       alignment: alignment ?? this.alignment,
       textAlign: textAlign ?? this.textAlign,
       sortable: sortable ?? this.sortable,
+      editable: editable ?? this.editable,
       visible: visible ?? this.visible,
       cellBuilder: cellBuilder ?? this.cellBuilder,
     );
@@ -145,6 +168,7 @@ class TablePlusColumn {
         other.alignment == alignment &&
         other.textAlign == textAlign &&
         other.sortable == sortable &&
+        other.editable == editable &&
         other.visible == visible;
   }
 
@@ -160,12 +184,13 @@ class TablePlusColumn {
       alignment,
       textAlign,
       sortable,
+      editable,
       visible,
     );
   }
 
   @override
   String toString() {
-    return 'TableColumn(key: $key, label: $label, order: $order, width: $width, visible: $visible, sortable: $sortable)';
+    return 'TableColumn(key: $key, label: $label, order: $order, width: $width, visible: $visible, sortable: $sortable, editable: $editable)';
   }
 }

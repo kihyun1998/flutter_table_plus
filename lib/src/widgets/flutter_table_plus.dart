@@ -31,6 +31,8 @@ class FlutterTablePlus extends StatefulWidget {
     this.sortColumnKey,
     this.sortDirection = SortDirection.none,
     this.onSort,
+    this.isEditable = false,
+    this.onCellChanged,
   });
 
   /// The map of columns to display in the table.
@@ -84,12 +86,32 @@ class FlutterTablePlus extends StatefulWidget {
   /// parent widget to sort the data and update [sortColumnKey] and [sortDirection].
   final void Function(String columnKey, SortDirection direction)? onSort;
 
+  /// Whether the table supports cell editing.
+  /// When true, cells in columns marked as `editable` can be edited by clicking on them.
+  /// Note: Row selection via row click is disabled in editable mode.
+  final bool isEditable;
+
+  /// Callback when a cell value is changed in editable mode.
+  /// Provides the column key, row index, old value, and new value.
+  ///
+  /// This callback is triggered when:
+  /// - Enter key is pressed
+  /// - Escape key is pressed (reverts to old value)
+  /// - The text field loses focus
+  final CellChangedCallback? onCellChanged;
+
   @override
   State<FlutterTablePlus> createState() => _FlutterTablePlusState();
 }
 
 class _FlutterTablePlusState extends State<FlutterTablePlus> {
   bool _isHovered = false;
+
+  /// Current editing state: {rowIndex: {columnKey: TextEditingController}}
+  final Map<int, Map<String, TextEditingController>> _editingControllers = {};
+
+  /// Current editing cell: {rowIndex, columnKey}
+  ({int rowIndex, String columnKey})? _currentEditingCell;
 
   @override
   void initState() {
@@ -102,7 +124,111 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
     super.didUpdateWidget(oldWidget);
     if (widget.data != oldWidget.data) {
       _validateUniqueIds();
+      _clearAllEditing(); // Clear editing state when data changes
     }
+  }
+
+  @override
+  void dispose() {
+    _clearAllEditing();
+    super.dispose();
+  }
+
+  /// Clear all editing controllers and state
+  void _clearAllEditing() {
+    for (final rowControllers in _editingControllers.values) {
+      for (final controller in rowControllers.values) {
+        controller.dispose();
+      }
+    }
+    _editingControllers.clear();
+    _currentEditingCell = null;
+  }
+
+  /// Start editing a cell
+  void _startEditingCell(int rowIndex, String columnKey) {
+    if (!widget.isEditable) return;
+
+    final column = widget.columns[columnKey];
+    if (column == null || !column.editable) return;
+
+    // Stop current editing first
+    _stopCurrentEditing(save: true);
+
+    // Get current value
+    final currentValue = widget.data[rowIndex][columnKey]?.toString() ?? '';
+
+    // Create controller for this cell
+    _editingControllers[rowIndex] ??= {};
+    _editingControllers[rowIndex]![columnKey] =
+        TextEditingController(text: currentValue);
+
+    // Set current editing cell
+    _currentEditingCell = (rowIndex: rowIndex, columnKey: columnKey);
+
+    setState(() {});
+
+    // Focus the text field after the frame is built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final controller = _editingControllers[rowIndex]?[columnKey];
+      if (controller != null) {
+        // Select all text when starting to edit
+        controller.selection =
+            TextSelection(baseOffset: 0, extentOffset: controller.text.length);
+      }
+    });
+  }
+
+  /// Stop current editing
+  void _stopCurrentEditing({required bool save}) {
+    final currentCell = _currentEditingCell;
+    if (currentCell == null) return;
+
+    final controller =
+        _editingControllers[currentCell.rowIndex]?[currentCell.columnKey];
+    if (controller == null) return;
+
+    if (save && widget.onCellChanged != null) {
+      final oldValue = widget.data[currentCell.rowIndex][currentCell.columnKey];
+      final newValue = controller.text;
+
+      // Only call callback if value actually changed
+      if (oldValue?.toString() != newValue) {
+        widget.onCellChanged!(
+          currentCell.columnKey,
+          currentCell.rowIndex,
+          oldValue,
+          newValue,
+        );
+      }
+    }
+
+    // Clean up controller
+    controller.dispose();
+    _editingControllers[currentCell.rowIndex]?.remove(currentCell.columnKey);
+    if (_editingControllers[currentCell.rowIndex]?.isEmpty == true) {
+      _editingControllers.remove(currentCell.rowIndex);
+    }
+
+    _currentEditingCell = null;
+    setState(() {});
+  }
+
+  /// Check if a cell is currently being edited
+  bool _isCellEditing(int rowIndex, String columnKey) {
+    return _currentEditingCell?.rowIndex == rowIndex &&
+        _currentEditingCell?.columnKey == columnKey;
+  }
+
+  /// Get the text editing controller for a cell
+  TextEditingController? _getCellController(int rowIndex, String columnKey) {
+    return _editingControllers[rowIndex]?[columnKey];
+  }
+
+  /// Handle cell tap for editing
+  void _handleCellTap(int rowIndex, String columnKey) {
+    if (!widget.isEditable) return;
+    _startEditingCell(rowIndex, columnKey);
   }
 
   /// Validates that all row IDs are unique when selection is enabled.
@@ -373,6 +499,13 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                 selectionTheme: theme.selectionTheme,
                                 onRowSelectionChanged:
                                     widget.onRowSelectionChanged,
+                                // Editing-related properties
+                                isEditable: widget.isEditable,
+                                editableTheme: theme.editableTheme,
+                                isCellEditing: _isCellEditing,
+                                getCellController: _getCellController,
+                                onCellTap: _handleCellTap,
+                                onStopEditing: _stopCurrentEditing,
                               ),
                             ),
                           ],

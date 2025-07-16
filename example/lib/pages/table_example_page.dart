@@ -15,6 +15,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
   bool _isSelectable = false;
   final Set<String> _selectedRows = <String>{};
   bool _showVerticalDividers = true; // 세로줄 표시 여부
+  bool _isEditable = false; // 편집 모드
 
   // Sort state
   String? _sortColumnKey;
@@ -50,6 +51,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
             textAlign: TextAlign.center,
             alignment: Alignment.center,
             sortable: true, // Enable sorting
+            editable: false, // ID는 편집 불가
           ),
         )
         .addColumn(
@@ -61,6 +63,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
             width: 150,
             minWidth: 120,
             sortable: true, // Enable sorting
+            editable: true, // 이름은 편집 가능
           ),
         )
         .addColumn(
@@ -72,6 +75,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
             width: 200,
             minWidth: 150,
             sortable: true, // Enable sorting
+            editable: true, // 이메일은 편집 가능
           ),
         )
         .addColumn(
@@ -85,6 +89,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
             textAlign: TextAlign.center,
             alignment: Alignment.center,
             sortable: true, // Enable sorting
+            editable: true, // 나이는 편집 가능
           ),
         )
         .addColumn(
@@ -96,6 +101,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
             width: 120,
             minWidth: 100,
             sortable: true, // Enable sorting
+            editable: true, // 부서는 편집 가능
           ),
         )
         .addColumn(
@@ -109,6 +115,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
             textAlign: TextAlign.right,
             alignment: Alignment.centerRight,
             sortable: true, // Enable sorting
+            editable: false, // cellBuilder가 있어서 편집 불가
             cellBuilder: _buildSalaryCell,
           ),
         )
@@ -123,6 +130,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
             textAlign: TextAlign.center,
             alignment: Alignment.center,
             sortable: true, // Enable sorting
+            editable: false, // cellBuilder가 있어서 편집 불가
             cellBuilder: _buildStatusCell,
           ),
         )
@@ -199,6 +207,23 @@ class _TableExamplePageState extends State<TableExamplePage> {
     });
   }
 
+  /// Handle cell value change in editable mode
+  void _handleCellChanged(
+      String columnKey, int rowIndex, dynamic oldValue, dynamic newValue) {
+    setState(() {
+      // Update the data
+      _sortedData[rowIndex][columnKey] = newValue;
+    });
+
+    // Show feedback
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Updated $columnKey: "$oldValue" → "$newValue"'),
+        duration: const Duration(milliseconds: 2000),
+      ),
+    );
+  }
+
   /// Custom cell builder for salary
   Widget _buildSalaryCell(BuildContext context, Map<String, dynamic> rowData) {
     final salary = rowData['salary'] as int?;
@@ -270,16 +295,57 @@ class _TableExamplePageState extends State<TableExamplePage> {
           .toList()
         ..sort((a, b) => a.order.compareTo(b.order));
 
-      // Remove the moving column and re-insert it at the new position
-      final movingColumn = visibleColumns.removeAt(oldIndex);
-      visibleColumns.insert(newIndex, movingColumn);
+      if (oldIndex < 0 ||
+          oldIndex >= visibleColumns.length ||
+          newIndex < 0 ||
+          newIndex >= visibleColumns.length) {
+        return;
+      }
 
-      // Rebuild the columns map using the new order
+      // Get the column being moved
+      final movingColumn = visibleColumns[oldIndex];
+      final targetColumn = visibleColumns[newIndex];
+
+      // Create new builder and rebuild with new order
       final builder = TableColumnsBuilder();
-      for (final column in visibleColumns) {
-        // The order property is ignored and reassigned by the builder
+
+      // Add all columns except the moving one, adjusting orders
+      for (int i = 0; i < visibleColumns.length; i++) {
+        final column = visibleColumns[i];
+
+        if (column.key == movingColumn.key) {
+          continue; // Skip the moving column for now
+        }
+
+        int newOrder;
+        if (oldIndex < newIndex) {
+          // Moving down: shift columns up
+          if (i <= oldIndex) {
+            newOrder = i + 1;
+          } else if (i <= newIndex) {
+            newOrder = i;
+          } else {
+            newOrder = i + 1;
+          }
+        } else {
+          // Moving up: shift columns down
+          if (i < newIndex) {
+            newOrder = i + 1;
+          } else if (i < oldIndex) {
+            newOrder = i + 2;
+          } else {
+            newOrder = i + 1;
+          }
+        }
+
         builder.addColumn(column.key, column.copyWith(order: 0));
       }
+
+      // Insert the moved column at the new position
+      final newOrder = newIndex + 1;
+      builder.insertColumn(
+          movingColumn.key, movingColumn.copyWith(order: 0), newOrder);
+
       _columns = builder.build();
     });
 
@@ -297,6 +363,22 @@ class _TableExamplePageState extends State<TableExamplePage> {
     setState(() {
       _isSelectable = !_isSelectable;
       if (!_isSelectable) {
+        _selectedRows.clear();
+      }
+      // When enabling selection mode, disable editing mode
+      if (_isSelectable && _isEditable) {
+        _isEditable = false;
+      }
+    });
+  }
+
+  /// Toggle editing mode
+  void _toggleEditingMode() {
+    setState(() {
+      _isEditable = !_isEditable;
+      // When enabling editing mode, disable selection mode
+      if (_isEditable && _isSelectable) {
+        _isSelectable = false;
         _selectedRows.clear();
       }
     });
@@ -383,6 +465,17 @@ class _TableExamplePageState extends State<TableExamplePage> {
         checkboxColor: Color(0xFF2196F3),
         checkboxSize: 18.0,
       ),
+      editableTheme: const TablePlusEditableTheme(
+        editingCellColor: Color(0xFFFFF9C4), // 연한 노란색
+        editingBorderColor: Color(0xFF2196F3), // 파란색 테두리
+        editingBorderWidth: 2.0,
+        editingTextStyle: TextStyle(
+          fontSize: 14,
+          color: Color(0xFF212529),
+          fontWeight: FontWeight.w500,
+        ),
+        cursorColor: Color(0xFF2196F3),
+      ),
     );
   }
 
@@ -457,6 +550,15 @@ class _TableExamplePageState extends State<TableExamplePage> {
                 ? 'Hide Vertical Lines'
                 : 'Show Vertical Lines',
           ),
+          // Toggle editing mode button
+          IconButton(
+            onPressed: _toggleEditingMode,
+            icon: Icon(
+              _isEditable ? Icons.edit : Icons.edit_outlined,
+              color: _isEditable ? Colors.orange : null,
+            ),
+            tooltip: _isEditable ? 'Disable Editing' : 'Enable Editing',
+          ),
           // Toggle selection mode button
           IconButton(
             onPressed: _toggleSelectionMode,
@@ -528,6 +630,25 @@ class _TableExamplePageState extends State<TableExamplePage> {
                     ),
                   ),
                 ],
+                if (_isEditable) ...[
+                  const SizedBox(width: 16),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.shade100,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      'Editing Mode',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.orange.shade800,
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
 
@@ -561,6 +682,9 @@ class _TableExamplePageState extends State<TableExamplePage> {
                     sortColumnKey: _sortColumnKey,
                     sortDirection: _sortDirection,
                     onSort: _handleSort,
+                    // Editing-related properties
+                    isEditable: _isEditable,
+                    onCellChanged: _handleCellChanged,
                   ),
                 ),
               ),
@@ -595,6 +719,9 @@ class _TableExamplePageState extends State<TableExamplePage> {
             const Text('• Column sorting (click header to sort: ↑ ↓ clear)',
                 style: TextStyle(
                     fontWeight: FontWeight.bold, color: Colors.green)),
+            const Text('• Cell editing mode (click cells to edit)',
+                style: TextStyle(
+                    fontWeight: FontWeight.bold, color: Colors.orange)),
             if (_isSelectable) ...[
               const SizedBox(height: 8),
               const Text('Selection Features:',
@@ -614,6 +741,24 @@ class _TableExamplePageState extends State<TableExamplePage> {
               const Text('• Selection state management by parent widget',
                   style: TextStyle(color: Colors.blue)),
             ],
+            if (_isEditable) ...[
+              const SizedBox(height: 8),
+              const Text('Editing Features:',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, color: Colors.orange)),
+              const Text('• Click on editable cells to start editing',
+                  style: TextStyle(color: Colors.orange)),
+              const Text('• Press Enter or click away to save changes',
+                  style: TextStyle(color: Colors.orange)),
+              const Text('• Press Escape to cancel editing',
+                  style: TextStyle(color: Colors.orange)),
+              const Text('• Only specified columns are editable',
+                  style: TextStyle(color: Colors.orange)),
+              const Text('• Custom cell builders cannot be edited',
+                  style: TextStyle(color: Colors.orange)),
+              const Text('• Row selection disabled in editing mode',
+                  style: TextStyle(color: Colors.orange)),
+            ],
 
             const SizedBox(height: 16),
 
@@ -629,6 +774,8 @@ class _TableExamplePageState extends State<TableExamplePage> {
             const Text('• 🔀 Clear sort (reset to original order)'),
             const Text(
                 '• 🔲 Toggle vertical dividers (Grid vs Horizontal-only design)'),
+            const Text(
+                '• ✏️ Toggle editing mode (Cell editing with text fields)'),
             const Text(
                 '• ☑️ Toggle selection mode (Row selection with checkboxes)'),
             const Text('• 🖱️ Drag column headers to reorder'),
@@ -657,38 +804,27 @@ class _TableExamplePageState extends State<TableExamplePage> {
               ),
               child: const Text(
                 '''final columns = TableColumnsBuilder()
-  .addColumn('id', TablePlusColumn(
-    sortable: true, // Enable sorting
-    ...
-  ))
   .addColumn('name', TablePlusColumn(
     sortable: true,
+    editable: true, // Enable cell editing
+    ...
+  ))
+  .addColumn('salary', TablePlusColumn(
+    editable: false, // Disable editing (has cellBuilder)
+    cellBuilder: customBuilder,
     ...
   ))
   .build();
 
 FlutterTablePlus(
   columns: columns,
-  data: sortedData, // Use your sorted data
-  isSelectable: true,
-  selectedRows: selectedRowIds,
-  sortColumnKey: currentSortColumn,
-  sortDirection: currentSortDirection,
-  onSort: (columnKey, direction) {
-    // Handle sorting: none → asc → desc → none
-    setState(() {
-      if (direction == SortDirection.none) {
-        // Reset to original order
-        resetData();
-      } else {
-        // Sort your data
-        sortData(columnKey, direction);
-      }
-    });
+  data: data,
+  isEditable: true, // Enable editing mode
+  onCellChanged: (columnKey, rowIndex, oldValue, newValue) {
+    // Handle cell value changes
+    print('Updated \$columnKey: \$oldValue → \$newValue');
   },
-  onColumnReorder: (oldIndex, newIndex) {
-    // Handle column reordering
-  },
+  // Note: Row selection is disabled in editing mode
 )''',
                 style: TextStyle(
                   fontFamily: 'monospace',

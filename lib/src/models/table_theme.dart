@@ -10,6 +10,7 @@ class TablePlusTheme {
     this.bodyTheme = const TablePlusBodyTheme(),
     this.scrollbarTheme = const TablePlusScrollbarTheme(),
     this.selectionTheme = const TablePlusSelectionTheme(),
+    this.editableTheme = const TablePlusEditableTheme(),
   });
 
   /// Theme configuration for the table header.
@@ -24,18 +25,23 @@ class TablePlusTheme {
   /// Theme configuration for row selection.
   final TablePlusSelectionTheme selectionTheme;
 
+  /// Theme configuration for cell editing.
+  final TablePlusEditableTheme editableTheme;
+
   /// Creates a copy of this theme with the given fields replaced with new values.
   TablePlusTheme copyWith({
     TablePlusHeaderTheme? headerTheme,
     TablePlusBodyTheme? bodyTheme,
     TablePlusScrollbarTheme? scrollbarTheme,
     TablePlusSelectionTheme? selectionTheme,
+    TablePlusEditableTheme? editableTheme,
   }) {
     return TablePlusTheme(
       headerTheme: headerTheme ?? this.headerTheme,
       bodyTheme: bodyTheme ?? this.bodyTheme,
       scrollbarTheme: scrollbarTheme ?? this.scrollbarTheme,
       selectionTheme: selectionTheme ?? this.selectionTheme,
+      editableTheme: editableTheme ?? this.editableTheme,
     );
   }
 
@@ -314,6 +320,59 @@ class TablePlusSelectionTheme {
       checkboxSize: checkboxSize ?? this.checkboxSize,
       showCheckboxColumn: showCheckboxColumn ?? this.showCheckboxColumn,
       checkboxColumnWidth: checkboxColumnWidth ?? this.checkboxColumnWidth,
+    );
+  }
+}
+
+/// Theme configuration for cell editing.
+class TablePlusEditableTheme {
+  /// Creates a [TablePlusEditableTheme] with the specified styling properties.
+  const TablePlusEditableTheme({
+    this.editingCellColor = const Color(0xFFFFF9C4),
+    this.editingTextStyle = const TextStyle(
+      fontSize: 14,
+      color: Color(0xFF212121),
+    ),
+    this.editingBorderColor = const Color(0xFF2196F3),
+    this.editingBorderWidth = 2.0,
+    this.textFieldPadding = const EdgeInsets.symmetric(horizontal: 8.0),
+    this.cursorColor = const Color(0xFF2196F3),
+  });
+
+  /// The background color for cells that are currently being edited.
+  final Color editingCellColor;
+
+  /// The text style for text inside editing text fields.
+  final TextStyle editingTextStyle;
+
+  /// The border color for cells that are currently being edited.
+  final Color editingBorderColor;
+
+  /// The border width for cells that are currently being edited.
+  final double editingBorderWidth;
+
+  /// The padding inside the text field when editing.
+  final EdgeInsets textFieldPadding;
+
+  /// The cursor color in the text field.
+  final Color cursorColor;
+
+  /// Creates a copy of this theme with the given fields replaced with new values.
+  TablePlusEditableTheme copyWith({
+    Color? editingCellColor,
+    TextStyle? editingTextStyle,
+    Color? editingBorderColor,
+    double? editingBorderWidth,
+    EdgeInsets? textFieldPadding,
+    Color? cursorColor,
+  }) {
+    return TablePlusEditableTheme(
+      editingCellColor: editingCellColor ?? this.editingCellColor,
+      editingTextStyle: editingTextStyle ?? this.editingTextStyle,
+      editingBorderColor: editingBorderColor ?? this.editingBorderColor,
+      editingBorderWidth: editingBorderWidth ?? this.editingBorderWidth,
+      textFieldPadding: textFieldPadding ?? this.textFieldPadding,
+      cursorColor: cursorColor ?? this.cursorColor,
     );
   }
 }

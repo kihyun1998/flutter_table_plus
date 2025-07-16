@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../models/table_column.dart';
 import '../models/table_theme.dart';
@@ -18,6 +19,12 @@ class TablePlusBody extends StatelessWidget {
     this.selectedRows = const <String>{},
     this.selectionTheme = const TablePlusSelectionTheme(),
     this.onRowSelectionChanged,
+    this.isEditable = false,
+    this.editableTheme = const TablePlusEditableTheme(),
+    this.isCellEditing,
+    this.getCellController,
+    this.onCellTap,
+    this.onStopEditing,
   });
 
   /// The list of columns for the table.
@@ -46,6 +53,25 @@ class TablePlusBody extends StatelessWidget {
 
   /// Callback when a row's selection state changes.
   final void Function(String rowId, bool isSelected)? onRowSelectionChanged;
+
+  /// Whether the table supports cell editing.
+  final bool isEditable;
+
+  /// The theme configuration for editing.
+  final TablePlusEditableTheme editableTheme;
+
+  /// Function to check if a cell is currently being edited.
+  final bool Function(int rowIndex, String columnKey)? isCellEditing;
+
+  /// Function to get the TextEditingController for a cell.
+  final TextEditingController? Function(int rowIndex, String columnKey)?
+      getCellController;
+
+  /// Callback when a cell is tapped for editing.
+  final void Function(int rowIndex, String columnKey)? onCellTap;
+
+  /// Callback to stop current editing.
+  final void Function({required bool save})? onStopEditing;
 
   /// Get the background color for a row at the given index.
   Color _getRowColor(int index, bool isSelected) {
@@ -105,6 +131,7 @@ class TablePlusBody extends StatelessWidget {
         final isSelected = rowId != null && selectedRows.contains(rowId);
 
         return _TablePlusRow(
+          rowIndex: index,
           rowData: rowData,
           rowId: rowId,
           columns: columns,
@@ -116,6 +143,12 @@ class TablePlusBody extends StatelessWidget {
           isSelected: isSelected,
           selectionTheme: selectionTheme,
           onRowSelectionChanged: _handleRowSelectionToggle,
+          isEditable: isEditable,
+          editableTheme: editableTheme,
+          isCellEditing: isCellEditing,
+          getCellController: getCellController,
+          onCellTap: onCellTap,
+          onStopEditing: onStopEditing,
         );
       },
     );
@@ -125,6 +158,7 @@ class TablePlusBody extends StatelessWidget {
 /// A single table row widget.
 class _TablePlusRow extends StatelessWidget {
   const _TablePlusRow({
+    required this.rowIndex,
     required this.rowData,
     required this.rowId,
     required this.columns,
@@ -136,8 +170,15 @@ class _TablePlusRow extends StatelessWidget {
     required this.isSelected,
     required this.selectionTheme,
     required this.onRowSelectionChanged,
+    required this.isEditable,
+    required this.editableTheme,
+    required this.isCellEditing,
+    required this.getCellController,
+    required this.onCellTap,
+    required this.onStopEditing,
   });
 
+  final int rowIndex;
   final Map<String, dynamic> rowData;
   final String? rowId;
   final List<TablePlusColumn> columns;
@@ -149,9 +190,18 @@ class _TablePlusRow extends StatelessWidget {
   final bool isSelected;
   final TablePlusSelectionTheme selectionTheme;
   final void Function(String rowId) onRowSelectionChanged;
+  final bool isEditable;
+  final TablePlusEditableTheme editableTheme;
+  final bool Function(int rowIndex, String columnKey)? isCellEditing;
+  final TextEditingController? Function(int rowIndex, String columnKey)?
+      getCellController;
+  final void Function(int rowIndex, String columnKey)? onCellTap;
+  final void Function({required bool save})? onStopEditing;
 
   /// Handle row tap for selection.
+  /// Only works when not in editable mode.
   void _handleRowTap() {
+    if (isEditable) return; // No row selection in editable mode
     if (!isSelectable || rowId == null) return;
     onRowSelectionChanged(rowId!);
   }
@@ -190,17 +240,26 @@ class _TablePlusRow extends StatelessWidget {
           }
 
           return _TablePlusCell(
+            rowIndex: rowIndex,
             column: column,
             rowData: rowData,
             width: width,
             theme: theme,
+            isEditable: isEditable,
+            editableTheme: editableTheme,
+            isCellEditing: isCellEditing?.call(rowIndex, column.key) ?? false,
+            cellController: getCellController?.call(rowIndex, column.key),
+            onCellTap: onCellTap != null
+                ? () => onCellTap!(rowIndex, column.key)
+                : null,
+            onStopEditing: onStopEditing,
           );
         }),
       ),
     );
 
-    // Wrap with CustomInkWell for row selection if selectable
-    if (isSelectable && rowId != null) {
+    // Wrap with CustomInkWell for row selection if selectable and not editable
+    if (isSelectable && !isEditable && rowId != null) {
       return CustomInkWell(
         onTap: _handleRowTap,
         child: rowContent,
@@ -264,77 +323,192 @@ class _SelectionCell extends StatelessWidget {
 }
 
 /// A single table cell widget.
-class _TablePlusCell extends StatelessWidget {
+class _TablePlusCell extends StatefulWidget {
   const _TablePlusCell({
+    required this.rowIndex,
     required this.column,
     required this.rowData,
     required this.width,
     required this.theme,
+    required this.isEditable,
+    required this.editableTheme,
+    required this.isCellEditing,
+    this.cellController,
+    this.onCellTap,
+    this.onStopEditing,
   });
 
+  final int rowIndex;
   final TablePlusColumn column;
   final Map<String, dynamic> rowData;
   final double width;
   final TablePlusBodyTheme theme;
+  final bool isEditable;
+  final TablePlusEditableTheme editableTheme;
+  final bool isCellEditing;
+  final TextEditingController? cellController;
+  final VoidCallback? onCellTap;
+  final void Function({required bool save})? onStopEditing;
+
+  @override
+  State<_TablePlusCell> createState() => _TablePlusCellState();
+}
+
+class _TablePlusCellState extends State<_TablePlusCell> {
+  late FocusNode _focusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode = FocusNode();
+    _focusNode.addListener(_onFocusChange);
+  }
+
+  @override
+  void didUpdateWidget(_TablePlusCell oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // Focus the text field when editing starts
+    if (!oldWidget.isCellEditing && widget.isCellEditing) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _focusNode.requestFocus();
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _focusNode.removeListener(_onFocusChange);
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  /// Handle focus changes - stop editing when focus is lost
+  void _onFocusChange() {
+    if (!_focusNode.hasFocus && widget.isCellEditing) {
+      widget.onStopEditing?.call(save: true);
+    }
+  }
+
+  /// Handle key presses in the text field
+  bool _handleKeyPress(KeyEvent event) {
+    if (event is KeyDownEvent) {
+      if (event.logicalKey == LogicalKeyboardKey.enter) {
+        // Enter key - save and stop editing
+        widget.onStopEditing?.call(save: true);
+        return true;
+      } else if (event.logicalKey == LogicalKeyboardKey.escape) {
+        // Escape key - cancel and stop editing
+        widget.onStopEditing?.call(save: false);
+        return true;
+      }
+    }
+    return false;
+  }
 
   /// Extract the display value for this cell.
   String _getCellDisplayValue() {
-    final value = rowData[column.key];
+    final value = widget.rowData[widget.column.key];
     if (value == null) return '';
     return value.toString();
   }
 
-  @override
-  Widget build(BuildContext context) {
+  /// Build the editing text field
+  Widget _buildEditingTextField() {
+    return KeyboardListener(
+      focusNode: FocusNode(), // Separate focus node for keyboard listener
+      onKeyEvent: _handleKeyPress,
+      child: TextField(
+        controller: widget.cellController,
+        focusNode: _focusNode,
+        style: widget.editableTheme.editingTextStyle,
+        decoration: InputDecoration(
+          border: InputBorder.none,
+          contentPadding: widget.editableTheme.textFieldPadding,
+          isDense: true,
+        ),
+        textAlign: widget.column.textAlign,
+        cursorColor: widget.editableTheme.cursorColor,
+        onSubmitted: (_) => widget.onStopEditing?.call(save: true),
+      ),
+    );
+  }
+
+  /// Build the regular cell content
+  Widget _buildRegularCell() {
     // Use custom cell builder if provided
-    if (column.cellBuilder != null) {
-      return Container(
-        width: width,
-        height: theme.rowHeight,
-        padding: theme.padding,
-        decoration: BoxDecoration(
-          border: theme.showVerticalDividers
-              ? Border(
-                  right: BorderSide(
-                    color: theme.dividerColor.withOpacity(0.5),
-                    width: 0.5,
-                  ),
-                )
-              : null,
-        ),
-        child: Align(
-          alignment: column.alignment,
-          child: column.cellBuilder!(context, rowData),
-        ),
+    if (widget.column.cellBuilder != null) {
+      return Align(
+        alignment: widget.column.alignment,
+        child: widget.column.cellBuilder!(context, widget.rowData),
       );
     }
 
     // Default text cell
     final displayValue = _getCellDisplayValue();
 
-    return Container(
-      width: width,
-      height: theme.rowHeight,
-      padding: theme.padding,
-      decoration: BoxDecoration(
-        border: theme.showVerticalDividers
-            ? Border(
-                right: BorderSide(
-                  color: theme.dividerColor.withOpacity(0.5),
-                  width: 0.5,
-                ),
-              )
-            : null,
-      ),
-      child: Align(
-        alignment: column.alignment,
-        child: Text(
-          displayValue,
-          style: theme.textStyle,
-          overflow: TextOverflow.ellipsis,
-          textAlign: column.textAlign,
-        ),
+    return Align(
+      alignment: widget.column.alignment,
+      child: Text(
+        displayValue,
+        style: widget.theme.textStyle,
+        overflow: TextOverflow.ellipsis,
+        textAlign: widget.column.textAlign,
       ),
     );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Determine if this cell can be edited
+    final canEdit = widget.isEditable &&
+        widget.column.editable &&
+        widget.column.cellBuilder ==
+            null; // Don't edit cells with custom builders
+
+    // Choose background color based on editing state
+    Color backgroundColor = Colors.transparent;
+    BoxBorder? border;
+
+    if (widget.isCellEditing) {
+      backgroundColor = widget.editableTheme.editingCellColor;
+      border = Border.all(
+        color: widget.editableTheme.editingBorderColor,
+        width: widget.editableTheme.editingBorderWidth,
+      );
+    }
+
+    Widget cellContent = Container(
+      width: widget.width,
+      height: widget.theme.rowHeight,
+      padding: widget.theme.padding,
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        border: border ??
+            (widget.theme.showVerticalDividers
+                ? Border(
+                    right: BorderSide(
+                      color: widget.theme.dividerColor.withOpacity(0.5),
+                      width: 0.5,
+                    ),
+                  )
+                : null),
+      ),
+      child:
+          widget.isCellEditing ? _buildEditingTextField() : _buildRegularCell(),
+    );
+
+    // Wrap with GestureDetector for cell editing if applicable
+    if (canEdit && !widget.isCellEditing && widget.onCellTap != null) {
+      return GestureDetector(
+        onTap: widget.onCellTap,
+        child: MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: cellContent,
+        ),
+      );
+    }
+
+    return cellContent;
   }
 }

@@ -3,6 +3,12 @@
 
 ```
 flutter_table_plus/
+├── documentation/
+    ├── ADVANCED_COLUMNS.md
+    ├── RIVERPOD_GENERATOR_GUIDE.md
+    ├── SELECTION.md
+    ├── SORTING.md
+    └── THEMING.md
 ├── example/
     ├── lib/
     │   ├── data/
@@ -36,14 +42,794 @@ flutter_table_plus/
 
 ## CHANGELOG.md
 ```md
-## 0.0.1
+## 1.0.0
 
-* TODO: Describe initial release.
+* **Initial release of `flutter_table_plus`**
 
+### Features
+
+*   **Highly Customizable Table:** Provides a flexible and efficient table widget.
+*   **Synchronized Scrolling:** Horizontal and vertical scrolling is synchronized between the header and body.
+*   **Theming:** Extensive customization of table appearance through `TablePlusTheme`, including headers, rows, scrollbars, and selection styles.
+*   **Column Sorting:** Supports sorting columns in ascending, descending, or unsorted order. The sorting logic is handled by the parent widget.
+*   **Row Selection:** Allows for single or multiple row selection with checkboxes.
+*   **Column Reordering:** Supports drag-and-drop column reordering.
+*   **Custom Cell Builders:** Allows for custom widget rendering in cells for complex data representation.
+*   **Type-Safe Column Builder:** Use `TableColumnsBuilder` to safely create and manage column order.
 ```
 ## LICENSE
 ```
-TODO: Add your license here.
+MIT License
+
+Copyright (c) 2025 Ki Hyun Park
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+```
+## documentation/ADVANCED_COLUMNS.md
+```md
+# Feature Guide: Advanced Column Settings
+
+Beyond basic text display, `TablePlusColumn` offers powerful options to control column width and render custom widgets within cells.
+
+## 1. Custom Cell Rendering with `cellBuilder`
+
+The `cellBuilder` property allows you to break free from simple text and render any widget you want inside a table cell. This is perfect for formatting data, showing images, adding buttons, or displaying custom status badges.
+
+`cellBuilder` is a function that provides the `BuildContext` and the `rowData` (the `Map<String, dynamic>` for the current row) and must return a `Widget`.
+
+### Example 1: Formatting a Salary
+
+Instead of just showing `75000`, you can format it as a currency string and apply a custom style.
+
+```dart
+.addColumn(
+  'salary',
+  TablePlusColumn(
+    key: 'salary',
+    label: 'Salary',
+    order: 0,
+    cellBuilder: (context, rowData) {
+      final salary = rowData['salary'] as int? ?? 0;
+      final formattedSalary = '\$${salary.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},')}';
+      
+      return Text(
+        formattedSalary,
+        style: const TextStyle(
+          fontWeight: FontWeight.bold,
+          color: Colors.green,
+        ),
+      );
+    },
+  ),
+)
+```
+
+### Example 2: Displaying a Status Badge
+
+Based on a boolean `active` flag, you can display a colorful status badge.
+
+```dart
+.addColumn(
+  'active',
+  TablePlusColumn(
+    key: 'active',
+    label: 'Status',
+    order: 0,
+    alignment: Alignment.center, // Center the badge in the cell
+    cellBuilder: (context, rowData) {
+      final bool isActive = rowData['active'] as bool? ?? false;
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: isActive ? Colors.green.shade100 : Colors.red.shade100,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Text(
+          isActive ? 'Active' : 'Inactive',
+          style: TextStyle(
+            color: isActive ? Colors.green.shade800 : Colors.red.shade800,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      );
+    },
+  ),
+)
+```
+
+## 2. Controlling Column Width
+
+You have fine-grained control over column widths using three properties:
+
+- `width`: The **preferred** width of the column. The table will try to respect this width if there is enough horizontal space.
+- `minWidth`: The **minimum** width the column can shrink to. This is a hard constraint.
+- `maxWidth`: The **maximum** width the column can expand to. This is useful to prevent one column from taking up too much space.
+
+### How Widths are Calculated
+
+- **If total preferred width fits:** Any extra space is distributed proportionally among all columns.
+- **If total preferred width exceeds available space:** Columns are scaled down proportionally, but never smaller than their `minWidth`.
+- **If total minimum width exceeds available space:** The table will overflow horizontally, and a scrollbar will appear.
+
+### Example
+
+```dart
+.addColumn(
+  'id',
+  const TablePlusColumn(
+    key: 'id',
+    label: 'ID',
+    order: 0,
+    width: 60,      // Small preferred width
+    minWidth: 50,   // Cannot get smaller than 50px
+    maxWidth: 80,   // Cannot get larger than 80px
+    alignment: Alignment.center,
+  ),
+)
+.addColumn(
+  'description',
+  const TablePlusColumn(
+    key: 'description',
+    label: 'Description',
+    order: 0,
+    width: 300,     // Give this column more space initially
+    minWidth: 150,  // But allow it to shrink if needed
+  ),
+)
+```
+
+By combining `cellBuilder` and width constraints, you can build complex and responsive data tables that are tailored to your specific needs.
+
+```
+## documentation/RIVERPOD_GENERATOR_GUIDE.md
+```md
+# Integrating with Riverpod (Code Generator)
+
+This guide demonstrates how to efficiently manage the state of `FlutterTablePlus` using the Riverpod code generator. We will cover both class-based notifiers (`@riverpod class`) for managing state logic and function-based providers (`@riverpod`) for deriving and memoizing state.
+
+This approach ensures optimal performance by minimizing widget rebuilds.
+
+## 1. Add Dependencies
+
+First, add the necessary Riverpod packages to your `pubspec.yaml`:
+
+```yaml
+dependencies:
+  flutter_riverpod: ^2.5.1
+  riverpod_annotation: ^2.3.5
+
+dev_dependencies:
+  build_runner: ^2.4.10
+  riverpod_generator: ^2.4.2
+```
+
+## 2. Define the State Model
+
+Create a model class to hold all the state related to the table. Using a single state object makes it easy to manage and extend.
+
+**`table_state.dart`**
+```dart
+import 'package:flutter_table_plus/flutter_table_plus.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'table_state.freezed.dart';
+
+@freezed
+class TableState with _$TableState {
+  const factory TableState({
+    // Original, unsorted data
+    @Default([]) List<Map<String, dynamic>> allEmployees,
+    
+    // Sorting state
+    String? sortColumnKey,
+    @Default(SortDirection.none) SortDirection sortDirection,
+    
+    // Selection state
+    @Default({}) Set<String> selectedRowIds,
+    
+    // UI options
+    @Default(true) bool showVerticalDividers,
+    @Default(false) bool isSelectable,
+    
+    // Loading/Error state
+    @Default(true) bool isLoading,
+    String? error,
+  }) = _TableState;
+}
+```
+*We use `freezed` for a robust, immutable state class, but a simple class with a `copyWith` method also works.*
+
+## 3. Create the State Notifier (`@riverpod class`)
+
+The Notifier is a class that contains all the business logic for mutating the state. It's the central place for handling user interactions like sorting and selection.
+
+**`employee_table_notifier.dart`**
+```dart
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:flutter_table_plus_example/data/sample_data.dart'; // Your data source
+import 'table_state.dart';
+
+part 'employee_table_notifier.g.dart';
+
+@riverpod
+class EmployeeTableNotifier extends _$EmployeeTableNotifier {
+  @override
+  TableState build() {
+    // Load initial data
+    _fetchEmployees();
+    return const TableState();
+  }
+
+  Future<void> _fetchEmployees() async {
+    // In a real app, you would fetch data from an API
+    state = state.copyWith(
+      allEmployees: SampleData.employeeData,
+      isLoading: false,
+    );
+  }
+
+  /// Handles sorting logic
+  void handleSort(String columnKey) {
+    SortDirection newDirection;
+    if (state.sortColumnKey == columnKey) {
+      // Cycle through sort directions
+      newDirection = switch (state.sortDirection) {
+        SortDirection.none => SortDirection.ascending,
+        SortDirection.ascending => SortDirection.descending,
+        SortDirection.descending => SortDirection.none,
+      };
+    } else {
+      newDirection = SortDirection.ascending;
+    }
+
+    state = state.copyWith(
+      sortColumnKey: newDirection == SortDirection.none ? null : columnKey,
+      sortDirection: newDirection,
+    );
+  }
+
+  /// Toggles row selection
+  void selectRow(String rowId, bool isSelected) {
+    final newSelectedIds = Set<String>.from(state.selectedRowIds);
+    if (isSelected) {
+      newSelectedIds.add(rowId);
+    } else {
+      newSelectedIds.remove(rowId);
+    }
+    state = state.copyWith(selectedRowIds: newSelectedIds);
+  }
+
+  /// Selects or deselects all rows
+  void selectAllRows(bool select) {
+    if (select) {
+      final allIds = state.allEmployees.map((e) => e['id'].toString()).toSet();
+      state = state.copyWith(selectedRowIds: allIds);
+    } else {
+      state = state.copyWith(selectedRowIds: {});
+    }
+  }
+  
+  // --- Other UI-related methods ---
+  
+  void toggleSelectionMode() {
+    state = state.copyWith(
+      isSelectable: !state.isSelectable,
+      // Clear selections when disabling selection mode
+      selectedRowIds: state.isSelectable ? {} : state.selectedRowIds,
+    );
+  }
+}
+```
+
+## 4. Create Derived State Providers (`@riverpod`)
+
+Derived state providers are pure functions that compute values based on other providers. Riverpod automatically caches (memoizes) their results, so the computation only runs when the dependencies change. This is perfect for expensive operations like sorting.
+
+**`employee_table_providers.dart`**
+```dart
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:flutter_table_plus/flutter_table_plus.dart';
+import 'employee_table_notifier.dart';
+
+part 'employee_table_providers.g.dart';
+
+/// Provides the sorted list of employees.
+/// This provider only recomputes when the original data or sort conditions change.
+@riverpod
+List<Map<String, dynamic>> sortedEmployees(SortedEmployeesRef ref) {
+  final allEmployees = ref.watch(employeeTableNotifierProvider.select((s) => s.allEmployees));
+  final sortColumn = ref.watch(employeeTableNotifierProvider.select((s) => s.sortColumnKey));
+  final sortDirection = ref.watch(employeeTableNotifierProvider.select((s) => s.sortDirection));
+
+  if (sortColumn == null || sortDirection == SortDirection.none) {
+    return allEmployees;
+  }
+
+  final sortedList = List<Map<String, dynamic>>.from(allEmployees);
+  sortedList.sort((a, b) {
+    final aValue = a[sortColumn];
+    final bValue = b[sortColumn];
+    
+    // Add your comparison logic here...
+    final comparison = (aValue ?? '').toString().compareTo((bValue ?? '').toString());
+    
+    return sortDirection == SortDirection.ascending ? comparison : -comparison;
+  });
+
+  return sortedList;
+}
+
+/// Provides the names of selected employees.
+/// This is another example of derived state.
+@riverpod
+List<String> selectedEmployeeNames(SelectedEmployeeNamesRef ref) {
+  final allEmployees = ref.watch(employeeTableNotifierProvider.select((s) => s.allEmployees));
+  final selectedIds = ref.watch(employeeTableNotifierProvider.select((s) => s.selectedRowIds));
+
+  return allEmployees
+      .where((e) => selectedIds.contains(e['id'].toString()))
+      .map((e) => e['name'].toString())
+      .toList();
+}
+```
+*Using `.select` ensures that these providers only rebuild when the specific properties they depend on change, further optimizing performance.*
+
+## 5. Connect to the UI
+
+Now, connect the providers to your UI. Use `ref.watch` to get state and `ref.read` to call methods in the notifier.
+
+**`table_page.dart`**
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_table_plus/flutter_table_plus.dart';
+import 'employee_table_notifier.dart';
+import 'employee_table_providers.dart';
+
+class EmployeeTablePage extends ConsumerWidget {
+  const EmployeeTablePage({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Watch the state and derived providers
+    final tableState = ref.watch(employeeTableNotifierProvider);
+    final sortedData = ref.watch(sortedEmployeesProvider);
+    final notifier = ref.read(employeeTableNotifierProvider.notifier);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Riverpod Table Example'),
+        actions: [
+          IconButton(
+            icon: Icon(tableState.isSelectable ? Icons.check_box : Icons.check_box_outline_blank),
+            onPressed: () => notifier.toggleSelectionMode(),
+          ),
+        ],
+      ),
+      body: FlutterTablePlus(
+        columns: _buildColumns(), // Define your columns
+        data: sortedData,
+        
+        // Connect state properties
+        isSelectable: tableState.isSelectable,
+        selectedRows: tableState.selectedRowIds,
+        sortColumnKey: tableState.sortColumnKey,
+        sortDirection: tableState.sortDirection,
+        
+        // Connect notifier methods to callbacks
+        onSort: (columnKey, _) => notifier.handleSort(columnKey),
+        onRowSelectionChanged: (rowId, isSelected) => notifier.selectRow(rowId, isSelected),
+        onSelectAll: (select) => notifier.selectAllRows(select),
+      ),
+    );
+  }
+  
+  Map<String, TablePlusColumn> _buildColumns() {
+    // Use TableColumnsBuilder to define your columns...
+    return TableColumnsBuilder()
+        .addColumn('id', const TablePlusColumn(key: 'id', label: 'ID', order: 0, sortable: true))
+        .addColumn('name', const TablePlusColumn(key: 'name', label: 'Name', order: 0, sortable: true))
+        .build();
+  }
+}
+```
+
+By structuring your code this way, you achieve a highly efficient and maintainable integration between `flutter_table_plus` and Riverpod.
+
+```
+## documentation/SELECTION.md
+```md
+# Feature Guide: Row Selection
+
+`FlutterTablePlus` supports single or multiple row selection, managed by your application's state. This guide explains how to enable and control the selection feature.
+
+## 1. Enabling Selection
+
+To enable row selection, set the `isSelectable` property to `true`.
+
+```dart
+FlutterTablePlus(
+  isSelectable: true,
+  // ... other properties
+);
+```
+
+When enabled, a checkbox column will appear at the beginning of the table, and tapping on a row will toggle its selection state.
+
+## 2. The Importance of a Unique `id`
+
+**This is critical:** For the selection feature to work correctly, every row in your `data` list (each `Map<String, dynamic>`) **must** have a unique identifier under the key `'id'`.
+
+The widget uses `rowData['id'].toString()` to track selected rows. Duplicate or missing IDs will lead to unpredictable selection behavior.
+
+```dart
+// GOOD: Each row has a unique 'id'.
+final data = [
+  {'id': 1, 'name': 'Product A'},
+  {'id': 2, 'name': 'Product B'},
+  {'id': 'prod_c', 'name': 'Product C'}, // IDs can be String or int
+];
+
+// BAD: Missing or duplicate IDs.
+final badData = [
+  {'name': 'Product A'}, // Missing 'id'
+  {'id': 1, 'name': 'Product B'},
+  {'id': 1, 'name': 'Product C'}, // Duplicate 'id'
+];
+```
+
+## 3. Managing Selection State
+
+Similar to sorting, the table delegates selection state management to the parent widget. You need to store the set of selected row IDs and provide it to the table.
+
+### State Management
+
+- `selectedRows` (`Set<String>`): A set containing the unique IDs of the selected rows.
+
+### Callbacks
+
+- `onRowSelectionChanged`: Called when a single row's checkbox is toggled or a row is tapped. It provides the `rowId` and its new `isSelected` state.
+- `onSelectAll`: Called when the header checkbox is clicked. It provides a boolean indicating whether to select all rows.
+
+### Example with `StatefulWidget`
+
+```dart
+class SelectableTablePage extends StatefulWidget {
+  const SelectableTablePage({super.key, required this.data});
+  final List<Map<String, dynamic>> data;
+
+  @override
+  State<SelectableTablePage> createState() => _SelectableTablePageState();
+}
+
+class _SelectableTablePageState extends State<SelectableTablePage> {
+  // 1. Store selection state
+  Set<String> _selectedRowIds = {};
+
+  @override
+  Widget build(BuildContext context) {
+    return FlutterTablePlus(
+      columns: /* your columns */,
+      data: widget.data,
+      isSelectable: true,
+      selectedRows: _selectedRowIds, // Provide the current selection state
+      
+      // 2. Handle single row selection
+      onRowSelectionChanged: (rowId, isSelected) {
+        setState(() {
+          if (isSelected) {
+            _selectedRowIds.add(rowId);
+          } else {
+            _selectedRowIds.remove(rowId);
+          }
+        });
+      },
+      
+      // 3. Handle select-all
+      onSelectAll: (selectAll) {
+        setState(() {
+          if (selectAll) {
+            _selectedRowIds = widget.data.map((row) => row['id'].toString()).toSet();
+          } else {
+            _selectedRowIds.clear();
+          }
+        });
+      },
+    );
+  }
+}
+```
+
+## 4. Customizing Selection Appearance
+
+You can customize the appearance of selected rows and checkboxes via the `TablePlusSelectionTheme`.
+
+```dart
+FlutterTablePlus(
+  // ... other properties
+  theme: const TablePlusTheme(
+    selectionTheme: TablePlusSelectionTheme(
+      selectedRowColor: Color(0xFFE3F2FD), // Light blue for selected rows
+      checkboxColor: Colors.blue,
+      checkboxSize: 20.0,
+      checkboxColumnWidth: 50.0,
+    ),
+  ),
+);
+```
+
+```
+## documentation/SORTING.md
+```md
+# Feature Guide: Sorting
+
+`FlutterTablePlus` provides a flexible sorting mechanism that allows users to sort columns by clicking on their headers. The sorting state is managed externally by your application logic, giving you full control over how the data is sorted.
+
+## 1. Making a Column Sortable
+
+To enable sorting for a specific column, set the `sortable` property to `true` in its `TablePlusColumn` definition.
+
+```dart
+final columns = TableColumnsBuilder()
+  .addColumn(
+    'name',
+    const TablePlusColumn(
+      key: 'name',
+      label: 'Name',
+      order: 0,
+      sortable: true, // Enable sorting for this column
+    ),
+  )
+  .build();
+```
+
+When a column is sortable, a sort icon will appear in the header, and clicking it will trigger the `onSort` callback.
+
+## 2. Handling the `onSort` Callback
+
+The `FlutterTablePlus` widget does not sort the data internally. Instead, it notifies you of the user's intent via the `onSort` callback. You are responsible for managing the sorting state and providing the sorted data back to the table.
+
+Your `onSort` callback will receive:
+- `columnKey`: The `key` of the column that was clicked.
+- `direction`: The *next* `SortDirection` the table should cycle to (`ascending` -> `descending` -> `none`).
+
+### State Management
+
+You need to store the current sort state in your widget's state (e.g., using `useState` in a `HookWidget`, `setState` in a `StatefulWidget`, or a Riverpod Notifier).
+
+- `sortColumnKey` (String?): The key of the currently sorted column.
+- `sortDirection` (SortDirection): The current direction of the sort.
+
+### Implementation Steps
+
+1.  **Provide State to Table**: Pass your `sortColumnKey` and `sortDirection` state variables to the `FlutterTablePlus` widget.
+2.  **Implement `onSort`**: In the callback, update your state with the new key and direction.
+3.  **Sort Your Data**: Create a separate, memoized function or provider (like in the Riverpod guide) to sort your data based on the current sort state. Provide this sorted list to the `data` property of the table.
+
+### Example with `StatefulWidget`
+
+```dart
+class SortableTablePage extends StatefulWidget {
+  const SortableTablePage({super.key, required this.originalData});
+  final List<Map<String, dynamic>> originalData;
+
+  @override
+  State<SortableTablePage> createState() => _SortableTablePageState();
+}
+
+class _SortableTablePageState extends State<SortableTablePage> {
+  // 1. Store sort state
+  String? _sortColumnKey;
+  SortDirection _sortDirection = SortDirection.none;
+  late List<Map<String, dynamic>> _sortedData;
+
+  @override
+  void initState() {
+    super.initState();
+    _sortedData = List.from(widget.originalData);
+  }
+
+  // 3. Sort the data based on the current state
+  void _sortData() {
+    if (_sortColumnKey == null || _sortDirection == SortDirection.none) {
+      _sortedData = List.from(widget.originalData);
+      return;
+    }
+
+    _sortedData.sort((a, b) {
+      final aValue = a[_sortColumnKey!];
+      final bValue = b[_sortColumnKey!];
+      
+      // Implement your comparison logic here
+      final comparison = (aValue ?? '').toString().compareTo((bValue ?? '').toString());
+      
+      return _sortDirection == SortDirection.ascending ? comparison : -comparison;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FlutterTablePlus(
+      columns: /* your columns */,
+      data: _sortedData, // Provide the sorted data
+      sortColumnKey: _sortColumnKey,
+      sortDirection: _sortDirection,
+      onSort: (columnKey, direction) {
+        // 2. Update state in the callback
+        setState(() {
+          _sortColumnKey = direction == SortDirection.none ? null : columnKey;
+          _sortDirection = direction;
+          _sortData(); // Re-sort the data
+        });
+      },
+    );
+  }
+}
+```
+
+## 3. Customizing Sort Icons
+
+You can customize the icons for each sort state using the `TablePlusHeaderTheme`.
+
+```dart
+FlutterTablePlus(
+  // ... other properties
+  theme: const TablePlusTheme(
+    headerTheme: TablePlusHeaderTheme(
+      sortIcons: SortIcons(
+        ascending: Icon(Icons.arrow_upward, size: 14, color: Colors.blue),
+        descending: Icon(Icons.arrow_downward, size: 14, color: Colors.blue),
+        unsorted: Icon(Icons.unfold_more, size: 14, color: Colors.grey),
+      ),
+      sortedColumnBackgroundColor: Colors.blue.withOpacity(0.1),
+    ),
+  ),
+);
+```
+
+```
+## documentation/THEMING.md
+```md
+# Feature Guide: Theming and Styling
+
+`FlutterTablePlus` offers an extensive theming system that allows you to customize nearly every visual aspect of the table. All styling is centralized in the `TablePlusTheme` class.
+
+## 1. The `TablePlusTheme` Object
+
+The main entry point for styling is the `theme` property of the `FlutterTablePlus` widget. It takes a `TablePlusTheme` object, which is composed of several sub-themes for different parts of the table.
+
+```dart
+FlutterTablePlus(
+  // ... other properties
+  theme: const TablePlusTheme(
+    headerTheme: TablePlusHeaderTheme(/* ... */),
+    bodyTheme: TablePlusBodyTheme(/* ... */),
+    selectionTheme: TablePlusSelectionTheme(/* ... */),
+    scrollbarTheme: TablePlusScrollbarTheme(/* ... */),
+  ),
+);
+```
+
+Let's explore each sub-theme.
+
+## 2. Header Styling (`TablePlusHeaderTheme`)
+
+This theme controls the appearance of the header row.
+
+- `height`: The height of the header.
+- `backgroundColor`: The background color of the header cells.
+- `textStyle`: The `TextStyle` for the column labels.
+- `padding`: The padding within each header cell.
+- `showVerticalDividers`: Whether to show vertical lines between header cells.
+- `showBottomDivider`: Whether to show a horizontal line below the entire header.
+- `dividerColor`: The color of the dividers.
+- `sortIcons`: A `SortIcons` object to customize the icons for sorting.
+- `sortedColumnBackgroundColor`: A special background color for the currently sorted column.
+
+### Example
+
+```dart
+theme: const TablePlusTheme(
+  headerTheme: TablePlusHeaderTheme(
+    height: 48,
+    backgroundColor: Color(0xFFF8F9FA),
+    textStyle: TextStyle(
+      fontSize: 14,
+      fontWeight: FontWeight.w700,
+      color: Color(0xFF495057),
+    ),
+    showVerticalDividers: false,
+    sortedColumnBackgroundColor: Colors.blue.withOpacity(0.1),
+  ),
+),
+```
+
+## 3. Body and Row Styling (`TablePlusBodyTheme`)
+
+This theme controls the appearance of the data rows in the table body.
+
+- `rowHeight`: The height of each data row.
+- `backgroundColor`: The default background color for rows.
+- `alternateRowColor`: If set, creates a striped (zebra) effect by applying this color to odd-indexed rows.
+- `textStyle`: The default `TextStyle` for cell content.
+- `padding`: The padding within each data cell.
+- `showHorizontalDividers`: Whether to show horizontal lines between rows.
+- `showVerticalDividers`: Whether to show vertical lines between cells.
+- `dividerColor`: The color of the dividers.
+
+### Example
+
+```dart
+theme: const TablePlusTheme(
+  bodyTheme: TablePlusBodyTheme(
+    rowHeight: 52,
+    alternateRowColor: Colors.grey.shade50, // Striped rows
+    textStyle: TextStyle(fontSize: 14, color: Colors.black87),
+    showHorizontalDividers: true,
+    dividerColor: Colors.grey.shade200,
+  ),
+),
+```
+
+## 4. Selection Styling (`TablePlusSelectionTheme`)
+
+This theme controls the appearance of selection-related elements.
+
+- `selectedRowColor`: The background color applied to a row when it is selected.
+- `checkboxColor`: The color of the selection checkboxes.
+- `checkboxSize`: The size of the checkbox icon.
+- `checkboxColumnWidth`: The width of the dedicated selection column.
+
+### Example
+
+```dart
+theme: const TablePlusTheme(
+  selectionTheme: TablePlusSelectionTheme(
+    selectedRowColor: Colors.blue.shade100,
+    checkboxColor: Colors.blue.shade700,
+  ),
+),
+```
+
+## 5. Scrollbar Styling (`TablePlusScrollbarTheme`)
+
+This theme controls the appearance and behavior of the synchronized scrollbars.
+
+- `width`: The thickness of the scrollbar.
+- `color`: The color of the scrollbar thumb (the part you drag).
+- `trackColor`: The color of the scrollbar track.
+- `hoverOnly`: If `true`, the scrollbars will only be visible when the mouse is hovering over the table.
+- `animationDuration`: The fade-in/out duration for the scrollbar when `hoverOnly` is true.
+
+### Example
+
+```dart
+theme: const TablePlusTheme(
+  scrollbarTheme: TablePlusScrollbarTheme(
+    width: 8.0,
+    color: Colors.grey.shade500,
+    trackColor: Colors.transparent,
+    hoverOnly: true,
+  ),
+),
+```
 
 ```
 ## example/lib/data/sample_data.dart
@@ -3642,12 +4428,19 @@ class _SelectionHeaderCell extends StatelessWidget {
 ## pubspec.yaml
 ```yaml
 name: flutter_table_plus
-description: "A new Flutter package project."
-version: 0.0.1
-homepage:
+description: "A highly customizable and efficient table widget for Flutter, featuring synchronized scrolling, theming, sorting, selection, and column reordering."
+version: 1.0.0
+homepage: https://github.com/kihyun1998/flutter_table_plus
+repository: https://github.com/kihyun1998/flutter_table_plus
+topics:
+  - table
+  - datatable
+  - data-table
+  - grid
+  - datagrid
 
 environment:
-  sdk: ^3.6.1
+  sdk: '>=3.0.0 <4.0.0'
   flutter: ">=1.17.0"
 
 dependencies:
@@ -3659,41 +4452,7 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^5.0.0
 
-# For information on the generic Dart part of this file, see the
-# following page: https://dart.dev/tools/pub/pubspec
 
-# The following section is specific to Flutter packages.
 flutter:
-
-  # To add assets to your package, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
-  #
-  # For details regarding assets in packages, see
-  # https://flutter.dev/to/asset-from-package
-  #
-  # An image asset can refer to one or more resolution-specific "variants", see
-  # https://flutter.dev/to/resolution-aware-images
-
-  # To add custom fonts to your package, add a fonts section here,
-  # in this "flutter" section. Each entry in this list should have a
-  # "family" key with the font family name, and a "fonts" key with a
-  # list giving the asset and other descriptors for the font. For
-  # example:
-  # fonts:
-  #   - family: Schyler
-  #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
-  #       - asset: fonts/Schyler-Italic.ttf
-  #         style: italic
-  #   - family: Trajan Pro
-  #     fonts:
-  #       - asset: fonts/TrajanPro.ttf
-  #       - asset: fonts/TrajanPro_Bold.ttf
-  #         weight: 700
-  #
-  # For details regarding fonts in packages, see
-  # https://flutter.dev/to/font-from-package
 
 ```
