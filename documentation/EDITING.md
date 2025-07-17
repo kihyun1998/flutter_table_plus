@@ -33,7 +33,7 @@ You can control which columns are editable by setting the `editable` property in
 ```dart
 final Map<String, TablePlusColumn> columns = const TableColumnsBuilder()
     .addColumn('id', TablePlusColumn(key: 'id', label: 'ID', width: 80))
-    .addColumn('name', TablePlusColumn(key: 'name', label: 'Name', width: 150, editable: true)) // This column is editable
+    .addColumn('name', TablePlusColumn(key: 'name', label: 'Name', width: 150, editable: true, hintText: 'Enter full name')) // Added editable and hintText
     .addColumn('department', TablePlusColumn(key: 'department', label: 'Department', width: 200, editable: true)) // This one too
     .build();
 ```
@@ -84,6 +84,7 @@ FlutterTablePlus(
       editingBorderWidth: 2.0,
       editingBorderRadius: BorderRadius.zero,
       textFieldPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      hintStyle: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey), // New: Customize hint text style
     ),
   ),
 );
@@ -93,6 +94,7 @@ FlutterTablePlus(
 
 - `editingCellColor`: Background color of the cell's text field when editing.
 - `editingTextStyle`: Text style for the editing text field.
+- `hintStyle`: **New!** Text style for the hint text displayed in the editing text field.
 - `editingBorderColor`: Border color of the cell when editing.
 - `editingBorderWidth`: Border width when editing.
 - `editingBorderRadius`: Border radius for the editing text field.
@@ -103,3 +105,8 @@ FlutterTablePlus(
 - `fillColor`: Fill color for the text field.
 - `filled`: Whether the text field should be filled.
 - `isDense`: Whether the text field uses a dense layout.
+
+### `TablePlusColumn` Properties for Editing:
+
+- `editable`: Set to `true` to make a specific column's cells editable.
+- `hintText`: **New!** Optional placeholder text to display in the `TextField` when a cell in this column is being edited.

@@ -1,3 +1,14 @@
+## 1.1.2
+
+*   **Added Hint Text and Style for Editable Cells**
+    *   `TablePlusColumn` now includes an optional `hintText` property to display placeholder text in editable `TextField`s.
+    *   `TablePlusEditableTheme` now includes an optional `hintStyle` property to customize the style of the hint text.
+*   **Added Row Double-Tap and Secondary-Tap Callbacks**
+    *   `FlutterTablePlus` now provides `onRowDoubleTap` and `onRowSecondaryTap` callbacks for row-level gesture detection.
+    *   These callbacks are active when `isSelectable` is `true` and `isEditable` is `false`.
+    *   `CustomInkWell` now correctly handles `onDoubleTap` and `onSecondaryTap` events without interfering with `onTap`.
+    *   Ensured `CustomInkWell`'s internal state is preserved during `setState` by adding `key: ValueKey(rowId)`.
+
 ## 1.1.1
 
 * Update README.md

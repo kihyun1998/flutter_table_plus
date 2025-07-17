@@ -15,8 +15,8 @@ A highly customizable and efficient table widget for Flutter. It provides a rich
 - **Synchronized Scrolling**: Header and body scroll horizontally in perfect sync.
 - **Advanced Theming**: Customize headers, rows, scrollbars, and selection styles with `TablePlusTheme`.
 - **Column Sorting**: Supports multi-state sorting (ascending, descending, none).
-- **Row Selection**: Enable single or multi-row selection with checkboxes.
-- **Cell Editing**: Enable editing for individual cells with callbacks to handle data changes.
+- **Row Selection**: Enable single or multi-row selection with checkboxes, and now supports **double-tap** and **secondary-tap** events on rows.
+- **Cell Editing**: Enable editing for individual cells with callbacks to handle data changes. Now supports **hint text** and **hint text styling** for editable cells.
 - **Column Reordering**: Easily reorder columns with drag-and-drop.
 - **Custom Cell Widgets**: Render any widget inside a cell using `cellBuilder` for maximum flexibility.
 - **Safe Column Management**: Use `TableColumnsBuilder` to define columns and manage their order without conflicts.
@@ -27,7 +27,7 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  flutter_table_plus: ^1.1.1
+  flutter_table_plus: ^1.1.2
 ```
 
 Then, run `flutter pub get` in your terminal.
@@ -46,7 +46,7 @@ class BasicTablePage extends StatelessWidget {
   // 1. Define your columns using the builder
   final Map<String, TablePlusColumn> columns = const TableColumnsBuilder()
       .addColumn('id', TablePlusColumn(key: 'id', label: 'ID', order: 0, width: 80))
-      .addColumn('name', TablePlusColumn(key: 'name', label: 'Name', order: 0, width: 150))
+      .addColumn('name', TablePlusColumn(key: 'name', label: 'Name', order: 0, width: 150, editable: true, hintText: 'Enter name')) // Added editable and hintText
       .addColumn('department', TablePlusColumn(key: 'department', label: 'Department', order: 0, width: 200))
       .build();
 
@@ -64,9 +64,27 @@ class BasicTablePage extends StatelessWidget {
       body: FlutterTablePlus(
         columns: columns,
         data: data,
+        isSelectable: true, // Enable selection for double-tap/secondary-tap
+        onRowDoubleTap: (rowId) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Double-tapped row: $rowId'),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        },
+        onRowSecondaryTap: (rowId) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Secondary-tapped row: $rowId'),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        },
         theme: const TablePlusTheme(
           headerTheme: TablePlusHeaderTheme(height: 48),
           bodyTheme: TablePlusBodyTheme(rowHeight: 48),
+          editableTheme: TablePlusEditableTheme(hintStyle: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey)), // Added hintStyle
         ),
       ),
     );
