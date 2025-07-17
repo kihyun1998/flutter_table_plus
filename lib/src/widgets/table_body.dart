@@ -19,6 +19,8 @@ class TablePlusBody extends StatelessWidget {
     this.selectedRows = const <String>{},
     this.selectionTheme = const TablePlusSelectionTheme(),
     this.onRowSelectionChanged,
+    this.onRowDoubleTap,
+    this.onRowSecondaryTap,
     this.isEditable = false,
     this.editableTheme = const TablePlusEditableTheme(),
     this.isCellEditing,
@@ -53,6 +55,12 @@ class TablePlusBody extends StatelessWidget {
 
   /// Callback when a row's selection state changes.
   final void Function(String rowId, bool isSelected)? onRowSelectionChanged;
+
+  /// Callback when a row is double-tapped.
+  final void Function(String rowId)? onRowDoubleTap;
+
+  /// Callback when a row is right-clicked (or long-pressed on touch devices).
+  final void Function(String rowId)? onRowSecondaryTap;
 
   /// Whether the table supports cell editing.
   final bool isEditable;
@@ -143,6 +151,8 @@ class TablePlusBody extends StatelessWidget {
           isSelected: isSelected,
           selectionTheme: selectionTheme,
           onRowSelectionChanged: _handleRowSelectionToggle,
+          onRowDoubleTap: onRowDoubleTap,
+          onRowSecondaryTap: onRowSecondaryTap,
           isEditable: isEditable,
           editableTheme: editableTheme,
           isCellEditing: isCellEditing,
@@ -176,6 +186,8 @@ class _TablePlusRow extends StatelessWidget {
     required this.getCellController,
     required this.onCellTap,
     required this.onStopEditing,
+    this.onRowDoubleTap,
+    this.onRowSecondaryTap,
   });
 
   final int rowIndex;
@@ -197,6 +209,8 @@ class _TablePlusRow extends StatelessWidget {
       getCellController;
   final void Function(int rowIndex, String columnKey)? onCellTap;
   final void Function({required bool save})? onStopEditing;
+  final void Function(String rowId)? onRowDoubleTap;
+  final void Function(String rowId)? onRowSecondaryTap;
 
   /// Handle row tap for selection.
   /// Only works when not in editable mode.
@@ -261,7 +275,14 @@ class _TablePlusRow extends StatelessWidget {
     // Wrap with CustomInkWell for row selection if selectable and not editable
     if (isSelectable && !isEditable && rowId != null) {
       return CustomInkWell(
+        key: ValueKey(rowId),
         onTap: _handleRowTap,
+        onDoubleTap: () {
+          onRowDoubleTap?.call(rowId!); // Pass rowId to the callback
+        },
+        onSecondaryTap: () {
+          onRowSecondaryTap?.call(rowId!); // Pass rowId to the callback
+        },
         child: rowContent,
       );
     }
@@ -430,6 +451,8 @@ class _TablePlusCellState extends State<_TablePlusCell> {
           textAlignVertical: theme.textAlignVertical,
           cursorColor: theme.cursorColor,
           decoration: InputDecoration(
+            hintText: widget.column.hintText,
+            hintStyle: theme.hintStyle,
             contentPadding: theme.textFieldPadding,
             isDense: theme.isDense,
             filled: theme.filled,

@@ -33,7 +33,10 @@ class FlutterTablePlus extends StatefulWidget {
     this.onSort,
     this.isEditable = false,
     this.onCellChanged,
-  });
+    this.onRowDoubleTap,
+    this.onRowSecondaryTap,
+  }) : assert((isSelectable && isEditable) == false,
+            'isSelectable and isEditable cannot both be true.');
 
   /// The map of columns to display in the table.
   /// Columns are ordered by their `order` field in ascending order.
@@ -99,6 +102,14 @@ class FlutterTablePlus extends StatefulWidget {
   /// - Escape key is pressed (reverts to old value)
   /// - The text field loses focus
   final CellChangedCallback? onCellChanged;
+
+  /// Callback when a row is double-tapped.
+  /// Provides the row ID. Only active when [isSelectable] is true.
+  final void Function(String rowId)? onRowDoubleTap;
+
+  /// Callback when a row is right-clicked (or long-pressed on touch devices).
+  /// Provides the row ID. Only active when [isSelectable] is true.
+  final void Function(String rowId)? onRowSecondaryTap;
 
   @override
   State<FlutterTablePlus> createState() => _FlutterTablePlusState();
@@ -499,6 +510,8 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                 selectionTheme: theme.selectionTheme,
                                 onRowSelectionChanged:
                                     widget.onRowSelectionChanged,
+                                onRowDoubleTap: widget.onRowDoubleTap,
+                                onRowSecondaryTap: widget.onRowSecondaryTap,
                                 // Editing-related properties
                                 isEditable: widget.isEditable,
                                 editableTheme: theme.editableTheme,

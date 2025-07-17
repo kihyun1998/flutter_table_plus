@@ -719,6 +719,22 @@ class _TableExamplePageState extends State<TableExamplePage> {
                     // Editing-related properties
                     isEditable: _isEditable,
                     onCellChanged: _handleCellChanged,
+                    onRowDoubleTap: (rowId) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Double-tapped row: $rowId'),
+                          duration: const Duration(milliseconds: 500),
+                        ),
+                      );
+                    },
+                    onRowSecondaryTap: (rowId) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Secondary-tapped row: $rowId'),
+                          duration: const Duration(milliseconds: 500),
+                        ),
+                      );
+                    },
                   ),
                 ),
               ),

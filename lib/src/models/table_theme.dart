@@ -333,6 +333,7 @@ class TablePlusEditableTheme {
       fontSize: 14,
       color: Color(0xFF212121),
     ),
+    this.hintStyle,
     this.editingBorderColor = const Color(0xFF2196F3),
     this.editingBorderWidth = 2.0,
     this.editingBorderRadius = const BorderRadius.all(Radius.circular(4.0)),
@@ -353,6 +354,9 @@ class TablePlusEditableTheme {
 
   /// The text style for text inside editing text fields.
   final TextStyle editingTextStyle;
+
+  /// The text style for hint text in editing text fields.
+  final TextStyle? hintStyle;
 
   /// The border color for cells that are currently being edited.
   final Color editingBorderColor;
@@ -398,6 +402,7 @@ class TablePlusEditableTheme {
   TablePlusEditableTheme copyWith({
     Color? editingCellColor,
     TextStyle? editingTextStyle,
+    TextStyle? hintStyle,
     Color? editingBorderColor,
     double? editingBorderWidth,
     BorderRadius? editingBorderRadius,
@@ -414,6 +419,7 @@ class TablePlusEditableTheme {
     return TablePlusEditableTheme(
       editingCellColor: editingCellColor ?? this.editingCellColor,
       editingTextStyle: editingTextStyle ?? this.editingTextStyle,
+      hintStyle: hintStyle ?? this.hintStyle,
       editingBorderColor: editingBorderColor ?? this.editingBorderColor,
       editingBorderWidth: editingBorderWidth ?? this.editingBorderWidth,
       editingBorderRadius: editingBorderRadius ?? this.editingBorderRadius,

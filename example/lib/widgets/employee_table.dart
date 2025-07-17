@@ -42,6 +42,8 @@ class EmployeeTable extends StatelessWidget {
             order: 0,
             width: 150,
             minWidth: 120,
+            editable: true,
+            hintText: 'Enter a name',
           ),
         )
         .addColumn(
@@ -172,6 +174,17 @@ class EmployeeTable extends StatelessWidget {
             selectedRowColor: Color(0xFFE3F2FD),
             checkboxColor: Color(0xFF2196F3),
             checkboxSize: 18.0,
+          ),
+          editableTheme: TablePlusEditableTheme(
+            editingTextStyle: TextStyle(
+              fontSize: 14,
+              fontStyle: FontStyle.italic,
+            ),
+            hintStyle: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w300,
+              color: Colors.grey,
+            ),
           ),
         );
 

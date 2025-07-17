@@ -74,6 +74,7 @@ class TablePlusColumn {
     this.editable = false,
     this.visible = true,
     this.cellBuilder,
+    this.hintText,
   });
 
   /// The unique identifier for this column.
@@ -123,6 +124,9 @@ class TablePlusColumn {
   final Widget Function(BuildContext context, Map<String, dynamic> rowData)?
       cellBuilder;
 
+  /// Optional hint text to display in the TextField when editing a cell.
+  final String? hintText;
+
   /// Creates a copy of this column with the given fields replaced with new values.
   TablePlusColumn copyWith({
     String? key,
@@ -138,6 +142,7 @@ class TablePlusColumn {
     bool? visible,
     Widget Function(BuildContext context, Map<String, dynamic> rowData)?
         cellBuilder,
+    String? hintText,
   }) {
     return TablePlusColumn(
       key: key ?? this.key,
@@ -152,6 +157,7 @@ class TablePlusColumn {
       editable: editable ?? this.editable,
       visible: visible ?? this.visible,
       cellBuilder: cellBuilder ?? this.cellBuilder,
+      hintText: hintText ?? this.hintText,
     );
   }
 
@@ -169,6 +175,7 @@ class TablePlusColumn {
         other.textAlign == textAlign &&
         other.sortable == sortable &&
         other.editable == editable &&
+        other.hintText == hintText &&
         other.visible == visible;
   }
 
@@ -185,6 +192,7 @@ class TablePlusColumn {
       textAlign,
       sortable,
       editable,
+      hintText,
       visible,
     );
   }
