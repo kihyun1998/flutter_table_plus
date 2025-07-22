@@ -23,8 +23,7 @@ FlutterTablePlus(
 
 **Important Notes:**
 
-- When `isEditable` is `true`, row selection by clicking on the row is disabled to allow for cell-focused interactions.
-- Checkbox-based selection still works in editable mode.
+- When `isEditable` is `true`, you can now also enable `isSelectable` to allow row selection and cell editing at the same time.
 
 ## Column-Specific Editing
 

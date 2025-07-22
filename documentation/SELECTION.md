@@ -49,8 +49,8 @@ Similar to sorting, the table delegates selection state management to the parent
 
 - `onRowSelectionChanged`: Called when a single row's checkbox is toggled or a row is tapped. It provides the `rowId` and its new `isSelected` state.
 - `onSelectAll`: Called when the header checkbox is clicked. It provides a boolean indicating whether to select all rows.
-- `onRowDoubleTap`: **New!** Called when a row is double-tapped. Provides the `rowId` of the double-tapped row. This callback is active only when `isSelectable` is `true` and `isEditable` is `false`.
-- `onRowSecondaryTap`: **New!** Called when a row is right-clicked (or long-pressed on touch devices). Provides the `rowId` of the secondary-tapped row. This callback is active only when `isSelectable` is `true` and `isEditable` is `false`.
+- `onRowDoubleTap`: **New!** Called when a row is double-tapped. Provides the `rowId` of the double-tapped row. This callback is active only when `isSelectable` is `true`.
+- `onRowSecondaryTap`: **New!** Called when a row is right-clicked (or long-pressed on touch devices). Provides the `rowId` of the secondary-tapped row. This callback is active only when `isSelectable` is `true`.
 
 ### Example with `StatefulWidget`
 

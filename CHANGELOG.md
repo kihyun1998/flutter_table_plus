@@ -1,3 +1,9 @@
+## 1.3.0
+
+*   **Enabled Simultaneous Selection and Editing**
+    *   Removed the restriction that prevented `isSelectable` and `isEditable` from being active at the same time.
+    *   Now, rows can be selected even when cell editing is enabled, providing greater flexibility.
+
 ## 1.2.0
 
 *   **Added Configurable Sort Cycle Order**
