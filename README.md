@@ -14,7 +14,7 @@ A highly customizable and efficient table widget for Flutter. It provides a rich
 
 - **Synchronized Scrolling**: Header and body scroll horizontally in perfect sync.
 - **Advanced Theming**: Customize headers, rows, scrollbars, and selection styles with `TablePlusTheme`.
-- **Column Sorting**: Supports multi-state sorting (ascending, descending, none).
+- **Column Sorting**: Supports multi-state sorting (ascending, descending, none) with a **configurable sort cycle**.
 - **Row Selection**: Enable single or multi-row selection with checkboxes, and now supports **double-tap** and **secondary-tap** events on rows.
 - **Cell Editing**: Enable editing for individual cells with callbacks to handle data changes. Now supports **hint text** and **hint text styling** for editable cells.
 - **Column Reordering**: Easily reorder columns with drag-and-drop.
@@ -27,7 +27,7 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  flutter_table_plus: ^1.1.2
+  flutter_table_plus: ^1.2.0
 ```
 
 Then, run `flutter pub get` in your terminal.

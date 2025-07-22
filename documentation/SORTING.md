@@ -28,7 +28,7 @@ The `FlutterTablePlus` widget does not sort the data internally. Instead, it not
 
 Your `onSort` callback will receive:
 - `columnKey`: The `key` of the column that was clicked.
-- `direction`: The *next* `SortDirection` the table should cycle to (`ascending` -> `descending` -> `none`).
+- `direction`: The *next* `SortDirection` the table should cycle to. By default, the cycle is `ascending` -> `descending` -> `none`, but this can be customized (see **Section 4**).
 
 ### State Management
 
@@ -121,5 +121,43 @@ FlutterTablePlus(
       sortedColumnBackgroundColor: Colors.blue.withOpacity(0.1),
     ),
   ),
+);
+```
+
+## 4. Customizing the Sort Cycle
+
+By default, clicking a sortable header cycles through `ascending`, `descending`, and `none`. You can customize this behavior using the `sortCycle` property.
+
+`sortCycle` accepts a `List<SortDirection>` that defines the exact order of states to cycle through.
+
+### Example: Two-State Sorting (Ascending -> Descending)
+
+If you want to disable the `none` (unsorted) state and only toggle between ascending and descending, provide a custom list.
+
+```dart
+FlutterTablePlus(
+  // ... other properties
+  sortCycle: const [
+    SortDirection.ascending,
+    SortDirection.descending,
+  ],
+  onSort: (columnKey, direction) {
+    // The `direction` will now only be `ascending` or `descending`.
+    // The `none` state will never be triggered.
+  },
+);
+```
+
+### Example: Custom Order
+
+You can define any order you need.
+
+```dart
+FlutterTablePlus(
+  // ... other properties
+  sortCycle: const [
+    SortDirection.descending, // Start with descending
+    SortDirection.ascending,
+  ],
 );
 ```

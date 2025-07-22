@@ -1,3 +1,10 @@
+## 1.2.0
+
+*   **Added Configurable Sort Cycle Order**
+    *   `FlutterTablePlus` now includes a `sortCycle` property to define the sequence of sorting states (`ascending`, `descending`, `none`).
+    *   The default cycle is `ascending` -> `descending` -> `none`.
+    *   This allows for more flexible sorting behaviors, such as disabling the `none` state or changing the order.
+
 ## 1.1.2
 
 *   **Added Hint Text and Style for Editable Cells**
