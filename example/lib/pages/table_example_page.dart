@@ -13,6 +13,7 @@ class TableExamplePage extends StatefulWidget {
 
 class _TableExamplePageState extends State<TableExamplePage> {
   bool _isSelectable = false;
+  final SortCycleOrder _sortCycleOrder = SortCycleOrder.descendingFirst;
   final Set<String> _selectedRows = <String>{};
   bool _showVerticalDividers = true; // 세로줄 표시 여부
   bool _isEditable = false; // 편집 모드
@@ -708,6 +709,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
                     data: _sortedData, // Use sorted data instead of original
                     isSelectable: _isSelectable,
                     selectedRows: _selectedRows,
+                    sortCycleOrder: _sortCycleOrder,
                     onRowSelectionChanged: _onRowSelectionChanged,
                     onSelectAll: _onSelectAll,
                     onColumnReorder: _onColumnReorder,

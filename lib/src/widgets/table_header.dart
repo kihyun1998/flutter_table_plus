@@ -13,6 +13,7 @@ class TablePlusHeader extends StatefulWidget {
     required this.theme,
     this.isSelectable = false,
     this.selectedRows = const <String>{},
+    this.sortCycleOrder = SortCycleOrder.ascendingFirst,
     this.totalRowCount = 0,
     this.selectionTheme = const TablePlusSelectionTheme(),
     this.onSelectAll,
@@ -36,6 +37,9 @@ class TablePlusHeader extends StatefulWidget {
 
   /// The set of currently selected row IDs.
   final Set<String> selectedRows;
+
+  /// The order in which sort directions cycle.
+  final SortCycleOrder sortCycleOrder;
 
   /// The total number of rows in the table.
   final int totalRowCount;
@@ -203,24 +207,42 @@ class _TablePlusHeaderState extends State<TablePlusHeader> {
   void _handleSortClick(String columnKey) {
     if (widget.onSort == null) return;
 
-    // Determine next sort direction
+    // Determine next sort direction based on cycle order
     SortDirection nextDirection;
     if (widget.sortColumnKey == columnKey) {
-      // Same column - cycle through directions
-      switch (widget.sortDirection) {
-        case SortDirection.none:
-          nextDirection = SortDirection.ascending;
-          break;
-        case SortDirection.ascending:
-          nextDirection = SortDirection.descending;
-          break;
-        case SortDirection.descending:
-          nextDirection = SortDirection.none;
-          break;
+      // Same column - cycle through directions based on sortCycleOrder
+      if (widget.sortCycleOrder == SortCycleOrder.ascendingFirst) {
+        // none -> ascending -> descending -> none
+        switch (widget.sortDirection) {
+          case SortDirection.none:
+            nextDirection = SortDirection.ascending;
+            break;
+          case SortDirection.ascending:
+            nextDirection = SortDirection.descending;
+            break;
+          case SortDirection.descending:
+            nextDirection = SortDirection.none;
+            break;
+        }
+      } else {
+        // none -> descending -> ascending -> none
+        switch (widget.sortDirection) {
+          case SortDirection.none:
+            nextDirection = SortDirection.descending;
+            break;
+          case SortDirection.descending:
+            nextDirection = SortDirection.ascending;
+            break;
+          case SortDirection.ascending:
+            nextDirection = SortDirection.none;
+            break;
+        }
       }
     } else {
-      // Different column - start with ascending
-      nextDirection = SortDirection.ascending;
+      // Different column - start based on sortCycleOrder
+      nextDirection = widget.sortCycleOrder == SortCycleOrder.ascendingFirst
+          ? SortDirection.ascending
+          : SortDirection.descending;
     }
 
     widget.onSort!(columnKey, nextDirection);

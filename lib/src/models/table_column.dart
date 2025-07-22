@@ -12,6 +12,15 @@ enum SortDirection {
   descending,
 }
 
+/// Enum representing the sorting cycle order.
+enum SortCycleOrder {
+  /// Ascending first: none -> ascending -> descending -> none
+  ascendingFirst,
+
+  /// Descending first: none -> descending -> ascending -> none
+  descendingFirst,
+}
+
 /// Callback type for when a cell value is changed in editable mode.
 ///
 /// [columnKey]: The key of the column that was edited.

@@ -25,6 +25,7 @@ class FlutterTablePlus extends StatefulWidget {
     this.theme,
     this.isSelectable = false,
     this.selectedRows = const <String>{},
+    this.sortCycleOrder = SortCycleOrder.ascendingFirst,
     this.onRowSelectionChanged,
     this.onSelectAll,
     this.onColumnReorder,
@@ -60,6 +61,10 @@ class FlutterTablePlus extends StatefulWidget {
   /// The set of currently selected row IDs.
   /// Row IDs are extracted from `rowData['id']`.
   final Set<String> selectedRows;
+
+  /// The order in which sort directions cycle when a column header is clicked.
+  /// Defaults to [SortCycleOrder.ascendingFirst].
+  final SortCycleOrder sortCycleOrder;
 
   /// Callback when a row's selection state changes.
   /// Provides the row ID and the new selection state.
@@ -487,6 +492,7 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                               theme: theme.headerTheme,
                               isSelectable: widget.isSelectable,
                               selectedRows: widget.selectedRows,
+                              sortCycleOrder: widget.sortCycleOrder,
                               totalRowCount: widget.data.length,
                               selectionTheme: theme.selectionTheme,
                               onSelectAll: widget.onSelectAll,
