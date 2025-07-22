@@ -5,6 +5,7 @@
 flutter_table_plus/
 ├── documentation/
     ├── ADVANCED_COLUMNS.md
+    ├── EDITING.md
     ├── RIVERPOD_GENERATOR_GUIDE.md
     ├── SELECTION.md
     ├── SORTING.md
@@ -42,6 +43,33 @@ flutter_table_plus/
 
 ## CHANGELOG.md
 ```md
+## 1.1.2
+
+*   **Added Hint Text and Style for Editable Cells**
+    *   `TablePlusColumn` now includes an optional `hintText` property to display placeholder text in editable `TextField`s.
+    *   `TablePlusEditableTheme` now includes an optional `hintStyle` property to customize the style of the hint text.
+*   **Added Row Double-Tap and Secondary-Tap Callbacks**
+    *   `FlutterTablePlus` now provides `onRowDoubleTap` and `onRowSecondaryTap` callbacks for row-level gesture detection.
+    *   These callbacks are active when `isSelectable` is `true` and `isEditable` is `false`.
+    *   `CustomInkWell` now correctly handles `onDoubleTap` and `onSecondaryTap` events without interfering with `onTap`.
+    *   Ensured `CustomInkWell`'s internal state is preserved during `setState` by adding `key: ValueKey(rowId)`.
+
+## 1.1.1
+
+* Update README.md
+
+## 1.1.0
+
+* **Added Cell Editing Feature**
+
+### Features
+
+*   **Editable Cells:** Introduced `isEditable` property in `FlutterTablePlus` to enable or disable cell editing.
+*   **Column-Specific Editing:** Added `editable` property to `TablePlusColumn` to control which columns can be edited.
+*   **Cell Change Callback:** Implemented `onCellChanged` to notify when a cell's value is updated.
+*   **Theming for Editing:** Added `TablePlusEditableTheme` to customize the appearance of cells in editing mode (background color, text style, borders, etc.).
+*   **Keyboard Support:** Press `Enter` to save changes or `Escape` to cancel editing. Editing also stops when the cell loses focus.
+
 ## 1.0.0
 
 * **Initial release of `flutter_table_plus`**
@@ -198,6 +226,121 @@ You have fine-grained control over column widths using three properties:
 By combining `cellBuilder` and width constraints, you can build complex and responsive data tables that are tailored to your specific needs.
 
 ```
+## documentation/EDITING.md
+```md
+# Cell Editing Guide
+
+`flutter_table_plus` supports cell editing, allowing users to modify data directly within the table. This guide explains how to enable and customize this feature.
+
+---
+
+## Enabling Editing
+
+To enable editing for the entire table, set the `isEditable` property to `true` in the `FlutterTablePlus` widget.
+
+```dart
+FlutterTablePlus(
+  columns: columns,
+  data: data,
+  isEditable: true, // Enable editing mode
+  onCellChanged: (String columnKey, int rowIndex, dynamic oldValue, dynamic newValue) {
+    // Handle the updated value
+    print('Cell[$rowIndex, $columnKey] changed from $oldValue to $newValue');
+    // You should update your state management solution here
+  },
+);
+```
+
+**Important Notes:**
+
+- When `isEditable` is `true`, row selection by clicking on the row is disabled to allow for cell-focused interactions.
+- Checkbox-based selection still works in editable mode.
+
+## Column-Specific Editing
+
+You can control which columns are editable by setting the `editable` property in `TablePlusColumn`.
+
+```dart
+final Map<String, TablePlusColumn> columns = const TableColumnsBuilder()
+    .addColumn('id', TablePlusColumn(key: 'id', label: 'ID', width: 80))
+    .addColumn('name', TablePlusColumn(key: 'name', label: 'Name', width: 150, editable: true, hintText: 'Enter full name')) // Added editable and hintText
+    .addColumn('department', TablePlusColumn(key: 'department', label: 'Department', width: 200, editable: true)) // This one too
+    .build();
+```
+
+In this example, only the `name` and `department` columns can be edited. The `id` column will remain read-only.
+
+## Handling Value Changes
+
+The `onCellChanged` callback is triggered when a cell's value is modified. It provides the column key, row index, the old value, and the new value.
+
+```dart
+onCellChanged: (String columnKey, int rowIndex, dynamic oldValue, dynamic newValue) {
+  // Find the row that was edited
+  final editedRow = data[rowIndex];
+
+  // Update the value in your data source
+  setState(() {
+    editedRow[columnKey] = newValue;
+  });
+
+  // If you are using a state management library like Riverpod or BLoC,
+  // you would call your provider/bloc method here to update the state.
+},
+```
+
+Editing is committed when:
+- The user presses the **Enter** key.
+- The text field loses focus.
+
+Editing is canceled (reverted to the old value) when:
+- The user presses the **Escape** key.
+
+## Customizing the Editing UI
+
+You can customize the appearance of cells in editing mode using `TablePlusEditableTheme` within your `TablePlusTheme`.
+
+```dart
+FlutterTablePlus(
+  columns: columns,
+  data: data,
+  isEditable: true,
+  theme: const TablePlusTheme(
+    // ... other themes
+    editableTheme: TablePlusEditableTheme(
+      editingCellColor: Colors.yellow.shade100,
+      editingTextStyle: const TextStyle(fontSize: 14, color: Colors.black),
+      editingBorderColor: Colors.blueAccent,
+      editingBorderWidth: 2.0,
+      editingBorderRadius: BorderRadius.zero,
+      textFieldPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      hintStyle: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey), // New: Customize hint text style
+    ),
+  ),
+);
+```
+
+### `TablePlusEditableTheme` Properties:
+
+- `editingCellColor`: Background color of the cell's text field when editing.
+- `editingTextStyle`: Text style for the editing text field.
+- `hintStyle`: **New!** Text style for the hint text displayed in the editing text field.
+- `editingBorderColor`: Border color of the cell when editing.
+- `editingBorderWidth`: Border width when editing.
+- `editingBorderRadius`: Border radius for the editing text field.
+- `textFieldPadding`: Padding inside the text field.
+- `cursorColor`: Color of the cursor in the text field.
+- `focusedBorderColor`: Border color when the text field is focused.
+- `enabledBorderColor`: Border color when the text field is enabled but not focused.
+- `fillColor`: Fill color for the text field.
+- `filled`: Whether the text field should be filled.
+- `isDense`: Whether the text field uses a dense layout.
+
+### `TablePlusColumn` Properties for Editing:
+
+- `editable`: Set to `true` to make a specific column's cells editable.
+- `hintText`: **New!** Optional placeholder text to display in the `TextField` when a cell in this column is being edited.
+```
 ## documentation/RIVERPOD_GENERATOR_GUIDE.md
 ```md
 # Integrating with Riverpod (Code Generator)
@@ -247,6 +390,7 @@ class TableState with _$TableState {
     // UI options
     @Default(true) bool showVerticalDividers,
     @Default(false) bool isSelectable,
+    @Default(false) bool isEditable, // New: For editing mode
     
     // Loading/Error state
     @Default(true) bool isLoading,
@@ -325,6 +469,28 @@ class EmployeeTableNotifier extends _$EmployeeTableNotifier {
       state = state.copyWith(selectedRowIds: {});
     }
   }
+
+  /// Updates a cell's value
+  void handleCellChange(String columnKey, int rowIndex, dynamic newValue) {
+    // Note: The `sortedEmployeesProvider` provides the view's current row index.
+    // We need to find the corresponding item in the original `allEmployees` list to modify it.
+    final sortedData = ref.read(sortedEmployeesProvider);
+    final originalItem = state.allEmployees.firstWhere(
+      (e) => e['id'] == sortedData[rowIndex]['id'],
+    );
+
+    // Create a new list with the updated item
+    final newList = state.allEmployees.map((item) {
+      if (item['id'] == originalItem['id']) {
+        final newRow = Map<String, dynamic>.from(item);
+        newRow[columnKey] = newValue;
+        return newRow;
+      }
+      return item;
+    }).toList();
+
+    state = state.copyWith(allEmployees: newList);
+  }
   
   // --- Other UI-related methods ---
   
@@ -334,6 +500,10 @@ class EmployeeTableNotifier extends _$EmployeeTableNotifier {
       // Clear selections when disabling selection mode
       selectedRowIds: state.isSelectable ? {} : state.selectedRowIds,
     );
+  }
+
+  void toggleEditMode() {
+    state = state.copyWith(isEditable: !state.isEditable);
   }
 }
 ```
@@ -418,8 +588,14 @@ class EmployeeTablePage extends ConsumerWidget {
         title: const Text('Riverpod Table Example'),
         actions: [
           IconButton(
+            icon: Icon(tableState.isEditable ? Icons.edit : Icons.edit_off),
+            onPressed: () => notifier.toggleEditMode(),
+            tooltip: 'Toggle Edit Mode',
+          ),
+          IconButton(
             icon: Icon(tableState.isSelectable ? Icons.check_box : Icons.check_box_outline_blank),
             onPressed: () => notifier.toggleSelectionMode(),
+            tooltip: 'Toggle Selection Mode',
           ),
         ],
       ),
@@ -428,6 +604,7 @@ class EmployeeTablePage extends ConsumerWidget {
         data: sortedData,
         
         // Connect state properties
+        isEditable: tableState.isEditable,
         isSelectable: tableState.isSelectable,
         selectedRows: tableState.selectedRowIds,
         sortColumnKey: tableState.sortColumnKey,
@@ -437,6 +614,8 @@ class EmployeeTablePage extends ConsumerWidget {
         onSort: (columnKey, _) => notifier.handleSort(columnKey),
         onRowSelectionChanged: (rowId, isSelected) => notifier.selectRow(rowId, isSelected),
         onSelectAll: (select) => notifier.selectAllRows(select),
+        onCellChanged: (columnKey, rowIndex, oldValue, newValue) =>
+            notifier.handleCellChange(columnKey, rowIndex, newValue),
       ),
     );
   }
@@ -507,6 +686,8 @@ Similar to sorting, the table delegates selection state management to the parent
 
 - `onRowSelectionChanged`: Called when a single row's checkbox is toggled or a row is tapped. It provides the `rowId` and its new `isSelected` state.
 - `onSelectAll`: Called when the header checkbox is clicked. It provides a boolean indicating whether to select all rows.
+- `onRowDoubleTap`: **New!** Called when a row is double-tapped. Provides the `rowId` of the double-tapped row. This callback is active only when `isSelectable` is `true` and `isEditable` is `false`.
+- `onRowSecondaryTap`: **New!** Called when a row is right-clicked (or long-pressed on touch devices). Provides the `rowId` of the secondary-tapped row. This callback is active only when `isSelectable` is `true` and `isEditable` is `false`.
 
 ### Example with `StatefulWidget`
 
@@ -552,6 +733,26 @@ class _SelectableTablePageState extends State<SelectableTablePage> {
           }
         });
       },
+      
+      // 4. Handle double-tap (New!)
+      onRowDoubleTap: (rowId) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Double-tapped row: $rowId'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      },
+      
+      // 5. Handle secondary-tap (New!)
+      onRowSecondaryTap: (rowId) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Secondary-tapped row: $rowId'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      },
     );
   }
 }
@@ -574,7 +775,6 @@ FlutterTablePlus(
   ),
 );
 ```
-
 ```
 ## documentation/SORTING.md
 ```md
@@ -1018,6 +1218,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
   bool _isSelectable = false;
   final Set<String> _selectedRows = <String>{};
   bool _showVerticalDividers = true; // 세로줄 표시 여부
+  bool _isEditable = false; // 편집 모드
 
   // Sort state
   String? _sortColumnKey;
@@ -1053,6 +1254,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
             textAlign: TextAlign.center,
             alignment: Alignment.center,
             sortable: true, // Enable sorting
+            editable: false, // ID는 편집 불가
           ),
         )
         .addColumn(
@@ -1064,6 +1266,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
             width: 150,
             minWidth: 120,
             sortable: true, // Enable sorting
+            editable: true, // 이름은 편집 가능
           ),
         )
         .addColumn(
@@ -1075,6 +1278,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
             width: 200,
             minWidth: 150,
             sortable: true, // Enable sorting
+            editable: true, // 이메일은 편집 가능
           ),
         )
         .addColumn(
@@ -1088,6 +1292,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
             textAlign: TextAlign.center,
             alignment: Alignment.center,
             sortable: true, // Enable sorting
+            editable: true, // 나이는 편집 가능
           ),
         )
         .addColumn(
@@ -1099,6 +1304,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
             width: 120,
             minWidth: 100,
             sortable: true, // Enable sorting
+            editable: true, // 부서는 편집 가능
           ),
         )
         .addColumn(
@@ -1112,6 +1318,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
             textAlign: TextAlign.right,
             alignment: Alignment.centerRight,
             sortable: true, // Enable sorting
+            editable: true, // 이제 편집 가능! (custom cell이어도)
             cellBuilder: _buildSalaryCell,
           ),
         )
@@ -1126,6 +1333,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
             textAlign: TextAlign.center,
             alignment: Alignment.center,
             sortable: true, // Enable sorting
+            editable: true, // 이제 편집 가능! (custom cell이어도)
             cellBuilder: _buildStatusCell,
           ),
         )
@@ -1200,6 +1408,48 @@ class _TableExamplePageState extends State<TableExamplePage> {
       // Reverse for descending
       return direction == SortDirection.ascending ? comparison : -comparison;
     });
+  }
+
+  /// Handle cell value change in editable mode
+  void _handleCellChanged(
+      String columnKey, int rowIndex, dynamic oldValue, dynamic newValue) {
+    // Convert newValue based on column type
+    dynamic convertedValue = newValue;
+    setState(() {
+      if (columnKey == 'salary') {
+        // Convert salary string to int (remove commas and dollar signs)
+        final cleanValue = newValue.toString().replaceAll(RegExp(r'[^\d]'), '');
+        convertedValue = int.tryParse(cleanValue) ?? oldValue;
+      } else if (columnKey == 'active') {
+        // Convert status string to boolean
+        final lowerValue = newValue.toString().toLowerCase();
+        if (lowerValue == 'true' ||
+            lowerValue == 'active' ||
+            lowerValue == '1') {
+          convertedValue = true;
+        } else if (lowerValue == 'false' ||
+            lowerValue == 'inactive' ||
+            lowerValue == '0') {
+          convertedValue = false;
+        } else {
+          convertedValue = oldValue; // Keep old value if can't parse
+        }
+      } else if (columnKey == 'age') {
+        // Convert age string to int
+        convertedValue = int.tryParse(newValue.toString()) ?? oldValue;
+      }
+
+      // Update the data
+      _sortedData[rowIndex][columnKey] = convertedValue;
+    });
+
+    // Show feedback
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Updated $columnKey: "$oldValue" → "$convertedValue"'),
+        duration: const Duration(milliseconds: 2000),
+      ),
+    );
   }
 
   /// Custom cell builder for salary
@@ -1343,6 +1593,22 @@ class _TableExamplePageState extends State<TableExamplePage> {
       if (!_isSelectable) {
         _selectedRows.clear();
       }
+      // When enabling selection mode, disable editing mode
+      if (_isSelectable && _isEditable) {
+        _isEditable = false;
+      }
+    });
+  }
+
+  /// Toggle editing mode
+  void _toggleEditingMode() {
+    setState(() {
+      _isEditable = !_isEditable;
+      // When enabling editing mode, disable selection mode
+      if (_isEditable && _isSelectable) {
+        _isSelectable = false;
+        _selectedRows.clear();
+      }
     });
   }
 
@@ -1427,6 +1693,26 @@ class _TableExamplePageState extends State<TableExamplePage> {
         checkboxColor: Color(0xFF2196F3),
         checkboxSize: 18.0,
       ),
+      editableTheme: const TablePlusEditableTheme(
+        editingCellColor: Color(0xFFFFFDE7), // 연한 노란색
+        editingTextStyle: TextStyle(
+          fontSize: 14,
+          color: Color(0xFF212529),
+          fontWeight: FontWeight.w500,
+        ),
+        editingBorderColor: Color(0xFF2196F3), // 파란색 테두리
+        editingBorderWidth: 2.0,
+        editingBorderRadius: BorderRadius.all(Radius.circular(6.0)), // 둥근 모서리
+        textFieldPadding:
+            EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0), // 더 넉넉한 패딩
+        cursorColor: Color(0xFF2196F3),
+        textAlignVertical: TextAlignVertical.center, // 수직 가운데 정렬
+        focusedBorderColor: Color(0xFF1976D2), // 포커스 시 더 진한 파란색
+        enabledBorderColor: Color(0xFFBBBBBB), // 비활성 시 회색
+        fillColor: Color(0xFFFFFDE7), // TextField 배경색
+        filled: true, // 배경색 채우기
+        isDense: true, // 컴팩트한 레이아웃
+      ),
     );
   }
 
@@ -1501,6 +1787,15 @@ class _TableExamplePageState extends State<TableExamplePage> {
                 ? 'Hide Vertical Lines'
                 : 'Show Vertical Lines',
           ),
+          // Toggle editing mode button
+          IconButton(
+            onPressed: _toggleEditingMode,
+            icon: Icon(
+              _isEditable ? Icons.edit : Icons.edit_outlined,
+              color: _isEditable ? Colors.orange : null,
+            ),
+            tooltip: _isEditable ? 'Disable Editing' : 'Enable Editing',
+          ),
           // Toggle selection mode button
           IconButton(
             onPressed: _toggleSelectionMode,
@@ -1572,6 +1867,25 @@ class _TableExamplePageState extends State<TableExamplePage> {
                     ),
                   ),
                 ],
+                if (_isEditable) ...[
+                  const SizedBox(width: 16),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.shade100,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      'Editing Mode',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.orange.shade800,
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
 
@@ -1605,6 +1919,25 @@ class _TableExamplePageState extends State<TableExamplePage> {
                     sortColumnKey: _sortColumnKey,
                     sortDirection: _sortDirection,
                     onSort: _handleSort,
+                    // Editing-related properties
+                    isEditable: _isEditable,
+                    onCellChanged: _handleCellChanged,
+                    onRowDoubleTap: (rowId) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Double-tapped row: $rowId'),
+                          duration: const Duration(milliseconds: 500),
+                        ),
+                      );
+                    },
+                    onRowSecondaryTap: (rowId) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Secondary-tapped row: $rowId'),
+                          duration: const Duration(milliseconds: 500),
+                        ),
+                      );
+                    },
                   ),
                 ),
               ),
@@ -1639,6 +1972,9 @@ class _TableExamplePageState extends State<TableExamplePage> {
             const Text('• Column sorting (click header to sort: ↑ ↓ clear)',
                 style: TextStyle(
                     fontWeight: FontWeight.bold, color: Colors.green)),
+            const Text('• Cell editing mode (even custom cells!)',
+                style: TextStyle(
+                    fontWeight: FontWeight.bold, color: Colors.orange)),
             if (_isSelectable) ...[
               const SizedBox(height: 8),
               const Text('Selection Features:',
@@ -1658,6 +1994,35 @@ class _TableExamplePageState extends State<TableExamplePage> {
               const Text('• Selection state management by parent widget',
                   style: TextStyle(color: Colors.blue)),
             ],
+            if (_isEditable) ...[
+              const SizedBox(height: 8),
+              const Text('Editing Features:',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, color: Colors.orange)),
+              const Text('• Click on ANY editable cell to start editing',
+                  style: TextStyle(color: Colors.orange)),
+              const Text('• Custom cells (Salary, Status) also editable!',
+                  style: TextStyle(
+                      color: Colors.orange, fontWeight: FontWeight.bold)),
+              const Text('• Salary: Enter numbers (e.g., 80000)',
+                  style: TextStyle(color: Colors.orange)),
+              const Text('• Status: Enter "true/false" or "active/inactive"',
+                  style: TextStyle(color: Colors.orange)),
+              const Text('• Age: Enter numbers only',
+                  style: TextStyle(color: Colors.orange)),
+              const Text('• Beautifully styled inline text fields',
+                  style: TextStyle(color: Colors.orange)),
+              const Text('• Vertically centered text with rounded borders',
+                  style: TextStyle(color: Colors.orange)),
+              const Text('• Press Enter or click away to save changes',
+                  style: TextStyle(color: Colors.orange)),
+              const Text('• Press Escape to cancel editing',
+                  style: TextStyle(color: Colors.orange)),
+              const Text('• Smart data conversion (string → number/boolean)',
+                  style: TextStyle(color: Colors.orange)),
+              const Text('• Row selection disabled in editing mode',
+                  style: TextStyle(color: Colors.orange)),
+            ],
 
             const SizedBox(height: 16),
 
@@ -1673,6 +2038,8 @@ class _TableExamplePageState extends State<TableExamplePage> {
             const Text('• 🔀 Clear sort (reset to original order)'),
             const Text(
                 '• 🔲 Toggle vertical dividers (Grid vs Horizontal-only design)'),
+            const Text(
+                '• ✏️ Toggle editing mode (Cell editing with text fields)'),
             const Text(
                 '• ☑️ Toggle selection mode (Row selection with checkboxes)'),
             const Text('• 🖱️ Drag column headers to reorder'),
@@ -1701,37 +2068,39 @@ class _TableExamplePageState extends State<TableExamplePage> {
               ),
               child: const Text(
                 '''final columns = TableColumnsBuilder()
-  .addColumn('id', TablePlusColumn(
-    sortable: true, // Enable sorting
-    ...
-  ))
   .addColumn('name', TablePlusColumn(
     sortable: true,
+    editable: true, // Enable cell editing
+    ...
+  ))
+  .addColumn('salary', TablePlusColumn(
+    editable: true, // Custom cells can also be edited!
+    cellBuilder: customSalaryBuilder, // Shows formatted in view mode
+    // In edit mode: shows raw number for editing
     ...
   ))
   .build();
 
 FlutterTablePlus(
   columns: columns,
-  data: sortedData, // Use your sorted data
-  isSelectable: true,
-  selectedRows: selectedRowIds,
-  sortColumnKey: currentSortColumn,
-  sortDirection: currentSortDirection,
-  onSort: (columnKey, direction) {
-    // Handle sorting: none → asc → desc → none
-    setState(() {
-      if (direction == SortDirection.none) {
-        // Reset to original order
-        resetData();
-      } else {
-        // Sort your data
-        sortData(columnKey, direction);
-      }
-    });
-  },
-  onColumnReorder: (oldIndex, newIndex) {
-    // Handle column reordering
+  data: data,
+  isEditable: true, // Enable editing mode
+  theme: TablePlusTheme(
+    editableTheme: TablePlusEditableTheme(
+      textAlignVertical: TextAlignVertical.center, // Vertical center
+      editingBorderRadius: BorderRadius.circular(6.0), // Rounded
+      filled: true, // Fill background
+    ),
+  ),
+  onCellChanged: (columnKey, rowIndex, oldValue, newValue) {
+    // Handle data type conversion
+    dynamic convertedValue = newValue;
+    if (columnKey == 'salary') {
+      convertedValue = int.tryParse(newValue) ?? oldValue;
+    } else if (columnKey == 'active') {
+      convertedValue = newValue.toLowerCase() == 'true';
+    }
+    // Update your data with convertedValue
   },
 )''',
                 style: TextStyle(
@@ -1796,6 +2165,8 @@ class EmployeeTable extends StatelessWidget {
             order: 0,
             width: 150,
             minWidth: 120,
+            editable: true,
+            hintText: 'Enter a name',
           ),
         )
         .addColumn(
@@ -1926,6 +2297,17 @@ class EmployeeTable extends StatelessWidget {
             selectedRowColor: Color(0xFFE3F2FD),
             checkboxColor: Color(0xFF2196F3),
             checkboxSize: 18.0,
+          ),
+          editableTheme: TablePlusEditableTheme(
+            editingTextStyle: TextStyle(
+              fontSize: 14,
+              fontStyle: FontStyle.italic,
+            ),
+            hintStyle: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w300,
+              color: Colors.grey,
+            ),
           ),
         );
 
@@ -2100,6 +2482,18 @@ flutter:
 ///
 /// This library provides a feature-rich table implementation with synchronized
 /// scrolling, theming support, and flexible data handling through Map-based data.
+///
+/// ## Features
+///
+/// - **Highly Customizable Table:** Flexible and efficient table widget
+/// - **Synchronized Scrolling:** Horizontal and vertical scrolling between header and body
+/// - **Theming:** Extensive customization through `TablePlusTheme`
+/// - **Column Sorting:** Sortable columns with custom sort logic
+/// - **Row Selection:** Single or multiple row selection with checkboxes
+/// - **Column Reordering:** Drag-and-drop column reordering
+/// - **Cell Editing:** Inline text field editing for specific columns
+/// - **Custom Cell Builders:** Custom widget rendering in cells
+/// - **Type-Safe Column Builder:** Use `TableColumnsBuilder` for safe column management
 library;
 
 // Models
@@ -2126,6 +2520,19 @@ enum SortDirection {
   /// Column is sorted in descending order (Z-A, 9-1).
   descending,
 }
+
+/// Callback type for when a cell value is changed in editable mode.
+///
+/// [columnKey]: The key of the column that was edited.
+/// [rowIndex]: The index of the row that was edited.
+/// [oldValue]: The previous value of the cell.
+/// [newValue]: The new value of the cell.
+typedef CellChangedCallback = void Function(
+  String columnKey,
+  int rowIndex,
+  dynamic oldValue,
+  dynamic newValue,
+);
 
 /// Configuration for sort icons in table headers.
 class SortIcons {
@@ -2173,8 +2580,10 @@ class TablePlusColumn {
     this.alignment = Alignment.centerLeft,
     this.textAlign = TextAlign.left,
     this.sortable = false,
+    this.editable = false,
     this.visible = true,
     this.cellBuilder,
+    this.hintText,
   });
 
   /// The unique identifier for this column.
@@ -2208,14 +2617,24 @@ class TablePlusColumn {
   /// Whether this column can be sorted.
   final bool sortable;
 
+  /// Whether this column can be edited when the table is in editable mode.
+  /// When true, cells in this column will become editable text fields when clicked.
+  final bool editable;
+
   /// Whether this column is visible in the table.
   final bool visible;
 
   /// Optional custom cell builder for this column.
   /// If provided, this will be used instead of the default cell rendering.
   /// The function receives the row data and should return a Widget.
+  ///
+  /// Note: If [editable] is true and [cellBuilder] is provided,
+  /// the cell will not be editable unless the custom builder handles editing.
   final Widget Function(BuildContext context, Map<String, dynamic> rowData)?
       cellBuilder;
+
+  /// Optional hint text to display in the TextField when editing a cell.
+  final String? hintText;
 
   /// Creates a copy of this column with the given fields replaced with new values.
   TablePlusColumn copyWith({
@@ -2228,9 +2647,11 @@ class TablePlusColumn {
     Alignment? alignment,
     TextAlign? textAlign,
     bool? sortable,
+    bool? editable,
     bool? visible,
     Widget Function(BuildContext context, Map<String, dynamic> rowData)?
         cellBuilder,
+    String? hintText,
   }) {
     return TablePlusColumn(
       key: key ?? this.key,
@@ -2242,8 +2663,10 @@ class TablePlusColumn {
       alignment: alignment ?? this.alignment,
       textAlign: textAlign ?? this.textAlign,
       sortable: sortable ?? this.sortable,
+      editable: editable ?? this.editable,
       visible: visible ?? this.visible,
       cellBuilder: cellBuilder ?? this.cellBuilder,
+      hintText: hintText ?? this.hintText,
     );
   }
 
@@ -2260,6 +2683,8 @@ class TablePlusColumn {
         other.alignment == alignment &&
         other.textAlign == textAlign &&
         other.sortable == sortable &&
+        other.editable == editable &&
+        other.hintText == hintText &&
         other.visible == visible;
   }
 
@@ -2275,13 +2700,15 @@ class TablePlusColumn {
       alignment,
       textAlign,
       sortable,
+      editable,
+      hintText,
       visible,
     );
   }
 
   @override
   String toString() {
-    return 'TableColumn(key: $key, label: $label, order: $order, width: $width, visible: $visible, sortable: $sortable)';
+    return 'TableColumn(key: $key, label: $label, order: $order, width: $width, visible: $visible, sortable: $sortable, editable: $editable)';
   }
 }
 
@@ -2504,6 +2931,7 @@ class TablePlusTheme {
     this.bodyTheme = const TablePlusBodyTheme(),
     this.scrollbarTheme = const TablePlusScrollbarTheme(),
     this.selectionTheme = const TablePlusSelectionTheme(),
+    this.editableTheme = const TablePlusEditableTheme(),
   });
 
   /// Theme configuration for the table header.
@@ -2518,18 +2946,23 @@ class TablePlusTheme {
   /// Theme configuration for row selection.
   final TablePlusSelectionTheme selectionTheme;
 
+  /// Theme configuration for cell editing.
+  final TablePlusEditableTheme editableTheme;
+
   /// Creates a copy of this theme with the given fields replaced with new values.
   TablePlusTheme copyWith({
     TablePlusHeaderTheme? headerTheme,
     TablePlusBodyTheme? bodyTheme,
     TablePlusScrollbarTheme? scrollbarTheme,
     TablePlusSelectionTheme? selectionTheme,
+    TablePlusEditableTheme? editableTheme,
   }) {
     return TablePlusTheme(
       headerTheme: headerTheme ?? this.headerTheme,
       bodyTheme: bodyTheme ?? this.bodyTheme,
       scrollbarTheme: scrollbarTheme ?? this.scrollbarTheme,
       selectionTheme: selectionTheme ?? this.selectionTheme,
+      editableTheme: editableTheme ?? this.editableTheme,
     );
   }
 
@@ -2812,6 +3245,118 @@ class TablePlusSelectionTheme {
   }
 }
 
+/// Theme configuration for cell editing.
+class TablePlusEditableTheme {
+  /// Creates a [TablePlusEditableTheme] with the specified styling properties.
+  const TablePlusEditableTheme({
+    this.editingCellColor = const Color(0xFFFFF9C4),
+    this.editingTextStyle = const TextStyle(
+      fontSize: 14,
+      color: Color(0xFF212121),
+    ),
+    this.hintStyle,
+    this.editingBorderColor = const Color(0xFF2196F3),
+    this.editingBorderWidth = 2.0,
+    this.editingBorderRadius = const BorderRadius.all(Radius.circular(4.0)),
+    this.textFieldPadding =
+        const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+    this.cursorColor = const Color(0xFF2196F3),
+    this.textAlignVertical = TextAlignVertical.center,
+    this.focusedBorderColor,
+    this.enabledBorderColor,
+    this.borderRadius,
+    this.fillColor,
+    this.filled = false,
+    this.isDense = true,
+  });
+
+  /// The background color for cells that are currently being edited.
+  final Color editingCellColor;
+
+  /// The text style for text inside editing text fields.
+  final TextStyle editingTextStyle;
+
+  /// The text style for hint text in editing text fields.
+  final TextStyle? hintStyle;
+
+  /// The border color for cells that are currently being edited.
+  final Color editingBorderColor;
+
+  /// The border width for cells that are currently being edited.
+  final double editingBorderWidth;
+
+  /// The border radius for cells that are currently being edited.
+  final BorderRadius editingBorderRadius;
+
+  /// The padding inside the text field when editing.
+  final EdgeInsets textFieldPadding;
+
+  /// The cursor color in the text field.
+  final Color cursorColor;
+
+  /// The vertical alignment of text in the text field.
+  final TextAlignVertical textAlignVertical;
+
+  /// The border color when the text field is focused.
+  /// If null, uses [editingBorderColor].
+  final Color? focusedBorderColor;
+
+  /// The border color when the text field is enabled but not focused.
+  /// If null, uses a lighter version of [editingBorderColor].
+  final Color? enabledBorderColor;
+
+  /// The border radius for the text field decoration.
+  /// If null, uses [editingBorderRadius].
+  final BorderRadius? borderRadius;
+
+  /// The fill color for the text field.
+  /// If null, uses [editingCellColor].
+  final Color? fillColor;
+
+  /// Whether the text field should be filled with [fillColor].
+  final bool filled;
+
+  /// Whether the text field should use dense layout.
+  final bool isDense;
+
+  /// Creates a copy of this theme with the given fields replaced with new values.
+  TablePlusEditableTheme copyWith({
+    Color? editingCellColor,
+    TextStyle? editingTextStyle,
+    TextStyle? hintStyle,
+    Color? editingBorderColor,
+    double? editingBorderWidth,
+    BorderRadius? editingBorderRadius,
+    EdgeInsets? textFieldPadding,
+    Color? cursorColor,
+    TextAlignVertical? textAlignVertical,
+    Color? focusedBorderColor,
+    Color? enabledBorderColor,
+    BorderRadius? borderRadius,
+    Color? fillColor,
+    bool? filled,
+    bool? isDense,
+  }) {
+    return TablePlusEditableTheme(
+      editingCellColor: editingCellColor ?? this.editingCellColor,
+      editingTextStyle: editingTextStyle ?? this.editingTextStyle,
+      hintStyle: hintStyle ?? this.hintStyle,
+      editingBorderColor: editingBorderColor ?? this.editingBorderColor,
+      editingBorderWidth: editingBorderWidth ?? this.editingBorderWidth,
+      editingBorderRadius: editingBorderRadius ?? this.editingBorderRadius,
+      textFieldPadding: textFieldPadding ?? this.textFieldPadding,
+      cursorColor: cursorColor ?? this.cursorColor,
+      textAlignVertical: textAlignVertical ?? this.textAlignVertical,
+      focusedBorderColor: focusedBorderColor ?? this.focusedBorderColor,
+      enabledBorderColor: enabledBorderColor ?? this.enabledBorderColor,
+      borderRadius: borderRadius ?? this.borderRadius,
+      fillColor: fillColor ?? this.fillColor,
+      filled: filled ?? this.filled,
+      isDense: isDense ?? this.isDense,
+    );
+  }
+}
+
 ```
 ## lib/src/widgets/custom_ink_well.dart
 ```dart
@@ -2954,7 +3499,12 @@ class FlutterTablePlus extends StatefulWidget {
     this.sortColumnKey,
     this.sortDirection = SortDirection.none,
     this.onSort,
-  });
+    this.isEditable = false,
+    this.onCellChanged,
+    this.onRowDoubleTap,
+    this.onRowSecondaryTap,
+  }) : assert((isSelectable && isEditable) == false,
+            'isSelectable and isEditable cannot both be true.');
 
   /// The map of columns to display in the table.
   /// Columns are ordered by their `order` field in ascending order.
@@ -3007,12 +3557,40 @@ class FlutterTablePlus extends StatefulWidget {
   /// parent widget to sort the data and update [sortColumnKey] and [sortDirection].
   final void Function(String columnKey, SortDirection direction)? onSort;
 
+  /// Whether the table supports cell editing.
+  /// When true, cells in columns marked as `editable` can be edited by clicking on them.
+  /// Note: Row selection via row click is disabled in editable mode.
+  final bool isEditable;
+
+  /// Callback when a cell value is changed in editable mode.
+  /// Provides the column key, row index, old value, and new value.
+  ///
+  /// This callback is triggered when:
+  /// - Enter key is pressed
+  /// - Escape key is pressed (reverts to old value)
+  /// - The text field loses focus
+  final CellChangedCallback? onCellChanged;
+
+  /// Callback when a row is double-tapped.
+  /// Provides the row ID. Only active when [isSelectable] is true.
+  final void Function(String rowId)? onRowDoubleTap;
+
+  /// Callback when a row is right-clicked (or long-pressed on touch devices).
+  /// Provides the row ID. Only active when [isSelectable] is true.
+  final void Function(String rowId)? onRowSecondaryTap;
+
   @override
   State<FlutterTablePlus> createState() => _FlutterTablePlusState();
 }
 
 class _FlutterTablePlusState extends State<FlutterTablePlus> {
   bool _isHovered = false;
+
+  /// Current editing state: {rowIndex: {columnKey: TextEditingController}}
+  final Map<int, Map<String, TextEditingController>> _editingControllers = {};
+
+  /// Current editing cell: {rowIndex, columnKey}
+  ({int rowIndex, String columnKey})? _currentEditingCell;
 
   @override
   void initState() {
@@ -3025,7 +3603,111 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
     super.didUpdateWidget(oldWidget);
     if (widget.data != oldWidget.data) {
       _validateUniqueIds();
+      _clearAllEditing(); // Clear editing state when data changes
     }
+  }
+
+  @override
+  void dispose() {
+    _clearAllEditing();
+    super.dispose();
+  }
+
+  /// Clear all editing controllers and state
+  void _clearAllEditing() {
+    for (final rowControllers in _editingControllers.values) {
+      for (final controller in rowControllers.values) {
+        controller.dispose();
+      }
+    }
+    _editingControllers.clear();
+    _currentEditingCell = null;
+  }
+
+  /// Start editing a cell
+  void _startEditingCell(int rowIndex, String columnKey) {
+    if (!widget.isEditable) return;
+
+    final column = widget.columns[columnKey];
+    if (column == null || !column.editable) return;
+
+    // Stop current editing first
+    _stopCurrentEditing(save: true);
+
+    // Get current value
+    final currentValue = widget.data[rowIndex][columnKey]?.toString() ?? '';
+
+    // Create controller for this cell
+    _editingControllers[rowIndex] ??= {};
+    _editingControllers[rowIndex]![columnKey] =
+        TextEditingController(text: currentValue);
+
+    // Set current editing cell
+    _currentEditingCell = (rowIndex: rowIndex, columnKey: columnKey);
+
+    setState(() {});
+
+    // Focus the text field after the frame is built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final controller = _editingControllers[rowIndex]?[columnKey];
+      if (controller != null) {
+        // Select all text when starting to edit
+        controller.selection =
+            TextSelection(baseOffset: 0, extentOffset: controller.text.length);
+      }
+    });
+  }
+
+  /// Stop current editing
+  void _stopCurrentEditing({required bool save}) {
+    final currentCell = _currentEditingCell;
+    if (currentCell == null) return;
+
+    final controller =
+        _editingControllers[currentCell.rowIndex]?[currentCell.columnKey];
+    if (controller == null) return;
+
+    if (save && widget.onCellChanged != null) {
+      final oldValue = widget.data[currentCell.rowIndex][currentCell.columnKey];
+      final newValue = controller.text;
+
+      // Only call callback if value actually changed
+      if (oldValue?.toString() != newValue) {
+        widget.onCellChanged!(
+          currentCell.columnKey,
+          currentCell.rowIndex,
+          oldValue,
+          newValue,
+        );
+      }
+    }
+
+    // Clean up controller
+    controller.dispose();
+    _editingControllers[currentCell.rowIndex]?.remove(currentCell.columnKey);
+    if (_editingControllers[currentCell.rowIndex]?.isEmpty == true) {
+      _editingControllers.remove(currentCell.rowIndex);
+    }
+
+    _currentEditingCell = null;
+    setState(() {});
+  }
+
+  /// Check if a cell is currently being edited
+  bool _isCellEditing(int rowIndex, String columnKey) {
+    return _currentEditingCell?.rowIndex == rowIndex &&
+        _currentEditingCell?.columnKey == columnKey;
+  }
+
+  /// Get the text editing controller for a cell
+  TextEditingController? _getCellController(int rowIndex, String columnKey) {
+    return _editingControllers[rowIndex]?[columnKey];
+  }
+
+  /// Handle cell tap for editing
+  void _handleCellTap(int rowIndex, String columnKey) {
+    if (!widget.isEditable) return;
+    _startEditingCell(rowIndex, columnKey);
   }
 
   /// Validates that all row IDs are unique when selection is enabled.
@@ -3296,6 +3978,15 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                 selectionTheme: theme.selectionTheme,
                                 onRowSelectionChanged:
                                     widget.onRowSelectionChanged,
+                                onRowDoubleTap: widget.onRowDoubleTap,
+                                onRowSecondaryTap: widget.onRowSecondaryTap,
+                                // Editing-related properties
+                                isEditable: widget.isEditable,
+                                editableTheme: theme.editableTheme,
+                                isCellEditing: _isCellEditing,
+                                getCellController: _getCellController,
+                                onCellTap: _handleCellTap,
+                                onStopEditing: _stopCurrentEditing,
                               ),
                             ),
                           ],
@@ -3606,6 +4297,7 @@ class _SyncedScrollControllersState extends State<SyncedScrollControllers> {
 ## lib/src/widgets/table_body.dart
 ```dart
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../models/table_column.dart';
 import '../models/table_theme.dart';
@@ -3625,6 +4317,14 @@ class TablePlusBody extends StatelessWidget {
     this.selectedRows = const <String>{},
     this.selectionTheme = const TablePlusSelectionTheme(),
     this.onRowSelectionChanged,
+    this.onRowDoubleTap,
+    this.onRowSecondaryTap,
+    this.isEditable = false,
+    this.editableTheme = const TablePlusEditableTheme(),
+    this.isCellEditing,
+    this.getCellController,
+    this.onCellTap,
+    this.onStopEditing,
   });
 
   /// The list of columns for the table.
@@ -3653,6 +4353,31 @@ class TablePlusBody extends StatelessWidget {
 
   /// Callback when a row's selection state changes.
   final void Function(String rowId, bool isSelected)? onRowSelectionChanged;
+
+  /// Callback when a row is double-tapped.
+  final void Function(String rowId)? onRowDoubleTap;
+
+  /// Callback when a row is right-clicked (or long-pressed on touch devices).
+  final void Function(String rowId)? onRowSecondaryTap;
+
+  /// Whether the table supports cell editing.
+  final bool isEditable;
+
+  /// The theme configuration for editing.
+  final TablePlusEditableTheme editableTheme;
+
+  /// Function to check if a cell is currently being edited.
+  final bool Function(int rowIndex, String columnKey)? isCellEditing;
+
+  /// Function to get the TextEditingController for a cell.
+  final TextEditingController? Function(int rowIndex, String columnKey)?
+      getCellController;
+
+  /// Callback when a cell is tapped for editing.
+  final void Function(int rowIndex, String columnKey)? onCellTap;
+
+  /// Callback to stop current editing.
+  final void Function({required bool save})? onStopEditing;
 
   /// Get the background color for a row at the given index.
   Color _getRowColor(int index, bool isSelected) {
@@ -3712,6 +4437,7 @@ class TablePlusBody extends StatelessWidget {
         final isSelected = rowId != null && selectedRows.contains(rowId);
 
         return _TablePlusRow(
+          rowIndex: index,
           rowData: rowData,
           rowId: rowId,
           columns: columns,
@@ -3723,6 +4449,14 @@ class TablePlusBody extends StatelessWidget {
           isSelected: isSelected,
           selectionTheme: selectionTheme,
           onRowSelectionChanged: _handleRowSelectionToggle,
+          onRowDoubleTap: onRowDoubleTap,
+          onRowSecondaryTap: onRowSecondaryTap,
+          isEditable: isEditable,
+          editableTheme: editableTheme,
+          isCellEditing: isCellEditing,
+          getCellController: getCellController,
+          onCellTap: onCellTap,
+          onStopEditing: onStopEditing,
         );
       },
     );
@@ -3732,6 +4466,7 @@ class TablePlusBody extends StatelessWidget {
 /// A single table row widget.
 class _TablePlusRow extends StatelessWidget {
   const _TablePlusRow({
+    required this.rowIndex,
     required this.rowData,
     required this.rowId,
     required this.columns,
@@ -3743,8 +4478,17 @@ class _TablePlusRow extends StatelessWidget {
     required this.isSelected,
     required this.selectionTheme,
     required this.onRowSelectionChanged,
+    required this.isEditable,
+    required this.editableTheme,
+    required this.isCellEditing,
+    required this.getCellController,
+    required this.onCellTap,
+    required this.onStopEditing,
+    this.onRowDoubleTap,
+    this.onRowSecondaryTap,
   });
 
+  final int rowIndex;
   final Map<String, dynamic> rowData;
   final String? rowId;
   final List<TablePlusColumn> columns;
@@ -3756,9 +4500,20 @@ class _TablePlusRow extends StatelessWidget {
   final bool isSelected;
   final TablePlusSelectionTheme selectionTheme;
   final void Function(String rowId) onRowSelectionChanged;
+  final bool isEditable;
+  final TablePlusEditableTheme editableTheme;
+  final bool Function(int rowIndex, String columnKey)? isCellEditing;
+  final TextEditingController? Function(int rowIndex, String columnKey)?
+      getCellController;
+  final void Function(int rowIndex, String columnKey)? onCellTap;
+  final void Function({required bool save})? onStopEditing;
+  final void Function(String rowId)? onRowDoubleTap;
+  final void Function(String rowId)? onRowSecondaryTap;
 
   /// Handle row tap for selection.
+  /// Only works when not in editable mode.
   void _handleRowTap() {
+    if (isEditable) return; // No row selection in editable mode
     if (!isSelectable || rowId == null) return;
     onRowSelectionChanged(rowId!);
   }
@@ -3797,19 +4552,35 @@ class _TablePlusRow extends StatelessWidget {
           }
 
           return _TablePlusCell(
+            rowIndex: rowIndex,
             column: column,
             rowData: rowData,
             width: width,
             theme: theme,
+            isEditable: isEditable,
+            editableTheme: editableTheme,
+            isCellEditing: isCellEditing?.call(rowIndex, column.key) ?? false,
+            cellController: getCellController?.call(rowIndex, column.key),
+            onCellTap: onCellTap != null
+                ? () => onCellTap!(rowIndex, column.key)
+                : null,
+            onStopEditing: onStopEditing,
           );
         }),
       ),
     );
 
-    // Wrap with CustomInkWell for row selection if selectable
-    if (isSelectable && rowId != null) {
+    // Wrap with CustomInkWell for row selection if selectable and not editable
+    if (isSelectable && !isEditable && rowId != null) {
       return CustomInkWell(
+        key: ValueKey(rowId),
         onTap: _handleRowTap,
+        onDoubleTap: () {
+          onRowDoubleTap?.call(rowId!); // Pass rowId to the callback
+        },
+        onSecondaryTap: () {
+          onRowSecondaryTap?.call(rowId!); // Pass rowId to the callback
+        },
         child: rowContent,
       );
     }
@@ -3871,78 +4642,236 @@ class _SelectionCell extends StatelessWidget {
 }
 
 /// A single table cell widget.
-class _TablePlusCell extends StatelessWidget {
+class _TablePlusCell extends StatefulWidget {
   const _TablePlusCell({
+    required this.rowIndex,
     required this.column,
     required this.rowData,
     required this.width,
     required this.theme,
+    required this.isEditable,
+    required this.editableTheme,
+    required this.isCellEditing,
+    this.cellController,
+    this.onCellTap,
+    this.onStopEditing,
   });
 
+  final int rowIndex;
   final TablePlusColumn column;
   final Map<String, dynamic> rowData;
   final double width;
   final TablePlusBodyTheme theme;
+  final bool isEditable;
+  final TablePlusEditableTheme editableTheme;
+  final bool isCellEditing;
+  final TextEditingController? cellController;
+  final VoidCallback? onCellTap;
+  final void Function({required bool save})? onStopEditing;
+
+  @override
+  State<_TablePlusCell> createState() => _TablePlusCellState();
+}
+
+class _TablePlusCellState extends State<_TablePlusCell> {
+  late FocusNode _focusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode = FocusNode();
+    _focusNode.addListener(_onFocusChange);
+  }
+
+  @override
+  void didUpdateWidget(_TablePlusCell oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // Focus the text field when editing starts
+    if (!oldWidget.isCellEditing && widget.isCellEditing) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _focusNode.requestFocus();
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _focusNode.removeListener(_onFocusChange);
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  /// Handle focus changes - stop editing when focus is lost
+  void _onFocusChange() {
+    if (!_focusNode.hasFocus && widget.isCellEditing) {
+      widget.onStopEditing?.call(save: true);
+    }
+  }
+
+  /// Handle key presses in the text field
+  bool _handleKeyPress(KeyEvent event) {
+    if (event is KeyDownEvent) {
+      if (event.logicalKey == LogicalKeyboardKey.enter) {
+        // Enter key - save and stop editing
+        widget.onStopEditing?.call(save: true);
+        return true;
+      } else if (event.logicalKey == LogicalKeyboardKey.escape) {
+        // Escape key - cancel and stop editing
+        widget.onStopEditing?.call(save: false);
+        return true;
+      }
+    }
+    return false;
+  }
 
   /// Extract the display value for this cell.
   String _getCellDisplayValue() {
-    final value = rowData[column.key];
+    final value = widget.rowData[widget.column.key];
     if (value == null) return '';
     return value.toString();
   }
 
-  @override
-  Widget build(BuildContext context) {
+  /// Build the editing text field
+  Widget _buildEditingTextField() {
+    final theme = widget.editableTheme;
+
+    return Align(
+      alignment: widget.column.alignment, // 컬럼 정렬 설정에 맞춰 TextField 정렬
+      child: KeyboardListener(
+        focusNode: FocusNode(), // Separate focus node for keyboard listener
+        onKeyEvent: _handleKeyPress,
+        child: TextField(
+          controller: widget.cellController,
+          focusNode: _focusNode,
+          style: theme.editingTextStyle,
+          textAlign: widget.column.textAlign,
+          textAlignVertical: theme.textAlignVertical,
+          cursorColor: theme.cursorColor,
+          decoration: InputDecoration(
+            hintText: widget.column.hintText,
+            hintStyle: theme.hintStyle,
+            contentPadding: theme.textFieldPadding,
+            isDense: theme.isDense,
+            filled: theme.filled,
+            fillColor: theme.fillColor ?? theme.editingCellColor,
+            // Border configuration
+            border: OutlineInputBorder(
+              borderRadius: theme.borderRadius ?? theme.editingBorderRadius,
+              borderSide: BorderSide(
+                color: theme.enabledBorderColor ??
+                    theme.editingBorderColor.withOpacity(0.5),
+                width: 1.0,
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: theme.borderRadius ?? theme.editingBorderRadius,
+              borderSide: BorderSide(
+                color: theme.enabledBorderColor ??
+                    theme.editingBorderColor.withOpacity(0.5),
+                width: 1.0,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: theme.borderRadius ?? theme.editingBorderRadius,
+              borderSide: BorderSide(
+                color: theme.focusedBorderColor ?? theme.editingBorderColor,
+                width: theme.editingBorderWidth,
+              ),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: theme.borderRadius ?? theme.editingBorderRadius,
+              borderSide: BorderSide(
+                color: Colors.red.shade400,
+                width: 1.0,
+              ),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: theme.borderRadius ?? theme.editingBorderRadius,
+              borderSide: BorderSide(
+                color: Colors.red.shade600,
+                width: theme.editingBorderWidth,
+              ),
+            ),
+          ),
+          onSubmitted: (_) => widget.onStopEditing?.call(save: true),
+        ),
+      ),
+    );
+  }
+
+  /// Build the regular cell content
+  Widget _buildRegularCell() {
     // Use custom cell builder if provided
-    if (column.cellBuilder != null) {
-      return Container(
-        width: width,
-        height: theme.rowHeight,
-        padding: theme.padding,
-        decoration: BoxDecoration(
-          border: theme.showVerticalDividers
-              ? Border(
-                  right: BorderSide(
-                    color: theme.dividerColor.withOpacity(0.5),
-                    width: 0.5,
-                  ),
-                )
-              : null,
-        ),
-        child: Align(
-          alignment: column.alignment,
-          child: column.cellBuilder!(context, rowData),
-        ),
+    if (widget.column.cellBuilder != null) {
+      return Align(
+        alignment: widget.column.alignment,
+        child: widget.column.cellBuilder!(context, widget.rowData),
       );
     }
 
     // Default text cell
     final displayValue = _getCellDisplayValue();
 
-    return Container(
-      width: width,
-      height: theme.rowHeight,
-      padding: theme.padding,
-      decoration: BoxDecoration(
-        border: theme.showVerticalDividers
-            ? Border(
-                right: BorderSide(
-                  color: theme.dividerColor.withOpacity(0.5),
-                  width: 0.5,
-                ),
-              )
-            : null,
-      ),
-      child: Align(
-        alignment: column.alignment,
-        child: Text(
-          displayValue,
-          style: theme.textStyle,
-          overflow: TextOverflow.ellipsis,
-          textAlign: column.textAlign,
-        ),
+    return Align(
+      alignment: widget.column.alignment,
+      child: Text(
+        displayValue,
+        style: widget.theme.textStyle,
+        overflow: TextOverflow.ellipsis,
+        textAlign: widget.column.textAlign,
       ),
     );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Determine if this cell can be edited
+    final canEdit = widget.isEditable && widget.column.editable;
+
+    // For editing cells, we don't need special background/border as TextField handles it
+    Color backgroundColor = Colors.transparent;
+    BoxBorder? border;
+
+    // Only apply cell-level styling when not editing
+    if (!widget.isCellEditing) {
+      // Apply normal vertical divider if needed
+      if (widget.theme.showVerticalDividers) {
+        border = Border(
+          right: BorderSide(
+            color: widget.theme.dividerColor.withOpacity(0.5),
+            width: 0.5,
+          ),
+        );
+      }
+    }
+
+    Widget cellContent = Container(
+      width: widget.width,
+      height: widget.theme.rowHeight,
+      padding: widget.isCellEditing
+          ? EdgeInsets.zero // TextField handles its own padding
+          : widget.theme.padding,
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        border: border,
+      ),
+      child:
+          widget.isCellEditing ? _buildEditingTextField() : _buildRegularCell(),
+    );
+
+    // Wrap with GestureDetector for cell editing if applicable
+    if (canEdit && !widget.isCellEditing && widget.onCellTap != null) {
+      return GestureDetector(
+        onTap: widget.onCellTap,
+        child: MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: cellContent,
+        ),
+      );
+    }
+
+    return cellContent;
   }
 }
 
@@ -4429,7 +5358,7 @@ class _SelectionHeaderCell extends StatelessWidget {
 ```yaml
 name: flutter_table_plus
 description: "A highly customizable and efficient table widget for Flutter, featuring synchronized scrolling, theming, sorting, selection, and column reordering."
-version: 1.0.0
+version: 1.1.2
 homepage: https://github.com/kihyun1998/flutter_table_plus
 repository: https://github.com/kihyun1998/flutter_table_plus
 topics:
