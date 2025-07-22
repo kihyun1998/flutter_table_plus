@@ -13,7 +13,7 @@ class TableExamplePage extends StatefulWidget {
 
 class _TableExamplePageState extends State<TableExamplePage> {
   bool _isSelectable = false;
-  final SortCycleOrder _sortCycleOrder = SortCycleOrder.descendingFirst;
+  final SortCycleOrder _sortCycleOrder = SortCycleOrder.ascendingFirst;
   final Set<String> _selectedRows = <String>{};
   bool _showVerticalDividers = true; // 세로줄 표시 여부
   bool _isEditable = false; // 편집 모드
@@ -391,10 +391,6 @@ class _TableExamplePageState extends State<TableExamplePage> {
       if (!_isSelectable) {
         _selectedRows.clear();
       }
-      // When enabling selection mode, disable editing mode
-      if (_isSelectable && _isEditable) {
-        _isEditable = false;
-      }
     });
   }
 
@@ -402,11 +398,6 @@ class _TableExamplePageState extends State<TableExamplePage> {
   void _toggleEditingMode() {
     setState(() {
       _isEditable = !_isEditable;
-      // When enabling editing mode, disable selection mode
-      if (_isEditable && _isSelectable) {
-        _isSelectable = false;
-        _selectedRows.clear();
-      }
     });
   }
 

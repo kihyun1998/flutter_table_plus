@@ -36,8 +36,7 @@ class FlutterTablePlus extends StatefulWidget {
     this.onCellChanged,
     this.onRowDoubleTap,
     this.onRowSecondaryTap,
-  }) : assert((isSelectable && isEditable) == false,
-            'isSelectable and isEditable cannot both be true.');
+  });
 
   /// The map of columns to display in the table.
   /// Columns are ordered by their `order` field in ascending order.
