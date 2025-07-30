@@ -3,6 +3,9 @@ import 'package:flutter_table_plus/flutter_table_plus.dart';
 
 import '../data/sample_data.dart';
 import '../widgets/table_controls.dart';
+import '../widgets/table_app_bar.dart';
+import '../widgets/table_status_indicators.dart';
+import '../widgets/example_documentation.dart';
 
 class TableExamplePage extends StatefulWidget {
   const TableExamplePage({super.key});
@@ -596,81 +599,22 @@ class _TableExamplePageState extends State<TableExamplePage> {
         title: const Text('Flutter Table Plus Example'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         actions: [
-          // Reset sort button
-          if (_sortColumnKey != null)
-            IconButton(
-              onPressed: _resetSort,
-              icon: const Icon(Icons.sort_outlined),
-              tooltip: 'Clear Sort',
-            ),
-          // Reset column order button
-          IconButton(
-            onPressed: _resetColumnOrder,
-            icon: const Icon(Icons.refresh),
-            tooltip: 'Reset Column Order',
-          ),
-          // Toggle vertical dividers button
-          IconButton(
-            onPressed: _toggleVerticalDividers,
-            icon: Icon(
-              _showVerticalDividers
-                  ? Icons.grid_on
-                  : Icons.format_list_bulleted,
-            ),
-            tooltip: _showVerticalDividers
-                ? 'Hide Vertical Lines'
-                : 'Show Vertical Lines',
-          ),
-          // Toggle editing mode button
-          IconButton(
-            onPressed: _toggleEditingMode,
-            icon: Icon(
-              _isEditable ? Icons.edit : Icons.edit_outlined,
-              color: _isEditable ? Colors.orange : null,
-            ),
-            tooltip: _isEditable ? 'Disable Editing' : 'Enable Editing',
-          ),
-          // Toggle selection mode button
-          IconButton(
-            onPressed: _toggleSelectionMode,
-            icon: Icon(
-              _isSelectable ? Icons.check_box : Icons.check_box_outline_blank,
-            ),
-            tooltip: _isSelectable ? 'Disable Selection' : 'Enable Selection',
-          ),
-          // Toggle selection mode type button (single/multiple)
-          if (_isSelectable)
-            IconButton(
-              onPressed: _toggleSelectionModeType,
-              icon: Icon(
-                _selectionMode == SelectionMode.single 
-                    ? Icons.radio_button_checked 
-                    : Icons.check_box_outlined,
-                color: _selectionMode == SelectionMode.single 
-                    ? Colors.orange 
-                    : Colors.blue,
-              ),
-              tooltip: _selectionMode == SelectionMode.single 
-                  ? 'Switch to Multiple Selection' 
-                  : 'Switch to Single Selection',
-            ),
-          // Toggle column reordering button
-          IconButton(
-            onPressed: _toggleColumnReordering,
-            icon: Icon(
-              _isReorderable ? Icons.swap_horiz : Icons.swap_horiz_outlined,
-              color: _isReorderable ? Colors.green : null,
-            ),
-            tooltip: _isReorderable ? 'Disable Reordering' : 'Enable Reordering',
-          ),
-          // Toggle sorting button
-          IconButton(
-            onPressed: _toggleSorting,
-            icon: Icon(
-              _isSortable ? Icons.sort : Icons.sort_outlined,
-              color: _isSortable ? Colors.purple : null,
-            ),
-            tooltip: _isSortable ? 'Disable Sorting' : 'Enable Sorting',
+          TableAppBarActions(
+            sortColumnKey: _sortColumnKey,
+            isSelectable: _isSelectable,
+            selectionMode: _selectionMode,
+            isEditable: _isEditable,
+            isReorderable: _isReorderable,
+            isSortable: _isSortable,
+            showVerticalDividers: _showVerticalDividers,
+            onResetSort: _resetSort,
+            onResetColumnOrder: _resetColumnOrder,
+            onToggleVerticalDividers: _toggleVerticalDividers,
+            onToggleEditingMode: _toggleEditingMode,
+            onToggleSelectionMode: _toggleSelectionMode,
+            onToggleSelectionModeType: _toggleSelectionModeType,
+            onToggleColumnReordering: _toggleColumnReordering,
+            onToggleSorting: _toggleSorting,
           ),
         ],
       ),
@@ -688,116 +632,27 @@ class _TableExamplePageState extends State<TableExamplePage> {
             ),
             const SizedBox(height: 8),
 
-            // Status info
-            Row(
+            // Status indicators
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Showing ${SampleData.employees.length} employees',
+                  'Showing ${_sortedData.length} employees',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Colors.grey.shade600,
                       ),
                 ),
-                if (_sortColumnKey != null) ...[
-                  const SizedBox(width: 16),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.orange.shade100,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      'Sorted by $_sortColumnKey (${_sortDirection.name})',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.orange.shade800,
-                      ),
-                    ),
-                  ),
-                ],
-                if (_isSelectable) ...[
-                  const SizedBox(width: 16),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: _selectionMode == SelectionMode.single 
-                          ? Colors.orange.shade100 
-                          : Colors.blue.shade100,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      _selectedRows.isNotEmpty 
-                          ? '${_selectedRows.length} selected (${_selectionMode == SelectionMode.single ? 'Single' : 'Multi'})'
-                          : '${_selectionMode == SelectionMode.single ? 'Single' : 'Multi'} Selection',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: _selectionMode == SelectionMode.single 
-                            ? Colors.orange.shade800 
-                            : Colors.blue.shade800,
-                      ),
-                    ),
-                  ),
-                ],
-                if (_isEditable) ...[
-                  const SizedBox(width: 16),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.orange.shade100,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      'Editing Mode',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.orange.shade800,
-                      ),
-                    ),
-                  ),
-                ],
-                if (!_isReorderable) ...[
-                  const SizedBox(width: 16),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      'Reordering Disabled',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.grey.shade700,
-                      ),
-                    ),
-                  ),
-                ],
-                if (!_isSortable) ...[
-                  const SizedBox(width: 16),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.purple.shade100,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      'Sorting Disabled',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.purple.shade700,
-                      ),
-                    ),
-                  ),
-                ],
+                const SizedBox(height: 8),
+                TableStatusIndicators(
+                  sortColumnKey: _sortColumnKey,
+                  sortDirection: _sortDirection,
+                  isSelectable: _isSelectable,
+                  selectionMode: _selectionMode,
+                  selectedCount: _selectedRows.length,
+                  isEditable: _isEditable,
+                  isReorderable: _isReorderable,
+                  isSortable: _isSortable,
+                ),
               ],
             ),
 
@@ -857,171 +712,11 @@ class _TableExamplePageState extends State<TableExamplePage> {
               ),
             ),
 
-            const SizedBox(height: 24),
-
-            // Features info
-            Text(
-              'Features demonstrated:',
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-                '• Map-based column management with TableColumnsBuilder'),
-            const Text('• Automatic order assignment and conflict prevention'),
-            const Text(
-                '• Custom cell builders (Salary formatting, Status badges)'),
-            const Text('• Alternating row colors and responsive layout'),
-            const Text('• Synchronized horizontal and vertical scrolling'),
-            const Text('• Hover-based scrollbar visibility'),
-            const Text('• Column width management with min/max constraints'),
-            Text(
-                '• Customizable table borders (${_showVerticalDividers ? "Grid" : "Horizontal only"})',
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold, color: Colors.purple)),
-            const Text('• Column reordering via drag and drop',
-                style: TextStyle(
-                    fontWeight: FontWeight.bold, color: Colors.orange)),
-            const Text('• Column sorting (click header to sort: ↑ ↓ clear)',
-                style: TextStyle(
-                    fontWeight: FontWeight.bold, color: Colors.green)),
-            const Text('• Cell editing mode (even custom cells!)',
-                style: TextStyle(
-                    fontWeight: FontWeight.bold, color: Colors.orange)),
-            if (_isSelectable) ...[
-              const SizedBox(height: 8),
-              const Text('Selection Features:',
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold, color: Colors.blue)),
-              const Text('• Individual row selection with checkboxes',
-                  style: TextStyle(color: Colors.blue)),
-              const Text('• Tap anywhere on row to toggle selection',
-                  style: TextStyle(color: Colors.blue)),
-              const Text('• Select all/none with header checkbox',
-                  style: TextStyle(color: Colors.blue)),
-              const Text(
-                  '• Intuitive select-all behavior (any selected → clear all)',
-                  style: TextStyle(color: Colors.blue)),
-              const Text('• Custom selection actions and callbacks',
-                  style: TextStyle(color: Colors.blue)),
-              const Text('• Selection state management by parent widget',
-                  style: TextStyle(color: Colors.blue)),
-            ],
-            if (_isEditable) ...[
-              const SizedBox(height: 8),
-              const Text('Editing Features:',
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold, color: Colors.orange)),
-              const Text('• Click on ANY editable cell to start editing',
-                  style: TextStyle(color: Colors.orange)),
-              const Text('• Custom cells (Salary, Status) also editable!',
-                  style: TextStyle(
-                      color: Colors.orange, fontWeight: FontWeight.bold)),
-              const Text('• Salary: Enter numbers (e.g., 80000)',
-                  style: TextStyle(color: Colors.orange)),
-              const Text('• Status: Enter "true/false" or "active/inactive"',
-                  style: TextStyle(color: Colors.orange)),
-              const Text('• Age: Enter numbers only',
-                  style: TextStyle(color: Colors.orange)),
-              const Text('• Beautifully styled inline text fields',
-                  style: TextStyle(color: Colors.orange)),
-              const Text('• Vertically centered text with rounded borders',
-                  style: TextStyle(color: Colors.orange)),
-              const Text('• Press Enter or click away to save changes',
-                  style: TextStyle(color: Colors.orange)),
-              const Text('• Press Escape to cancel editing',
-                  style: TextStyle(color: Colors.orange)),
-              const Text('• Smart data conversion (string → number/boolean)',
-                  style: TextStyle(color: Colors.orange)),
-              const Text('• Row selection disabled in editing mode',
-                  style: TextStyle(color: Colors.orange)),
-            ],
-
-            const SizedBox(height: 16),
-
-            // Controls info
-            Text(
-              'Interactive Controls:',
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            const SizedBox(height: 8),
-            const Text('• 🔄 Reset column order to default'),
-            const Text('• 🔀 Clear sort (reset to original order)'),
-            const Text(
-                '• 🔲 Toggle vertical dividers (Grid vs Horizontal-only design)'),
-            const Text(
-                '• ✏️ Toggle editing mode (Cell editing with text fields)'),
-            const Text(
-                '• ☑️ Toggle selection mode (Row selection with checkboxes)'),
-            const Text('• 🖱️ Drag column headers to reorder'),
-            const Text('• 🔤 Click sortable column headers to sort'),
-            if (_isSelectable) ...[
-              const Text('• 🧹 Clear all selections'),
-              const Text('• 👥 Select only active employees'),
-              const Text('• ℹ️ Show selected employee details'),
-            ],
-
-            const SizedBox(height: 16),
-
-            // API Usage Example
-            Text(
-              'Code Example:',
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Text(
-                '''final columns = TableColumnsBuilder()
-  .addColumn('name', TablePlusColumn(
-    sortable: true,
-    editable: true, // Enable cell editing
-    ...
-  ))
-  .addColumn('salary', TablePlusColumn(
-    editable: true, // Custom cells can also be edited!
-    cellBuilder: customSalaryBuilder, // Shows formatted in view mode
-    // In edit mode: shows raw number for editing
-    ...
-  ))
-  .build();
-
-FlutterTablePlus(
-  columns: columns,
-  data: data,
-  isEditable: true, // Enable editing mode
-  theme: TablePlusTheme(
-    editableTheme: TablePlusEditableTheme(
-      textAlignVertical: TextAlignVertical.center, // Vertical center
-      editingBorderRadius: BorderRadius.circular(6.0), // Rounded
-      filled: true, // Fill background
-    ),
-  ),
-  onCellChanged: (columnKey, rowIndex, oldValue, newValue) {
-    // Handle data type conversion
-    dynamic convertedValue = newValue;
-    if (columnKey == 'salary') {
-      convertedValue = int.tryParse(newValue) ?? oldValue;
-    } else if (columnKey == 'active') {
-      convertedValue = newValue.toLowerCase() == 'true';
-    }
-    // Update your data with convertedValue
-  },
-)''',
-                style: TextStyle(
-                  fontFamily: 'monospace',
-                  fontSize: 12,
-                ),
-              ),
+            // Documentation section
+            ExampleDocumentation(
+              showVerticalDividers: _showVerticalDividers,
+              isSelectable: _isSelectable,
+              isEditable: _isEditable,
             ),
 
             const SizedBox(height: 32), // Extra space at bottom
