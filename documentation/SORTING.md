@@ -161,3 +161,75 @@ FlutterTablePlus(
   ],
 );
 ```
+
+## 5. Disabling Sorting Completely
+
+You can disable sorting functionality in two different ways, depending on your needs:
+
+### Method 1: Column-Level Disabling (`sortable: false`)
+
+Set `sortable: false` on individual columns to prevent sorting for those specific columns while keeping the `onSort` callback active for other sortable columns.
+
+```dart
+final columns = TableColumnsBuilder()
+  .addColumn(
+    'id',
+    const TablePlusColumn(
+      key: 'id',
+      label: 'ID',
+      order: 0,
+      sortable: false, // This column won't show sort icons or respond to clicks
+    ),
+  )
+  .addColumn(
+    'name',
+    const TablePlusColumn(
+      key: 'name',
+      label: 'Name',
+      order: 0,
+      sortable: true, // This column will still be sortable
+    ),
+  )
+  .build();
+```
+
+### Method 2: Global Disabling (`onSort: null`)
+
+Set `onSort: null` to completely disable sorting for the entire table. This will:
+- Hide all sort icons from sortable columns
+- Disable click handlers on all column headers
+- Remove visual sorting affordances entirely
+
+```dart
+FlutterTablePlus(
+  columns: columns,
+  data: data,
+  sortColumnKey: _sortColumnKey,
+  sortDirection: _sortDirection,
+  onSort: null, // Completely disables sorting - no icons will be shown
+);
+```
+
+**Key Differences:**
+
+| Feature | `sortable: false` | `onSort: null` |
+|---------|-------------------|----------------|
+| Sort icons | Hidden for specific columns | Hidden for all columns |
+| Click handling | Disabled for specific columns | Disabled for all columns |
+| Other sortable columns | Still functional | All disabled |
+| Use case | Selective column control | Complete feature removal |
+
+### When to Use Each Method
+
+- **Use `sortable: false`** when you want to disable sorting for specific columns (like ID columns, action columns, etc.) while keeping sorting available for other columns.
+
+- **Use `onSort: null`** when you want to completely remove the sorting feature from your table, perhaps based on user permissions or application state.
+
+```dart
+// Example: Conditional sorting based on user permissions
+FlutterTablePlus(
+  columns: columns,
+  data: data,
+  onSort: userCanSort ? _handleSort : null, // Dynamically enable/disable
+);
+```

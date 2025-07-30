@@ -1,3 +1,16 @@
+## 1.4.0
+
+*   **Enhanced Feature Control Options**
+    *   Added ability to completely disable column reordering by setting `onColumnReorder: null`. This removes drag handles and disables drag-and-drop functionality entirely.
+    *   Added ability to completely disable sorting by setting `onSort: null`. This hides all sort icons and disables sorting click handlers for all columns.
+    *   Improved conditional feature control for better user experience and permissions-based functionality.
+
+*   **Documentation Improvements**
+    *   Added comprehensive Column Reordering section to ADVANCED_COLUMNS.md with complete implementation examples.
+    *   Enhanced SORTING.md with detailed comparison between `sortable: false` and `onSort: null`.
+    *   Updated README.md with new "Conditional Feature Control" section and examples.
+    *   Added practical examples for dynamic feature enabling/disabling based on user permissions.
+
 ## 1.3.0
 
 *   **Enabled Simultaneous Selection and Editing**

@@ -110,3 +110,184 @@ You have fine-grained control over column widths using three properties:
 ```
 
 By combining `cellBuilder` and width constraints, you can build complex and responsive data tables that are tailored to your specific needs.
+
+## 4. Column Reordering
+
+`FlutterTablePlus` supports drag-and-drop column reordering, allowing users to rearrange columns by dragging column headers. This feature is managed externally by your application's state.
+
+### Enabling Column Reordering
+
+To enable column reordering, provide an `onColumnReorder` callback to the `FlutterTablePlus` widget:
+
+```dart
+FlutterTablePlus(
+  columns: _columns,
+  data: data,
+  onColumnReorder: (int oldIndex, int newIndex) {
+    // Handle the column reorder
+    _handleColumnReorder(oldIndex, newIndex);
+  },
+);
+```
+
+### Implementing Column Reorder Logic
+
+The `onColumnReorder` callback provides:
+- `oldIndex`: The original position of the dragged column
+- `newIndex`: The target position where the column should be moved
+
+You need to update your column order and rebuild the widget with the new order:
+
+```dart
+void _handleColumnReorder(int oldIndex, int newIndex) {
+  setState(() {
+    // Convert Map to List for reordering
+    final columnEntries = _columns.entries.toList();
+    
+    // Adjust newIndex if dragging down
+    if (oldIndex < newIndex) {
+      newIndex -= 1;
+    }
+    
+    // Perform the reorder
+    final entry = columnEntries.removeAt(oldIndex);
+    columnEntries.insert(newIndex, entry);
+    
+    // Rebuild the map with new order values
+    _columns = <String, TablePlusColumn>{};
+    for (int i = 0; i < columnEntries.length; i++) {
+      final key = columnEntries[i].key;
+      final column = columnEntries[i].value;
+      _columns[key] = column.copyWith(order: i + 1);
+    }
+  });
+}
+```
+
+### Using TableColumnsBuilder for Easier Management
+
+When using `TableColumnsBuilder`, you can reorder more easily by rebuilding the columns:
+
+```dart
+void _handleColumnReorder(int oldIndex, int newIndex) {
+  setState(() {
+    final columnKeys = _getOrderedColumnKeys(); // Get current order
+    
+    // Adjust newIndex if dragging down
+    if (oldIndex < newIndex) {
+      newIndex -= 1;
+    }
+    
+    // Reorder the keys
+    final key = columnKeys.removeAt(oldIndex);
+    columnKeys.insert(newIndex, key);
+    
+    // Rebuild columns with new order
+    final builder = TableColumnsBuilder();
+    for (final key in columnKeys) {
+      builder.addColumn(key, _originalColumns[key]!);
+    }
+    _columns = builder.build();
+  });
+}
+```
+
+### Disabling Column Reordering
+
+You can disable column reordering in two ways:
+
+#### Method 1: Remove the Callback (`onColumnReorder: null`)
+
+Set `onColumnReorder: null` to completely disable column reordering. This will:
+- Remove drag handles from column headers
+- Disable drag-and-drop functionality entirely
+- Remove visual drag affordances
+
+```dart
+FlutterTablePlus(
+  columns: columns,
+  data: data,
+  onColumnReorder: null, // Completely disables column reordering
+);
+```
+
+#### Method 2: Conditional Reordering
+
+Enable or disable reordering based on application state:
+
+```dart
+FlutterTablePlus(
+  columns: columns,
+  data: data,
+  onColumnReorder: userCanReorderColumns ? _handleColumnReorder : null,
+);
+```
+
+### Important Notes
+
+- **Selection Column**: The selection column (when `isSelectable: true`) is never reorderable and will always remain in the first position.
+- **Performance**: Column reordering rebuilds the entire table. For large datasets, consider implementing optimizations in your state management.
+- **Persistence**: Column order changes are not automatically persisted. You need to save and restore the column order in your application's storage if needed.
+
+### Example: Complete Column Reordering Implementation
+
+```dart
+class ReorderableTablePage extends StatefulWidget {
+  @override
+  State<ReorderableTablePage> createState() => _ReorderableTablePageState();
+}
+
+class _ReorderableTablePageState extends State<ReorderableTablePage> {
+  late Map<String, TablePlusColumn> _columns;
+  
+  @override
+  void initState() {
+    super.initState();
+    _initializeColumns();
+  }
+  
+  void _initializeColumns() {
+    _columns = TableColumnsBuilder()
+      .addColumn('id', TablePlusColumn(key: 'id', label: 'ID', order: 0))
+      .addColumn('name', TablePlusColumn(key: 'name', label: 'Name', order: 0))
+      .addColumn('email', TablePlusColumn(key: 'email', label: 'Email', order: 0))
+      .build();
+  }
+  
+  void _handleColumnReorder(int oldIndex, int newIndex) {
+    setState(() {
+      // Get ordered column entries
+      final entries = _columns.entries.toList()
+        ..sort((a, b) => a.value.order.compareTo(b.value.order));
+      
+      // Adjust newIndex for drag behavior
+      if (oldIndex < newIndex) {
+        newIndex -= 1;
+      }
+      
+      // Reorder entries
+      final entry = entries.removeAt(oldIndex);
+      entries.insert(newIndex, entry);
+      
+      // Rebuild map with new order
+      _columns = <String, TablePlusColumn>{};
+      for (int i = 0; i < entries.length; i++) {
+        final key = entries[i].key;
+        final column = entries[i].value;
+        _columns[key] = column.copyWith(order: i + 1);
+      }
+    });
+  }
+  
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: FlutterTablePlus(
+        columns: _columns,
+        data: myData,
+        onColumnReorder: _handleColumnReorder,
+      ),
+    );
+  }
+}
+```
