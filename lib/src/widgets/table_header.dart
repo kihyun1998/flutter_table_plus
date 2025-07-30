@@ -284,41 +284,67 @@ class _TablePlusHeaderState extends State<TablePlusHeader> {
               onSelectAll: widget.onSelectAll,
             ),
 
-          // Reorderable columns
+          // Reorderable or non-reorderable columns
           if (reorderableColumns.isNotEmpty)
             Expanded(
               child: SizedBox(
                 height: widget.theme.height,
-                child: ReorderableListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  buildDefaultDragHandles:
-                      false, // Disable default drag handles
-                  onReorder: _handleColumnReorder,
-                  itemCount: reorderableColumns.length,
-                  itemBuilder: (context, index) {
-                    final column = reorderableColumns[index];
-                    final width = reorderableWidths.isNotEmpty
-                        ? reorderableWidths[index]
-                        : column.width;
+                child: widget.onColumnReorder != null
+                    ? ReorderableListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        buildDefaultDragHandles:
+                            false, // Disable default drag handles
+                        onReorder: _handleColumnReorder,
+                        itemCount: reorderableColumns.length,
+                        itemBuilder: (context, index) {
+                          final column = reorderableColumns[index];
+                          final width = reorderableWidths.isNotEmpty
+                              ? reorderableWidths[index]
+                              : column.width;
 
-                    return ReorderableDragStartListener(
-                      key: ValueKey(column.key),
-                      index: index,
-                      child: _HeaderCell(
-                        column: column,
-                        width: width,
-                        theme: widget.theme,
-                        isSorted: widget.sortColumnKey == column.key,
-                        sortDirection: widget.sortColumnKey == column.key
-                            ? widget.sortDirection
-                            : SortDirection.none,
-                        onSortClick: column.sortable
-                            ? () => _handleSortClick(column.key)
-                            : null,
+                          return ReorderableDragStartListener(
+                            key: ValueKey(column.key),
+                            index: index,
+                            child: _HeaderCell(
+                              column: column,
+                              width: width,
+                              theme: widget.theme,
+                              isSorted: widget.sortColumnKey == column.key,
+                              sortDirection: widget.sortColumnKey == column.key
+                                  ? widget.sortDirection
+                                  : SortDirection.none,
+                              onSortClick: column.sortable && widget.onSort != null
+                                  ? () => _handleSortClick(column.key)
+                                  : null,
+                            ),
+                          );
+                        },
+                      )
+                    : SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: reorderableColumns.asMap().entries.map((entry) {
+                            final index = entry.key;
+                            final column = entry.value;
+                            final width = reorderableWidths.isNotEmpty
+                                ? reorderableWidths[index]
+                                : column.width;
+
+                            return _HeaderCell(
+                              column: column,
+                              width: width,
+                              theme: widget.theme,
+                              isSorted: widget.sortColumnKey == column.key,
+                              sortDirection: widget.sortColumnKey == column.key
+                                  ? widget.sortDirection
+                                  : SortDirection.none,
+                              onSortClick: column.sortable && widget.onSort != null
+                                  ? () => _handleSortClick(column.key)
+                                  : null,
+                            );
+                          }).toList(),
+                        ),
                       ),
-                    );
-                  },
-                ),
               ),
             ),
         ],
@@ -347,7 +373,7 @@ class _HeaderCell extends StatelessWidget {
 
   /// Get the sort icon widget for current state
   Widget? _getSortIcon() {
-    if (!column.sortable) return null;
+    if (!column.sortable || onSortClick == null) return null;
 
     switch (sortDirection) {
       case SortDirection.ascending:

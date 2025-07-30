@@ -17,6 +17,8 @@ class _TableExamplePageState extends State<TableExamplePage> {
   final Set<String> _selectedRows = <String>{};
   bool _showVerticalDividers = true; // 세로줄 표시 여부
   bool _isEditable = false; // 편집 모드
+  bool _isReorderable = true; // 컬럼 재정렬 활성화
+  bool _isSortable = true; // 정렬 활성화
 
   // Sort state
   String? _sortColumnKey;
@@ -408,6 +410,26 @@ class _TableExamplePageState extends State<TableExamplePage> {
     });
   }
 
+  /// Toggle column reordering
+  void _toggleColumnReordering() {
+    setState(() {
+      _isReorderable = !_isReorderable;
+    });
+  }
+
+  /// Toggle sorting
+  void _toggleSorting() {
+    setState(() {
+      _isSortable = !_isSortable;
+      if (!_isSortable) {
+        // 정렬이 비활성화되면 현재 정렬 상태를 초기화
+        _sortColumnKey = null;
+        _sortDirection = SortDirection.none;
+        _initializeSortedData();
+      }
+    });
+  }
+
   /// Clear all selections
   void _clearSelections() {
     setState(() => _selectedRows.clear());
@@ -593,6 +615,24 @@ class _TableExamplePageState extends State<TableExamplePage> {
             ),
             tooltip: _isSelectable ? 'Disable Selection' : 'Enable Selection',
           ),
+          // Toggle column reordering button
+          IconButton(
+            onPressed: _toggleColumnReordering,
+            icon: Icon(
+              _isReorderable ? Icons.swap_horiz : Icons.swap_horiz_outlined,
+              color: _isReorderable ? Colors.green : null,
+            ),
+            tooltip: _isReorderable ? 'Disable Reordering' : 'Enable Reordering',
+          ),
+          // Toggle sorting button
+          IconButton(
+            onPressed: _toggleSorting,
+            icon: Icon(
+              _isSortable ? Icons.sort : Icons.sort_outlined,
+              color: _isSortable ? Colors.purple : null,
+            ),
+            tooltip: _isSortable ? 'Disable Sorting' : 'Enable Sorting',
+          ),
         ],
       ),
       body: SingleChildScrollView(
@@ -675,6 +715,44 @@ class _TableExamplePageState extends State<TableExamplePage> {
                     ),
                   ),
                 ],
+                if (!_isReorderable) ...[
+                  const SizedBox(width: 16),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      'Reordering Disabled',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey.shade700,
+                      ),
+                    ),
+                  ),
+                ],
+                if (!_isSortable) ...[
+                  const SizedBox(width: 16),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.purple.shade100,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      'Sorting Disabled',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.purple.shade700,
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
 
@@ -703,12 +781,12 @@ class _TableExamplePageState extends State<TableExamplePage> {
                     sortCycleOrder: _sortCycleOrder,
                     onRowSelectionChanged: _onRowSelectionChanged,
                     onSelectAll: _onSelectAll,
-                    onColumnReorder: _onColumnReorder,
+                    onColumnReorder: _isReorderable ? _onColumnReorder : null,
                     theme: _currentTheme,
                     // Sort-related properties
                     sortColumnKey: _sortColumnKey,
                     sortDirection: _sortDirection,
-                    onSort: _handleSort,
+                    onSort: _isSortable ? _handleSort : null,
                     // Editing-related properties
                     isEditable: _isEditable,
                     onCellChanged: _handleCellChanged,
