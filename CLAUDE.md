@@ -16,13 +16,13 @@ flutter test test/flutter_table_plus_test.dart  # Run specific test file
 
 ### Code Quality
 ```bash
-flutter analyze                 # Run static analysis using analysis_options.yaml
+flutter analyze                 # Run static analysis using analysis_options.yaml with flutter_lints
 dart format .                   # Format code according to Dart style
 ```
 
 ### Dependencies
 ```bash
-flutter pub get                 # Install dependencies
+flutter pub get                 # Install dependencies  
 flutter pub upgrade             # Upgrade dependencies
 ```
 
@@ -32,10 +32,10 @@ cd example && flutter run       # Run the example application
 cd example && flutter test      # Run example tests
 ```
 
-### Code Generation (when using Riverpod Generator)
+### Package Development
 ```bash
-dart run build_runner build     # Generate code once
-dart run build_runner watch     # Watch for changes and generate code
+flutter packages pub publish --dry-run  # Test package publishing
+dart doc .                      # Generate API documentation
 ```
 
 ## Architecture Overview
@@ -80,12 +80,30 @@ FlutterTablePlus follows a composition pattern where:
 
 ## Important Implementation Details
 
-- Column order is managed by the `order` field in TablePlusColumn
-- Selection requires unique 'id' field in each row data map
-- TableColumnsBuilder automatically handles order assignment to prevent conflicts
-- Theming uses a nested structure for different table sections
-- Custom cell builders allow rendering any Flutter widget in cells
-- Sort cycle order is configurable (ascending-first or descending-first)
+- **Column Order Management**: Column order is managed by the `order` field in TablePlusColumn. Use TableColumnsBuilder to prevent order conflicts
+- **Selection Requirements**: Selection features require unique `'id'` field in each row data map - duplicate IDs cause unexpected behavior
+- **Null Safety for Features**: Setting `onSort: null` completely hides sort icons and disables sorting. Setting `onColumnReorder: null` disables drag-and-drop
+- **Coexisting Features**: Selection and editing modes can coexist in the same table simultaneously
+- **Theme Architecture**: Uses nested theme classes (TablePlusTheme > TablePlusHeaderTheme/TablePlusBodyTheme/etc.) for granular control
+- **Custom Cell Rendering**: `cellBuilder` property allows rendering any Flutter widget in cells but can impact performance with large datasets
+- **Sort Cycle Configuration**: Sort cycle order is configurable between ascending-first and descending-first patterns
+
+## Code Patterns & Conventions
+
+### Data Structure Requirements
+- Row data: `List<Map<String, dynamic>>` where keys match column keys
+- Selection feature: Each row must have unique `'id'` field
+- Column definitions: Use `TableColumnsBuilder` for safe column creation
+
+### Widget Composition Pattern
+- Header and body are separate widgets with synchronized scroll controllers
+- State is managed externally and passed down through props
+- Callbacks flow user interactions (sort, select, edit, reorder) back to parent
+
+### Performance Considerations
+- Use simple text cells when possible; `cellBuilder` sparingly for complex widgets
+- Consider pagination for 1000+ rows
+- TableColumnsBuilder prevents order conflicts during column management
 
 ## Documentation Structure
 
