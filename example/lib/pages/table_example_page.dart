@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
 
 import '../data/sample_data.dart';
-import '../widgets/table_controls.dart';
-import '../widgets/table_app_bar.dart';
-import '../widgets/table_status_indicators.dart';
 import '../widgets/example_documentation.dart';
+import '../widgets/table_app_bar.dart';
+import '../widgets/table_controls.dart';
+import '../widgets/table_status_indicators.dart';
 
 class TableExamplePage extends StatefulWidget {
   const TableExamplePage({super.key});
@@ -347,11 +347,11 @@ class _TableExamplePageState extends State<TableExamplePage> {
 
       // Get the column being moved
       final movingColumn = visibleColumns[oldIndex];
-      final targetColumn = visibleColumns[newIndex];
 
       // Create new builder and rebuild with new order
       final builder = TableColumnsBuilder();
 
+      int newOrder;
       // Add all columns except the moving one, adjusting orders
       for (int i = 0; i < visibleColumns.length; i++) {
         final column = visibleColumns[i];
@@ -360,7 +360,6 @@ class _TableExamplePageState extends State<TableExamplePage> {
           continue; // Skip the moving column for now
         }
 
-        int newOrder;
         if (oldIndex < newIndex) {
           // Moving down: shift columns up
           if (i <= oldIndex) {
@@ -385,7 +384,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
       }
 
       // Insert the moved column at the new position
-      final newOrder = newIndex + 1;
+      newOrder = newIndex + 1;
       builder.insertColumn(
           movingColumn.key, movingColumn.copyWith(order: 0), newOrder);
 
@@ -414,8 +413,8 @@ class _TableExamplePageState extends State<TableExamplePage> {
   /// Toggle between single and multiple selection modes
   void _toggleSelectionModeType() {
     setState(() {
-      _selectionMode = _selectionMode == SelectionMode.single 
-          ? SelectionMode.multiple 
+      _selectionMode = _selectionMode == SelectionMode.single
+          ? SelectionMode.multiple
           : SelectionMode.single;
       // Clear selections when switching modes
       _selectedRows.clear();
