@@ -16,6 +16,7 @@ class TablePlusBody extends StatelessWidget {
     required this.theme,
     required this.verticalController,
     this.isSelectable = false,
+    this.selectionMode = SelectionMode.multiple,
     this.selectedRows = const <String>{},
     this.selectionTheme = const TablePlusSelectionTheme(),
     this.onRowSelectionChanged,
@@ -46,6 +47,9 @@ class TablePlusBody extends StatelessWidget {
 
   /// Whether the table supports row selection.
   final bool isSelectable;
+
+  /// The selection mode for the table.
+  final SelectionMode selectionMode;
 
   /// The set of currently selected row IDs.
   final Set<String> selectedRows;
@@ -106,7 +110,20 @@ class TablePlusBody extends StatelessWidget {
     if (onRowSelectionChanged == null) return;
 
     final isCurrentlySelected = selectedRows.contains(rowId);
-    onRowSelectionChanged!(rowId, !isCurrentlySelected);
+    
+    if (selectionMode == SelectionMode.single) {
+      // For single selection mode, always try to select the row
+      // The parent widget should handle clearing other selections
+      if (!isCurrentlySelected) {
+        onRowSelectionChanged!(rowId, true);
+      } else {
+        // Allow deselecting in single mode
+        onRowSelectionChanged!(rowId, false);
+      }
+    } else {
+      // For multiple selection mode, toggle the selection
+      onRowSelectionChanged!(rowId, !isCurrentlySelected);
+    }
   }
 
   @override
@@ -148,6 +165,7 @@ class TablePlusBody extends StatelessWidget {
           backgroundColor: _getRowColor(index, isSelected),
           isLastRow: index == data.length - 1,
           isSelectable: isSelectable,
+          selectionMode: selectionMode,
           isSelected: isSelected,
           selectionTheme: selectionTheme,
           onRowSelectionChanged: _handleRowSelectionToggle,
@@ -177,6 +195,7 @@ class _TablePlusRow extends StatelessWidget {
     required this.backgroundColor,
     required this.isLastRow,
     required this.isSelectable,
+    required this.selectionMode,
     required this.isSelected,
     required this.selectionTheme,
     required this.onRowSelectionChanged,
@@ -199,6 +218,7 @@ class _TablePlusRow extends StatelessWidget {
   final Color backgroundColor;
   final bool isLastRow;
   final bool isSelectable;
+  final SelectionMode selectionMode;
   final bool isSelected;
   final TablePlusSelectionTheme selectionTheme;
   final void Function(String rowId) onRowSelectionChanged;
@@ -217,7 +237,17 @@ class _TablePlusRow extends StatelessWidget {
   void _handleRowTap() {
     if (isEditable) return; // No row selection in editable mode
     if (!isSelectable || rowId == null) return;
-    onRowSelectionChanged(rowId!);
+    
+    if (selectionMode == SelectionMode.single) {
+      // For single selection mode, always select this row
+      // The parent should handle clearing other selections
+      if (!isSelected) {
+        onRowSelectionChanged(rowId!);
+      }
+    } else {
+      // For multiple selection mode, toggle the selection
+      onRowSelectionChanged(rowId!);
+    }
   }
 
   @override

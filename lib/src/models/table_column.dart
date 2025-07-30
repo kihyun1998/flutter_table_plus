@@ -21,6 +21,17 @@ enum SortCycleOrder {
   descendingFirst,
 }
 
+/// Enum representing the selection mode for table rows.
+enum SelectionMode {
+  /// Multiple rows can be selected simultaneously.
+  /// Shows checkboxes and select-all functionality.
+  multiple,
+
+  /// Only one row can be selected at a time.
+  /// Previous selection is automatically cleared when a new row is selected.
+  single,
+}
+
 /// Callback type for when a cell value is changed in editable mode.
 ///
 /// [columnKey]: The key of the column that was edited.

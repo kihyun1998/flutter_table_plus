@@ -13,6 +13,7 @@ class TableExamplePage extends StatefulWidget {
 
 class _TableExamplePageState extends State<TableExamplePage> {
   bool _isSelectable = false;
+  SelectionMode _selectionMode = SelectionMode.multiple;
   final SortCycleOrder _sortCycleOrder = SortCycleOrder.ascendingFirst;
   final Set<String> _selectedRows = <String>{};
   bool _showVerticalDividers = true; // 세로줄 표시 여부
@@ -292,10 +293,21 @@ class _TableExamplePageState extends State<TableExamplePage> {
   /// Handle row selection change
   void _onRowSelectionChanged(String rowId, bool isSelected) {
     setState(() {
-      if (isSelected) {
-        _selectedRows.add(rowId);
+      if (_selectionMode == SelectionMode.single) {
+        // Single selection mode: clear all other selections first
+        if (isSelected) {
+          _selectedRows.clear();
+          _selectedRows.add(rowId);
+        } else {
+          _selectedRows.remove(rowId);
+        }
       } else {
-        _selectedRows.remove(rowId);
+        // Multiple selection mode: normal toggle behavior
+        if (isSelected) {
+          _selectedRows.add(rowId);
+        } else {
+          _selectedRows.remove(rowId);
+        }
       }
     });
   }
@@ -393,6 +405,17 @@ class _TableExamplePageState extends State<TableExamplePage> {
       if (!_isSelectable) {
         _selectedRows.clear();
       }
+    });
+  }
+
+  /// Toggle between single and multiple selection modes
+  void _toggleSelectionModeType() {
+    setState(() {
+      _selectionMode = _selectionMode == SelectionMode.single 
+          ? SelectionMode.multiple 
+          : SelectionMode.single;
+      // Clear selections when switching modes
+      _selectedRows.clear();
     });
   }
 
@@ -615,6 +638,22 @@ class _TableExamplePageState extends State<TableExamplePage> {
             ),
             tooltip: _isSelectable ? 'Disable Selection' : 'Enable Selection',
           ),
+          // Toggle selection mode type button (single/multiple)
+          if (_isSelectable)
+            IconButton(
+              onPressed: _toggleSelectionModeType,
+              icon: Icon(
+                _selectionMode == SelectionMode.single 
+                    ? Icons.radio_button_checked 
+                    : Icons.check_box_outlined,
+                color: _selectionMode == SelectionMode.single 
+                    ? Colors.orange 
+                    : Colors.blue,
+              ),
+              tooltip: _selectionMode == SelectionMode.single 
+                  ? 'Switch to Multiple Selection' 
+                  : 'Switch to Single Selection',
+            ),
           // Toggle column reordering button
           IconButton(
             onPressed: _toggleColumnReordering,
@@ -683,15 +722,21 @@ class _TableExamplePageState extends State<TableExamplePage> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.blue.shade100,
+                      color: _selectionMode == SelectionMode.single 
+                          ? Colors.orange.shade100 
+                          : Colors.blue.shade100,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      '${_selectedRows.length} selected',
+                      _selectedRows.isNotEmpty 
+                          ? '${_selectedRows.length} selected (${_selectionMode == SelectionMode.single ? 'Single' : 'Multi'})'
+                          : '${_selectionMode == SelectionMode.single ? 'Single' : 'Multi'} Selection',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: Colors.blue.shade800,
+                        color: _selectionMode == SelectionMode.single 
+                            ? Colors.orange.shade800 
+                            : Colors.blue.shade800,
                       ),
                     ),
                   ),
@@ -777,6 +822,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
                     columns: _columns,
                     data: _sortedData, // Use sorted data instead of original
                     isSelectable: _isSelectable,
+                    selectionMode: _selectionMode,
                     selectedRows: _selectedRows,
                     sortCycleOrder: _sortCycleOrder,
                     onRowSelectionChanged: _onRowSelectionChanged,

@@ -287,6 +287,7 @@ class TablePlusSelectionTheme {
     this.checkboxColor = const Color(0xFF2196F3),
     this.checkboxSize = 18.0,
     this.showCheckboxColumn = true,
+    this.showSelectAllCheckbox = true,
     this.checkboxColumnWidth = 60.0,
   });
 
@@ -303,6 +304,11 @@ class TablePlusSelectionTheme {
   /// If false, rows can only be selected by tapping.
   final bool showCheckboxColumn;
 
+  /// Whether to show the select-all checkbox in the header.
+  /// If false, only individual row selection is available.
+  /// Automatically set to false for single selection mode.
+  final bool showSelectAllCheckbox;
+
   /// The width of the checkbox column.
   final double checkboxColumnWidth;
 
@@ -312,6 +318,7 @@ class TablePlusSelectionTheme {
     Color? checkboxColor,
     double? checkboxSize,
     bool? showCheckboxColumn,
+    bool? showSelectAllCheckbox,
     double? checkboxColumnWidth,
   }) {
     return TablePlusSelectionTheme(
@@ -319,6 +326,7 @@ class TablePlusSelectionTheme {
       checkboxColor: checkboxColor ?? this.checkboxColor,
       checkboxSize: checkboxSize ?? this.checkboxSize,
       showCheckboxColumn: showCheckboxColumn ?? this.showCheckboxColumn,
+      showSelectAllCheckbox: showSelectAllCheckbox ?? this.showSelectAllCheckbox,
       checkboxColumnWidth: checkboxColumnWidth ?? this.checkboxColumnWidth,
     );
   }

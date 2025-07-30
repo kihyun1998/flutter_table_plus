@@ -12,6 +12,7 @@ class TablePlusHeader extends StatefulWidget {
     required this.totalWidth,
     required this.theme,
     this.isSelectable = false,
+    this.selectionMode = SelectionMode.multiple,
     this.selectedRows = const <String>{},
     this.sortCycleOrder = SortCycleOrder.ascendingFirst,
     this.totalRowCount = 0,
@@ -34,6 +35,9 @@ class TablePlusHeader extends StatefulWidget {
 
   /// Whether the table supports row selection.
   final bool isSelectable;
+
+  /// The selection mode for the table.
+  final SelectionMode selectionMode;
 
   /// The set of currently selected row IDs.
   final Set<String> selectedRows;
@@ -282,6 +286,8 @@ class _TablePlusHeaderState extends State<TablePlusHeader> {
               selectAllState: _getSelectAllState(),
               selectedRows: widget.selectedRows,
               onSelectAll: widget.onSelectAll,
+              showSelectAllCheckbox:
+                  widget.selectionTheme.showSelectAllCheckbox,
             ),
 
           // Reorderable or non-reorderable columns
@@ -313,9 +319,10 @@ class _TablePlusHeaderState extends State<TablePlusHeader> {
                               sortDirection: widget.sortColumnKey == column.key
                                   ? widget.sortDirection
                                   : SortDirection.none,
-                              onSortClick: column.sortable && widget.onSort != null
-                                  ? () => _handleSortClick(column.key)
-                                  : null,
+                              onSortClick:
+                                  column.sortable && widget.onSort != null
+                                      ? () => _handleSortClick(column.key)
+                                      : null,
                             ),
                           );
                         },
@@ -323,7 +330,8 @@ class _TablePlusHeaderState extends State<TablePlusHeader> {
                     : SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: Row(
-                          children: reorderableColumns.asMap().entries.map((entry) {
+                          children:
+                              reorderableColumns.asMap().entries.map((entry) {
                             final index = entry.key;
                             final column = entry.value;
                             final width = reorderableWidths.isNotEmpty
@@ -338,9 +346,10 @@ class _TablePlusHeaderState extends State<TablePlusHeader> {
                               sortDirection: widget.sortColumnKey == column.key
                                   ? widget.sortDirection
                                   : SortDirection.none,
-                              onSortClick: column.sortable && widget.onSort != null
-                                  ? () => _handleSortClick(column.key)
-                                  : null,
+                              onSortClick:
+                                  column.sortable && widget.onSort != null
+                                      ? () => _handleSortClick(column.key)
+                                      : null,
                             );
                           }).toList(),
                         ),
@@ -471,6 +480,7 @@ class _SelectionHeaderCell extends StatelessWidget {
     required this.selectAllState,
     required this.onSelectAll,
     required this.selectedRows,
+    this.showSelectAllCheckbox = true,
   });
 
   final double width;
@@ -479,6 +489,7 @@ class _SelectionHeaderCell extends StatelessWidget {
   final bool? selectAllState;
   final void Function(bool selectAll)? onSelectAll;
   final Set<String> selectedRows;
+  final bool showSelectAllCheckbox;
 
   @override
   Widget build(BuildContext context) {
@@ -496,27 +507,29 @@ class _SelectionHeaderCell extends StatelessWidget {
               )
             : null,
       ),
-      child: Center(
-        child: SizedBox(
-          width: selectionTheme.checkboxSize,
-          height: selectionTheme.checkboxSize,
-          child: Checkbox(
-            value: selectAllState,
-            tristate: true, // Allows indeterminate state
-            onChanged: onSelectAll != null
-                ? (value) {
-                    // Improved logic: if any rows are selected, deselect all
-                    // If no rows are selected, select all
-                    final shouldSelectAll = selectedRows.isEmpty;
-                    onSelectAll!(shouldSelectAll);
-                  }
-                : null,
-            activeColor: selectionTheme.checkboxColor,
-            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            visualDensity: VisualDensity.compact,
-          ),
-        ),
-      ),
+      child: showSelectAllCheckbox
+          ? Center(
+              child: SizedBox(
+                width: selectionTheme.checkboxSize,
+                height: selectionTheme.checkboxSize,
+                child: Checkbox(
+                  value: selectAllState,
+                  tristate: true, // Allows indeterminate state
+                  onChanged: onSelectAll != null
+                      ? (value) {
+                          // Improved logic: if any rows are selected, deselect all
+                          // If no rows are selected, select all
+                          final shouldSelectAll = selectedRows.isEmpty;
+                          onSelectAll!(shouldSelectAll);
+                        }
+                      : null,
+                  activeColor: selectionTheme.checkboxColor,
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  visualDensity: VisualDensity.compact,
+                ),
+              ),
+            )
+          : const SizedBox.shrink(), // Empty space when checkbox is hidden
     );
   }
 }

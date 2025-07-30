@@ -24,6 +24,7 @@ class FlutterTablePlus extends StatefulWidget {
     required this.data,
     this.theme,
     this.isSelectable = false,
+    this.selectionMode = SelectionMode.multiple,
     this.selectedRows = const <String>{},
     this.sortCycleOrder = SortCycleOrder.ascendingFirst,
     this.onRowSelectionChanged,
@@ -56,6 +57,12 @@ class FlutterTablePlus extends StatefulWidget {
   /// Whether the table supports row selection.
   /// When true, adds selection checkboxes and enables row selection.
   final bool isSelectable;
+
+  /// The selection mode for the table.
+  /// [SelectionMode.multiple] allows multiple rows to be selected simultaneously.
+  /// [SelectionMode.single] allows only one row to be selected at a time.
+  /// Only used when [isSelectable] is true.
+  final SelectionMode selectionMode;
 
   /// The set of currently selected row IDs.
   /// Row IDs are extracted from `rowData['id']`.
@@ -278,8 +285,21 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
   }
 
   /// Get the current theme, using default if not provided.
-  TablePlusTheme get _currentTheme =>
-      widget.theme ?? TablePlusTheme.defaultTheme;
+  /// Automatically adjusts selection theme based on selection mode.
+  TablePlusTheme get _currentTheme {
+    final baseTheme = widget.theme ?? TablePlusTheme.defaultTheme;
+    
+    // For single selection mode, automatically disable select-all checkbox
+    if (widget.isSelectable && widget.selectionMode == SelectionMode.single) {
+      return baseTheme.copyWith(
+        selectionTheme: baseTheme.selectionTheme.copyWith(
+          showSelectAllCheckbox: false,
+        ),
+      );
+    }
+    
+    return baseTheme;
+  }
 
   /// Get only visible columns, including selection column if enabled.
   /// Columns are sorted by their order field in ascending order.
@@ -490,6 +510,7 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                               totalWidth: contentWidth,
                               theme: theme.headerTheme,
                               isSelectable: widget.isSelectable,
+                              selectionMode: widget.selectionMode,
                               selectedRows: widget.selectedRows,
                               sortCycleOrder: widget.sortCycleOrder,
                               totalRowCount: widget.data.length,
@@ -511,6 +532,7 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                 theme: theme.bodyTheme,
                                 verticalController: verticalScrollController,
                                 isSelectable: widget.isSelectable,
+                                selectionMode: widget.selectionMode,
                                 selectedRows: widget.selectedRows,
                                 selectionTheme: theme.selectionTheme,
                                 onRowSelectionChanged:
