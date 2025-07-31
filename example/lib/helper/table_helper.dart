@@ -233,8 +233,12 @@ class TableHelper {
         selectedRowColor: Color(0xFFE3F2FD),
         checkboxColor: Color(0xFF2196F3),
         checkboxSize: 18.0,
+        rowHoverColor: Colors.red,
+        rowSplashColor: Colors.green,
+        rowHighlightColor: Colors.blue,
         selectedRowHoverColor: Colors.red,
         selectedRowSplashColor: Colors.green,
+        selectedRowHighlightColor: Colors.blue,
       ),
       editableTheme: const TablePlusEditableTheme(
         editingCellColor: Color(0xFFFFFDE7),
