@@ -87,6 +87,8 @@ This theme controls the appearance of selection-related elements.
 - `checkboxColor`: The color of the selection checkboxes.
 - `checkboxSize`: The size of the checkbox icon.
 - `checkboxColumnWidth`: The width of the dedicated selection column.
+- `showCheckboxColumn`: Whether to display the checkbox column at all. If `false`, users can still select rows by tapping them, but the checkboxes will not be visible.
+- `showSelectAllCheckbox`: Whether to show the "Select All" checkbox in the header. **Note:** This is automatically set to `false` when `selectionMode` is `SelectionMode.single`.
 
 ### Example
 

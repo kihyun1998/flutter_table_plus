@@ -1,3 +1,18 @@
+## 1.5.0
+
+*   **Added Single Selection Mode**
+    *   Introduced `SelectionMode.single` to allow only one row to be selected at a time.
+    *   When a new row is selected in single selection mode, the previous selection is automatically cleared.
+    *   The "Select All" checkbox is now automatically hidden when in single selection mode for a cleaner UI.
+
+*   **Refactored Example Page**
+    *   The main example page (`table_example_page.dart`) has been significantly refactored for better readability and maintainability.
+    *   Key UI components like the app bar actions, status indicators, and documentation sections have been extracted into their own reusable widgets:
+        *   `TableAppBarActions`
+        *   `TableStatusIndicators`
+        *   `ExampleDocumentation`
+    *   This improves code organization and makes the example easier to understand and adapt.
+
 ## 1.4.0
 
 *   **Enhanced Feature Control Options**

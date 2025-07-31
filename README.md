@@ -39,7 +39,7 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  flutter_table_plus: ^1.4.0
+  flutter_table_plus: ^1.5.0
 ```
 
 Then, run `flutter pub get` in your terminal.
@@ -135,28 +135,30 @@ FlutterTablePlus(
 
 ### ☑️ Row Selection
 
-Enable row selection with checkboxes:
+Enable row selection with checkboxes. Supports both **single** and **multiple** selection modes.
 
 ```dart
 FlutterTablePlus(
   isSelectable: true,
+  selectionMode: SelectionMode.single, // Or SelectionMode.multiple
   selectedRows: _selectedRows,
   onRowSelectionChanged: (rowId, isSelected) {
     setState(() {
-      if (isSelected) {
-        _selectedRows.add(rowId);
+      if (selectionMode == SelectionMode.single) {
+        _selectedRows.clear();
+        if (isSelected) _selectedRows.add(rowId);
       } else {
-        _selectedRows.remove(rowId);
+        isSelected ? _selectedRows.add(rowId) : _selectedRows.remove(rowId);
       }
     });
   },
   onSelectAll: (selectAll) {
+    // onSelectAll is only applicable for multiple selection mode
     setState(() {
       _selectedRows = selectAll ? getAllRowIds() : <String>{};
     });
   },
 )
-```
 
 ### 🎨 Custom Cell Widgets
 
@@ -288,15 +290,6 @@ FlutterTablePlus(
 - **Flutter**: `>=3.0.0`
 - **Dart**: `>=3.0.0`
 - **Minimum Dependencies**: Only depends on Flutter SDK (no external packages)
-
-### 📊 Recommended Usage
-
-| Data Size | Performance | Recommendation |
-|-----------|-------------|----------------|
-| < 100 rows | Excellent | Perfect for all features |
-| 100-500 rows | Very Good | All features work smoothly |
-| 500-1000 rows | Good | Consider pagination for better UX |
-| 1000+ rows | Fair | Implement virtual scrolling or pagination |
 
 ### 🎯 Best Practices
 

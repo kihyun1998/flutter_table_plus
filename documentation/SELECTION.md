@@ -1,19 +1,23 @@
 # Feature Guide: Row Selection
 
-`FlutterTablePlus` supports single or multiple row selection, managed by your application's state. This guide explains how to enable and control the selection feature.
+`FlutterTablePlus` supports both **single** and **multiple** row selection, managed by your application's state. This guide explains how to enable and control the selection feature.
 
-## 1. Enabling Selection
+## 1. Enabling Selection and Choosing a Mode
 
-To enable row selection, set the `isSelectable` property to `true`.
+To enable row selection, set `isSelectable` to `true`. You can then choose the desired behavior using the `selectionMode` property.
+
+- `SelectionMode.multiple` (Default): Allows users to select multiple rows simultaneously.
+- `SelectionMode.single`: Restricts selection to only one row at a time.
 
 ```dart
 FlutterTablePlus(
   isSelectable: true,
+  selectionMode: SelectionMode.single, // Or SelectionMode.multiple
   // ... other properties
 );
 ```
 
-When enabled, a checkbox column will appear at the beginning of the table, and tapping on a row will toggle its selection state.
+When `isSelectable` is `true`, a checkbox column appears by default, and tapping a row toggles its selection state. In `single` mode, the "Select All" checkbox is automatically hidden.
 
 ## 2. The Importance of a Unique `id`
 
@@ -39,7 +43,7 @@ final badData = [
 
 ## 3. Managing Selection State
 
-Similar to sorting, the table delegates selection state management to the parent widget. You need to store the set of selected row IDs and provide it to the table.
+The table delegates selection state management to the parent widget. You need to store the set of selected row IDs and provide it to the table.
 
 ### State Management
 
@@ -48,11 +52,13 @@ Similar to sorting, the table delegates selection state management to the parent
 ### Callbacks
 
 - `onRowSelectionChanged`: Called when a single row's checkbox is toggled or a row is tapped. It provides the `rowId` and its new `isSelected` state.
-- `onSelectAll`: Called when the header checkbox is clicked. It provides a boolean indicating whether to select all rows.
-- `onRowDoubleTap`: **New!** Called when a row is double-tapped. Provides the `rowId` of the double-tapped row. This callback is active only when `isSelectable` is `true`.
-- `onRowSecondaryTap`: **New!** Called when a row is right-clicked (or long-pressed on touch devices). Provides the `rowId` of the secondary-tapped row. This callback is active only when `isSelectable` is `true`.
+- `onSelectAll`: Called when the header checkbox is clicked. **Note:** This is only relevant for `SelectionMode.multiple`.
+- `onRowDoubleTap`: Called when a row is double-tapped. Provides the `rowId`. Active only when `isSelectable` is `true`.
+- `onRowSecondaryTap`: Called when a row is right-clicked or long-pressed. Provides the `rowId`. Active only when `isSelectable` is `true`.
 
 ### Example with `StatefulWidget`
+
+This example demonstrates how to handle both single and multiple selection modes.
 
 ```dart
 class SelectableTablePage extends StatefulWidget {
@@ -64,8 +70,9 @@ class SelectableTablePage extends StatefulWidget {
 }
 
 class _SelectableTablePageState extends State<SelectableTablePage> {
-  // 1. Store selection state
+  // 1. Store selection state and mode
   Set<String> _selectedRowIds = {};
+  SelectionMode _selectionMode = SelectionMode.multiple;
 
   @override
   Widget build(BuildContext context) {
@@ -73,48 +80,50 @@ class _SelectableTablePageState extends State<SelectableTablePage> {
       columns: /* your columns */,
       data: widget.data,
       isSelectable: true,
-      selectedRows: _selectedRowIds, // Provide the current selection state
+      selectionMode: _selectionMode,
+      selectedRows: _selectedRowIds,
       
-      // 2. Handle single row selection
+      // 2. Handle row selection for both modes
       onRowSelectionChanged: (rowId, isSelected) {
         setState(() {
-          if (isSelected) {
-            _selectedRowIds.add(rowId);
-          } else {
-            _selectedRowIds.remove(rowId);
-          }
-        });
-      },
-      
-      // 3. Handle select-all
-      onSelectAll: (selectAll) {
-        setState(() {
-          if (selectAll) {
-            _selectedRowIds = widget.data.map((row) => row['id'].toString()).toSet();
-          } else {
+          if (_selectionMode == SelectionMode.single) {
+            // For single selection, clear previous and add new
             _selectedRowIds.clear();
+            if (isSelected) {
+              _selectedRowIds.add(rowId);
+            }
+          } else {
+            // For multiple selection, add or remove
+            if (isSelected) {
+              _selectedRowIds.add(rowId);
+            } else {
+              _selectedRowIds.remove(rowId);
+            }
           }
         });
       },
       
-      // 4. Handle double-tap (New!)
-      onRowDoubleTap: (rowId) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Double-tapped row: $rowId'),
-            duration: const Duration(seconds: 2),
-          ),
-        );
+      // 3. Handle select-all (for multiple mode)
+      onSelectAll: (selectAll) {
+        if (_selectionMode == SelectionMode.multiple) {
+          setState(() {
+            if (selectAll) {
+              _selectedRowIds = widget.data.map((row) => row['id'].toString()).toSet();
+            } else {
+              _selectedRowIds.clear();
+            }
+          });
+        }
       },
       
-      // 5. Handle secondary-tap (New!)
+      // 4. Handle double-tap
+      onRowDoubleTap: (rowId) {
+        // ... show details or perform action
+      },
+      
+      // 5. Handle secondary-tap
       onRowSecondaryTap: (rowId) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Secondary-tapped row: $rowId'),
-            duration: const Duration(seconds: 2),
-          ),
-        );
+        // ... show context menu
       },
     );
   }
@@ -134,7 +143,11 @@ FlutterTablePlus(
       checkboxColor: Colors.blue,
       checkboxSize: 20.0,
       checkboxColumnWidth: 50.0,
+      // Hide the checkbox column completely if desired
+      showCheckboxColumn: false, 
     ),
   ),
 );
 ```
+
+In `SelectionMode.single`, the `showSelectAllCheckbox` property of `TablePlusSelectionTheme` is automatically forced to `false`, so you don't need to manage it manually.
