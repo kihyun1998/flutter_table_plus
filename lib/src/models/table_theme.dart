@@ -65,6 +65,7 @@ class TablePlusHeaderTheme {
     this.showVerticalDividers = true,
     this.showBottomDivider = true,
     this.dividerColor = const Color(0xFFE0E0E0),
+    this.dividerThickness = 1.0,
     // Sort-related styling
     this.sortedColumnBackgroundColor,
     this.sortedColumnTextStyle,
@@ -96,6 +97,9 @@ class TablePlusHeaderTheme {
   /// The color of header dividers.
   final Color dividerColor;
 
+  /// The thickness of header dividers.
+  final double dividerThickness;
+
   /// Background color for columns that are currently sorted.
   /// If null, uses [backgroundColor] for all columns.
   final Color? sortedColumnBackgroundColor;
@@ -120,6 +124,7 @@ class TablePlusHeaderTheme {
     bool? showVerticalDividers,
     bool? showBottomDivider,
     Color? dividerColor,
+    double? dividerThickness,
     Color? sortedColumnBackgroundColor,
     TextStyle? sortedColumnTextStyle,
     SortIcons? sortIcons,
@@ -134,6 +139,7 @@ class TablePlusHeaderTheme {
       showVerticalDividers: showVerticalDividers ?? this.showVerticalDividers,
       showBottomDivider: showBottomDivider ?? this.showBottomDivider,
       dividerColor: dividerColor ?? this.dividerColor,
+      dividerThickness: dividerThickness ?? this.dividerThickness,
       sortedColumnBackgroundColor:
           sortedColumnBackgroundColor ?? this.sortedColumnBackgroundColor,
       sortedColumnTextStyle:

@@ -269,7 +269,7 @@ class _TablePlusHeaderState extends State<TablePlusHeader> {
                 ? Border(
                     bottom: BorderSide(
                       color: widget.theme.dividerColor,
-                      width: 1.0,
+                      width: widget.theme.dividerThickness,
                     ),
                   )
                 : null),
@@ -426,7 +426,7 @@ class _HeaderCell extends StatelessWidget {
             ? Border(
                 right: BorderSide(
                   color: theme.dividerColor,
-                  width: 0.5,
+                  width: theme.dividerThickness,
                 ),
               )
             : null,
@@ -502,7 +502,7 @@ class _SelectionHeaderCell extends StatelessWidget {
             ? Border(
                 right: BorderSide(
                   color: theme.dividerColor,
-                  width: 0.5,
+                  width: theme.dividerThickness,
                 ),
               )
             : null,
