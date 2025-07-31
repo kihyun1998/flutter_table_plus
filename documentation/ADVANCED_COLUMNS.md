@@ -1,6 +1,6 @@
 # Feature Guide: Advanced Column Settings
 
-Beyond basic text display, `TablePlusColumn` offers powerful options to control column width and render custom widgets within cells.
+Beyond basic text display, `TablePlusColumn` offers powerful options to control column width, text overflow, and render custom widgets within cells.
 
 ## 1. Custom Cell Rendering with `cellBuilder`
 
@@ -8,36 +8,7 @@ The `cellBuilder` property allows you to break free from simple text and render 
 
 `cellBuilder` is a function that provides the `BuildContext` and the `rowData` (the `Map<String, dynamic>` for the current row) and must return a `Widget`.
 
-### Example 1: Formatting a Salary
-
-Instead of just showing `75000`, you can format it as a currency string and apply a custom style.
-
-```dart
-.addColumn(
-  'salary',
-  TablePlusColumn(
-    key: 'salary',
-    label: 'Salary',
-    order: 0,
-    cellBuilder: (context, rowData) {
-      final salary = rowData['salary'] as int? ?? 0;
-      final formattedSalary = '\$${salary.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},')}';
-      
-      return Text(
-        formattedSalary,
-        style: const TextStyle(
-          fontWeight: FontWeight.bold,
-          color: Colors.green,
-        ),
-      );
-    },
-  ),
-)
-```
-
-### Example 2: Displaying a Status Badge
-
-Based on a boolean `active` flag, you can display a colorful status badge.
+### Example: Displaying a Status Badge
 
 ```dart
 .addColumn(
@@ -45,7 +16,6 @@ Based on a boolean `active` flag, you can display a colorful status badge.
   TablePlusColumn(
     key: 'active',
     label: 'Status',
-    order: 0,
     alignment: Alignment.center, // Center the badge in the cell
     cellBuilder: (context, rowData) {
       final bool isActive = rowData['active'] as bool? ?? false;
@@ -72,9 +42,9 @@ Based on a boolean `active` flag, you can display a colorful status badge.
 
 You have fine-grained control over column widths using three properties:
 
-- `width`: The **preferred** width of the column. The table will try to respect this width if there is enough horizontal space.
-- `minWidth`: The **minimum** width the column can shrink to. This is a hard constraint.
-- `maxWidth`: The **maximum** width the column can expand to. This is useful to prevent one column from taking up too much space.
+- `width`: The **preferred** width of the column.
+- `minWidth`: The **minimum** width the column can shrink to.
+- `maxWidth`: The **maximum** width the column can expand to.
 
 ### How Widths are Calculated
 
@@ -86,30 +56,50 @@ You have fine-grained control over column widths using three properties:
 
 ```dart
 .addColumn(
-  'id',
-  const TablePlusColumn(
-    key: 'id',
-    label: 'ID',
-    order: 0,
-    width: 60,      // Small preferred width
-    minWidth: 50,   // Cannot get smaller than 50px
-    maxWidth: 80,   // Cannot get larger than 80px
-    alignment: Alignment.center,
-  ),
-)
-.addColumn(
   'description',
   const TablePlusColumn(
     key: 'description',
     label: 'Description',
-    order: 0,
     width: 300,     // Give this column more space initially
     minWidth: 150,  // But allow it to shrink if needed
   ),
 )
 ```
 
-By combining `cellBuilder` and width constraints, you can build complex and responsive data tables that are tailored to your specific needs.
+## 3. Handling Text Overflow and Tooltips
+
+When cell content is too long to fit within the column's width, you can control how it's displayed using the `textOverflow` property of `TablePlusColumn`.
+
+- `textOverflow`: A `TextOverflow` enum (`clip`, `fade`, `ellipsis`, `visible`). The default is `ellipsis`.
+- `showTooltipOnOverflow`: A `bool` that enables an automatic tooltip when `textOverflow` is `ellipsis` and the text actually overflows. Defaults to `true`.
+
+### Automatic Tooltips
+
+A key feature is the automatic tooltip that appears when `textOverflow` is set to `TextOverflow.ellipsis`. If the text in a cell is longer than the available space, the user can hover over the truncated text to see the full content in a tooltip.
+
+You can disable this behavior by setting `showTooltipOnOverflow` to `false`.
+
+### Example
+
+```dart
+.addColumn(
+  'description',
+  const TablePlusColumn(
+    key: 'description',
+    label: 'Description',
+    width: 200, // A fixed width that might cause overflow
+    
+    // Truncate long text with an ellipsis (...)
+    textOverflow: TextOverflow.ellipsis, 
+    
+    // The tooltip will automatically show on hover if the text overflows.
+    // To disable it, you would add:
+    // showTooltipOnOverflow: false,
+  ),
+)
+```
+
+You can also customize the appearance of the tooltip via `TablePlusTheme`'s `tooltipTheme` property. See `THEMING.md` for more details.
 
 ## 4. Column Reordering
 
@@ -117,177 +107,80 @@ By combining `cellBuilder` and width constraints, you can build complex and resp
 
 ### Enabling Column Reordering
 
-To enable column reordering, provide an `onColumnReorder` callback to the `FlutterTablePlus` widget:
+To enable column reordering, provide an `onColumnReorder` callback to the `FlutterTablePlus` widget. If this callback is `null`, the feature is disabled.
 
 ```dart
 FlutterTablePlus(
   columns: _columns,
   data: data,
   onColumnReorder: (int oldIndex, int newIndex) {
-    // Handle the column reorder
+    // Handle the column reorder logic here
     _handleColumnReorder(oldIndex, newIndex);
   },
 );
 ```
 
-### Implementing Column Reorder Logic
+### Implementing the Reorder Logic
 
-The `onColumnReorder` callback provides:
-- `oldIndex`: The original position of the dragged column
-- `newIndex`: The target position where the column should be moved
+The `onColumnReorder` callback provides the `oldIndex` and `newIndex` of the columns involved in the drag operation. Your responsibility is to update your list of columns and trigger a rebuild.
 
-You need to update your column order and rebuild the widget with the new order:
+Here is a complete example of how to manage the column list and implement the handler:
 
 ```dart
-void _handleColumnReorder(int oldIndex, int newIndex) {
-  setState(() {
-    // Convert Map to List for reordering
-    final columnEntries = _columns.entries.toList();
-    
-    // Adjust newIndex if dragging down
-    if (oldIndex < newIndex) {
-      newIndex -= 1;
-    }
-    
-    // Perform the reorder
-    final entry = columnEntries.removeAt(oldIndex);
-    columnEntries.insert(newIndex, entry);
-    
-    // Rebuild the map with new order values
-    _columns = <String, TablePlusColumn>{};
-    for (int i = 0; i < columnEntries.length; i++) {
-      final key = columnEntries[i].key;
-      final column = columnEntries[i].value;
-      _columns[key] = column.copyWith(order: i + 1);
-    }
-  });
-}
-```
+class ReorderableTableScreen extends StatefulWidget {
+  const ReorderableTableScreen({super.key});
 
-### Using TableColumnsBuilder for Easier Management
-
-When using `TableColumnsBuilder`, you can reorder more easily by rebuilding the columns:
-
-```dart
-void _handleColumnReorder(int oldIndex, int newIndex) {
-  setState(() {
-    final columnKeys = _getOrderedColumnKeys(); // Get current order
-    
-    // Adjust newIndex if dragging down
-    if (oldIndex < newIndex) {
-      newIndex -= 1;
-    }
-    
-    // Reorder the keys
-    final key = columnKeys.removeAt(oldIndex);
-    columnKeys.insert(newIndex, key);
-    
-    // Rebuild columns with new order
-    final builder = TableColumnsBuilder();
-    for (final key in columnKeys) {
-      builder.addColumn(key, _originalColumns[key]!);
-    }
-    _columns = builder.build();
-  });
-}
-```
-
-### Disabling Column Reordering
-
-You can disable column reordering in two ways:
-
-#### Method 1: Remove the Callback (`onColumnReorder: null`)
-
-Set `onColumnReorder: null` to completely disable column reordering. This will:
-- Remove drag handles from column headers
-- Disable drag-and-drop functionality entirely
-- Remove visual drag affordances
-
-```dart
-FlutterTablePlus(
-  columns: columns,
-  data: data,
-  onColumnReorder: null, // Completely disables column reordering
-);
-```
-
-#### Method 2: Conditional Reordering
-
-Enable or disable reordering based on application state:
-
-```dart
-FlutterTablePlus(
-  columns: columns,
-  data: data,
-  onColumnReorder: userCanReorderColumns ? _handleColumnReorder : null,
-);
-```
-
-### Important Notes
-
-- **Selection Column**: The selection column (when `isSelectable: true`) is never reorderable and will always remain in the first position.
-- **Performance**: Column reordering rebuilds the entire table. For large datasets, consider implementing optimizations in your state management.
-- **Persistence**: Column order changes are not automatically persisted. You need to save and restore the column order in your application's storage if needed.
-
-### Example: Complete Column Reordering Implementation
-
-```dart
-class ReorderableTablePage extends StatefulWidget {
   @override
-  State<ReorderableTablePage> createState() => _ReorderableTablePageState();
+  State<ReorderableTableScreen> createState() => _ReorderableTableScreenState();
 }
 
-class _ReorderableTablePageState extends State<ReorderableTablePage> {
-  late Map<String, TablePlusColumn> _columns;
-  
+class _ReorderableTableScreenState extends State<ReorderableTableScreen> {
+  // Store columns in a list to easily manage order
+  late List<TablePlusColumn> _columns;
+
   @override
   void initState() {
     super.initState();
-    _initializeColumns();
+    // Define the initial column configuration
+    _columns = [
+      TablePlusColumn(key: 'id', label: 'ID', width: 80),
+      TablePlusColumn(key: 'name', label: 'Product Name', width: 200),
+      TablePlusColumn(key: 'stock', label: 'Stock', width: 100),
+      TablePlusColumn(key: 'price', label: 'Price', width: 120),
+    ];
   }
-  
-  void _initializeColumns() {
-    _columns = TableColumnsBuilder()
-      .addColumn('id', TablePlusColumn(key: 'id', label: 'ID', order: 0))
-      .addColumn('name', TablePlusColumn(key: 'name', label: 'Name', order: 0))
-      .addColumn('email', TablePlusColumn(key: 'email', label: 'Email', order: 0))
-      .build();
-  }
-  
+
   void _handleColumnReorder(int oldIndex, int newIndex) {
     setState(() {
-      // Get ordered column entries
-      final entries = _columns.entries.toList()
-        ..sort((a, b) => a.value.order.compareTo(b.value.order));
-      
-      // Adjust newIndex for drag behavior
+      // The ReorderableListView that powers this feature has a quirk
+      // where the newIndex needs adjustment if the item is moved downwards.
       if (oldIndex < newIndex) {
         newIndex -= 1;
       }
       
-      // Reorder entries
-      final entry = entries.removeAt(oldIndex);
-      entries.insert(newIndex, entry);
-      
-      // Rebuild map with new order
-      _columns = <String, TablePlusColumn>{};
-      for (int i = 0; i < entries.length; i++) {
-        final key = entries[i].key;
-        final column = entries[i].value;
-        _columns[key] = column.copyWith(order: i + 1);
-      }
+      // Remove the column from its old position and insert it at the new one
+      final column = _columns.removeAt(oldIndex);
+      _columns.insert(newIndex, column);
     });
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(title: const Text('Column Reordering')),
       body: FlutterTablePlus(
-        columns: _columns,
-        data: myData,
+        columns: _columns, // Provide the ordered list of columns
+        data: yourData, // Your list of Map<String, dynamic>
         onColumnReorder: _handleColumnReorder,
       ),
     );
   }
 }
+```
+
+### Important Notes
+
+- **State Management**: The order of the columns is controlled entirely by your state (`_columns` in the example). You must store the columns in a way that preserves their order, such as a `List`.
+- **Selection Column**: The selection checkbox column (when `isSelectable: true`) is fixed and not reorderable. It always stays at the beginning of the table.
+- **Persistence**: The table does not automatically save the user's column order. If you need to persist the layout between sessions, you must save the column order to a local database or shared preferences and restore it when initializing your state.
 ```

@@ -25,12 +25,13 @@ A highly customizable and efficient table widget for Flutter. It provides a rich
 ## Features
 
 - **Synchronized Scrolling**: Header and body scroll horizontally in perfect sync.
-- **Advanced Theming**: Customize headers, rows, scrollbars, and selection styles with `TablePlusTheme`.
-- **Column Sorting**: Supports multi-state sorting (ascending, descending, none) with a **configurable sort cycle**. Set `onSort: null` to completely hide sort icons and disable sorting.
-- **Row Selection & Editing**: Enable row selection and cell editing **simultaneously** for flexible data interaction. Also supports **double-tap** and **secondary-tap** events on rows.
-- **Column Reordering**: Easily reorder columns with drag-and-drop. Set `onColumnReorder: null` to completely disable drag-and-drop functionality.
+- **Advanced Theming**: Deeply customize headers, rows, and scrollbars. Use `decoration` for advanced header styling (gradients, borders) and fine-tune row interaction effects like `hoverColor`, `splashColor`, and `highlightColor`.
+- **Flexible Data Handling**: Use the `rowIdKey` property to specify a custom unique identifier for your rows, removing the need for a mandatory `'id'` key.
+- **Column Sorting**: Supports multi-state sorting (ascending, descending, none) with a configurable sort cycle.
+- **Row Selection & Editing**: Enable row selection and cell editing simultaneously. Supports double-tap and secondary-tap events on rows.
+- **Column Reordering**: Easily reorder columns with drag-and-drop.
+- **Smart Text Handling**: Control text overflow (`ellipsis`, `clip`, etc.) and get automatic tooltips for truncated text.
 - **Custom Cell Widgets**: Render any widget inside a cell using `cellBuilder` for maximum flexibility.
-- **Safe Column Management**: Use `TableColumnsBuilder` to define columns and manage their order without conflicts.
 - **Conditional Feature Control**: Dynamically enable/disable features like sorting and column reordering based on user permissions or application state.
 
 ## Installation
@@ -39,7 +40,7 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  flutter_table_plus: ^1.5.0
+  flutter_table_plus: ^1.6.0
 ```
 
 Then, run `flutter pub get` in your terminal.
@@ -56,13 +57,13 @@ class QuickStartExample extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // 1. Define your columns
-    final columns = TableColumnsBuilder()
-        .addColumn('id', TablePlusColumn(key: 'id', label: 'ID', order: 0, width: 80))
-        .addColumn('name', TablePlusColumn(key: 'name', label: 'Name', order: 0, width: 150))
-        .addColumn('email', TablePlusColumn(key: 'email', label: 'Email', order: 0, width: 200))
-        .build();
+    final columns = [
+      TablePlusColumn(key: 'id', label: 'ID', width: 80),
+      TablePlusColumn(key: 'name', label: 'Name', width: 150),
+      TablePlusColumn(key: 'email', label: 'Email', width: 200),
+    ];
 
-    // 2. Prepare your data
+    // 2. Prepare your data (each map must have a unique ID)
     final data = [
       {'id': 1, 'name': 'John Doe', 'email': 'john@example.com'},
       {'id': 2, 'name': 'Jane Smith', 'email': 'jane@example.com'},
@@ -75,6 +76,7 @@ class QuickStartExample extends StatelessWidget {
       body: FlutterTablePlus(
         columns: columns,
         data: data,
+        rowIdKey: 'id', // Specify the key for unique row IDs
       ),
     );
   }
@@ -91,13 +93,7 @@ Enable sorting with just a few properties:
 
 ```dart
 FlutterTablePlus(
-  columns: TableColumnsBuilder()
-    .addColumn('name', TablePlusColumn(
-      key: 'name', 
-      label: 'Name', 
-      sortable: true, // Enable sorting
-    ))
-    .build(),
+  columns: [TablePlusColumn(key: 'name', label: 'Name', sortable: true)],
   data: data,
   sortColumnKey: _sortColumnKey,
   sortDirection: _sortDirection,
@@ -111,28 +107,6 @@ FlutterTablePlus(
 )
 ```
 
-### ✏️ Cell Editing
-
-Make any column editable:
-
-```dart
-TablePlusColumn(
-  key: 'name',
-  label: 'Name',
-  editable: true,
-  hintText: 'Enter name',
-)
-
-// In your FlutterTablePlus:
-FlutterTablePlus(
-  isEditable: true,
-  onCellChanged: (columnKey, rowIndex, oldValue, newValue) {
-    // Handle cell changes
-    print('$columnKey changed from $oldValue to $newValue');
-  },
-)
-```
-
 ### ☑️ Row Selection
 
 Enable row selection with checkboxes. Supports both **single** and **multiple** selection modes.
@@ -140,51 +114,41 @@ Enable row selection with checkboxes. Supports both **single** and **multiple** 
 ```dart
 FlutterTablePlus(
   isSelectable: true,
-  selectionMode: SelectionMode.single, // Or SelectionMode.multiple
+  rowIdKey: 'user_uuid', // Use your custom ID key
   selectedRows: _selectedRows,
   onRowSelectionChanged: (rowId, isSelected) {
     setState(() {
-      if (selectionMode == SelectionMode.single) {
-        _selectedRows.clear();
-        if (isSelected) _selectedRows.add(rowId);
-      } else {
-        isSelected ? _selectedRows.add(rowId) : _selectedRows.remove(rowId);
-      }
-    });
-  },
-  onSelectAll: (selectAll) {
-    // onSelectAll is only applicable for multiple selection mode
-    setState(() {
-      _selectedRows = selectAll ? getAllRowIds() : <String>{};
+      isSelected ? _selectedRows.add(rowId) : _selectedRows.remove(rowId);
     });
   },
 )
+```
 
-### 🎨 Custom Cell Widgets
+### 🎨 Advanced Theming
 
-Render any widget in cells using `cellBuilder`:
+Customize every aspect of the table appearance. Leave interaction colors `null` to use the default framework effects.
 
 ```dart
-TablePlusColumn(
-  key: 'salary',
-  label: 'Salary',
-  cellBuilder: (context, rowData) {
-    final salary = rowData['salary'] as int;
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+FlutterTablePlus(
+  theme: TablePlusTheme(
+    headerTheme: TablePlusHeaderTheme(
+      height: 56,
       decoration: BoxDecoration(
-        color: salary > 50000 ? Colors.green.shade100 : Colors.orange.shade100,
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.blue.shade100,
+        border: Border(bottom: BorderSide(color: Colors.blue.shade300, width: 2)),
       ),
-      child: Text(
-        '\$${salary.toString().replaceAllMapped(
-          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), 
-          (m) => '${m[1]},'
-        )}',
-        style: TextStyle(fontWeight: FontWeight.bold),
-      ),
-    );
-  },
+    ),
+    bodyTheme: TablePlusBodyTheme(
+      rowHeight: 48,
+      alternateRowColor: Colors.grey.shade50,
+    ),
+    selectionTheme: TablePlusSelectionTheme(
+      selectedRowColor: Colors.blue.withOpacity(0.2),
+      rowHoverColor: Colors.blue.withOpacity(0.05), // Custom hover color
+      rowSplashColor: null, // Use default splash effect
+      selectedRowSplashColor: Colors.transparent, // Disable splash for selected rows
+    ),
+  ),
 )
 ```
 
@@ -196,34 +160,11 @@ Enable drag-and-drop column reordering:
 FlutterTablePlus(
   onColumnReorder: (oldIndex, newIndex) {
     setState(() {
-      // Reorder your columns
-      _reorderColumns(oldIndex, newIndex);
+      // Reorder your columns list here
+      final column = _columns.removeAt(oldIndex);
+      _columns.insert(newIndex, column);
     });
   },
-)
-```
-
-### 🎨 Advanced Theming
-
-Customize every aspect of the table appearance:
-
-```dart
-FlutterTablePlus(
-  theme: TablePlusTheme(
-    headerTheme: TablePlusHeaderTheme(
-      height: 56,
-      backgroundColor: Colors.blue.shade50,
-      textStyle: TextStyle(fontWeight: FontWeight.bold),
-    ),
-    bodyTheme: TablePlusBodyTheme(
-      rowHeight: 48,
-      alternatingRowColors: [Colors.white, Colors.grey.shade50],
-    ),
-    selectionTheme: TablePlusSelectionTheme(
-      checkboxColor: Colors.blue,
-      selectedRowColor: Colors.blue.shade50,
-    ),
-  ),
 )
 ```
 
@@ -231,32 +172,8 @@ FlutterTablePlus(
 
 You can dynamically enable or disable features based on your application's needs:
 
-### Disable Sorting Completely
-
 ```dart
 FlutterTablePlus(
-  columns: columns,
-  data: data,
-  onSort: null, // Hides all sort icons and disables sorting
-);
-```
-
-### Disable Column Reordering
-
-```dart
-FlutterTablePlus(
-  columns: columns,
-  data: data,
-  onColumnReorder: null, // Disables drag-and-drop column reordering
-);
-```
-
-### Dynamic Feature Control
-
-```dart
-FlutterTablePlus(
-  columns: columns,
-  data: data,
   // Enable features based on user permissions
   onSort: userCanSort ? _handleSort : null,
   onColumnReorder: userCanReorderColumns ? _handleColumnReorder : null,
@@ -267,48 +184,10 @@ FlutterTablePlus(
 
 ## Performance & Compatibility
 
-### 🚀 Performance
-
-- **Efficient Rendering**: Uses Flutter's built-in widgets with optimized rendering
-- **Large Dataset Support**: Handles tables with hundreds of rows efficiently
-- **Memory Management**: Automatic disposal of scroll controllers and other resources
-- **Responsive Design**: Adapts to different screen sizes and orientations
-- **Synchronized Scrolling**: High-performance horizontal scrolling synchronization between header and body
-
-### 📱 Platform Compatibility
-
-**Supported Platforms:**
-- ✅ **Android** (API 16+)
-- ✅ **iOS** (iOS 9.0+)  
-- ✅ **Web** (All modern browsers)
-- ✅ **Windows** (Windows 10+)
-- ✅ **macOS** (macOS 10.14+)
-- ✅ **Linux** (Ubuntu 18.04+)
-
-### 🔧 Requirements
-
-- **Flutter**: `>=3.0.0`
-- **Dart**: `>=3.0.0`
-- **Minimum Dependencies**: Only depends on Flutter SDK (no external packages)
-
-### 🎯 Best Practices
-
-- **Data Management**: Keep row data lean - move complex objects to separate state management
-- **Column Width**: Use `minWidth` and `maxWidth` constraints for responsive behavior
-- **Memory**: Implement proper disposal in `StatefulWidget`s using table features
-- **Performance**: Use `cellBuilder` sparingly for complex widgets; prefer simple text when possible
-
-```dart
-// ✅ Good - Simple and efficient
-TablePlusColumn(key: 'name', label: 'Name')
-
-// ⚠️ Use carefully - Can impact performance with many rows
-TablePlusColumn(
-  key: 'complex', 
-  label: 'Complex',
-  cellBuilder: (context, rowData) => ComplexWidget(data: rowData),
-)
-```
+- **Efficient Rendering**: Built on top of Flutter's high-performance rendering pipeline.
+- **Large Dataset Support**: Handles tables with hundreds of rows efficiently using `ListView.builder`.
+- **Platform Compatibility**: Runs on Android, iOS, Web, Windows, macOS, and Linux.
+- **Dependencies**: No external package dependencies.
 
 ## Documentation
 

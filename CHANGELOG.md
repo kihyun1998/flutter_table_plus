@@ -1,3 +1,21 @@
+## 1.6.0
+
+*   **Enhanced Theming and Styling Capabilities**
+    *   **Advanced Header Customization**: `TablePlusHeaderTheme` now includes a `decoration` property, allowing full control over the header's appearance (e.g., borders, gradients, shadows) using `BoxDecoration`.
+    *   **Individual Header Cell Styling**: Added `cellDecoration` to `TablePlusHeaderTheme` for styling individual header cells.
+    *   **Flexible Row Interaction Effects**: `TablePlusSelectionTheme` has been updated to provide more granular control over row interaction effects:
+        *   Set `hoverColor`, `splashColor`, and `highlightColor` independently for both normal and selected rows (e.g., `rowHoverColor`, `selectedRowHoverColor`).
+        *   If these properties are left `null`, the default Flutter framework effects will be used, enhancing consistency and predictability.
+        *   The `enableRowInteractionEffects` property has been removed for a simpler and more direct API.
+    *   **Customizable Header Divider**: Added `dividerThickness` to `TablePlusHeaderTheme` to control the thickness of the header's bottom divider.
+
+*   **Improved Feature Flexibility**
+    *   **Custom Row ID Key**: Added a `rowIdKey` property to `FlutterTablePlus`, allowing developers to specify which key in their data map should be used as a unique row identifier. This removes the previous requirement of having a mandatory `'id'` key.
+    *   **Text Overflow and Tooltip**: `TablePlusColumn` now supports a `textOverflow` property (`ellipsis`, `clip`, `fade`). When `ellipsis` is used, a tooltip automatically appears on hover to show the full text.
+
+*   **Internal Code Refinements**
+    *   **Theme Structure Refactoring**: Theme-related classes have been organized into separate files (`header_theme.dart`, `body_theme.dart`, etc.) for better code structure and maintainability.
+
 ## 1.5.0
 
 *   **Added Single Selection Mode**

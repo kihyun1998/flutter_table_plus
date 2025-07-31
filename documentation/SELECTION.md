@@ -19,27 +19,27 @@ FlutterTablePlus(
 
 When `isSelectable` is `true`, a checkbox column appears by default, and tapping a row toggles its selection state. In `single` mode, the "Select All" checkbox is automatically hidden.
 
-## 2. The Importance of a Unique `id`
+## 2. Providing a Unique Row Identifier
 
-**This is critical:** For the selection feature to work correctly, every row in your `data` list (each `Map<String, dynamic>`) **must** have a unique identifier under the key `'id'`.
+For the selection feature to work correctly, every row in your `data` list must have a unique identifier. By default, the widget looks for a key named `'id'`.
 
-The widget uses `rowData['id'].toString()` to track selected rows. Duplicate or missing IDs will lead to unpredictable selection behavior.
+### Using a Custom Row ID Key
+
+If your data uses a different key for its unique ID (e.g., `'user_uuid'`, `'productId'`), you can specify it using the `rowIdKey` property. This avoids the need to modify your data structure.
 
 ```dart
-// GOOD: Each row has a unique 'id'.
-final data = [
-  {'id': 1, 'name': 'Product A'},
-  {'id': 2, 'name': 'Product B'},
-  {'id': 'prod_c', 'name': 'Product C'}, // IDs can be String or int
-];
-
-// BAD: Missing or duplicate IDs.
-final badData = [
-  {'name': 'Product A'}, // Missing 'id'
-  {'id': 1, 'name': 'Product B'},
-  {'id': 1, 'name': 'Product C'}, // Duplicate 'id'
-];
+FlutterTablePlus(
+  // ...
+  rowIdKey: 'user_uuid', // Tell the table to use 'user_uuid' as the ID
+  data: [
+    {'user_uuid': 'abc-123', 'name': 'Product A'},
+    {'user_uuid': 'def-456', 'name': 'Product B'},
+  ],
+  // ...
+);
 ```
+
+**Important**: The value associated with your `rowIdKey` will be converted to a `String` for internal tracking. Ensure it is unique for each row.
 
 ## 3. Managing Selection State
 
@@ -58,7 +58,7 @@ The table delegates selection state management to the parent widget. You need to
 
 ### Example with `StatefulWidget`
 
-This example demonstrates how to handle both single and multiple selection modes.
+This example demonstrates how to handle selection, assuming the unique ID key is `'id'`.
 
 ```dart
 class SelectableTablePage extends StatefulWidget {
@@ -70,60 +70,39 @@ class SelectableTablePage extends StatefulWidget {
 }
 
 class _SelectableTablePageState extends State<SelectableTablePage> {
-  // 1. Store selection state and mode
+  // 1. Store selection state
   Set<String> _selectedRowIds = {};
-  SelectionMode _selectionMode = SelectionMode.multiple;
+  final String _rowIdKey = 'id'; // Define your ID key
 
   @override
   Widget build(BuildContext context) {
     return FlutterTablePlus(
       columns: /* your columns */,
       data: widget.data,
+      rowIdKey: _rowIdKey,
       isSelectable: true,
-      selectionMode: _selectionMode,
       selectedRows: _selectedRowIds,
       
-      // 2. Handle row selection for both modes
+      // 2. Handle row selection
       onRowSelectionChanged: (rowId, isSelected) {
         setState(() {
-          if (_selectionMode == SelectionMode.single) {
-            // For single selection, clear previous and add new
-            _selectedRowIds.clear();
-            if (isSelected) {
-              _selectedRowIds.add(rowId);
-            }
+          if (isSelected) {
+            _selectedRowIds.add(rowId);
           } else {
-            // For multiple selection, add or remove
-            if (isSelected) {
-              _selectedRowIds.add(rowId);
-            } else {
-              _selectedRowIds.remove(rowId);
-            }
+            _selectedRowIds.remove(rowId);
           }
         });
       },
       
-      // 3. Handle select-all (for multiple mode)
+      // 3. Handle select-all
       onSelectAll: (selectAll) {
-        if (_selectionMode == SelectionMode.multiple) {
-          setState(() {
-            if (selectAll) {
-              _selectedRowIds = widget.data.map((row) => row['id'].toString()).toSet();
-            } else {
-              _selectedRowIds.clear();
-            }
-          });
-        }
-      },
-      
-      // 4. Handle double-tap
-      onRowDoubleTap: (rowId) {
-        // ... show details or perform action
-      },
-      
-      // 5. Handle secondary-tap
-      onRowSecondaryTap: (rowId) {
-        // ... show context menu
+        setState(() {
+          if (selectAll) {
+            _selectedRowIds = widget.data.map((row) => row[_rowIdKey].toString()).toSet();
+          } else {
+            _selectedRowIds.clear();
+          }
+        });
       },
     );
   }
@@ -132,7 +111,7 @@ class _SelectableTablePageState extends State<SelectableTablePage> {
 
 ## 4. Customizing Selection Appearance
 
-You can customize the appearance of selected rows and checkboxes via the `TablePlusSelectionTheme`.
+You can customize the appearance of selected rows, interaction effects, and checkboxes via the `TablePlusSelectionTheme`. See `THEMING.md` for more details on styling hover, splash, and highlight colors.
 
 ```dart
 FlutterTablePlus(
@@ -141,13 +120,8 @@ FlutterTablePlus(
     selectionTheme: TablePlusSelectionTheme(
       selectedRowColor: Color(0xFFE3F2FD), // Light blue for selected rows
       checkboxColor: Colors.blue,
-      checkboxSize: 20.0,
-      checkboxColumnWidth: 50.0,
-      // Hide the checkbox column completely if desired
-      showCheckboxColumn: false, 
+      rowHoverColor: Colors.black.withOpacity(0.05),
     ),
   ),
 );
 ```
-
-In `SelectionMode.single`, the `showSelectAllCheckbox` property of `TablePlusSelectionTheme` is automatically forced to `false`, so you don't need to manage it manually.
