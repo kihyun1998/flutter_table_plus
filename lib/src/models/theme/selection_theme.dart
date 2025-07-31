@@ -10,7 +10,6 @@ class TablePlusSelectionTheme {
     this.showCheckboxColumn = true,
     this.showSelectAllCheckbox = true,
     this.checkboxColumnWidth = 60.0,
-    this.enableRowInteractionEffects = true,
     this.rowHoverColor,
     this.rowSplashColor,
     this.rowHighlightColor,
@@ -40,38 +39,34 @@ class TablePlusSelectionTheme {
   /// The width of the checkbox column.
   final double checkboxColumnWidth;
 
-  /// Whether to enable row interaction effects (hover, splash, highlight).
-  /// When false, all row interaction effects are disabled.
-  final bool enableRowInteractionEffects;
-
   /// The hover color for unselected rows.
-  /// If null, automatically generated from background color with opacity.
-  /// Use Colors.transparent to disable hover effect.
+  /// If null, the default framework hover effect is used.
+  /// Use Colors.transparent to disable the hover effect.
   final Color? rowHoverColor;
 
   /// The splash color for unselected rows.
-  /// If null, automatically generated from background color with opacity.
-  /// Use Colors.transparent to disable splash effect.
+  /// If null, the default framework splash effect is used.
+  /// Use Colors.transparent to disable the splash effect.
   final Color? rowSplashColor;
 
   /// The highlight color for unselected rows.
-  /// If null, automatically generated from background color with opacity.
-  /// Use Colors.transparent to disable highlight effect.
+  /// If null, the default framework highlight effect is used.
+  /// Use Colors.transparent to disable the highlight effect.
   final Color? rowHighlightColor;
 
   /// The hover color for selected rows.
-  /// If null, automatically generated from selectedRowColor with opacity.
-  /// Use Colors.transparent to disable hover effect for selected rows.
+  /// If null, the default framework hover effect is used.
+  /// Use Colors.transparent to disable the hover effect for selected rows.
   final Color? selectedRowHoverColor;
 
   /// The splash color for selected rows.
-  /// If null, automatically generated from selectedRowColor with opacity.
-  /// Use Colors.transparent to disable splash effect for selected rows.
+  /// If null, the default framework splash effect is used.
+  /// Use Colors.transparent to disable the splash effect for selected rows.
   final Color? selectedRowSplashColor;
 
   /// The highlight color for selected rows.
-  /// If null, automatically generated from selectedRowColor with opacity.
-  /// Use Colors.transparent to disable highlight effect for selected rows.
+  /// If null, the default framework highlight effect is used.
+  /// Use Colors.transparent to disable the highlight effect for selected rows.
   final Color? selectedRowHighlightColor;
 
   /// Creates a copy of this theme with the given fields replaced with new values.
@@ -82,7 +77,6 @@ class TablePlusSelectionTheme {
     bool? showCheckboxColumn,
     bool? showSelectAllCheckbox,
     double? checkboxColumnWidth,
-    bool? enableRowInteractionEffects,
     Color? rowHoverColor,
     Color? rowSplashColor,
     Color? rowHighlightColor,
@@ -98,8 +92,6 @@ class TablePlusSelectionTheme {
       showSelectAllCheckbox:
           showSelectAllCheckbox ?? this.showSelectAllCheckbox,
       checkboxColumnWidth: checkboxColumnWidth ?? this.checkboxColumnWidth,
-      enableRowInteractionEffects:
-          enableRowInteractionEffects ?? this.enableRowInteractionEffects,
       rowHoverColor: rowHoverColor ?? this.rowHoverColor,
       rowSplashColor: rowSplashColor ?? this.rowSplashColor,
       rowHighlightColor: rowHighlightColor ?? this.rowHighlightColor,
@@ -112,45 +104,33 @@ class TablePlusSelectionTheme {
     );
   }
 
-  /// Gets the effective hover color for rows based on selection state and theme settings.
+  /// Gets the effective hover color for rows based on selection state.
+  /// Returns null to use the default framework effect if no color is specified.
   Color? getEffectiveHoverColor(bool isSelected, Color backgroundColor) {
-    if (!enableRowInteractionEffects) return Colors.transparent;
-
     if (isSelected) {
-      if (selectedRowHoverColor == Colors.transparent)
-        return Colors.transparent;
-      return selectedRowHoverColor ?? selectedRowColor.withOpacity(0.15);
+      return selectedRowHoverColor;
     } else {
-      if (rowHoverColor == Colors.transparent) return Colors.transparent;
-      return rowHoverColor ?? backgroundColor.withOpacity(0.10);
+      return rowHoverColor;
     }
   }
 
-  /// Gets the effective splash color for rows based on selection state and theme settings.
+  /// Gets the effective splash color for rows based on selection state.
+  /// Returns null to use the default framework effect if no color is specified.
   Color? getEffectiveSplashColor(bool isSelected, Color backgroundColor) {
-    if (!enableRowInteractionEffects) return Colors.transparent;
-
     if (isSelected) {
-      if (selectedRowSplashColor == Colors.transparent)
-        return Colors.transparent;
-      return selectedRowSplashColor ?? selectedRowColor.withOpacity(0.25);
+      return selectedRowSplashColor;
     } else {
-      if (rowSplashColor == Colors.transparent) return Colors.transparent;
-      return rowSplashColor ?? backgroundColor.withOpacity(0.20);
+      return rowSplashColor;
     }
   }
 
-  /// Gets the effective highlight color for rows based on selection state and theme settings.
+  /// Gets the effective highlight color for rows based on selection state.
+  /// Returns null to use the default framework effect if no color is specified.
   Color? getEffectiveHighlightColor(bool isSelected, Color backgroundColor) {
-    if (!enableRowInteractionEffects) return Colors.transparent;
-
     if (isSelected) {
-      if (selectedRowHighlightColor == Colors.transparent)
-        return Colors.transparent;
-      return selectedRowHighlightColor ?? selectedRowColor.withOpacity(0.20);
+      return selectedRowHighlightColor;
     } else {
-      if (rowHighlightColor == Colors.transparent) return Colors.transparent;
-      return rowHighlightColor ?? backgroundColor.withOpacity(0.15);
+      return rowHighlightColor;
     }
   }
 }
