@@ -208,6 +208,29 @@ class _TablePlusHeaderState extends State<TablePlusHeader> {
     widget.onColumnReorder!(oldIndex, newIndex);
   }
 
+  /// Build decoration for the main header container
+  Decoration _buildHeaderDecoration() {
+    final customDecoration = widget.theme.decoration;
+    
+    // 사용자 decoration이 있으면 그것을 우선 사용
+    if (customDecoration != null) {
+      return customDecoration;
+    }
+    
+    // 없으면 기본 테마 속성들로 BoxDecoration 생성
+    return BoxDecoration(
+      color: widget.theme.backgroundColor,
+      border: widget.theme.showBottomDivider
+          ? Border(
+              bottom: BorderSide(
+                color: widget.theme.dividerColor,
+                width: widget.theme.dividerThickness,
+              ),
+            )
+          : null,
+    );
+  }
+
   /// Handle sort click for a column
   void _handleSortClick(String columnKey) {
     if (widget.onSort == null) return;
@@ -262,19 +285,7 @@ class _TablePlusHeaderState extends State<TablePlusHeader> {
     return Container(
       height: widget.theme.height,
       width: widget.totalWidth,
-      decoration: BoxDecoration(
-        color: widget.theme.backgroundColor,
-        border: widget.theme.decoration != null
-            ? null
-            : (widget.theme.showBottomDivider
-                ? Border(
-                    bottom: BorderSide(
-                      color: widget.theme.dividerColor,
-                      width: widget.theme.dividerThickness,
-                    ),
-                  )
-                : null),
-      ),
+      decoration: _buildHeaderDecoration(),
       child: Row(
         children: [
           // Selection column (fixed, non-reorderable)
@@ -411,27 +422,39 @@ class _HeaderCell extends StatelessWidget {
     return theme.textStyle;
   }
 
+  /// Build decoration for individual header cell
+  Decoration _buildCellDecoration() {
+    final customCellDecoration = theme.cellDecoration;
+    
+    // cellDecoration이 있으면 그것을 우선 사용
+    if (customCellDecoration != null) {
+      return customCellDecoration;
+    }
+    
+    // 없으면 기본 테마 속성들로 BoxDecoration 생성
+    return BoxDecoration(
+      color: _getBackgroundColor(),
+      border: theme.showVerticalDividers
+          ? Border(
+              right: BorderSide(
+                color: theme.dividerColor,
+                width: theme.dividerThickness,
+              ),
+            )
+          : null,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final sortIcon = _getSortIcon();
-    final backgroundColor = _getBackgroundColor();
     final textStyle = _getTextStyle();
 
     Widget content = Container(
       width: width,
       height: theme.height,
       padding: theme.padding,
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        border: theme.showVerticalDividers
-            ? Border(
-                right: BorderSide(
-                  color: theme.dividerColor,
-                  width: theme.dividerThickness,
-                ),
-              )
-            : null,
-      ),
+      decoration: _buildCellDecoration(),
       child: Align(
         alignment: column.alignment,
         child: Row(
@@ -492,22 +515,36 @@ class _SelectionHeaderCell extends StatelessWidget {
   final Set<String> selectedRows;
   final bool showSelectAllCheckbox;
 
+  /// Build decoration for selection header cell
+  Decoration _buildSelectionCellDecoration() {
+    final customCellDecoration = theme.cellDecoration;
+    
+    // cellDecoration이 있으면 그것을 우선 사용
+    if (customCellDecoration != null) {
+      return customCellDecoration;
+    }
+    
+    // 없으면 기본 테마 속성들로 BoxDecoration 생성
+    return BoxDecoration(
+      color: theme.backgroundColor,
+      border: theme.showVerticalDividers
+          ? Border(
+              right: BorderSide(
+                color: theme.dividerColor,
+                width: theme.dividerThickness,
+              ),
+            )
+          : null,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
       width: width,
       height: theme.height,
       padding: theme.padding,
-      decoration: BoxDecoration(
-        border: theme.showVerticalDividers
-            ? Border(
-                right: BorderSide(
-                  color: theme.dividerColor,
-                  width: theme.dividerThickness,
-                ),
-              )
-            : null,
-      ),
+      decoration: _buildSelectionCellDecoration(),
       child: showSelectAllCheckbox
           ? Center(
               child: SizedBox(

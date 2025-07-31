@@ -15,6 +15,7 @@ class TablePlusHeaderTheme {
     ),
     this.padding = const EdgeInsets.symmetric(horizontal: 16.0),
     this.decoration,
+    this.cellDecoration,
     this.showVerticalDividers = true,
     this.showBottomDivider = true,
     this.dividerColor = const Color(0xFFE0E0E0),
@@ -38,8 +39,11 @@ class TablePlusHeaderTheme {
   /// The padding inside header cells.
   final EdgeInsets padding;
 
-  /// Optional decoration for the header.
+  /// Optional decoration for the entire header container.
   final Decoration? decoration;
+
+  /// Optional decoration for individual header cells.
+  final Decoration? cellDecoration;
 
   /// Whether to show vertical dividers between header columns.
   final bool showVerticalDividers;
@@ -74,6 +78,7 @@ class TablePlusHeaderTheme {
     TextStyle? textStyle,
     EdgeInsets? padding,
     Decoration? decoration,
+    Decoration? cellDecoration,
     bool? showVerticalDividers,
     bool? showBottomDivider,
     Color? dividerColor,
@@ -89,6 +94,7 @@ class TablePlusHeaderTheme {
       textStyle: textStyle ?? this.textStyle,
       padding: padding ?? this.padding,
       decoration: decoration ?? this.decoration,
+      cellDecoration: cellDecoration ?? this.cellDecoration,
       showVerticalDividers: showVerticalDividers ?? this.showVerticalDividers,
       showBottomDivider: showBottomDivider ?? this.showBottomDivider,
       dividerColor: dividerColor ?? this.dividerColor,
