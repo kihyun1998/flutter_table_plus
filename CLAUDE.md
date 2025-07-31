@@ -57,7 +57,7 @@ dart doc .                      # Generate API documentation
 
 ### Key Architectural Patterns
 
-1. **Map-based Data Structure**: Tables use `List<Map<String, dynamic>>` for row data, requiring unique 'id' fields for selection features
+1. **Map-based Data Structure**: Tables use `List<Map<String, dynamic>>` for row data, requiring unique row ID fields for selection features (default: 'id', configurable via `rowIdKey`)
 2. **Builder Pattern**: TableColumnsBuilder prevents order conflicts and manages column ordering automatically
 3. **Synchronized Scrolling**: Custom scroll controller synchronization between header and body
 4. **Theme Composition**: Nested theme classes (TablePlusTheme, TablePlusHeaderTheme, etc.) for granular styling control
@@ -81,7 +81,7 @@ FlutterTablePlus follows a composition pattern where:
 ## Important Implementation Details
 
 - **Column Order Management**: Column order is managed by the `order` field in TablePlusColumn. Use TableColumnsBuilder to prevent order conflicts
-- **Selection Requirements**: Selection features require unique `'id'` field in each row data map - duplicate IDs cause unexpected behavior
+- **Selection Requirements**: Selection features require unique row ID field in each row data map (default: 'id', configurable via `rowIdKey` parameter) - duplicate IDs cause unexpected behavior
 - **Null Safety for Features**: Setting `onSort: null` completely hides sort icons and disables sorting. Setting `onColumnReorder: null` disables drag-and-drop
 - **Coexisting Features**: Selection and editing modes can coexist in the same table simultaneously
 - **Theme Architecture**: Uses nested theme classes (TablePlusTheme > TablePlusHeaderTheme/TablePlusBodyTheme/etc.) for granular control
@@ -92,7 +92,7 @@ FlutterTablePlus follows a composition pattern where:
 
 ### Data Structure Requirements
 - Row data: `List<Map<String, dynamic>>` where keys match column keys
-- Selection feature: Each row must have unique `'id'` field
+- Selection feature: Each row must have unique row ID field (default: 'id', configurable via `rowIdKey`)
 - Column definitions: Use `TableColumnsBuilder` for safe column creation
 
 ### Widget Composition Pattern
