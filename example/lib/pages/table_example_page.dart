@@ -30,14 +30,13 @@ class _TableExamplePageState extends State<TableExamplePage> {
   SortDirection _sortDirection = SortDirection.none;
   List<Map<String, dynamic>> _sortedData = [];
 
-  // Column reorder를 위한 컬럼 정의 (Map으로 변경)
   late Map<String, TablePlusColumn> _columns;
 
   @override
   void initState() {
     super.initState();
-    _columns = TableHelper.initializeColumns(); // static 함수 호출
-    _sortedData = TableHelper.initializeSortedData(); // static 함수 호출
+    _columns = TableHelper.initializeColumns();
+    _sortedData = TableHelper.initializeSortedData();
   }
 
   /// Handle sort callback
@@ -47,7 +46,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
         // Reset to original order
         _sortColumnKey = null;
         _sortDirection = SortDirection.none;
-        _sortedData = TableHelper.initializeSortedData(); // static 함수 호출
+        _sortedData = TableHelper.initializeSortedData();
       } else {
         // Sort data
         _sortColumnKey = columnKey;
@@ -277,7 +276,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
         // 정렬이 비활성화되면 현재 정렬 상태를 초기화
         _sortColumnKey = null;
         _sortDirection = SortDirection.none;
-        _sortedData = TableHelper.initializeSortedData(); // static 함수 호출
+        _sortedData = TableHelper.initializeSortedData();
       }
     });
   }
@@ -299,26 +298,25 @@ class _TableExamplePageState extends State<TableExamplePage> {
 
   /// Get selected employee names
   List<String> get _selectedNames {
-    return TableHelper.getSelectedNames(
-        _sortedData, _selectedRows); // static 함수 호출
+    return TableHelper.getSelectedNames(_sortedData, _selectedRows);
   }
 
   /// Get current table theme based on settings
   TablePlusTheme get _currentTheme {
     return TableHelper.getCurrentTheme(
-        showVerticalDividers: _showVerticalDividers); // static 함수 호출
+        showVerticalDividers: _showVerticalDividers);
   }
 
   /// Show selected employees dialog
   void _showSelectedEmployees() {
     TableHelper.showSelectedEmployeesDialog(
-        context, _selectedRows.length, _selectedNames); // static 함수 호출
+        context, _selectedRows.length, _selectedNames);
   }
 
   /// Reset column order to default
   void _resetColumnOrder() {
     setState(() {
-      _columns = TableHelper.initializeColumns(); // static 함수 호출
+      _columns = TableHelper.initializeColumns();
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -334,7 +332,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
     setState(() {
       _sortColumnKey = null;
       _sortDirection = SortDirection.none;
-      _sortedData = TableHelper.initializeSortedData(); // static 함수 호출
+      _sortedData = TableHelper.initializeSortedData();
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
