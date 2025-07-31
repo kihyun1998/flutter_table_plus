@@ -1,3 +1,4 @@
+import 'package:example/helper/table_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
 
@@ -19,10 +20,10 @@ class _TableExamplePageState extends State<TableExamplePage> {
   SelectionMode _selectionMode = SelectionMode.multiple;
   final SortCycleOrder _sortCycleOrder = SortCycleOrder.ascendingFirst;
   final Set<String> _selectedRows = <String>{};
-  bool _showVerticalDividers = true; // 세로줄 표시 여부
-  bool _isEditable = false; // 편집 모드
-  bool _isReorderable = true; // 컬럼 재정렬 활성화
-  bool _isSortable = true; // 정렬 활성화
+  bool _showVerticalDividers = true;
+  bool _isEditable = false;
+  bool _isReorderable = true;
+  bool _isSortable = true;
 
   // Sort state
   String? _sortColumnKey;
@@ -35,113 +36,8 @@ class _TableExamplePageState extends State<TableExamplePage> {
   @override
   void initState() {
     super.initState();
-    _initializeColumns();
-    _initializeSortedData();
-  }
-
-  /// Initialize sorted data with original data
-  void _initializeSortedData() {
-    _sortedData = List.from(SampleData.employeeData);
-  }
-
-  /// Initialize columns with default order
-  void _initializeColumns() {
-    _columns = TableColumnsBuilder()
-        .addColumn(
-          'id',
-          const TablePlusColumn(
-            key: 'id',
-            label: 'ID',
-            order: 0,
-            width: 60,
-            minWidth: 50,
-            textAlign: TextAlign.center,
-            alignment: Alignment.center,
-            sortable: true, // Enable sorting
-            editable: false, // ID는 편집 불가
-          ),
-        )
-        .addColumn(
-          'name',
-          const TablePlusColumn(
-            key: 'name',
-            label: 'Full Name',
-            order: 0,
-            width: 150,
-            minWidth: 120,
-            sortable: true, // Enable sorting
-            editable: true, // 이름은 편집 가능
-          ),
-        )
-        .addColumn(
-          'email',
-          const TablePlusColumn(
-            key: 'email',
-            label: 'Email Address',
-            order: 0,
-            width: 200,
-            minWidth: 150,
-            sortable: true, // Enable sorting
-            editable: true, // 이메일은 편집 가능
-          ),
-        )
-        .addColumn(
-          'age',
-          const TablePlusColumn(
-            key: 'age',
-            label: 'Age',
-            order: 0,
-            width: 60,
-            minWidth: 50,
-            textAlign: TextAlign.center,
-            alignment: Alignment.center,
-            sortable: true, // Enable sorting
-            editable: true, // 나이는 편집 가능
-          ),
-        )
-        .addColumn(
-          'department',
-          const TablePlusColumn(
-            key: 'department',
-            label: 'Department',
-            order: 0,
-            width: 120,
-            minWidth: 100,
-            sortable: true, // Enable sorting
-            editable: true, // 부서는 편집 가능
-          ),
-        )
-        .addColumn(
-          'salary',
-          TablePlusColumn(
-            key: 'salary',
-            label: 'Salary',
-            order: 0,
-            width: 100,
-            minWidth: 80,
-            textAlign: TextAlign.right,
-            alignment: Alignment.centerRight,
-            sortable: true, // Enable sorting
-            editable: true, // 이제 편집 가능! (custom cell이어도)
-            cellBuilder: _buildSalaryCell,
-          ),
-        )
-        .addColumn(
-          'active',
-          TablePlusColumn(
-            key: 'active',
-            label: 'Status',
-            order: 0,
-            width: 80,
-            minWidth: 70,
-            textAlign: TextAlign.center,
-            alignment: Alignment.center,
-            sortable: true, // Enable sorting
-            editable: true, // 이제 편집 가능! (custom cell이어도)
-            cellBuilder: _buildStatusCell,
-          ),
-        )
-        .build();
+    _columns = TableHelper.initializeColumns(); // static 함수 호출
+    _sortedData = TableHelper.initializeSortedData(); // static 함수 호출
   }
 
   /// Handle sort callback
@@ -151,12 +47,12 @@ class _TableExamplePageState extends State<TableExamplePage> {
         // Reset to original order
         _sortColumnKey = null;
         _sortDirection = SortDirection.none;
-        _sortedData = List.from(SampleData.employeeData);
+        _sortedData = TableHelper.initializeSortedData(); // static 함수 호출
       } else {
         // Sort data
         _sortColumnKey = columnKey;
         _sortDirection = direction;
-        _sortData(columnKey, direction);
+        TableHelper.sortData(_sortedData, columnKey, direction);
       }
     });
 
@@ -180,38 +76,6 @@ class _TableExamplePageState extends State<TableExamplePage> {
         duration: const Duration(milliseconds: 1500),
       ),
     );
-  }
-
-  /// Sort data based on column key and direction
-  void _sortData(String columnKey, SortDirection direction) {
-    _sortedData.sort((a, b) {
-      final aValue = a[columnKey];
-      final bValue = b[columnKey];
-
-      // Handle null values
-      if (aValue == null && bValue == null) return 0;
-      if (aValue == null) return direction == SortDirection.ascending ? -1 : 1;
-      if (bValue == null) return direction == SortDirection.ascending ? 1 : -1;
-
-      int comparison;
-
-      // Type-specific comparison
-      if (aValue is int && bValue is int) {
-        comparison = aValue.compareTo(bValue);
-      } else if (aValue is double && bValue is double) {
-        comparison = aValue.compareTo(bValue);
-      } else if (aValue is bool && bValue is bool) {
-        comparison = aValue == bValue ? 0 : (aValue ? 1 : -1);
-      } else {
-        // String comparison (default)
-        comparison = aValue.toString().toLowerCase().compareTo(
-              bValue.toString().toLowerCase(),
-            );
-      }
-
-      // Reverse for descending
-      return direction == SortDirection.ascending ? comparison : -comparison;
-    });
   }
 
   /// Handle cell value change in editable mode
@@ -252,43 +116,6 @@ class _TableExamplePageState extends State<TableExamplePage> {
       SnackBar(
         content: Text('Updated $columnKey: "$oldValue" → "$convertedValue"'),
         duration: const Duration(milliseconds: 2000),
-      ),
-    );
-  }
-
-  /// Custom cell builder for salary
-  Widget _buildSalaryCell(BuildContext context, Map<String, dynamic> rowData) {
-    final salary = rowData['salary'] as int?;
-    return Text(
-      salary != null
-          ? '\$${salary.toString().replaceAllMapped(
-                RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-                (Match m) => '${m[1]},',
-              )}'
-          : '',
-      style: const TextStyle(
-        fontWeight: FontWeight.w600,
-        color: Colors.green,
-      ),
-    );
-  }
-
-  /// Custom cell builder for status
-  Widget _buildStatusCell(BuildContext context, Map<String, dynamic> rowData) {
-    final isActive = rowData['active'] as bool? ?? false;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: isActive ? Colors.green.shade100 : Colors.red.shade100,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        isActive ? 'Active' : 'Inactive',
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-          color: isActive ? Colors.green.shade800 : Colors.red.shade800,
-        ),
       ),
     );
   }
@@ -450,7 +277,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
         // 정렬이 비활성화되면 현재 정렬 상태를 초기화
         _sortColumnKey = null;
         _sortDirection = SortDirection.none;
-        _initializeSortedData();
+        _sortedData = TableHelper.initializeSortedData(); // static 함수 호출
       }
     });
   }
@@ -472,99 +299,26 @@ class _TableExamplePageState extends State<TableExamplePage> {
 
   /// Get selected employee names
   List<String> get _selectedNames {
-    return _sortedData
-        .where((row) => _selectedRows.contains(row['id'].toString()))
-        .map((row) => row['name'].toString())
-        .toList();
+    return TableHelper.getSelectedNames(
+        _sortedData, _selectedRows); // static 함수 호출
   }
 
   /// Get current table theme based on settings
   TablePlusTheme get _currentTheme {
-    return TablePlusTheme(
-      headerTheme: TablePlusHeaderTheme(
-        height: 48,
-        backgroundColor: Colors.blue.shade50, // 헤더 배경색 변경!
-        textStyle: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w700,
-          color: Color(0xFF495057),
-        ),
-        showVerticalDividers: _showVerticalDividers,
-        showBottomDivider: true,
-        dividerColor: Colors.grey.shade300,
-        // Sort styling
-        sortedColumnBackgroundColor: Colors.blue.shade100,
-        sortedColumnTextStyle: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w800,
-          color: Color(0xFF1976D2),
-        ),
-        sortIcons: const SortIcons(
-          ascending:
-              Icon(Icons.arrow_upward, size: 14, color: Color(0xFF1976D2)),
-          descending:
-              Icon(Icons.arrow_downward, size: 14, color: Color(0xFF1976D2)),
-          unsorted: Icon(Icons.unfold_more, size: 14, color: Colors.grey),
-        ),
-      ),
-      bodyTheme: TablePlusBodyTheme(
-        rowHeight: 56,
-        alternateRowColor: null, // null로 설정하면 모든 행이 같은 색!
-        backgroundColor: Colors.white, // 모든 행이 흰색
-        textStyle: const TextStyle(
-          fontSize: 14,
-          color: Color(0xFF212529),
-        ),
-        showVerticalDividers: _showVerticalDividers,
-        showHorizontalDividers: true,
-        dividerColor: Colors.grey.shade300,
-        dividerThickness: 1.0,
-      ),
-      scrollbarTheme: const TablePlusScrollbarTheme(
-        hoverOnly: true,
-        opacity: 0.8,
-      ),
-      selectionTheme: const TablePlusSelectionTheme(
-        selectedRowColor: Color(0xFFE3F2FD),
-        checkboxColor: Color(0xFF2196F3),
-        checkboxSize: 18.0,
-      ),
-      editableTheme: const TablePlusEditableTheme(
-        editingCellColor: Color(0xFFFFFDE7), // 연한 노란색
-        editingTextStyle: TextStyle(
-          fontSize: 14,
-          color: Color(0xFF212529),
-          fontWeight: FontWeight.w500,
-        ),
-        editingBorderColor: Color(0xFF2196F3), // 파란색 테두리
-        editingBorderWidth: 2.0,
-        editingBorderRadius: BorderRadius.all(Radius.circular(6.0)), // 둥근 모서리
-        textFieldPadding:
-            EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0), // 더 넉넉한 패딩
-        cursorColor: Color(0xFF2196F3),
-        textAlignVertical: TextAlignVertical.center, // 수직 가운데 정렬
-        focusedBorderColor: Color(0xFF1976D2), // 포커스 시 더 진한 파란색
-        enabledBorderColor: Color(0xFFBBBBBB), // 비활성 시 회색
-        fillColor: Color(0xFFFFFDE7), // TextField 배경색
-        filled: true, // 배경색 채우기
-        isDense: true, // 컴팩트한 레이아웃
-      ),
-    );
+    return TableHelper.getCurrentTheme(
+        showVerticalDividers: _showVerticalDividers); // static 함수 호출
   }
 
   /// Show selected employees dialog
   void _showSelectedEmployees() {
-    SelectionDialog.show(
-      context,
-      selectedCount: _selectedRows.length,
-      selectedNames: _selectedNames,
-    );
+    TableHelper.showSelectedEmployeesDialog(
+        context, _selectedRows.length, _selectedNames); // static 함수 호출
   }
 
   /// Reset column order to default
   void _resetColumnOrder() {
     setState(() {
-      _initializeColumns();
+      _columns = TableHelper.initializeColumns(); // static 함수 호출
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -580,7 +334,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
     setState(() {
       _sortColumnKey = null;
       _sortDirection = SortDirection.none;
-      _sortedData = List.from(SampleData.employeeData);
+      _sortedData = TableHelper.initializeSortedData(); // static 함수 호출
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
