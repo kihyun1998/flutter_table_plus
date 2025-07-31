@@ -24,6 +24,7 @@ class TablePlusBody extends StatelessWidget {
     this.onRowSecondaryTap,
     this.isEditable = false,
     this.editableTheme = const TablePlusEditableTheme(),
+    this.tooltipTheme = const TablePlusTooltipTheme(),
     this.isCellEditing,
     this.getCellController,
     this.onCellTap,
@@ -71,6 +72,9 @@ class TablePlusBody extends StatelessWidget {
 
   /// The theme configuration for editing.
   final TablePlusEditableTheme editableTheme;
+
+  /// The theme configuration for tooltips.
+  final TablePlusTooltipTheme tooltipTheme;
 
   /// Function to check if a cell is currently being edited.
   final bool Function(int rowIndex, String columnKey)? isCellEditing;
@@ -173,6 +177,7 @@ class TablePlusBody extends StatelessWidget {
           onRowSecondaryTap: onRowSecondaryTap,
           isEditable: isEditable,
           editableTheme: editableTheme,
+          tooltipTheme: tooltipTheme,
           isCellEditing: isCellEditing,
           getCellController: getCellController,
           onCellTap: onCellTap,
@@ -201,6 +206,7 @@ class _TablePlusRow extends StatelessWidget {
     required this.onRowSelectionChanged,
     required this.isEditable,
     required this.editableTheme,
+    required this.tooltipTheme,
     required this.isCellEditing,
     required this.getCellController,
     required this.onCellTap,
@@ -224,6 +230,7 @@ class _TablePlusRow extends StatelessWidget {
   final void Function(String rowId) onRowSelectionChanged;
   final bool isEditable;
   final TablePlusEditableTheme editableTheme;
+  final TablePlusTooltipTheme tooltipTheme;
   final bool Function(int rowIndex, String columnKey)? isCellEditing;
   final TextEditingController? Function(int rowIndex, String columnKey)?
       getCellController;
@@ -291,6 +298,7 @@ class _TablePlusRow extends StatelessWidget {
             theme: theme,
             isEditable: isEditable,
             editableTheme: editableTheme,
+            tooltipTheme: tooltipTheme,
             isCellEditing: isCellEditing?.call(rowIndex, column.key) ?? false,
             cellController: getCellController?.call(rowIndex, column.key),
             onCellTap: onCellTap != null
@@ -383,6 +391,7 @@ class _TablePlusCell extends StatefulWidget {
     required this.theme,
     required this.isEditable,
     required this.editableTheme,
+    required this.tooltipTheme,
     required this.isCellEditing,
     this.cellController,
     this.onCellTap,
@@ -396,6 +405,7 @@ class _TablePlusCell extends StatefulWidget {
   final TablePlusBodyTheme theme;
   final bool isEditable;
   final TablePlusEditableTheme editableTheme;
+  final TablePlusTooltipTheme tooltipTheme;
   final bool isCellEditing;
   final TextEditingController? cellController;
   final VoidCallback? onCellTap;
@@ -545,14 +555,34 @@ class _TablePlusCellState extends State<_TablePlusCell> {
     // Default text cell
     final displayValue = _getCellDisplayValue();
 
+    Widget textWidget = Text(
+      displayValue,
+      style: widget.theme.textStyle,
+      overflow: widget.column.textOverflow,
+      textAlign: widget.column.textAlign,
+    );
+
+    // Add tooltip if enabled and text overflow is ellipsis
+    if (widget.tooltipTheme.enabled &&
+        widget.column.showTooltipOnOverflow &&
+        widget.column.textOverflow == TextOverflow.ellipsis &&
+        displayValue.isNotEmpty) {
+      textWidget = Tooltip(
+        message: displayValue,
+        textStyle: widget.tooltipTheme.textStyle,
+        decoration: widget.tooltipTheme.decoration,
+        padding: widget.tooltipTheme.padding,
+        margin: widget.tooltipTheme.margin,
+        waitDuration: widget.tooltipTheme.waitDuration,
+        showDuration: widget.tooltipTheme.showDuration,
+        preferBelow: widget.tooltipTheme.preferBelow,
+        child: textWidget,
+      );
+    }
+
     return Align(
       alignment: widget.column.alignment,
-      child: Text(
-        displayValue,
-        style: widget.theme.textStyle,
-        overflow: TextOverflow.ellipsis,
-        textAlign: widget.column.textAlign,
-      ),
+      child: textWidget,
     );
   }
 

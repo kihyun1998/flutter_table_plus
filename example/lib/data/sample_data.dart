@@ -22,8 +22,8 @@ class SampleData {
     ),
     const Employee(
       id: 3,
-      name: 'Bob Johnson',
-      email: 'bob.johnson@example.com',
+      name: 'Vert Stlong',
+      email: 'veryveryveryveryveryveryveryveryveryveryveryverylong@example.com',
       age: 45,
       department: 'Sales',
       salary: 82000,

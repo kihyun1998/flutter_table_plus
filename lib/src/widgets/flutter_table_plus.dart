@@ -542,6 +542,7 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                 // Editing-related properties
                                 isEditable: widget.isEditable,
                                 editableTheme: theme.editableTheme,
+                                tooltipTheme: theme.tooltipTheme,
                                 isCellEditing: _isCellEditing,
                                 getCellController: _getCellController,
                                 onCellTap: _handleCellTap,

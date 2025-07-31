@@ -95,6 +95,8 @@ class TablePlusColumn {
     this.visible = true,
     this.cellBuilder,
     this.hintText,
+    this.textOverflow = TextOverflow.ellipsis,
+    this.showTooltipOnOverflow = true,
   });
 
   /// The unique identifier for this column.
@@ -147,6 +149,13 @@ class TablePlusColumn {
   /// Optional hint text to display in the TextField when editing a cell.
   final String? hintText;
 
+  /// How text overflow should be handled in this column's cells.
+  final TextOverflow textOverflow;
+
+  /// Whether to show a tooltip when text is overflowing (ellipsis).
+  /// Only applies when textOverflow is TextOverflow.ellipsis.
+  final bool showTooltipOnOverflow;
+
   /// Creates a copy of this column with the given fields replaced with new values.
   TablePlusColumn copyWith({
     String? key,
@@ -163,6 +172,8 @@ class TablePlusColumn {
     Widget Function(BuildContext context, Map<String, dynamic> rowData)?
         cellBuilder,
     String? hintText,
+    TextOverflow? textOverflow,
+    bool? showTooltipOnOverflow,
   }) {
     return TablePlusColumn(
       key: key ?? this.key,
@@ -178,6 +189,8 @@ class TablePlusColumn {
       visible: visible ?? this.visible,
       cellBuilder: cellBuilder ?? this.cellBuilder,
       hintText: hintText ?? this.hintText,
+      textOverflow: textOverflow ?? this.textOverflow,
+      showTooltipOnOverflow: showTooltipOnOverflow ?? this.showTooltipOnOverflow,
     );
   }
 
