@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../flutter_table_plus.dart' show TablePlusSelectionTheme;
 import '../models/table_column.dart';
-import '../models/table_theme.dart';
+import '../models/theme/body_theme.dart' show TablePlusBodyTheme;
+import '../models/theme/editable_theme.dart' show TablePlusEditableTheme;
+import '../models/theme/tooltip_theme.dart' show TablePlusTooltipTheme;
 import 'custom_ink_well.dart';
 
 /// A widget that renders the data rows of the table.
@@ -114,7 +117,7 @@ class TablePlusBody extends StatelessWidget {
     if (onRowSelectionChanged == null) return;
 
     final isCurrentlySelected = selectedRows.contains(rowId);
-    
+
     if (selectionMode == SelectionMode.single) {
       // For single selection mode, always try to select the row
       // The parent widget should handle clearing other selections
@@ -244,7 +247,7 @@ class _TablePlusRow extends StatelessWidget {
   void _handleRowTap() {
     if (isEditable) return; // No row selection in editable mode
     if (!isSelectable || rowId == null) return;
-    
+
     if (selectionMode == SelectionMode.single) {
       // For single selection mode, always select this row
       // The parent should handle clearing other selections

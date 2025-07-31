@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../flutter_table_plus.dart' show TablePlusSelectionTheme;
 import '../models/table_column.dart';
-import '../models/table_theme.dart';
+import '../models/theme/header_theme.dart' show TablePlusHeaderTheme;
 
 /// A widget that renders the header row of the table.
 class TablePlusHeader extends StatefulWidget {

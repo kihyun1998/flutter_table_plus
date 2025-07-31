@@ -16,10 +16,19 @@
 /// - **Type-Safe Column Builder:** Use `TableColumnsBuilder` for safe column management
 library;
 
-// Models
+/// Models
 export 'src/models/table_column.dart';
 export 'src/models/table_columns_builder.dart';
-export 'src/models/table_theme.dart';
-// Widgets
+
+/// Theme
+export 'src/models/theme/body_theme.dart';
+export 'src/models/theme/editable_theme.dart';
+export 'src/models/theme/header_theme.dart';
+export 'src/models/theme/scrollbar_theme.dart';
+export 'src/models/theme/selection_theme.dart';
+export 'src/models/theme/theme.dart';
+export 'src/models/theme/tooltip_theme.dart';
+
+/// Widgets
 export 'src/widgets/custom_ink_well.dart';
 export 'src/widgets/flutter_table_plus.dart';

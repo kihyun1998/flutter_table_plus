@@ -2,8 +2,8 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+import '../../flutter_table_plus.dart' show TablePlusTheme;
 import '../models/table_column.dart';
-import '../models/table_theme.dart';
 import 'synced_scroll_controllers.dart';
 import 'table_body.dart';
 import 'table_header.dart';
@@ -288,7 +288,7 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
   /// Automatically adjusts selection theme based on selection mode.
   TablePlusTheme get _currentTheme {
     final baseTheme = widget.theme ?? TablePlusTheme.defaultTheme;
-    
+
     // For single selection mode, automatically disable select-all checkbox
     if (widget.isSelectable && widget.selectionMode == SelectionMode.single) {
       return baseTheme.copyWith(
@@ -297,7 +297,7 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
         ),
       );
     }
-    
+
     return baseTheme;
   }
 
