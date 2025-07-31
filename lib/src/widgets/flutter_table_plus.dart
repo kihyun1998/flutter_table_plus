@@ -14,7 +14,8 @@ import 'table_header.dart';
 /// scrolling, theming support, and flexible data handling through Map-based data.
 ///
 /// ⚠️ **Important for selection feature:**
-/// Each row data must have a unique 'id' field when using selection features.
+/// Each row data must have a unique field for row identification when using selection features.
+/// By default, uses 'id' field, but can be customized with [rowIdKey] parameter.
 /// Duplicate IDs will cause unexpected selection behavior.
 class FlutterTablePlus extends StatefulWidget {
   /// Creates a [FlutterTablePlus] with the specified configuration.
@@ -23,6 +24,7 @@ class FlutterTablePlus extends StatefulWidget {
     required this.columns,
     required this.data,
     this.theme,
+    this.rowIdKey = 'id',
     this.isSelectable = false,
     this.selectionMode = SelectionMode.multiple,
     this.selectedRows = const <String>{},
@@ -47,12 +49,16 @@ class FlutterTablePlus extends StatefulWidget {
   /// The data to display in the table.
   /// Each map represents a row, with keys corresponding to column keys.
   ///
-  /// ⚠️ **For selection features**: Each row must have a unique 'id' field.
+  /// ⚠️ **For selection features**: Each row must have a unique field matching [rowIdKey].
   final List<Map<String, dynamic>> data;
 
   /// The theme configuration for the table.
   /// If not provided, [TablePlusTheme.defaultTheme] will be used.
   final TablePlusTheme? theme;
+
+  /// The key used to extract row IDs from row data.
+  /// Defaults to 'id'. Each row must have a unique value for this key when using selection features.
+  final String rowIdKey;
 
   /// Whether the table supports row selection.
   /// When true, adds selection checkboxes and enables row selection.
@@ -260,7 +266,7 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
 
     assert(() {
       final ids = widget.data
-          .map((row) => row['id']?.toString())
+          .map((row) => row[widget.rowIdKey]?.toString())
           .where((id) => id != null)
           .toList();
 
@@ -277,7 +283,7 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
 
         print('⚠️ FlutterTablePlus: Duplicate row IDs detected: $duplicates');
         print('   This will cause unexpected selection behavior.');
-        print('   Please ensure each row has a unique "id" field.');
+        print('   Please ensure each row has a unique "${widget.rowIdKey}" field.');
       }
 
       return true;
@@ -531,6 +537,7 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                 columnWidths: columnWidths,
                                 theme: theme.bodyTheme,
                                 verticalController: verticalScrollController,
+                                rowIdKey: widget.rowIdKey,
                                 isSelectable: widget.isSelectable,
                                 selectionMode: widget.selectionMode,
                                 selectedRows: widget.selectedRows,

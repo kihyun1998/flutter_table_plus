@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -22,11 +23,16 @@ class CustomInkWell extends StatefulWidget {
   /// Defaults to 300 milliseconds.
   final Duration doubleClickTime;
 
+  final Color backgroundColor;
+
   /// The color of the ink splash when the [CustomInkWell] is tapped.
   final Color? splashColor;
 
   /// The highlight color of the [CustomInkWell] when it's pressed.
   final Color? highlightColor;
+
+  /// The hover color of the [CustomInkWell] when it's hovered over.
+  final Color? hoverColor;
 
   /// The border radius of the ink splash and highlight.
   final BorderRadius? borderRadius;
@@ -39,8 +45,10 @@ class CustomInkWell extends StatefulWidget {
     this.onDoubleTap,
     this.onSecondaryTap,
     this.doubleClickTime = const Duration(milliseconds: 300),
+    required this.backgroundColor,
     this.splashColor,
     this.highlightColor,
+    this.hoverColor,
     this.borderRadius,
   });
 
@@ -83,16 +91,18 @@ class _CustomInkWellState extends State<CustomInkWell> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onSecondaryTap: widget.onSecondaryTap,
-      child: Material(
-        color: Colors.transparent,
+    return Material(
+      color: Colors.transparent,
+      child: Ink(
+        decoration: BoxDecoration(color: widget.backgroundColor),
         child: InkWell(
           onTap: (widget.onTap != null || widget.onDoubleTap != null)
               ? _handleTap
               : null,
+          onSecondaryTap: widget.onSecondaryTap,
           splashColor: widget.splashColor,
           highlightColor: widget.highlightColor,
+          hoverColor: widget.hoverColor,
           borderRadius: widget.borderRadius,
           child: widget.child,
         ),

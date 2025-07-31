@@ -18,6 +18,7 @@ class TablePlusBody extends StatelessWidget {
     required this.columnWidths,
     required this.theme,
     required this.verticalController,
+    this.rowIdKey = 'id',
     this.isSelectable = false,
     this.selectionMode = SelectionMode.multiple,
     this.selectedRows = const <String>{},
@@ -48,6 +49,10 @@ class TablePlusBody extends StatelessWidget {
 
   /// The scroll controller for vertical scrolling.
   final ScrollController verticalController;
+
+  /// The key used to extract row IDs from row data.
+  /// Defaults to 'id'. Each row must have a unique value for this key when using selection features.
+  final String rowIdKey;
 
   /// Whether the table supports row selection.
   final bool isSelectable;
@@ -109,7 +114,7 @@ class TablePlusBody extends StatelessWidget {
 
   /// Extract the row ID from row data.
   String? _getRowId(Map<String, dynamic> rowData) {
-    return rowData['id']?.toString();
+    return rowData[rowIdKey]?.toString();
   }
 
   /// Handle row selection toggle.
@@ -265,7 +270,7 @@ class _TablePlusRow extends StatelessWidget {
     Widget rowContent = Container(
       height: theme.rowHeight,
       decoration: BoxDecoration(
-        color: backgroundColor,
+        // color: backgroundColor,
         border: (!isLastRow && theme.showHorizontalDividers)
             ? Border(
                 bottom: BorderSide(
@@ -324,6 +329,13 @@ class _TablePlusRow extends StatelessWidget {
         onSecondaryTap: () {
           onRowSecondaryTap?.call(rowId!); // Pass rowId to the callback
         },
+        backgroundColor: backgroundColor,
+        hoverColor:
+            selectionTheme.getEffectiveHoverColor(isSelected, backgroundColor),
+        splashColor:
+            selectionTheme.getEffectiveSplashColor(isSelected, backgroundColor),
+        highlightColor: selectionTheme.getEffectiveHighlightColor(
+            isSelected, backgroundColor),
         child: rowContent,
       );
     }
