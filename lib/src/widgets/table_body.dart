@@ -308,6 +308,8 @@ class _TablePlusRow extends StatelessWidget {
             editableTheme: editableTheme,
             tooltipTheme: tooltipTheme,
             isCellEditing: isCellEditing?.call(rowIndex, column.key) ?? false,
+            isSelected: isSelected,
+            selectionTheme: selectionTheme,
             cellController: getCellController?.call(rowIndex, column.key),
             onCellTap: onCellTap != null
                 ? () => onCellTap!(rowIndex, column.key)
@@ -408,6 +410,8 @@ class _TablePlusCell extends StatefulWidget {
     required this.editableTheme,
     required this.tooltipTheme,
     required this.isCellEditing,
+    required this.isSelected,
+    required this.selectionTheme,
     this.cellController,
     this.onCellTap,
     this.onStopEditing,
@@ -422,6 +426,8 @@ class _TablePlusCell extends StatefulWidget {
   final TablePlusEditableTheme editableTheme;
   final TablePlusTooltipTheme tooltipTheme;
   final bool isCellEditing;
+  final bool isSelected;
+  final TablePlusSelectionTheme selectionTheme;
   final TextEditingController? cellController;
   final VoidCallback? onCellTap;
   final void Function({required bool save})? onStopEditing;
@@ -572,7 +578,10 @@ class _TablePlusCellState extends State<_TablePlusCell> {
 
     Widget textWidget = Text(
       displayValue,
-      style: widget.theme.textStyle,
+      style: widget.selectionTheme.getEffectiveTextStyle(
+        widget.isSelected,
+        widget.theme.textStyle,
+      ),
       overflow: widget.column.textOverflow,
       textAlign: widget.column.textAlign,
     );

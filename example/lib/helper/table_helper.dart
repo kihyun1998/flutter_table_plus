@@ -239,6 +239,11 @@ class TableHelper {
         selectedRowHoverColor: Colors.red,
         selectedRowSplashColor: Colors.green,
         selectedRowHighlightColor: Colors.blue,
+        selectedRowTextStyle: TextStyle(
+          fontSize: 14,
+          color: Color(0xFF1565C0),
+          fontWeight: FontWeight.w600,
+        ),
       ),
       editableTheme: const TablePlusEditableTheme(
         editingCellColor: Color(0xFFFFFDE7),

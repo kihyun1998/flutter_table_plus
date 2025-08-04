@@ -63,14 +63,14 @@ class TableStatusIndicators extends StatelessWidget {
         // Selection status
         if (isSelectable)
           _buildStatusChip(
-            text: selectedCount > 0 
+            text: selectedCount > 0
                 ? '$selectedCount selected (${selectionMode == SelectionMode.single ? 'Single' : 'Multi'})'
                 : '${selectionMode == SelectionMode.single ? 'Single' : 'Multi'} Selection',
-            backgroundColor: selectionMode == SelectionMode.single 
-                ? Colors.orange.shade100 
+            backgroundColor: selectionMode == SelectionMode.single
+                ? Colors.orange.shade100
                 : Colors.blue.shade100,
-            textColor: selectionMode == SelectionMode.single 
-                ? Colors.orange.shade800 
+            textColor: selectionMode == SelectionMode.single
+                ? Colors.orange.shade800
                 : Colors.blue.shade800,
           ),
 

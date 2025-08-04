@@ -5,6 +5,7 @@ class TablePlusSelectionTheme {
   /// Creates a [TablePlusSelectionTheme] with the specified styling properties.
   const TablePlusSelectionTheme({
     this.selectedRowColor = const Color(0xFFE3F2FD),
+    this.selectedRowTextStyle,
     this.checkboxColor = const Color(0xFF2196F3),
     this.checkboxSize = 18.0,
     this.showCheckboxColumn = true,
@@ -20,6 +21,10 @@ class TablePlusSelectionTheme {
 
   /// The background color for selected rows.
   final Color selectedRowColor;
+
+  /// The text style for selected rows.
+  /// If null, the default body text style will be used.
+  final TextStyle? selectedRowTextStyle;
 
   /// The color of the selection checkboxes.
   final Color checkboxColor;
@@ -72,6 +77,7 @@ class TablePlusSelectionTheme {
   /// Creates a copy of this theme with the given fields replaced with new values.
   TablePlusSelectionTheme copyWith({
     Color? selectedRowColor,
+    TextStyle? selectedRowTextStyle,
     Color? checkboxColor,
     double? checkboxSize,
     bool? showCheckboxColumn,
@@ -86,6 +92,7 @@ class TablePlusSelectionTheme {
   }) {
     return TablePlusSelectionTheme(
       selectedRowColor: selectedRowColor ?? this.selectedRowColor,
+      selectedRowTextStyle: selectedRowTextStyle ?? this.selectedRowTextStyle,
       checkboxColor: checkboxColor ?? this.checkboxColor,
       checkboxSize: checkboxSize ?? this.checkboxSize,
       showCheckboxColumn: showCheckboxColumn ?? this.showCheckboxColumn,
@@ -131,6 +138,17 @@ class TablePlusSelectionTheme {
       return selectedRowHighlightColor;
     } else {
       return rowHighlightColor;
+    }
+  }
+
+  /// Gets the effective text style for rows based on selection state.
+  /// Returns the selected row text style if available and row is selected,
+  /// otherwise returns the default body text style.
+  TextStyle getEffectiveTextStyle(bool isSelected, TextStyle defaultTextStyle) {
+    if (isSelected && selectedRowTextStyle != null) {
+      return selectedRowTextStyle!;
+    } else {
+      return defaultTextStyle;
     }
   }
 }
