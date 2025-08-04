@@ -1,3 +1,8 @@
+## 1.6.1
+
+*   **Added Selected Text Style**
+    *   Added `selectedTextStyle` to `TablePlusTheme` to allow customizing the text style of selected rows.
+
 ## 1.6.0
 
 *   **Enhanced Theming and Styling Capabilities**
