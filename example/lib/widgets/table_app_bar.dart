@@ -20,6 +20,7 @@ class TableAppBarActions extends StatelessWidget {
     required this.onToggleSelectionModeType,
     required this.onToggleColumnReordering,
     required this.onToggleSorting,
+    required this.onShowColumnVisibilityDialog,
   });
 
   final String? sortColumnKey;
@@ -38,6 +39,7 @@ class TableAppBarActions extends StatelessWidget {
   final VoidCallback onToggleSelectionModeType;
   final VoidCallback onToggleColumnReordering;
   final VoidCallback onToggleSorting;
+  final VoidCallback onShowColumnVisibilityDialog;
 
   @override
   Widget build(BuildContext context) {
@@ -126,6 +128,13 @@ class TableAppBarActions extends StatelessWidget {
             color: isSortable ? Colors.purple : null,
           ),
           tooltip: isSortable ? 'Disable Sorting' : 'Enable Sorting',
+        ),
+        
+        // Column visibility button
+        IconButton(
+          onPressed: onShowColumnVisibilityDialog,
+          icon: const Icon(Icons.visibility, color: Colors.teal),
+          tooltip: 'Column Visibility',
         ),
       ],
     );

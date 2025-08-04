@@ -285,4 +285,25 @@ class TableHelper {
       selectedNames: selectedNames,
     );
   }
+
+  /// Update column visibility
+  static Map<String, TablePlusColumn> updateColumnVisibility(
+      Map<String, TablePlusColumn> columns, String columnKey, bool visible) {
+    final updatedColumns = Map<String, TablePlusColumn>.from(columns);
+    final column = updatedColumns[columnKey];
+    if (column != null) {
+      updatedColumns[columnKey] = column.copyWith(visible: visible);
+    }
+    return updatedColumns;
+  }
+
+  /// Get visible column count
+  static int getVisibleColumnCount(Map<String, TablePlusColumn> columns) {
+    return columns.values.where((col) => col.visible).length;
+  }
+
+  /// Check if at least one column is visible
+  static bool hasVisibleColumns(Map<String, TablePlusColumn> columns) {
+    return columns.values.any((col) => col.visible);
+  }
 }

@@ -13,6 +13,8 @@ class TableStatusIndicators extends StatelessWidget {
     required this.isEditable,
     required this.isReorderable,
     required this.isSortable,
+    this.visibleColumnCount,
+    this.totalColumnCount,
   });
 
   final String? sortColumnKey;
@@ -23,6 +25,8 @@ class TableStatusIndicators extends StatelessWidget {
   final bool isEditable;
   final bool isReorderable;
   final bool isSortable;
+  final int? visibleColumnCount;
+  final int? totalColumnCount;
 
   Widget _buildStatusChip({
     required String text,
@@ -96,6 +100,14 @@ class TableStatusIndicators extends StatelessWidget {
             text: 'Sorting Disabled',
             backgroundColor: Colors.grey.shade100,
             textColor: Colors.grey.shade700,
+          ),
+
+        // Column visibility status
+        if (visibleColumnCount != null && totalColumnCount != null)
+          _buildStatusChip(
+            text: '$visibleColumnCount of $totalColumnCount columns visible',
+            backgroundColor: Colors.teal.shade100,
+            textColor: Colors.teal.shade800,
           ),
       ],
     );

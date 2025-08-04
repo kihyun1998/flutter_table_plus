@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
 
 import '../data/sample_data.dart';
+import '../widgets/column_visibility_controls.dart';
 import '../widgets/example_documentation.dart';
 import '../widgets/table_app_bar.dart';
 import '../widgets/table_controls.dart';
@@ -247,6 +248,32 @@ class _TableExamplePageState extends State<TableExamplePage> {
     });
   }
 
+  /// Handle column visibility change
+  void _handleColumnVisibilityChanged(String columnKey, bool visible) {
+    setState(() {
+      _columns = TableHelper.updateColumnVisibility(_columns, columnKey, visible);
+    });
+
+    // Show feedback
+    final column = _columns[columnKey];
+    final columnLabel = column?.label ?? columnKey;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Column "$columnLabel" ${visible ? 'shown' : 'hidden'}'),
+        duration: const Duration(milliseconds: 1500),
+      ),
+    );
+  }
+
+  /// Show column visibility dialog
+  void _showColumnVisibilityDialog() {
+    ColumnVisibilityDialog.show(
+      context,
+      columns: _columns,
+      onColumnVisibilityChanged: _handleColumnVisibilityChanged,
+    );
+  }
+
   /// Toggle editing mode
   void _toggleEditingMode() {
     setState(() {
@@ -366,6 +393,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
             onToggleSelectionModeType: _toggleSelectionModeType,
             onToggleColumnReordering: _toggleColumnReordering,
             onToggleSorting: _toggleSorting,
+            onShowColumnVisibilityDialog: _showColumnVisibilityDialog,
           ),
         ],
       ),
@@ -403,6 +431,8 @@ class _TableExamplePageState extends State<TableExamplePage> {
                   isEditable: _isEditable,
                   isReorderable: _isReorderable,
                   isSortable: _isSortable,
+                  visibleColumnCount: TableHelper.getVisibleColumnCount(_columns),
+                  totalColumnCount: _columns.length,
                 ),
               ],
             ),
@@ -415,6 +445,12 @@ class _TableExamplePageState extends State<TableExamplePage> {
               onClearSelections: _clearSelections,
               onSelectActive: _selectActiveEmployees,
               onShowSelected: _showSelectedEmployees,
+            ),
+
+            // Column Visibility Controls
+            ColumnVisibilityControls(
+              columns: _columns,
+              onColumnVisibilityChanged: _handleColumnVisibilityChanged,
             ),
 
             // Table with fixed height
