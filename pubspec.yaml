@@ -1,6 +1,6 @@
 name: flutter_table_plus
 description: "A highly customizable and efficient table widget for Flutter, featuring synchronized scrolling, theming, sorting, selection, and column reordering."
-version: 1.6.0
+version: 1.6.1
 homepage: https://github.com/kihyun1998/flutter_table_plus
 repository: https://github.com/kihyun1998/flutter_table_plus
 topics:

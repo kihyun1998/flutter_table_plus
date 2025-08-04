@@ -107,6 +107,7 @@ theme: const TablePlusTheme(
 This theme controls the appearance of selection-related elements and row interaction effects.
 
 - `selectedRowColor`: The background color applied to a row when it is selected.
+- `selectedTextStyle`: The `TextStyle` for cell content in a selected row. If `null`, it defaults to `bodyTheme.textStyle`.
 - `checkboxColor`: The color of the selection checkboxes.
 - `checkboxSize`: The size of the checkbox icon.
 - `checkboxColumnWidth`: The width of the dedicated selection column.
