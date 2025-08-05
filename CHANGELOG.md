@@ -1,3 +1,12 @@
+## 1.6.2
+
+*   **Documentation**
+    *   Added documentation for the `visible` property in `TablePlusColumn` to control column visibility.
+    *   Updated `README.md` to include column visibility in the feature list.
+*   **Improvements**
+    *   Added a comprehensive example for managing column visibility, including UI controls and dialogs.
+    *   Enhanced the example application with helper functions for column state management.
+
 ## 1.6.1
 
 *   **Added Selected Text Style**
