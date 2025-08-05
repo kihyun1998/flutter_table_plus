@@ -30,6 +30,7 @@ A highly customizable and efficient table widget for Flutter. It provides a rich
 - **Column Sorting**: Supports multi-state sorting (ascending, descending, none) with a configurable sort cycle.
 - **Row Selection & Editing**: Enable row selection and cell editing simultaneously. Supports double-tap and secondary-tap events on rows.
 - **Column Reordering**: Easily reorder columns with drag-and-drop.
+- **Column Visibility**: Dynamically show or hide individual columns.
 - **Smart Text Handling**: Control text overflow (`ellipsis`, `clip`, etc.) and get automatic tooltips for truncated text.
 - **Custom Cell Widgets**: Render any widget inside a cell using `cellBuilder` for maximum flexibility.
 - **Conditional Feature Control**: Dynamically enable/disable features like sorting and column reordering based on user permissions or application state.

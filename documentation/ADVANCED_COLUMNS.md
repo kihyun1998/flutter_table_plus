@@ -184,3 +184,77 @@ class _ReorderableTableScreenState extends State<ReorderableTableScreen> {
 - **Selection Column**: The selection checkbox column (when `isSelectable: true`) is fixed and not reorderable. It always stays at the beginning of the table.
 - **Persistence**: The table does not automatically save the user's column order. If you need to persist the layout between sessions, you must save the column order to a local database or shared preferences and restore it when initializing your state.
 ```
+
+## 5. Controlling Column Visibility
+
+You can dynamically show or hide columns by setting the `visible` property on a `TablePlusColumn`. This is useful for creating responsive layouts or hiding sensitive information based on user permissions.
+
+By default, all columns are visible (`visible: true`).
+
+### How It Works
+
+The `FlutterTablePlus` widget will filter out any columns where `visible` is set to `false` before rendering the table. This is handled automatically.
+
+### Example: Hiding a Column
+
+To hide a specific column, simply set its `visible` property to `false`.
+
+```dart
+.addColumn(
+  'internal_id',
+  const TablePlusColumn(
+    key: 'internal_id',
+    label: 'Internal ID',
+    visible: false, // This column will not be displayed
+  ),
+)
+```
+
+### Example: Dynamic Visibility Based on State
+
+You can control visibility dynamically based on your application's state. For instance, you can show or hide columns based on user roles or a toggle switch in the UI.
+
+```dart
+class DynamicColumnVisibilityScreen extends StatefulWidget {
+  const DynamicColumnVisibilityScreen({super.key, required this.isAdmin});
+  final bool isAdmin;
+
+  @override
+  State<DynamicColumnVisibilityScreen> createState() => _DynamicColumnVisibilityScreenState();
+}
+
+class _DynamicColumnVisibilityScreenState extends State<DynamicColumnVisibilityScreen> {
+  late List<TablePlusColumn> _columns;
+
+  @override
+  void initState() {
+    super.initState();
+    // Define columns and control visibility based on a condition
+    _columns = [
+      TablePlusColumn(key: 'id', label: 'ID', width: 80),
+      TablePlusColumn(key: 'name', label: 'Product Name', width: 200),
+      // Only show the 'margin' column if the user is an admin
+      TablePlusColumn(
+        key: 'margin',
+        label: 'Profit Margin',
+        width: 120,
+        visible: widget.isAdmin,
+      ),
+    ];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Dynamic Column Visibility')),
+      body: FlutterTablePlus(
+        // The table will automatically filter out the invisible columns
+        columns: _columns,
+        data: yourData,
+      ),
+    );
+  }
+}
+```
+
+In this example, the "Profit Margin" column is only included in the table if `widget.isAdmin` is `true`.
