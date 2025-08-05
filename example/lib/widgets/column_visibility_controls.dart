@@ -63,7 +63,8 @@ class ColumnVisibilityControls extends StatelessWidget {
               children: sortedColumns.map((column) {
                 return _ColumnVisibilityItem(
                   column: column,
-                  onChanged: (visible) => onColumnVisibilityChanged(column.key, visible),
+                  onChanged: (visible) =>
+                      onColumnVisibilityChanged(column.key, visible),
                 );
               }).toList(),
             ),
@@ -102,9 +103,7 @@ class _ColumnVisibilityItem extends StatelessWidget {
             width: 1.5,
           ),
           borderRadius: BorderRadius.circular(8),
-          color: column.visible 
-              ? Colors.blue.shade50 
-              : Colors.grey.shade50,
+          color: column.visible ? Colors.blue.shade50 : Colors.grey.shade50,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -112,7 +111,8 @@ class _ColumnVisibilityItem extends StatelessWidget {
             Icon(
               column.visible ? Icons.visibility : Icons.visibility_off,
               size: 16,
-              color: column.visible ? Colors.blue.shade600 : Colors.grey.shade600,
+              color:
+                  column.visible ? Colors.blue.shade600 : Colors.grey.shade600,
             ),
             const SizedBox(width: 6),
             Text(
@@ -120,7 +120,9 @@ class _ColumnVisibilityItem extends StatelessWidget {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
-                color: column.visible ? Colors.blue.shade700 : Colors.grey.shade600,
+                color: column.visible
+                    ? Colors.blue.shade700
+                    : Colors.grey.shade600,
               ),
             ),
           ],
@@ -143,7 +145,8 @@ class ColumnVisibilityDialog extends StatefulWidget {
   static Future<void> show(
     BuildContext context, {
     required Map<String, TablePlusColumn> columns,
-    required void Function(String columnKey, bool visible) onColumnVisibilityChanged,
+    required void Function(String columnKey, bool visible)
+        onColumnVisibilityChanged,
   }) {
     return showDialog(
       context: context,
@@ -227,10 +230,11 @@ class _ColumnVisibilityDialogState extends State<ColumnVisibilityDialog> {
                 itemBuilder: (context, index) {
                   final column = sortedColumns[index];
                   final isVisible = _columnVisibility[column.key] ?? false;
-                  
+
                   return CheckboxListTile(
                     value: isVisible,
-                    onChanged: (value) => _toggleColumn(column.key, value ?? false),
+                    onChanged: (value) =>
+                        _toggleColumn(column.key, value ?? false),
                     title: Text(column.label),
                     subtitle: Text('Key: ${column.key}'),
                     secondary: Icon(

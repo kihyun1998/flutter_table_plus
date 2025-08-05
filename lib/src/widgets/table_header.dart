@@ -211,12 +211,12 @@ class _TablePlusHeaderState extends State<TablePlusHeader> {
   /// Build decoration for the main header container
   Decoration _buildHeaderDecoration() {
     final customDecoration = widget.theme.decoration;
-    
+
     // 사용자 decoration이 있으면 그것을 우선 사용
     if (customDecoration != null) {
       return customDecoration;
     }
-    
+
     // 없으면 기본 테마 속성들로 BoxDecoration 생성
     return BoxDecoration(
       color: widget.theme.backgroundColor,
@@ -331,10 +331,11 @@ class _TablePlusHeaderState extends State<TablePlusHeader> {
                               sortDirection: widget.sortColumnKey == column.key
                                   ? widget.sortDirection
                                   : SortDirection.none,
-                              onSortClick:
-                                  column.sortable && widget.onSort != null
-                                      ? () => _handleSortClick(column.key)
-                                      : null,
+                              onSortClick: column.sortable &&
+                                      widget.onSort != null &&
+                                      widget.totalRowCount > 0
+                                  ? () => _handleSortClick(column.key)
+                                  : null,
                             ),
                           );
                         },
@@ -358,10 +359,11 @@ class _TablePlusHeaderState extends State<TablePlusHeader> {
                               sortDirection: widget.sortColumnKey == column.key
                                   ? widget.sortDirection
                                   : SortDirection.none,
-                              onSortClick:
-                                  column.sortable && widget.onSort != null
-                                      ? () => _handleSortClick(column.key)
-                                      : null,
+                              onSortClick: column.sortable &&
+                                      widget.onSort != null &&
+                                      widget.totalRowCount > 0
+                                  ? () => _handleSortClick(column.key)
+                                  : null,
                             );
                           }).toList(),
                         ),
@@ -425,12 +427,12 @@ class _HeaderCell extends StatelessWidget {
   /// Build decoration for individual header cell
   Decoration _buildCellDecoration() {
     final customCellDecoration = theme.cellDecoration;
-    
+
     // cellDecoration이 있으면 그것을 우선 사용
     if (customCellDecoration != null) {
       return customCellDecoration;
     }
-    
+
     // 없으면 기본 테마 속성들로 BoxDecoration 생성
     return BoxDecoration(
       color: _getBackgroundColor(),
@@ -518,12 +520,12 @@ class _SelectionHeaderCell extends StatelessWidget {
   /// Build decoration for selection header cell
   Decoration _buildSelectionCellDecoration() {
     final customCellDecoration = theme.cellDecoration;
-    
+
     // cellDecoration이 있으면 그것을 우선 사용
     if (customCellDecoration != null) {
       return customCellDecoration;
     }
-    
+
     // 없으면 기본 테마 속성들로 BoxDecoration 생성
     return BoxDecoration(
       color: theme.backgroundColor,

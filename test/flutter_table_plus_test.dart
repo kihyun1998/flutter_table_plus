@@ -4,7 +4,8 @@ import 'package:flutter_table_plus/flutter_table_plus.dart';
 
 void main() {
   group('TablePlusHeaderTheme decoration tests', () {
-    testWidgets('header decoration is applied when provided', (WidgetTester tester) async {
+    testWidgets('header decoration is applied when provided',
+        (WidgetTester tester) async {
       final headerDecoration = BoxDecoration(
         color: Colors.red,
         boxShadow: [BoxShadow(color: Colors.black, blurRadius: 5)],
@@ -36,16 +37,19 @@ void main() {
 
       // Find the main header container
       final headerContainer = tester.widget<Container>(
-        find.descendant(
-          of: find.byType(FlutterTablePlus),
-          matching: find.byType(Container),
-        ).first,
+        find
+            .descendant(
+              of: find.byType(FlutterTablePlus),
+              matching: find.byType(Container),
+            )
+            .first,
       );
 
       expect(headerContainer.decoration, equals(headerDecoration));
     });
 
-    testWidgets('cell decoration is applied when provided', (WidgetTester tester) async {
+    testWidgets('cell decoration is applied when provided',
+        (WidgetTester tester) async {
       final cellDecoration = BoxDecoration(
         color: Colors.blue,
         border: Border.all(color: Colors.green, width: 2),
@@ -86,10 +90,15 @@ void main() {
       );
 
       // Should find containers with the cell decoration
-      expect(cellContainers.any((container) => container.decoration == cellDecoration), isTrue);
+      expect(
+          cellContainers
+              .any((container) => container.decoration == cellDecoration),
+          isTrue);
     });
 
-    testWidgets('falls back to backgroundColor and dividers when no decoration provided', (WidgetTester tester) async {
+    testWidgets(
+        'falls back to backgroundColor and dividers when no decoration provided',
+        (WidgetTester tester) async {
       const backgroundColor = Colors.grey;
       const dividerColor = Colors.black;
 
@@ -134,7 +143,8 @@ void main() {
       expect(
         containers.any((container) {
           final decoration = container.decoration;
-          return decoration is BoxDecoration && decoration.color == backgroundColor;
+          return decoration is BoxDecoration &&
+              decoration.color == backgroundColor;
         }),
         isTrue,
       );
@@ -153,7 +163,8 @@ void main() {
       );
 
       expect(copiedTheme.backgroundColor, Colors.green);
-      expect(copiedTheme.cellDecoration, const BoxDecoration(color: Colors.blue));
+      expect(
+          copiedTheme.cellDecoration, const BoxDecoration(color: Colors.blue));
     });
 
     test('copyWith can update cellDecoration', () {

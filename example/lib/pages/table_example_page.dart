@@ -25,6 +25,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
   bool _isEditable = false;
   bool _isReorderable = true;
   bool _isSortable = true;
+  bool _showNoDataExample = false;
 
   // Sort state
   String? _sortColumnKey;
@@ -251,7 +252,8 @@ class _TableExamplePageState extends State<TableExamplePage> {
   /// Handle column visibility change
   void _handleColumnVisibilityChanged(String columnKey, bool visible) {
     setState(() {
-      _columns = TableHelper.updateColumnVisibility(_columns, columnKey, visible);
+      _columns =
+          TableHelper.updateColumnVisibility(_columns, columnKey, visible);
     });
 
     // Show feedback
@@ -370,6 +372,13 @@ class _TableExamplePageState extends State<TableExamplePage> {
     );
   }
 
+  /// Toggle no data example
+  void _toggleNoDataExample() {
+    setState(() {
+      _showNoDataExample = !_showNoDataExample;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -385,6 +394,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
             isReorderable: _isReorderable,
             isSortable: _isSortable,
             showVerticalDividers: _showVerticalDividers,
+            showNoDataExample: _showNoDataExample,
             onResetSort: _resetSort,
             onResetColumnOrder: _resetColumnOrder,
             onToggleVerticalDividers: _toggleVerticalDividers,
@@ -394,6 +404,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
             onToggleColumnReordering: _toggleColumnReordering,
             onToggleSorting: _toggleSorting,
             onShowColumnVisibilityDialog: _showColumnVisibilityDialog,
+            onToggleNoDataExample: _toggleNoDataExample,
           ),
         ],
       ),
@@ -416,7 +427,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Showing ${_sortedData.length} employees',
+                  'Showing ${_showNoDataExample ? 0 : _sortedData.length} employees',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Colors.grey.shade600,
                       ),
@@ -431,7 +442,8 @@ class _TableExamplePageState extends State<TableExamplePage> {
                   isEditable: _isEditable,
                   isReorderable: _isReorderable,
                   isSortable: _isSortable,
-                  visibleColumnCount: TableHelper.getVisibleColumnCount(_columns),
+                  visibleColumnCount:
+                      TableHelper.getVisibleColumnCount(_columns),
                   totalColumnCount: _columns.length,
                 ),
               ],
@@ -462,7 +474,9 @@ class _TableExamplePageState extends State<TableExamplePage> {
                   padding: const EdgeInsets.all(1.0),
                   child: FlutterTablePlus(
                     columns: _columns,
-                    data: _sortedData, // Use sorted data instead of original
+                    data: _showNoDataExample
+                        ? []
+                        : _sortedData, // Use empty data when demonstrating no data
                     isSelectable: _isSelectable,
                     selectionMode: _selectionMode,
                     selectedRows: _selectedRows,
@@ -494,6 +508,36 @@ class _TableExamplePageState extends State<TableExamplePage> {
                         ),
                       );
                     },
+                    // No data widget
+                    noDataWidget: const Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.inbox_outlined,
+                            size: 64,
+                            color: Colors.grey,
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            'No employees found',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.grey,
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            'There are no employees to display in the table.',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),

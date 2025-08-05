@@ -28,14 +28,14 @@ class ExampleDocumentation extends StatelessWidget {
               ),
         ),
         const SizedBox(height: 8),
-        
+
         _buildFeaturesList(),
-        
+
         if (isSelectable) ...[
           const SizedBox(height: 8),
           _buildSelectionFeatures(),
         ],
-        
+
         if (isEditable) ...[
           const SizedBox(height: 8),
           _buildEditingFeatures(),
@@ -51,7 +51,7 @@ class ExampleDocumentation extends StatelessWidget {
               ),
         ),
         const SizedBox(height: 8),
-        
+
         _buildControlsList(),
 
         const SizedBox(height: 16),
@@ -64,7 +64,7 @@ class ExampleDocumentation extends StatelessWidget {
               ),
         ),
         const SizedBox(height: 8),
-        
+
         _buildCodeExample(),
       ],
     );
@@ -83,7 +83,8 @@ class ExampleDocumentation extends StatelessWidget {
         const Text('• Column width management with min/max constraints'),
         Text(
           '• Customizable table borders (${showVerticalDividers ? "Grid" : "Horizontal only"})',
-          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.purple),
+          style: const TextStyle(
+              fontWeight: FontWeight.bold, color: Colors.purple),
         ),
         const Text(
           '• Column reordering via drag and drop',
@@ -203,9 +204,11 @@ class ExampleDocumentation extends StatelessWidget {
       children: [
         const Text('• 🔄 Reset column order to default'),
         const Text('• 🔀 Clear sort (reset to original order)'),
-        const Text('• 🔲 Toggle vertical dividers (Grid vs Horizontal-only design)'),
+        const Text(
+            '• 🔲 Toggle vertical dividers (Grid vs Horizontal-only design)'),
         const Text('• ✏️ Toggle editing mode (Cell editing with text fields)'),
-        const Text('• ☑️ Toggle selection mode (Row selection with checkboxes)'),
+        const Text(
+            '• ☑️ Toggle selection mode (Row selection with checkboxes)'),
         const Text('• 🔘 Toggle single/multiple selection mode'),
         const Text('• 🖱️ Drag column headers to reorder'),
         const Text('• 🔤 Click sortable column headers to sort'),

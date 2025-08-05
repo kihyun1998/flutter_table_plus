@@ -39,6 +39,7 @@ class FlutterTablePlus extends StatefulWidget {
     this.onCellChanged,
     this.onRowDoubleTap,
     this.onRowSecondaryTap,
+    this.noDataWidget,
   });
 
   /// The map of columns to display in the table.
@@ -127,6 +128,10 @@ class FlutterTablePlus extends StatefulWidget {
   /// Callback when a row is right-clicked (or long-pressed on touch devices).
   /// Provides the row ID. Only active when [isSelectable] is true.
   final void Function(String rowId)? onRowSecondaryTap;
+
+  /// Widget to display when there is no data to show in the table.
+  /// If not provided, nothing will be displayed when data is empty.
+  final Widget? noDataWidget;
 
   @override
   State<FlutterTablePlus> createState() => _FlutterTablePlusState();
@@ -283,7 +288,8 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
 
         print('⚠️ FlutterTablePlus: Duplicate row IDs detected: $duplicates');
         print('   This will cause unexpected selection behavior.');
-        print('   Please ensure each row has a unique "${widget.rowIdKey}" field.');
+        print(
+            '   Please ensure each row has a unique "${widget.rowIdKey}" field.');
       }
 
       return true;
@@ -529,32 +535,37 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                               onSort: widget.onSort,
                             ),
 
-                            // Table Data
+                            // Table Data or No Data Widget
                             Expanded(
-                              child: TablePlusBody(
-                                columns: visibleColumns,
-                                data: widget.data,
-                                columnWidths: columnWidths,
-                                theme: theme.bodyTheme,
-                                verticalController: verticalScrollController,
-                                rowIdKey: widget.rowIdKey,
-                                isSelectable: widget.isSelectable,
-                                selectionMode: widget.selectionMode,
-                                selectedRows: widget.selectedRows,
-                                selectionTheme: theme.selectionTheme,
-                                onRowSelectionChanged:
-                                    widget.onRowSelectionChanged,
-                                onRowDoubleTap: widget.onRowDoubleTap,
-                                onRowSecondaryTap: widget.onRowSecondaryTap,
-                                // Editing-related properties
-                                isEditable: widget.isEditable,
-                                editableTheme: theme.editableTheme,
-                                tooltipTheme: theme.tooltipTheme,
-                                isCellEditing: _isCellEditing,
-                                getCellController: _getCellController,
-                                onCellTap: _handleCellTap,
-                                onStopEditing: _stopCurrentEditing,
-                              ),
+                              child: widget.data.isEmpty &&
+                                      widget.noDataWidget != null
+                                  ? widget.noDataWidget!
+                                  : TablePlusBody(
+                                      columns: visibleColumns,
+                                      data: widget.data,
+                                      columnWidths: columnWidths,
+                                      theme: theme.bodyTheme,
+                                      verticalController:
+                                          verticalScrollController,
+                                      rowIdKey: widget.rowIdKey,
+                                      isSelectable: widget.isSelectable,
+                                      selectionMode: widget.selectionMode,
+                                      selectedRows: widget.selectedRows,
+                                      selectionTheme: theme.selectionTheme,
+                                      onRowSelectionChanged:
+                                          widget.onRowSelectionChanged,
+                                      onRowDoubleTap: widget.onRowDoubleTap,
+                                      onRowSecondaryTap:
+                                          widget.onRowSecondaryTap,
+                                      // Editing-related properties
+                                      isEditable: widget.isEditable,
+                                      editableTheme: theme.editableTheme,
+                                      tooltipTheme: theme.tooltipTheme,
+                                      isCellEditing: _isCellEditing,
+                                      getCellController: _getCellController,
+                                      onCellTap: _handleCellTap,
+                                      onStopEditing: _stopCurrentEditing,
+                                    ),
                             ),
                           ],
                         ),

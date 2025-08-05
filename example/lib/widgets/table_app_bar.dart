@@ -12,6 +12,7 @@ class TableAppBarActions extends StatelessWidget {
     required this.isReorderable,
     required this.isSortable,
     required this.showVerticalDividers,
+    required this.showNoDataExample,
     required this.onResetSort,
     required this.onResetColumnOrder,
     required this.onToggleVerticalDividers,
@@ -21,6 +22,7 @@ class TableAppBarActions extends StatelessWidget {
     required this.onToggleColumnReordering,
     required this.onToggleSorting,
     required this.onShowColumnVisibilityDialog,
+    required this.onToggleNoDataExample,
   });
 
   final String? sortColumnKey;
@@ -30,7 +32,8 @@ class TableAppBarActions extends StatelessWidget {
   final bool isReorderable;
   final bool isSortable;
   final bool showVerticalDividers;
-  
+  final bool showNoDataExample;
+
   final VoidCallback onResetSort;
   final VoidCallback onResetColumnOrder;
   final VoidCallback onToggleVerticalDividers;
@@ -40,6 +43,7 @@ class TableAppBarActions extends StatelessWidget {
   final VoidCallback onToggleColumnReordering;
   final VoidCallback onToggleSorting;
   final VoidCallback onShowColumnVisibilityDialog;
+  final VoidCallback onToggleNoDataExample;
 
   @override
   Widget build(BuildContext context) {
@@ -53,27 +57,25 @@ class TableAppBarActions extends StatelessWidget {
             icon: const Icon(Icons.sort_outlined),
             tooltip: 'Clear Sort',
           ),
-        
+
         // Reset column order button
         IconButton(
           onPressed: onResetColumnOrder,
           icon: const Icon(Icons.refresh),
           tooltip: 'Reset Column Order',
         ),
-        
+
         // Toggle vertical dividers button
         IconButton(
           onPressed: onToggleVerticalDividers,
           icon: Icon(
-            showVerticalDividers
-                ? Icons.grid_on
-                : Icons.format_list_bulleted,
+            showVerticalDividers ? Icons.grid_on : Icons.format_list_bulleted,
           ),
           tooltip: showVerticalDividers
               ? 'Hide Vertical Lines'
               : 'Show Vertical Lines',
         ),
-        
+
         // Toggle editing mode button
         IconButton(
           onPressed: onToggleEditingMode,
@@ -83,7 +85,7 @@ class TableAppBarActions extends StatelessWidget {
           ),
           tooltip: isEditable ? 'Disable Editing' : 'Enable Editing',
         ),
-        
+
         // Toggle selection mode button
         IconButton(
           onPressed: onToggleSelectionMode,
@@ -92,24 +94,24 @@ class TableAppBarActions extends StatelessWidget {
           ),
           tooltip: isSelectable ? 'Disable Selection' : 'Enable Selection',
         ),
-        
+
         // Toggle selection mode type button (single/multiple)
         if (isSelectable)
           IconButton(
             onPressed: onToggleSelectionModeType,
             icon: Icon(
-              selectionMode == SelectionMode.single 
-                  ? Icons.radio_button_checked 
+              selectionMode == SelectionMode.single
+                  ? Icons.radio_button_checked
                   : Icons.check_box_outlined,
-              color: selectionMode == SelectionMode.single 
-                  ? Colors.orange 
+              color: selectionMode == SelectionMode.single
+                  ? Colors.orange
                   : Colors.blue,
             ),
-            tooltip: selectionMode == SelectionMode.single 
-                ? 'Switch to Multiple Selection' 
+            tooltip: selectionMode == SelectionMode.single
+                ? 'Switch to Multiple Selection'
                 : 'Switch to Single Selection',
           ),
-        
+
         // Toggle column reordering button
         IconButton(
           onPressed: onToggleColumnReordering,
@@ -119,7 +121,7 @@ class TableAppBarActions extends StatelessWidget {
           ),
           tooltip: isReorderable ? 'Disable Reordering' : 'Enable Reordering',
         ),
-        
+
         // Toggle sorting button
         IconButton(
           onPressed: onToggleSorting,
@@ -129,12 +131,22 @@ class TableAppBarActions extends StatelessWidget {
           ),
           tooltip: isSortable ? 'Disable Sorting' : 'Enable Sorting',
         ),
-        
+
         // Column visibility button
         IconButton(
           onPressed: onShowColumnVisibilityDialog,
           icon: const Icon(Icons.visibility, color: Colors.teal),
           tooltip: 'Column Visibility',
+        ),
+
+        // Toggle no data example button
+        IconButton(
+          onPressed: onToggleNoDataExample,
+          icon: Icon(
+            showNoDataExample ? Icons.data_array : Icons.data_array_outlined,
+            color: showNoDataExample ? Colors.red : null,
+          ),
+          tooltip: showNoDataExample ? 'Show Data' : 'Show No Data Example',
         ),
       ],
     );

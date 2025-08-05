@@ -190,7 +190,8 @@ class TablePlusColumn {
       cellBuilder: cellBuilder ?? this.cellBuilder,
       hintText: hintText ?? this.hintText,
       textOverflow: textOverflow ?? this.textOverflow,
-      showTooltipOnOverflow: showTooltipOnOverflow ?? this.showTooltipOnOverflow,
+      showTooltipOnOverflow:
+          showTooltipOnOverflow ?? this.showTooltipOnOverflow,
     );
   }
 
