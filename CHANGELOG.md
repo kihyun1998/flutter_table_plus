@@ -1,3 +1,13 @@
+## 1.7.0
+
+*   **Features**
+    *   Added `noDataWidget` property to `FlutterTablePlus` to allow displaying a custom widget when the data source is empty.
+*   **Improvements**
+    *   The header sorting functionality is now automatically disabled when there is no data, preventing unnecessary sort actions.
+*   **Documentation**
+    *   Added a new guide, `EMPTY_STATE.md`, to explain how to use the `noDataWidget` feature.
+    *   Updated `README.md` to include the new feature and documentation link.
+
 ## 1.6.2
 
 *   **Documentation**

@@ -198,6 +198,7 @@ For more advanced use cases and detailed guides, please refer to our documentati
   - [Integrating with Riverpod (Code Generator)](documentation/RIVERPOD_GENERATOR_GUIDE.md)
 
 - **Feature Guides**
+  - [Handling Empty State](documentation/EMPTY_STATE.md)
   - [Cell Editing](documentation/EDITING.md)
   - [Sorting](documentation/SORTING.md)
   - [Row Selection](documentation/SELECTION.md)
