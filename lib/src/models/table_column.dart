@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'tooltip_behavior.dart';
+
 /// Enum representing the sorting state of a column.
 enum SortDirection {
   /// No sorting applied to this column.
@@ -97,6 +99,7 @@ class TablePlusColumn {
     this.hintText,
     this.textOverflow = TextOverflow.ellipsis,
     this.showTooltipOnOverflow = true,
+    this.tooltipBehavior = TooltipBehavior.always,
   });
 
   /// The unique identifier for this column.
@@ -154,7 +157,17 @@ class TablePlusColumn {
 
   /// Whether to show a tooltip when text is overflowing (ellipsis).
   /// Only applies when textOverflow is TextOverflow.ellipsis.
+  /// 
+  /// Deprecated: Use [tooltipBehavior] instead for more control.
+  @Deprecated('Use tooltipBehavior instead for more control over tooltip display')
   final bool showTooltipOnOverflow;
+
+  /// Controls when tooltips should be displayed for this column's cells.
+  /// 
+  /// - [TooltipBehavior.always]: Show tooltip when textOverflow is ellipsis (default, backward compatible)
+  /// - [TooltipBehavior.onOverflowOnly]: Only show tooltip when text actually overflows
+  /// - [TooltipBehavior.never]: Never show tooltip
+  final TooltipBehavior tooltipBehavior;
 
   /// Creates a copy of this column with the given fields replaced with new values.
   TablePlusColumn copyWith({
@@ -174,6 +187,7 @@ class TablePlusColumn {
     String? hintText,
     TextOverflow? textOverflow,
     bool? showTooltipOnOverflow,
+    TooltipBehavior? tooltipBehavior,
   }) {
     return TablePlusColumn(
       key: key ?? this.key,
@@ -192,6 +206,7 @@ class TablePlusColumn {
       textOverflow: textOverflow ?? this.textOverflow,
       showTooltipOnOverflow:
           showTooltipOnOverflow ?? this.showTooltipOnOverflow,
+      tooltipBehavior: tooltipBehavior ?? this.tooltipBehavior,
     );
   }
 

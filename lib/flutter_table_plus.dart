@@ -19,6 +19,7 @@ library;
 /// Models
 export 'src/models/table_column.dart';
 export 'src/models/table_columns_builder.dart';
+export 'src/models/tooltip_behavior.dart';
 
 /// Theme
 export 'src/models/theme/body_theme.dart';
