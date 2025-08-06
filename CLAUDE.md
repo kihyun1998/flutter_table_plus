@@ -6,6 +6,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Flutter Table Plus is a highly customizable and efficient table widget for Flutter that provides synchronized scrolling, theming, sorting, selection, column reordering, and cell editing capabilities. The package is structured as a Flutter library with comprehensive documentation and examples.
 
+## Environment Notes
+
+**IMPORTANT**: Claude Code runs in WSL environment while the user is on Windows. When Flutter/Dart commands need to be executed (flutter test, flutter analyze, dart format, etc.), DO NOT attempt to run them directly. Instead, ask the user to run these commands on their Windows environment.
+
 ## Common Development Commands
 
 ### Testing
