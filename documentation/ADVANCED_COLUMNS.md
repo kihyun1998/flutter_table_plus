@@ -68,18 +68,16 @@ You have fine-grained control over column widths using three properties:
 
 ## 3. Handling Text Overflow and Tooltips
 
-When cell content is too long to fit within the column's width, you can control how it's displayed using the `textOverflow` property of `TablePlusColumn`.
+When cell content is too long to fit, you can control its appearance and behavior with `textOverflow` and `tooltipBehavior`.
 
-- `textOverflow`: A `TextOverflow` enum (`clip`, `fade`, `ellipsis`, `visible`). The default is `ellipsis`.
-- `showTooltipOnOverflow`: A `bool` that enables an automatic tooltip when `textOverflow` is `ellipsis` and the text actually overflows. Defaults to `true`.
+- `textOverflow`: A `TextOverflow` enum (`clip`, `fade`, `ellipsis`, `visible`). Defaults to `ellipsis`.
+- `tooltipBehavior`: A `TooltipBehavior` enum that gives you precise control over when tooltips appear.
+  - `TooltipBehavior.always`: The tooltip is always available on hover if `textOverflow` is `ellipsis`.
+  - `TooltipBehavior.onOverflowOnly`: The tooltip only appears if the text is actually truncated. This is useful for avoiding redundant tooltips.
+  - `TooltipBehavior.never`: The tooltip is disabled for the column.
+- **(Deprecated)** `showTooltipOnOverflow`: A `bool` that was previously used to control tooltips. Use `tooltipBehavior` instead.
 
-### Automatic Tooltips
-
-A key feature is the automatic tooltip that appears when `textOverflow` is set to `TextOverflow.ellipsis`. If the text in a cell is longer than the available space, the user can hover over the truncated text to see the full content in a tooltip.
-
-You can disable this behavior by setting `showTooltipOnOverflow` to `false`.
-
-### Example
+### Example: Precise Tooltip Control
 
 ```dart
 .addColumn(
@@ -87,14 +85,13 @@ You can disable this behavior by setting `showTooltipOnOverflow` to `false`.
   const TablePlusColumn(
     key: 'description',
     label: 'Description',
-    width: 200, // A fixed width that might cause overflow
+    width: 200,
     
     // Truncate long text with an ellipsis (...)
     textOverflow: TextOverflow.ellipsis, 
     
-    // The tooltip will automatically show on hover if the text overflows.
-    // To disable it, you would add:
-    // showTooltipOnOverflow: false,
+    // Only show the tooltip if the description text actually overflows.
+    tooltipBehavior: TooltipBehavior.onOverflowOnly,
   ),
 )
 ```

@@ -1,3 +1,12 @@
+## 1.8.0
+
+*   **Features**
+    *   Added `tooltipBehavior` to `TablePlusColumn` to control when tooltips are displayed (`always`, `onOverflowOnly`, `never`).
+*   **Improvements**
+    *   Added `TextOverflowDetector` to accurately determine when text overflows in a cell.
+*   **Deprecations**
+    *   Deprecated `showTooltipOnOverflow` in `TablePlusColumn` in favor of the new `tooltipBehavior` property.
+
 ## 1.7.0
 
 *   **Features**
