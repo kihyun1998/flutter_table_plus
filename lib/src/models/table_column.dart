@@ -100,6 +100,7 @@ class TablePlusColumn {
     this.textOverflow = TextOverflow.ellipsis,
     this.showTooltipOnOverflow = true,
     this.tooltipBehavior = TooltipBehavior.always,
+    this.headerTooltipBehavior = TooltipBehavior.onOverflowOnly,
   });
 
   /// The unique identifier for this column.
@@ -169,6 +170,13 @@ class TablePlusColumn {
   /// - [TooltipBehavior.never]: Never show tooltip
   final TooltipBehavior tooltipBehavior;
 
+  /// Controls when tooltips should be displayed for this column's header.
+  /// 
+  /// - [TooltipBehavior.onOverflowOnly]: Only show tooltip when header text actually overflows (default)
+  /// - [TooltipBehavior.always]: Show tooltip when textOverflow is ellipsis
+  /// - [TooltipBehavior.never]: Never show tooltip
+  final TooltipBehavior headerTooltipBehavior;
+
   /// Creates a copy of this column with the given fields replaced with new values.
   TablePlusColumn copyWith({
     String? key,
@@ -188,6 +196,7 @@ class TablePlusColumn {
     TextOverflow? textOverflow,
     bool? showTooltipOnOverflow,
     TooltipBehavior? tooltipBehavior,
+    TooltipBehavior? headerTooltipBehavior,
   }) {
     return TablePlusColumn(
       key: key ?? this.key,
@@ -207,6 +216,7 @@ class TablePlusColumn {
       showTooltipOnOverflow:
           showTooltipOnOverflow ?? this.showTooltipOnOverflow,
       tooltipBehavior: tooltipBehavior ?? this.tooltipBehavior,
+      headerTooltipBehavior: headerTooltipBehavior ?? this.headerTooltipBehavior,
     );
   }
 
@@ -225,7 +235,11 @@ class TablePlusColumn {
         other.sortable == sortable &&
         other.editable == editable &&
         other.hintText == hintText &&
-        other.visible == visible;
+        other.visible == visible &&
+        other.textOverflow == textOverflow &&
+        other.showTooltipOnOverflow == showTooltipOnOverflow &&
+        other.tooltipBehavior == tooltipBehavior &&
+        other.headerTooltipBehavior == headerTooltipBehavior;
   }
 
   @override
@@ -243,6 +257,10 @@ class TablePlusColumn {
       editable,
       hintText,
       visible,
+      textOverflow,
+      showTooltipOnOverflow,
+      tooltipBehavior,
+      headerTooltipBehavior,
     );
   }
 

@@ -50,7 +50,7 @@ class TableHelper {
           'age',
           const TablePlusColumn(
             key: 'age',
-            label: 'Age',
+            label: 'Age is Overflow column name',
             order: 0,
             width: 60,
             minWidth: 50,

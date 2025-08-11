@@ -527,6 +527,7 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                               sortCycleOrder: widget.sortCycleOrder,
                               totalRowCount: widget.data.length,
                               selectionTheme: theme.selectionTheme,
+                              tooltipTheme: theme.tooltipTheme,
                               onSelectAll: widget.onSelectAll,
                               onColumnReorder: widget.onColumnReorder,
                               // Sort-related properties

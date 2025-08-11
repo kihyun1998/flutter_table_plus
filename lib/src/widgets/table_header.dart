@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import '../../flutter_table_plus.dart' show TablePlusSelectionTheme;
 import '../models/table_column.dart';
 import '../models/theme/header_theme.dart' show TablePlusHeaderTheme;
+import '../models/theme/tooltip_theme.dart' show TablePlusTooltipTheme;
+import '../models/tooltip_behavior.dart';
+import '../utils/text_overflow_detector.dart';
 
 /// A widget that renders the header row of the table.
 class TablePlusHeader extends StatefulWidget {
@@ -18,6 +21,7 @@ class TablePlusHeader extends StatefulWidget {
     this.sortCycleOrder = SortCycleOrder.ascendingFirst,
     this.totalRowCount = 0,
     this.selectionTheme = const TablePlusSelectionTheme(),
+    this.tooltipTheme = const TablePlusTooltipTheme(),
     this.onSelectAll,
     this.onColumnReorder,
     this.sortColumnKey,
@@ -51,6 +55,9 @@ class TablePlusHeader extends StatefulWidget {
 
   /// The theme configuration for selection.
   final TablePlusSelectionTheme selectionTheme;
+
+  /// The theme configuration for tooltips.
+  final TablePlusTooltipTheme tooltipTheme;
 
   /// Callback when the select-all state changes.
   final void Function(bool selectAll)? onSelectAll;
@@ -327,6 +334,7 @@ class _TablePlusHeaderState extends State<TablePlusHeader> {
                               column: column,
                               width: width,
                               theme: widget.theme,
+                              tooltipTheme: widget.tooltipTheme,
                               isSorted: widget.sortColumnKey == column.key,
                               sortDirection: widget.sortColumnKey == column.key
                                   ? widget.sortDirection
@@ -355,6 +363,7 @@ class _TablePlusHeaderState extends State<TablePlusHeader> {
                               column: column,
                               width: width,
                               theme: widget.theme,
+                              tooltipTheme: widget.tooltipTheme,
                               isSorted: widget.sortColumnKey == column.key,
                               sortDirection: widget.sortColumnKey == column.key
                                   ? widget.sortDirection
@@ -382,6 +391,7 @@ class _HeaderCell extends StatelessWidget {
     required this.column,
     required this.width,
     required this.theme,
+    required this.tooltipTheme,
     required this.isSorted,
     required this.sortDirection,
     this.onSortClick,
@@ -390,6 +400,7 @@ class _HeaderCell extends StatelessWidget {
   final TablePlusColumn column;
   final double width;
   final TablePlusHeaderTheme theme;
+  final TablePlusTooltipTheme tooltipTheme;
   final bool isSorted;
   final SortDirection sortDirection;
   final VoidCallback? onSortClick;
@@ -422,6 +433,68 @@ class _HeaderCell extends StatelessWidget {
       return theme.sortedColumnTextStyle!;
     }
     return theme.textStyle;
+  }
+
+  /// Determines whether a tooltip should be shown based on the column's header tooltip behavior.
+  bool _shouldShowTooltip(BuildContext context, String label) {
+    // Basic checks - tooltip must be enabled and text must not be empty
+    if (!tooltipTheme.enabled || label.isEmpty) {
+      return false;
+    }
+
+    switch (column.headerTooltipBehavior) {
+      case TooltipBehavior.never:
+        return false;
+      
+      case TooltipBehavior.always:
+        return true;
+      
+      case TooltipBehavior.onOverflowOnly:
+        // Calculate available width for text (excluding padding and sort icon)
+        double availableWidth = width - theme.padding.horizontal;
+        
+        // Reserve space for sort icon if present
+        final sortIcon = _getSortIcon();
+        if (sortIcon != null) {
+          availableWidth -= theme.sortIconSpacing + 16; // Approximate icon width
+        }
+        
+        // Use TextOverflowDetector to check if text overflows
+        return TextOverflowDetector.willTextOverflowInContext(
+          context: context,
+          text: label,
+          maxWidth: availableWidth,
+          style: _getTextStyle(),
+          textAlign: column.textAlign,
+        );
+    }
+  }
+
+  /// Build header text widget with optional tooltip
+  Widget _buildHeaderText(BuildContext context, TextStyle textStyle) {
+    Widget textWidget = Text(
+      column.label,
+      style: textStyle,
+      overflow: TextOverflow.ellipsis,
+      textAlign: column.textAlign,
+    );
+
+    // Add tooltip based on tooltip behavior
+    if (_shouldShowTooltip(context, column.label)) {
+      textWidget = Tooltip(
+        message: column.label,
+        textStyle: tooltipTheme.textStyle,
+        decoration: tooltipTheme.decoration,
+        padding: tooltipTheme.padding,
+        margin: tooltipTheme.margin,
+        waitDuration: tooltipTheme.waitDuration,
+        showDuration: tooltipTheme.showDuration,
+        preferBelow: tooltipTheme.preferBelow,
+        child: textWidget,
+      );
+    }
+
+    return textWidget;
   }
 
   /// Build decoration for individual header cell
@@ -464,12 +537,7 @@ class _HeaderCell extends StatelessWidget {
           children: [
             // Column label
             Flexible(
-              child: Text(
-                column.label,
-                style: textStyle,
-                overflow: TextOverflow.ellipsis,
-                textAlign: column.textAlign,
-              ),
+              child: _buildHeaderText(context, textStyle),
             ),
 
             // Sort icon
