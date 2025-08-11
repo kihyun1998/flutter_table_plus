@@ -376,7 +376,7 @@ class _SelectionCell extends StatelessWidget {
         border: theme.showVerticalDividers
             ? Border(
                 right: BorderSide(
-                  color: theme.dividerColor.withOpacity(0.5),
+                  color: theme.dividerColor.withValues(alpha: 0.5),
                   width: 0.5,
                 ),
               )
@@ -525,7 +525,7 @@ class _TablePlusCellState extends State<_TablePlusCell> {
               borderRadius: theme.borderRadius ?? theme.editingBorderRadius,
               borderSide: BorderSide(
                 color: theme.enabledBorderColor ??
-                    theme.editingBorderColor.withOpacity(0.5),
+                    theme.editingBorderColor.withValues(alpha: 0.5),
                 width: 1.0,
               ),
             ),
@@ -533,7 +533,7 @@ class _TablePlusCellState extends State<_TablePlusCell> {
               borderRadius: theme.borderRadius ?? theme.editingBorderRadius,
               borderSide: BorderSide(
                 color: theme.enabledBorderColor ??
-                    theme.editingBorderColor.withOpacity(0.5),
+                    theme.editingBorderColor.withValues(alpha: 0.5),
                 width: 1.0,
               ),
             ),
@@ -624,7 +624,7 @@ class _TablePlusCellState extends State<_TablePlusCell> {
       if (widget.theme.showVerticalDividers) {
         border = Border(
           right: BorderSide(
-            color: widget.theme.dividerColor.withOpacity(0.5),
+            color: widget.theme.dividerColor.withValues(alpha: 0.5),
             width: 0.5,
           ),
         );
@@ -668,11 +668,11 @@ class _TablePlusCellState extends State<_TablePlusCell> {
 
     // Get the effective tooltip behavior (considering deprecated property)
     TooltipBehavior effectiveBehavior = widget.column.tooltipBehavior;
-    
+
     // Handle backward compatibility with deprecated showTooltipOnOverflow
     // If tooltipBehavior is default (always) but showTooltipOnOverflow is false,
     // respect the old behavior
-    if (effectiveBehavior == TooltipBehavior.always && 
+    if (effectiveBehavior == TooltipBehavior.always &&
         !widget.column.showTooltipOnOverflow) {
       effectiveBehavior = TooltipBehavior.never;
     }
@@ -680,16 +680,16 @@ class _TablePlusCellState extends State<_TablePlusCell> {
     switch (effectiveBehavior) {
       case TooltipBehavior.never:
         return false;
-      
+
       case TooltipBehavior.always:
         return widget.column.textOverflow == TextOverflow.ellipsis;
-      
+
       case TooltipBehavior.onOverflowOnly:
         // Only show tooltip if text overflow is ellipsis AND text actually overflows
         if (widget.column.textOverflow != TextOverflow.ellipsis) {
           return false;
         }
-        
+
         // Use LayoutBuilder to get available width and check for overflow
         return _willTextOverflowInAvailableWidth(displayValue);
     }
@@ -700,30 +700,30 @@ class _TablePlusCellState extends State<_TablePlusCell> {
   bool _willTextOverflowInAvailableWidth(String displayValue) {
     // We need to get the available width from the current context
     // Since we're in a table cell, we need to account for padding and margins
-    
+
     // Get the render box to determine available width
     final RenderObject? renderObject = context.findRenderObject();
     if (renderObject is! RenderBox || !renderObject.hasSize) {
       // If we can't determine the size, fall back to always showing tooltip
       return true;
     }
-    
+
     final availableWidth = renderObject.size.width;
-    
+
     // Account for padding that might be applied to the cell content
     const double padding = 16.0; // Default padding used in table cells
     final maxTextWidth = availableWidth - padding;
-    
+
     if (maxTextWidth <= 0) {
       return true; // If no space available, consider it overflow
     }
-    
+
     // Get the text style applied to the text
     final textStyle = widget.selectionTheme.getEffectiveTextStyle(
       widget.isSelected,
       widget.theme.textStyle,
     );
-    
+
     return TextOverflowDetector.willTextOverflow(
       text: displayValue,
       style: textStyle,

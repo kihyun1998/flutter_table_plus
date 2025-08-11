@@ -118,7 +118,7 @@ FlutterTablePlus(
         descending: Icon(Icons.arrow_downward, size: 14, color: Colors.blue),
         unsorted: Icon(Icons.unfold_more, size: 14, color: Colors.grey),
       ),
-      sortedColumnBackgroundColor: Colors.blue.withOpacity(0.1),
+      sortedColumnBackgroundColor: Colors.blue.withValues(alpha: 0.1),
     ),
   ),
 );

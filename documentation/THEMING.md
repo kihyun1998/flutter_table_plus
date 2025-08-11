@@ -60,7 +60,7 @@ theme: const TablePlusTheme(
       ),
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withOpacity(0.1),
+          color: Colors.black.withValues(alpha:0.1),
           blurRadius: 4,
           offset: const Offset(0, 2),
         ),
@@ -140,7 +140,7 @@ theme: const TablePlusTheme(
     rowHoverColor: null, 
     
     // Use a custom semi-transparent blue for selected row hover
-    selectedRowHoverColor: Colors.blue.withOpacity(0.1), 
+    selectedRowHoverColor: Colors.blue.withValues(alpha: 0.1), 
     
     // Disable the splash effect entirely
     rowSplashColor: Colors.transparent,

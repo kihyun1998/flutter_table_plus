@@ -120,7 +120,7 @@ FlutterTablePlus(
     selectionTheme: TablePlusSelectionTheme(
       selectedRowColor: Color(0xFFE3F2FD), // Light blue for selected rows
       checkboxColor: Colors.blue,
-      rowHoverColor: Colors.black.withOpacity(0.05),
+      rowHoverColor: Colors.black.withValues(alpha: 0.05),
     ),
   ),
 );
