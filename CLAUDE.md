@@ -20,8 +20,9 @@ flutter test test/flutter_table_plus_test.dart  # Run specific test file
 
 ### Code Quality
 ```bash
-flutter analyze                 # Run static analysis using analysis_options.yaml with flutter_lints
+flutter analyze                 # Run static analysis using analysis_options.yaml with flutter_lints and custom_lint
 dart format .                   # Format code according to Dart style
+dart format lib/                # Format only the lib directory
 ```
 
 ### Dependencies
