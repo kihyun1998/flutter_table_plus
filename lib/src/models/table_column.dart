@@ -98,7 +98,6 @@ class TablePlusColumn {
     this.cellBuilder,
     this.hintText,
     this.textOverflow = TextOverflow.ellipsis,
-    this.showTooltipOnOverflow = true,
     this.tooltipBehavior = TooltipBehavior.always,
     this.headerTooltipBehavior = TooltipBehavior.onOverflowOnly,
   });
@@ -156,12 +155,6 @@ class TablePlusColumn {
   /// How text overflow should be handled in this column's cells.
   final TextOverflow textOverflow;
 
-  /// Whether to show a tooltip when text is overflowing (ellipsis).
-  /// Only applies when textOverflow is TextOverflow.ellipsis.
-  /// 
-  /// Deprecated: Use [tooltipBehavior] instead for more control.
-  @Deprecated('Use tooltipBehavior instead for more control over tooltip display')
-  final bool showTooltipOnOverflow;
 
   /// Controls when tooltips should be displayed for this column's cells.
   /// 
@@ -194,7 +187,6 @@ class TablePlusColumn {
         cellBuilder,
     String? hintText,
     TextOverflow? textOverflow,
-    bool? showTooltipOnOverflow,
     TooltipBehavior? tooltipBehavior,
     TooltipBehavior? headerTooltipBehavior,
   }) {
@@ -213,8 +205,6 @@ class TablePlusColumn {
       cellBuilder: cellBuilder ?? this.cellBuilder,
       hintText: hintText ?? this.hintText,
       textOverflow: textOverflow ?? this.textOverflow,
-      showTooltipOnOverflow:
-          showTooltipOnOverflow ?? this.showTooltipOnOverflow,
       tooltipBehavior: tooltipBehavior ?? this.tooltipBehavior,
       headerTooltipBehavior: headerTooltipBehavior ?? this.headerTooltipBehavior,
     );
@@ -237,7 +227,6 @@ class TablePlusColumn {
         other.hintText == hintText &&
         other.visible == visible &&
         other.textOverflow == textOverflow &&
-        other.showTooltipOnOverflow == showTooltipOnOverflow &&
         other.tooltipBehavior == tooltipBehavior &&
         other.headerTooltipBehavior == headerTooltipBehavior;
   }
@@ -258,7 +247,6 @@ class TablePlusColumn {
       hintText,
       visible,
       textOverflow,
-      showTooltipOnOverflow,
       tooltipBehavior,
       headerTooltipBehavior,
     );

@@ -666,18 +666,7 @@ class _TablePlusCellState extends State<_TablePlusCell> {
       return false;
     }
 
-    // Get the effective tooltip behavior (considering deprecated property)
-    TooltipBehavior effectiveBehavior = widget.column.tooltipBehavior;
-
-    // Handle backward compatibility with deprecated showTooltipOnOverflow
-    // If tooltipBehavior is default (always) but showTooltipOnOverflow is false,
-    // respect the old behavior
-    if (effectiveBehavior == TooltipBehavior.always &&
-        !widget.column.showTooltipOnOverflow) {
-      effectiveBehavior = TooltipBehavior.never;
-    }
-
-    switch (effectiveBehavior) {
+    switch (widget.column.tooltipBehavior) {
       case TooltipBehavior.never:
         return false;
 
