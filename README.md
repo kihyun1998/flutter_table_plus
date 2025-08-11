@@ -31,7 +31,7 @@ A highly customizable and efficient table widget for Flutter. It provides a rich
 - **Row Selection & Editing**: Enable row selection and cell editing simultaneously. Supports double-tap and secondary-tap events on rows.
 - **Column Reordering**: Easily reorder columns with drag-and-drop.
 - **Column Visibility**: Dynamically show or hide individual columns.
-- **Smart Text Handling**: Control text overflow (`ellipsis`, `clip`, etc.). Tooltips can be configured to appear always, only when text overflows, or never, giving you precise control over user feedback.
+- **Smart Text Handling**: Control text overflow (`ellipsis`, `clip`, etc.). Tooltips for both **cells and headers** can be configured to appear always, only when text overflows, or never, giving you precise control over user feedback.
 - **Custom Cell Widgets**: Render any widget inside a cell using `cellBuilder` for maximum flexibility.
 - **Conditional Feature Control**: Dynamically enable/disable features like sorting and column reordering based on user permissions or application state.
 
@@ -41,7 +41,7 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  flutter_table_plus: ^1.8.0
+  flutter_table_plus: ^1.9.0
 ```
 
 Then, run `flutter pub get` in your terminal.

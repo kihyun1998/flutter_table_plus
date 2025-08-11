@@ -71,10 +71,11 @@ You have fine-grained control over column widths using three properties:
 When cell content is too long to fit, you can control its appearance and behavior with `textOverflow` and `tooltipBehavior`.
 
 - `textOverflow`: A `TextOverflow` enum (`clip`, `fade`, `ellipsis`, `visible`). Defaults to `ellipsis`.
-- `tooltipBehavior`: A `TooltipBehavior` enum that gives you precise control over when tooltips appear.
+- `tooltipBehavior`: A `TooltipBehavior` enum that gives you precise control over when tooltips appear for **cell content**.
   - `TooltipBehavior.always`: The tooltip is always available on hover if `textOverflow` is `ellipsis`.
   - `TooltipBehavior.onOverflowOnly`: The tooltip only appears if the text is actually truncated. This is useful for avoiding redundant tooltips.
   - `TooltipBehavior.never`: The tooltip is disabled for the column.
+- `headerTooltipBehavior`: A `TooltipBehavior` enum that controls when tooltips appear for the **column header**. Defaults to `onOverflowOnly`.
 - **(Deprecated)** `showTooltipOnOverflow`: A `bool` that was previously used to control tooltips. Use `tooltipBehavior` instead.
 
 ### Example: Precise Tooltip Control

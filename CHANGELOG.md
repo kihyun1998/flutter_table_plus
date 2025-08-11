@@ -1,3 +1,9 @@
+## 1.9.0
+
+*   **FEAT**: Add header tooltip behavior to table columns.
+    *   Introduces a new `headerTooltipBehavior` property to `TablePlusColumn` for controlling tooltip display on column headers.
+    *   Updates header rendering logic to show tooltips based on overflow or always/never settings.
+
 ## 1.8.0
 
 *   **Features**
