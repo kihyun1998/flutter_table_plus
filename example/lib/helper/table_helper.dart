@@ -102,6 +102,18 @@ class TableHelper {
             cellBuilder: TableHelper._buildStatusCell,
           ),
         )
+        .addColumn(
+          'description',
+          const TablePlusColumn(
+            key: 'description',
+            label: 'Description',
+            order: 0,
+            width: 250,
+            minWidth: 200,
+            sortable: true,
+            editable: true,
+          ),
+        )
         .build();
   }
 
@@ -300,6 +312,18 @@ class TableHelper {
   /// Get visible column count
   static int getVisibleColumnCount(Map<String, TablePlusColumn> columns) {
     return columns.values.where((col) => col.visible).length;
+  }
+
+  /// Update all columns with new text overflow setting
+  static Map<String, TablePlusColumn> updateColumnsTextOverflow(
+      Map<String, TablePlusColumn> columns, TextOverflow textOverflow) {
+    final updatedColumns = <String, TablePlusColumn>{};
+    for (final entry in columns.entries) {
+      updatedColumns[entry.key] = entry.value.copyWith(
+        textOverflow: textOverflow,
+      );
+    }
+    return updatedColumns;
   }
 
   /// Check if at least one column is visible

@@ -26,6 +26,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
   bool _isReorderable = true;
   bool _isSortable = true;
   bool _showNoDataExample = false;
+  TextOverflow _textOverflow = TextOverflow.ellipsis;
 
   // Sort state
   String? _sortColumnKey;
@@ -38,6 +39,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
   void initState() {
     super.initState();
     _columns = TableHelper.initializeColumns();
+    _columns = TableHelper.updateColumnsTextOverflow(_columns, _textOverflow);
     _sortedData = TableHelper.initializeSortedData();
   }
 
@@ -346,6 +348,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
   void _resetColumnOrder() {
     setState(() {
       _columns = TableHelper.initializeColumns();
+      _columns = TableHelper.updateColumnsTextOverflow(_columns, _textOverflow);
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -379,6 +382,15 @@ class _TableExamplePageState extends State<TableExamplePage> {
     });
   }
 
+  /// Change text overflow setting
+  void _changeTextOverflow(TextOverflow newOverflow) {
+    setState(() {
+      _textOverflow = newOverflow;
+      // Update all columns with new text overflow setting
+      _columns = TableHelper.updateColumnsTextOverflow(_columns, newOverflow);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -395,6 +407,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
             isSortable: _isSortable,
             showVerticalDividers: _showVerticalDividers,
             showNoDataExample: _showNoDataExample,
+            textOverflow: _textOverflow,
             onResetSort: _resetSort,
             onResetColumnOrder: _resetColumnOrder,
             onToggleVerticalDividers: _toggleVerticalDividers,
@@ -405,6 +418,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
             onToggleSorting: _toggleSorting,
             onShowColumnVisibilityDialog: _showColumnVisibilityDialog,
             onToggleNoDataExample: _toggleNoDataExample,
+            onChangeTextOverflow: _changeTextOverflow,
           ),
         ],
       ),

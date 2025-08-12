@@ -6,6 +6,7 @@ class Employee {
   final String department;
   final int salary;
   final bool active;
+  final String description;
 
   const Employee({
     required this.id,
@@ -15,6 +16,7 @@ class Employee {
     required this.department,
     required this.salary,
     required this.active,
+    required this.description,
   });
 
   /// Convert Employee to Map for table usage
@@ -27,6 +29,7 @@ class Employee {
       'department': department,
       'salary': salary,
       'active': active,
+      'description': description,
     };
   }
 
@@ -40,6 +43,7 @@ class Employee {
       department: map['department'] as String,
       salary: map['salary'] as int,
       active: map['active'] as bool,
+      description: map['description'] as String,
     );
   }
 }
