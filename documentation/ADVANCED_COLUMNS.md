@@ -70,7 +70,7 @@ You have fine-grained control over column widths using three properties:
 
 When cell content is too long to fit, you can control its appearance and behavior with `textOverflow` and `tooltipBehavior`.
 
-- `textOverflow`: A `TextOverflow` enum (`clip`, `fade`, `ellipsis`, `visible`). Defaults to `ellipsis`.
+- `textOverflow`: A `TextOverflow` enum (`clip`, `fade`, `ellipsis`, `visible`). Defaults to `ellipsis`. When `textOverflow` is set to `TextOverflow.visible`, the row height will automatically expand to accommodate the content, ensuring full visibility of the text. This behavior overrides any fixed `rowHeight` set in `TablePlusBodyTheme` if the content requires more space.
 - `tooltipBehavior`: A `TooltipBehavior` enum that gives you precise control over when tooltips appear for **cell content**.
   - `TooltipBehavior.always`: The tooltip is always available on hover if `textOverflow` is `ellipsis`.
   - `TooltipBehavior.onOverflowOnly`: The tooltip only appears if the text is actually truncated. This is useful for avoiding redundant tooltips.
