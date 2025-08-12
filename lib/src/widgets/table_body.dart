@@ -8,6 +8,7 @@ import '../models/theme/editable_theme.dart' show TablePlusEditableTheme;
 import '../models/theme/tooltip_theme.dart' show TablePlusTooltipTheme;
 import '../models/tooltip_behavior.dart';
 import '../utils/text_overflow_detector.dart';
+import '../utils/text_height_calculator.dart';
 import 'custom_ink_well.dart';
 
 /// A widget that renders the data rows of the table.
@@ -35,6 +36,8 @@ class TablePlusBody extends StatelessWidget {
     this.getCellController,
     this.onCellTap,
     this.onStopEditing,
+    this.rowHeightMode = RowHeightMode.uniform,
+    this.minRowHeight = 48.0,
   });
 
   /// The list of columns for the table.
@@ -99,6 +102,19 @@ class TablePlusBody extends StatelessWidget {
   /// Callback to stop current editing.
   final void Function({required bool save})? onStopEditing;
 
+  /// The row height calculation mode for the table.
+  final RowHeightMode rowHeightMode;
+
+  /// The minimum height for table rows.
+  final double minRowHeight;
+
+  /// Check if dynamic heights should be calculated based on TextOverflow.visible columns.
+  bool _shouldCalculateDynamicHeights() {
+    return TextHeightCalculator.hasVisibleOverflowColumns(
+      {for (int i = 0; i < columns.length; i++) columns[i].key: columns[i]},
+    );
+  }
+
   /// Get the background color for a row at the given index.
   Color _getRowColor(int index, bool isSelected) {
     // Selected rows get selection color
@@ -160,6 +176,18 @@ class TablePlusBody extends StatelessWidget {
       );
     }
 
+    // Calculate row heights if needed
+    final Map<int, double> rowHeights = _shouldCalculateDynamicHeights()
+        ? TextHeightCalculator.calculateRowHeights(
+            data: data,
+            columns: {for (int i = 0; i < columns.length; i++) columns[i].key: columns[i]},
+            bodyTextStyle: theme.textStyle,
+            bodyPadding: theme.padding,
+            mode: rowHeightMode,
+            minRowHeight: minRowHeight,
+          )
+        : {};
+
     return ListView.builder(
       controller: verticalController,
       physics: const ClampingScrollPhysics(),
@@ -192,6 +220,7 @@ class TablePlusBody extends StatelessWidget {
           getCellController: getCellController,
           onCellTap: onCellTap,
           onStopEditing: onStopEditing,
+          calculatedHeight: rowHeights.isNotEmpty ? rowHeights[index] : null,
         );
       },
     );
@@ -223,6 +252,7 @@ class _TablePlusRow extends StatelessWidget {
     required this.onStopEditing,
     this.onRowDoubleTap,
     this.onRowSecondaryTap,
+    this.calculatedHeight,
   });
 
   final int rowIndex;
@@ -248,6 +278,7 @@ class _TablePlusRow extends StatelessWidget {
   final void Function({required bool save})? onStopEditing;
   final void Function(String rowId)? onRowDoubleTap;
   final void Function(String rowId)? onRowSecondaryTap;
+  final double? calculatedHeight;
 
   /// Handle row tap for selection.
   /// Only works when not in editable mode.
@@ -270,7 +301,7 @@ class _TablePlusRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Widget rowContent = Container(
-      height: theme.rowHeight,
+      height: calculatedHeight ?? theme.rowHeight,
       decoration: BoxDecoration(
         // color: backgroundColor,
         border: (!isLastRow && theme.showHorizontalDividers)
@@ -297,6 +328,7 @@ class _TablePlusRow extends StatelessWidget {
               theme: theme,
               selectionTheme: selectionTheme,
               onSelectionChanged: onRowSelectionChanged,
+              calculatedHeight: calculatedHeight,
             );
           }
 
@@ -317,6 +349,7 @@ class _TablePlusRow extends StatelessWidget {
                 ? () => onCellTap!(rowIndex, column.key)
                 : null,
             onStopEditing: onStopEditing,
+            calculatedHeight: calculatedHeight,
           );
         }),
       ),
@@ -357,6 +390,7 @@ class _SelectionCell extends StatelessWidget {
     required this.theme,
     required this.selectionTheme,
     required this.onSelectionChanged,
+    this.calculatedHeight,
   });
 
   final double width;
@@ -365,12 +399,13 @@ class _SelectionCell extends StatelessWidget {
   final TablePlusBodyTheme theme;
   final TablePlusSelectionTheme selectionTheme;
   final void Function(String rowId) onSelectionChanged;
+  final double? calculatedHeight;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: width,
-      height: theme.rowHeight,
+      height: calculatedHeight ?? theme.rowHeight,
       padding: theme.padding,
       decoration: BoxDecoration(
         border: theme.showVerticalDividers
@@ -417,6 +452,7 @@ class _TablePlusCell extends StatefulWidget {
     this.cellController,
     this.onCellTap,
     this.onStopEditing,
+    this.calculatedHeight,
   });
 
   final int rowIndex;
@@ -433,6 +469,7 @@ class _TablePlusCell extends StatefulWidget {
   final TextEditingController? cellController;
   final VoidCallback? onCellTap;
   final void Function({required bool save})? onStopEditing;
+  final double? calculatedHeight;
 
   @override
   State<_TablePlusCell> createState() => _TablePlusCellState();
@@ -633,7 +670,7 @@ class _TablePlusCellState extends State<_TablePlusCell> {
 
     Widget cellContent = Container(
       width: widget.width,
-      height: widget.theme.rowHeight,
+      height: widget.calculatedHeight ?? widget.theme.rowHeight,
       padding: widget.isCellEditing
           ? EdgeInsets.zero // TextField handles its own padding
           : widget.theme.padding,

@@ -40,6 +40,8 @@ class FlutterTablePlus extends StatefulWidget {
     this.onRowDoubleTap,
     this.onRowSecondaryTap,
     this.noDataWidget,
+    this.rowHeightMode = RowHeightMode.uniform,
+    this.minRowHeight = 48.0,
   });
 
   /// The map of columns to display in the table.
@@ -132,6 +134,21 @@ class FlutterTablePlus extends StatefulWidget {
   /// Widget to display when there is no data to show in the table.
   /// If not provided, nothing will be displayed when data is empty.
   final Widget? noDataWidget;
+
+  /// The row height calculation mode for the table.
+  /// 
+  /// - [RowHeightMode.uniform]: All rows have the same height (default).
+  ///   Uses the maximum calculated height for uniform appearance.
+  /// - [RowHeightMode.dynamic]: Each row has its own calculated height.
+  ///   More space-efficient but can result in uneven row heights.
+  /// 
+  /// Only affects rows when columns have [TextOverflow.visible] set.
+  final RowHeightMode rowHeightMode;
+
+  /// The minimum height for table rows.
+  /// Used as a baseline when calculating dynamic row heights.
+  /// Default is 48.0 pixels.
+  final double minRowHeight;
 
   @override
   State<FlutterTablePlus> createState() => _FlutterTablePlusState();
@@ -566,6 +583,9 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                       getCellController: _getCellController,
                                       onCellTap: _handleCellTap,
                                       onStopEditing: _stopCurrentEditing,
+                                      // Row height calculation properties
+                                      rowHeightMode: widget.rowHeightMode,
+                                      minRowHeight: widget.minRowHeight,
                                     ),
                             ),
                           ],

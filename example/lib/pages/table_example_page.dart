@@ -27,6 +27,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
   bool _isSortable = true;
   bool _showNoDataExample = false;
   TextOverflow _textOverflow = TextOverflow.ellipsis;
+  RowHeightMode _rowHeightMode = RowHeightMode.uniform;
 
   // Sort state
   String? _sortColumnKey;
@@ -391,6 +392,15 @@ class _TableExamplePageState extends State<TableExamplePage> {
     });
   }
 
+  /// Toggle row height mode
+  void _toggleRowHeightMode() {
+    setState(() {
+      _rowHeightMode = _rowHeightMode == RowHeightMode.uniform
+          ? RowHeightMode.dynamic
+          : RowHeightMode.uniform;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -408,6 +418,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
             showVerticalDividers: _showVerticalDividers,
             showNoDataExample: _showNoDataExample,
             textOverflow: _textOverflow,
+            rowHeightMode: _rowHeightMode,
             onResetSort: _resetSort,
             onResetColumnOrder: _resetColumnOrder,
             onToggleVerticalDividers: _toggleVerticalDividers,
@@ -419,6 +430,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
             onShowColumnVisibilityDialog: _showColumnVisibilityDialog,
             onToggleNoDataExample: _toggleNoDataExample,
             onChangeTextOverflow: _changeTextOverflow,
+            onToggleRowHeightMode: _toggleRowHeightMode,
           ),
         ],
       ),
@@ -522,6 +534,9 @@ class _TableExamplePageState extends State<TableExamplePage> {
                         ),
                       );
                     },
+                    // Row height settings
+                    rowHeightMode: _rowHeightMode,
+                    minRowHeight: 48.0,
                     // No data widget
                     noDataWidget: const Center(
                       child: Column(
