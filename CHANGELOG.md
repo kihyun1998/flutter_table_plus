@@ -1,3 +1,7 @@
+## 1.10.1
+
+*   **CHORE**: Apply `dart format` for code consistency.
+
 ## 1.10.0
 
 *   **FEAT**: Dynamic row height calculation based on content.

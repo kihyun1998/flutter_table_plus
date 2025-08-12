@@ -44,7 +44,7 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  flutter_table_plus: ^1.10.0
+  flutter_table_plus: ^1.10.1
 ```
 
 Then, run `flutter pub get` in your terminal.
