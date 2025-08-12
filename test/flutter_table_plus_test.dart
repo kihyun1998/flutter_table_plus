@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('TablePlusHeaderTheme decoration tests', () {
     testWidgets('header decoration is applied when provided',
         (WidgetTester tester) async {
-      final headerDecoration = BoxDecoration(
+      const headerDecoration = BoxDecoration(
         color: Colors.red,
         boxShadow: [BoxShadow(color: Colors.black, blurRadius: 5)],
       );
 
       final columns = TableColumnsBuilder()
-          .addColumn('id', TablePlusColumn(key: 'id', label: 'ID', order: 0))
+          .addColumn(
+              'id', const TablePlusColumn(key: 'id', label: 'ID', order: 0))
           .build();
 
       final data = [
@@ -25,7 +26,7 @@ void main() {
             body: FlutterTablePlus(
               columns: columns,
               data: data,
-              theme: TablePlusTheme(
+              theme: const TablePlusTheme(
                 headerTheme: TablePlusHeaderTheme(
                   decoration: headerDecoration,
                 ),
@@ -56,7 +57,8 @@ void main() {
       );
 
       final columns = TableColumnsBuilder()
-          .addColumn('id', TablePlusColumn(key: 'id', label: 'ID', order: 0))
+          .addColumn(
+              'id', const TablePlusColumn(key: 'id', label: 'ID', order: 0))
           .build();
 
       final data = [
@@ -103,7 +105,8 @@ void main() {
       const dividerColor = Colors.black;
 
       final columns = TableColumnsBuilder()
-          .addColumn('id', TablePlusColumn(key: 'id', label: 'ID', order: 0))
+          .addColumn(
+              'id', const TablePlusColumn(key: 'id', label: 'ID', order: 0))
           .build();
 
       final data = [
@@ -116,7 +119,7 @@ void main() {
             body: FlutterTablePlus(
               columns: columns,
               data: data,
-              theme: TablePlusTheme(
+              theme: const TablePlusTheme(
                 headerTheme: TablePlusHeaderTheme(
                   backgroundColor: backgroundColor,
                   dividerColor: dividerColor,

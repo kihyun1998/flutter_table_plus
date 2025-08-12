@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../flutter_table_plus.dart' show TablePlusTheme;
 import '../models/table_column.dart';
+import '../utils/text_height_calculator.dart';
 import 'synced_scroll_controllers.dart';
 import 'table_body.dart';
 import 'table_header.dart';
@@ -136,12 +137,12 @@ class FlutterTablePlus extends StatefulWidget {
   final Widget? noDataWidget;
 
   /// The row height calculation mode for the table.
-  /// 
+  ///
   /// - [RowHeightMode.uniform]: All rows have the same height (default).
   ///   Uses the maximum calculated height for uniform appearance.
   /// - [RowHeightMode.dynamic]: Each row has its own calculated height.
   ///   More space-efficient but can result in uneven row heights.
-  /// 
+  ///
   /// Only affects rows when columns have [TextOverflow.visible] set.
   final RowHeightMode rowHeightMode;
 
@@ -155,7 +156,38 @@ class FlutterTablePlus extends StatefulWidget {
 }
 
 class _FlutterTablePlusState extends State<FlutterTablePlus> {
+  /// Cached row heights for dynamic height mode
+  Map<int, double> _calculatedRowHeights = {};
+
+  /// Total calculated height for all rows (cached)
+  double? _totalCalculatedHeight;
   bool _isHovered = false;
+
+  /// Callback when row heights are calculated by TableBody
+  void _onRowHeightsCalculated(Map<int, double> heights) {
+    if (!mounted) return;
+
+    // Only update if heights actually changed
+    if (_calculatedRowHeights.length != heights.length ||
+        !_mapsEqual(_calculatedRowHeights, heights)) {
+      setState(() {
+        _calculatedRowHeights = heights;
+        _totalCalculatedHeight =
+            heights.values.fold<double>(0.0, (sum, height) => sum + height);
+      });
+    }
+  }
+
+  /// Helper method to compare two maps for equality
+  bool _mapsEqual<K, V>(Map<K, V> map1, Map<K, V> map2) {
+    if (map1.length != map2.length) return false;
+    for (final entry in map1.entries) {
+      if (!map2.containsKey(entry.key) || map2[entry.key] != entry.value) {
+        return false;
+      }
+    }
+    return true;
+  }
 
   /// Current editing state: {rowIndex: {columnKey: TextEditingController}}
   final Map<int, Map<String, TextEditingController>> _editingControllers = {};
@@ -172,6 +204,16 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
   @override
   void didUpdateWidget(FlutterTablePlus oldWidget) {
     super.didUpdateWidget(oldWidget);
+
+    // Clear height cache if relevant properties changed
+    if (widget.data != oldWidget.data ||
+        widget.columns != oldWidget.columns ||
+        widget.rowHeightMode != oldWidget.rowHeightMode ||
+        widget.minRowHeight != oldWidget.minRowHeight) {
+      _calculatedRowHeights.clear();
+      _totalCalculatedHeight = null;
+    }
+
     if (widget.data != oldWidget.data) {
       _validateUniqueIds();
       _clearAllEditing(); // Clear editing state when data changes
@@ -302,11 +344,6 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
             duplicates.add(id!);
           }
         }
-
-        print('⚠️ FlutterTablePlus: Duplicate row IDs detected: $duplicates');
-        print('   This will cause unexpected selection behavior.');
-        print(
-            '   Please ensure each row has a unique "${widget.rowIdKey}" field.');
       }
 
       return true;
@@ -361,7 +398,30 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
 
   /// Calculate the total height of all data rows.
   double _calculateTotalDataHeight() {
+    // If dynamic heights have been calculated and cached, use them
+    if (_totalCalculatedHeight != null) {
+      return _totalCalculatedHeight!;
+    }
+
+    // For dynamic height mode with TextOverflow.visible columns but no cached heights yet
+    if (widget.rowHeightMode == RowHeightMode.dynamic &&
+        _shouldCalculateDynamicHeights()) {
+      // Use minimum height as estimation before actual calculation
+      return widget.data.length * widget.minRowHeight;
+    }
+
+    // Default: use fixed row height from theme
     return widget.data.length * _currentTheme.bodyTheme.rowHeight;
+  }
+
+  /// Check if dynamic heights should be calculated based on TextOverflow.visible columns.
+  bool _shouldCalculateDynamicHeights() {
+    // Convert widget.columns Map to the format expected by TextHeightCalculator
+    final columnsMap = <String, TablePlusColumn>{};
+    for (final entry in widget.columns.entries) {
+      columnsMap[entry.key] = entry.value;
+    }
+    return TextHeightCalculator.hasVisibleOverflowColumns(columnsMap);
   }
 
   /// Calculate the actual width for each column based on available space.
@@ -586,6 +646,8 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                       // Row height calculation properties
                                       rowHeightMode: widget.rowHeightMode,
                                       minRowHeight: widget.minRowHeight,
+                                      onRowHeightsCalculated:
+                                          _onRowHeightsCalculated,
                                     ),
                             ),
                           ],

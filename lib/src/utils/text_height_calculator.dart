@@ -6,6 +6,8 @@ import '../models/table_column.dart';
 
 /// Utility class for calculating text heights in table cells.
 class TextHeightCalculator {
+  // Cache for single line height calculations
+  static final Map<TextStyle, double> _singleLineHeightCache = {};
   /// Calculates the required height for a text cell considering all styling factors.
   ///
   /// [text] - The text content to measure
@@ -117,6 +119,11 @@ class TextHeightCalculator {
 
   /// Gets the height of a single line of text with the given style.
   static double _getSingleLineHeight(TextStyle textStyle) {
+    // Check cache first
+    if (_singleLineHeightCache.containsKey(textStyle)) {
+      return _singleLineHeightCache[textStyle]!;
+    }
+    
     final textPainter = TextPainter(
       text: TextSpan(text: 'Ag', style: textStyle), // Test text with ascenders/descenders
       textDirection: TextDirection.ltr,
@@ -124,7 +131,11 @@ class TextHeightCalculator {
     );
     
     textPainter.layout();
-    return textPainter.height;
+    final height = textPainter.height;
+    
+    // Cache the result
+    _singleLineHeightCache[textStyle] = height;
+    return height;
   }
 
   /// Checks if any visible column has TextOverflow.visible setting.
@@ -132,5 +143,10 @@ class TextHeightCalculator {
     return columns.values
         .where((col) => col.visible)
         .any((col) => col.textOverflow == TextOverflow.visible);
+  }
+
+  /// Clears the internal cache. Useful for memory management in long-running applications.
+  static void clearCache() {
+    _singleLineHeightCache.clear();
   }
 }

@@ -10,7 +10,8 @@ class SampleData {
       department: 'Engineering',
       salary: 75000,
       active: true,
-      description: 'Senior full-stack developer with expertise in modern web technologies.',
+      description:
+          'Senior full-stack developer with expertise in modern web technologies.',
     ),
     const Employee(
       id: 2,
@@ -20,7 +21,8 @@ class SampleData {
       department: 'Marketing',
       salary: 68000,
       active: true,
-      description: 'Digital marketing specialist with over 8 years of experience in social media campaigns, content strategy, and brand development across various industries.',
+      description:
+          'Digital marketing specialist with over 8 years of experience in social media campaigns, content strategy, and brand development across various industries.',
     ),
     const Employee(
       id: 3,
@@ -30,7 +32,8 @@ class SampleData {
       department: 'Sales',
       salary: 82000,
       active: false,
-      description: 'Experienced sales manager with proven track record of exceeding quarterly targets, building strong client relationships, managing enterprise accounts, and leading high-performance sales teams to deliver exceptional results in competitive markets while maintaining long-term customer satisfaction and loyalty through strategic partnership development.',
+      description:
+          'Experienced sales manager with proven track record of exceeding quarterly targets, building strong client relationships, managing enterprise accounts, and leading high-performance sales teams to deliver exceptional results in competitive markets while maintaining long-term customer satisfaction and loyalty through strategic partnership development.',
     ),
     const Employee(
       id: 4,
@@ -40,7 +43,8 @@ class SampleData {
       department: 'Engineering',
       salary: 79000,
       active: true,
-      description: 'Backend engineer specializing in microservices architecture and cloud infrastructure.',
+      description:
+          'Backend engineer specializing in microservices architecture and cloud infrastructure.',
     ),
     const Employee(
       id: 5,
@@ -50,7 +54,8 @@ class SampleData {
       department: 'HR',
       salary: 65000,
       active: true,
-      description: 'HR business partner focused on talent acquisition, employee engagement, and organizational development with expertise in performance management systems.',
+      description:
+          'HR business partner focused on talent acquisition, employee engagement, and organizational development with expertise in performance management systems.',
     ),
     const Employee(
       id: 6,
@@ -70,7 +75,8 @@ class SampleData {
       department: 'Design',
       salary: 63000,
       active: false,
-      description: 'UX/UI designer passionate about creating intuitive user experiences through research-driven design processes and collaborative cross-functional teamwork.',
+      description:
+          'UX/UI designer passionate about creating intuitive user experiences through research-driven design processes and collaborative cross-functional teamwork.',
     ),
     const Employee(
       id: 8,
@@ -80,7 +86,8 @@ class SampleData {
       department: 'Operations',
       salary: 71000,
       active: true,
-      description: 'Operations manager ensuring efficient workflow and process optimization.',
+      description:
+          'Operations manager ensuring efficient workflow and process optimization.',
     ),
     const Employee(
       id: 9,
@@ -90,7 +97,8 @@ class SampleData {
       department: 'Engineering',
       salary: 84000,
       active: true,
-      description: 'Lead software architect with extensive experience in system design, scalable infrastructure, and mentoring development teams to deliver robust solutions.',
+      description:
+          'Lead software architect with extensive experience in system design, scalable infrastructure, and mentoring development teams to deliver robust solutions.',
     ),
     const Employee(
       id: 10,
@@ -110,7 +118,8 @@ class SampleData {
       department: 'Design',
       salary: 61000,
       active: false,
-      description: 'Creative visual designer with strong skills in branding, illustration, and digital media production for various marketing campaigns and client projects.',
+      description:
+          'Creative visual designer with strong skills in branding, illustration, and digital media production for various marketing campaigns and client projects.',
     ),
     const Employee(
       id: 12,
@@ -130,7 +139,8 @@ class SampleData {
       department: 'HR',
       salary: 69000,
       active: true,
-      description: 'Senior HR generalist responsible for employee relations, policy development, compliance management, and strategic workforce planning initiatives across multiple departments.',
+      description:
+          'Senior HR generalist responsible for employee relations, policy development, compliance management, and strategic workforce planning initiatives across multiple departments.',
     ),
     const Employee(
       id: 14,
@@ -150,7 +160,8 @@ class SampleData {
       department: 'Engineering',
       salary: 73000,
       active: false,
-      description: 'Junior software engineer specializing in mobile application development using React Native and Flutter frameworks with focus on user interface optimization and performance enhancement.',
+      description:
+          'Junior software engineer specializing in mobile application development using React Native and Flutter frameworks with focus on user interface optimization and performance enhancement.',
     ),
     const Employee(
       id: 16,
@@ -160,7 +171,8 @@ class SampleData {
       department: 'Operations',
       salary: 70000,
       active: true,
-      description: 'Supply chain coordinator managing vendor relationships and inventory optimization.',
+      description:
+          'Supply chain coordinator managing vendor relationships and inventory optimization.',
     ),
     const Employee(
       id: 17,
@@ -170,7 +182,8 @@ class SampleData {
       department: 'Marketing',
       salary: 72000,
       active: true,
-      description: 'Senior marketing manager with extensive experience in brand strategy, product positioning, market research, competitive analysis, and leading integrated marketing campaigns that drive customer acquisition and retention across digital and traditional channels.',
+      description:
+          'Senior marketing manager with extensive experience in brand strategy, product positioning, market research, competitive analysis, and leading integrated marketing campaigns that drive customer acquisition and retention across digital and traditional channels.',
     ),
     const Employee(
       id: 18,
@@ -184,7 +197,7 @@ class SampleData {
     ),
   ];
 
-  /// Get employees as List<Map<String, dynamic>> for table
+  /// Get employees as List for table
   static List<Map<String, dynamic>> get employeeData =>
       employees.map((e) => e.toMap()).toList();
 

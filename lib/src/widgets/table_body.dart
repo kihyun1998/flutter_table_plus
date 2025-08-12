@@ -38,6 +38,7 @@ class TablePlusBody extends StatelessWidget {
     this.onStopEditing,
     this.rowHeightMode = RowHeightMode.uniform,
     this.minRowHeight = 48.0,
+    this.onRowHeightsCalculated,
   });
 
   /// The list of columns for the table.
@@ -107,6 +108,9 @@ class TablePlusBody extends StatelessWidget {
 
   /// The minimum height for table rows.
   final double minRowHeight;
+
+  /// Callback when row heights are calculated for dynamic height mode.
+  final void Function(Map<int, double> heights)? onRowHeightsCalculated;
 
   /// Check if dynamic heights should be calculated based on TextOverflow.visible columns.
   bool _shouldCalculateDynamicHeights() {
@@ -187,6 +191,13 @@ class TablePlusBody extends StatelessWidget {
             minRowHeight: minRowHeight,
           )
         : {};
+
+    // Notify parent about calculated heights
+    if (onRowHeightsCalculated != null && rowHeights.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        onRowHeightsCalculated!(rowHeights);
+      });
+    }
 
     return ListView.builder(
       controller: verticalController,
