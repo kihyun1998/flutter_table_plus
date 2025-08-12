@@ -166,16 +166,15 @@ class TablePlusColumn {
   /// How text overflow should be handled in this column's cells.
   final TextOverflow textOverflow;
 
-
   /// Controls when tooltips should be displayed for this column's cells.
-  /// 
+  ///
   /// - [TooltipBehavior.always]: Show tooltip when textOverflow is ellipsis (default, backward compatible)
   /// - [TooltipBehavior.onOverflowOnly]: Only show tooltip when text actually overflows
   /// - [TooltipBehavior.never]: Never show tooltip
   final TooltipBehavior tooltipBehavior;
 
   /// Controls when tooltips should be displayed for this column's header.
-  /// 
+  ///
   /// - [TooltipBehavior.onOverflowOnly]: Only show tooltip when header text actually overflows (default)
   /// - [TooltipBehavior.always]: Show tooltip when textOverflow is ellipsis
   /// - [TooltipBehavior.never]: Never show tooltip
@@ -217,7 +216,8 @@ class TablePlusColumn {
       hintText: hintText ?? this.hintText,
       textOverflow: textOverflow ?? this.textOverflow,
       tooltipBehavior: tooltipBehavior ?? this.tooltipBehavior,
-      headerTooltipBehavior: headerTooltipBehavior ?? this.headerTooltipBehavior,
+      headerTooltipBehavior:
+          headerTooltipBehavior ?? this.headerTooltipBehavior,
     );
   }
 

@@ -8,6 +8,7 @@ import '../models/table_column.dart';
 class TextHeightCalculator {
   // Cache for single line height calculations
   static final Map<TextStyle, double> _singleLineHeightCache = {};
+
   /// Calculates the required height for a text cell considering all styling factors.
   ///
   /// [text] - The text content to measure
@@ -31,7 +32,7 @@ class TextHeightCalculator {
 
     // Calculate available width for text (subtract horizontal padding)
     final availableWidth = math.max(0.0, width - padding.horizontal);
-    
+
     if (availableWidth <= 0) {
       return _getSingleLineHeight(textStyle) + padding.vertical;
     }
@@ -71,9 +72,7 @@ class TextHeightCalculator {
     }
 
     // Get only visible columns
-    final visibleColumns = columns.values
-        .where((col) => col.visible)
-        .toList();
+    final visibleColumns = columns.values.where((col) => col.visible).toList();
 
     final rowHeights = <int, double>{};
     final allHeights = <double>[];
@@ -123,16 +122,17 @@ class TextHeightCalculator {
     if (_singleLineHeightCache.containsKey(textStyle)) {
       return _singleLineHeightCache[textStyle]!;
     }
-    
+
     final textPainter = TextPainter(
-      text: TextSpan(text: 'Ag', style: textStyle), // Test text with ascenders/descenders
+      text: TextSpan(
+          text: 'Ag', style: textStyle), // Test text with ascenders/descenders
       textDirection: TextDirection.ltr,
       maxLines: 1,
     );
-    
+
     textPainter.layout();
     final height = textPainter.height;
-    
+
     // Cache the result
     _singleLineHeightCache[textStyle] = height;
     return height;

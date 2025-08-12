@@ -273,9 +273,7 @@ class TableAppBarActions extends StatelessWidget {
             rowHeightMode == RowHeightMode.uniform
                 ? Icons.horizontal_rule
                 : Icons.height,
-            color: rowHeightMode == RowHeightMode.dynamic
-                ? Colors.brown
-                : null,
+            color: rowHeightMode == RowHeightMode.dynamic ? Colors.brown : null,
           ),
           tooltip: rowHeightMode == RowHeightMode.uniform
               ? 'Switch to Dynamic Row Heights'

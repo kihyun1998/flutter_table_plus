@@ -184,7 +184,10 @@ class TablePlusBody extends StatelessWidget {
     final Map<int, double> rowHeights = _shouldCalculateDynamicHeights()
         ? TextHeightCalculator.calculateRowHeights(
             data: data,
-            columns: {for (int i = 0; i < columns.length; i++) columns[i].key: columns[i]},
+            columns: {
+              for (int i = 0; i < columns.length; i++)
+                columns[i].key: columns[i]
+            },
             bodyTextStyle: theme.textStyle,
             bodyPadding: theme.padding,
             mode: rowHeightMode,

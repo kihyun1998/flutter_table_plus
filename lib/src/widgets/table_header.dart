@@ -445,20 +445,21 @@ class _HeaderCell extends StatelessWidget {
     switch (column.headerTooltipBehavior) {
       case TooltipBehavior.never:
         return false;
-      
+
       case TooltipBehavior.always:
         return true;
-      
+
       case TooltipBehavior.onOverflowOnly:
         // Calculate available width for text (excluding padding and sort icon)
         double availableWidth = width - theme.padding.horizontal;
-        
+
         // Reserve space for sort icon if present
         final sortIcon = _getSortIcon();
         if (sortIcon != null) {
-          availableWidth -= theme.sortIconSpacing + 16; // Approximate icon width
+          availableWidth -=
+              theme.sortIconSpacing + 16; // Approximate icon width
         }
-        
+
         // Use TextOverflowDetector to check if text overflows
         return TextOverflowDetector.willTextOverflowInContext(
           context: context,

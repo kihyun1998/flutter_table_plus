@@ -53,7 +53,7 @@ class TextOverflowDetector {
     TextAlign textAlign = TextAlign.start,
   }) {
     final effectiveStyle = style ?? DefaultTextStyle.of(context).style;
-    
+
     return willTextOverflow(
       text: text,
       style: effectiveStyle,
