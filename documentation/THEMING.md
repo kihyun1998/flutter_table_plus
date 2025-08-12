@@ -79,7 +79,7 @@ theme: const TablePlusTheme(
 
 This theme controls the appearance of the data rows in the table body.
 
-- `rowHeight`: The height of each data row.
+- `rowHeight`: The height of each data row. Note that row heights are now dynamically calculated based on content, ensuring optimal display for varying data lengths.
 - `backgroundColor`: The default background color for rows.
 - `alternateRowColor`: If set, creates a striped (zebra) effect by applying this color to odd-indexed rows.
 - `textStyle`: The default `TextStyle` for cell content.
@@ -158,6 +158,7 @@ This theme controls the appearance and behavior of the synchronized scrollbars.
 - `trackColor`: The color of the scrollbar track.
 - `hoverOnly`: If `true`, the scrollbars will only be visible when the mouse is hovering over the table.
 - `animationDuration`: The fade-in/out duration for the scrollbar when `hoverOnly` is true.
+- **Dynamic Visibility**: Scrollbars are now dynamically shown or hidden based on content overflow, providing a cleaner UI when not needed.
 
 ## 6. Editable Cell Styling (`TablePlusEditableTheme`)
 

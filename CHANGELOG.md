@@ -1,3 +1,9 @@
+## 1.10.0
+
+*   **FEAT**: Dynamic row height calculation based on content.
+*   **FEAT**: Scrollbar visibility is now dynamically adjusted based on content height.
+*   **REFACTOR**: Removed deprecated code and updated to the latest syntax.
+
 ## 1.9.0
 
 *   **FEAT**: Add header tooltip behavior to table columns.
