@@ -42,6 +42,9 @@ class TableState with _$TableState {
     // Selection state
     @Default({}) Set<String> selectedRowIds,
     
+    // Merged rows configuration
+    @Default([]) List<MergedRowGroup> mergedGroups, // New: For merged rows
+    
     // UI options
     @Default(true) bool showVerticalDividers,
     @Default(false) bool isSelectable,
@@ -80,6 +83,7 @@ class EmployeeTableNotifier extends _$EmployeeTableNotifier {
     // In a real app, you would fetch data from an API
     state = state.copyWith(
       allEmployees: SampleData.employeeData,
+      mergedGroups: SampleData.mergedGroups, // Assuming SampleData provides this
       isLoading: false,
     );
   }
@@ -115,11 +119,29 @@ class EmployeeTableNotifier extends _$EmployeeTableNotifier {
     state = state.copyWith(selectedRowIds: newSelectedIds);
   }
 
-  /// Selects or deselects all rows
+  /// Selects or deselects all rows, including merged groups
   void selectAllRows(bool select) {
     if (select) {
-      final allIds = state.allEmployees.map((e) => e['id'].toString()).toSet();
-      state = state.copyWith(selectedRowIds: allIds);
+      final Set<String> allSelectableIds = {};
+      // Add individual row IDs
+      for (final employee in state.allEmployees) {
+        // Only add if not part of any merged group
+        bool isPartOfMergedGroup = false;
+        for (final group in state.mergedGroups) {
+          if (group.originalIndices.contains(state.allEmployees.indexOf(employee))) {
+            isPartOfMergedGroup = true;
+            break;
+          }
+        }
+        if (!isPartOfMergedGroup) {
+          allSelectableIds.add(employee['id'].toString());
+        }
+      }
+      // Add merged group IDs
+      for (final group in state.mergedGroups) {
+        allSelectableIds.add(group.groupId);
+      }
+      state = state.copyWith(selectedRowIds: allSelectableIds);
     } else {
       state = state.copyWith(selectedRowIds: {});
     }
@@ -137,6 +159,23 @@ class EmployeeTableNotifier extends _$EmployeeTableNotifier {
     // Create a new list with the updated item
     final newList = state.allEmployees.map((item) {
       if (item['id'] == originalItem['id']) {
+        final newRow = Map<String, dynamic>.from(item);
+        newRow[columnKey] = newValue;
+        return newRow;
+      }
+      return item;
+    }).toList();
+
+    state = state.copyWith(allEmployees: newList);
+  }
+
+  /// Updates a merged cell's value
+  void handleMergedCellChange(String groupId, String columnKey, dynamic newValue) {
+    final group = state.mergedGroups.firstWhere((g) => g.groupId == groupId);
+    final spanningRowOriginalIndex = group.originalIndices[group.getSpanningRowIndex(columnKey)];
+
+    final newList = state.allEmployees.map((item) {
+      if (state.allEmployees.indexOf(item) == spanningRowOriginalIndex) {
         final newRow = Map<String, dynamic>.from(item);
         newRow[columnKey] = newValue;
         return newRow;
@@ -264,6 +303,7 @@ class EmployeeTablePage extends ConsumerWidget {
         selectedRows: tableState.selectedRowIds,
         sortColumnKey: tableState.sortColumnKey,
         sortDirection: tableState.sortDirection,
+        mergedGroups: tableState.mergedGroups, // New: Pass merged groups
         
         // Connect notifier methods to callbacks
         onSort: (columnKey, _) => notifier.handleSort(columnKey),
@@ -271,6 +311,8 @@ class EmployeeTablePage extends ConsumerWidget {
         onSelectAll: (select) => notifier.selectAllRows(select),
         onCellChanged: (columnKey, rowIndex, oldValue, newValue) =>
             notifier.handleCellChange(columnKey, rowIndex, newValue),
+        onMergedCellChanged: (groupId, columnKey, newValue) => // New: Handle merged cell changes
+            notifier.handleMergedCellChange(groupId, columnKey, newValue),
       ),
     );
   }

@@ -47,12 +47,12 @@ The table delegates selection state management to the parent widget. You need to
 
 ### State Management
 
-- `selectedRows` (`Set<String>`): A set containing the unique IDs of the selected rows.
+- `selectedRows` (`Set<String>`): A set containing the unique IDs of the selected rows. This set can contain both individual row IDs (from `rowIdKey`) and `groupId`s from `MergedRowGroup` for selected merged groups.
 
 ### Callbacks
 
-- `onRowSelectionChanged`: Called when a single row's checkbox is toggled or a row is tapped. It provides the `rowId` and its new `isSelected` state.
-- `onSelectAll`: Called when the header checkbox is clicked. **Note:** This is only relevant for `SelectionMode.multiple`.
+- `onRowSelectionChanged`: Called when a single row's checkbox is toggled or a row is tapped. It provides the `rowId` (which can be an individual row's ID or a `MergedRowGroup`'s `groupId`) and its new `isSelected` state.
+- `onSelectAll`: Called when the header checkbox is clicked. This callback needs to handle selecting/deselecting both individual rows and merged groups. **Note:** This is only relevant for `SelectionMode.multiple`.
 - `onRowDoubleTap`: Called when a row is double-tapped. Provides the `rowId`. Active only when `isSelectable` is `true`.
 - `onRowSecondaryTap`: Called when a row is right-clicked or long-pressed. Provides the `rowId`. Active only when `isSelectable` is `true`.
 
@@ -61,9 +61,16 @@ The table delegates selection state management to the parent widget. You need to
 This example demonstrates how to handle selection, assuming the unique ID key is `'id'`.
 
 ```dart
+import 'package:flutter_table_plus/flutter_table_plus.dart'; // Add this import
+
 class SelectableTablePage extends StatefulWidget {
-  const SelectableTablePage({super.key, required this.data});
+  const SelectableTablePage({
+    super.key,
+    required this.data,
+    this.mergedGroups = const [], // New: Accept merged groups
+  });
   final List<Map<String, dynamic>> data;
+  final List<MergedRowGroup> mergedGroups; // New: Merged groups property
 
   @override
   State<SelectableTablePage> createState() => _SelectableTablePageState();
@@ -74,6 +81,16 @@ class _SelectableTablePageState extends State<SelectableTablePage> {
   Set<String> _selectedRowIds = {};
   final String _rowIdKey = 'id'; // Define your ID key
 
+  // Helper to find merged group for a given original data index
+  MergedRowGroup? _getMergedGroupForRow(int rowIndex) {
+    for (final group in widget.mergedGroups) {
+      if (group.originalIndices.contains(rowIndex)) {
+        return group;
+      }
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return FlutterTablePlus(
@@ -82,6 +99,7 @@ class _SelectableTablePageState extends State<SelectableTablePage> {
       rowIdKey: _rowIdKey,
       isSelectable: true,
       selectedRows: _selectedRowIds,
+      mergedGroups: widget.mergedGroups, // New: Pass merged groups to the table
       
       // 2. Handle row selection
       onRowSelectionChanged: (rowId, isSelected) {
@@ -94,11 +112,26 @@ class _SelectableTablePageState extends State<SelectableTablePage> {
         });
       },
       
-      // 3. Handle select-all
+      // 3. Handle select-all, considering merged groups
       onSelectAll: (selectAll) {
         setState(() {
           if (selectAll) {
-            _selectedRowIds = widget.data.map((row) => row[_rowIdKey].toString()).toSet();
+            final Set<String> allSelectableIds = {};
+            Set<int> processedOriginalIndices = {};
+
+            for (int i = 0; i < widget.data.length; i++) {
+              if (processedOriginalIndices.contains(i)) continue;
+
+              final mergedGroup = _getMergedGroupForRow(i);
+              if (mergedGroup != null) {
+                allSelectableIds.add(mergedGroup.groupId);
+                processedOriginalIndices.addAll(mergedGroup.originalIndices);
+              } else {
+                allSelectableIds.add(widget.data[i][_rowIdKey].toString());
+                processedOriginalIndices.add(i);
+              }
+            }
+            _selectedRowIds = allSelectableIds;
           } else {
             _selectedRowIds.clear();
           }

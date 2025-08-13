@@ -65,6 +65,81 @@ Editing is committed when:
 Editing is canceled (reverted to the old value) when:
 - The user presses the **Escape** key.
 
+## Editing Merged Cells
+
+`flutter_table_plus` extends its editing capabilities to merged cells, allowing you to modify data directly within these spanning cells.
+
+### Enabling Editing for Merged Cells
+
+To make a merged cell editable, you need to configure the `isEditable` property within its `MergeCellConfig` in your `MergedRowGroup` definition.
+
+```dart
+final List<MergedRowGroup> mergedGroups = [
+  MergedRowGroup(
+    groupId: 'it_group',
+    originalIndices: [0, 1, 2], // Alice, Bob, Charlie
+    mergeConfig: {
+      'department': MergeCellConfig(
+        shouldMerge: true,
+        spanningRowIndex: 0,
+        isEditable: true, // Make the merged 'department' cell editable
+      ),
+      'level': MergeCellConfig(
+        shouldMerge: true,
+        spanningRowIndex: 1,
+        isEditable: true, // Make the merged 'level' cell editable
+      ),
+      // Note: If 'mergedContent' is provided, 'isEditable' is ignored.
+      // Only default text-based merged cells can be made editable.
+    },
+  ),
+];
+```
+
+**Important Considerations for Merged Cell Editing:**
+
+*   A merged cell can only be editable if its `MergeCellConfig` has `shouldMerge: true` and `mergedContent` is `null`. If `mergedContent` is provided, the cell is considered custom-rendered and cannot be edited via the default text field.
+*   The `TablePlusEditableTheme` properties (e.g., `editingCellColor`, `editingTextStyle`, `textFieldPadding`) apply to merged cell editing fields as well, ensuring a consistent look and feel.
+
+### Handling Merged Cell Value Changes
+
+When a merged cell's value is modified, the `onMergedCellChanged` callback in `FlutterTablePlus` is triggered. This callback is specifically designed for merged cell updates, providing the `groupId` of the affected group.
+
+```dart
+FlutterTablePlus(
+  // ... other properties
+  isEditable: true, // Ensure overall table editing is enabled
+  onCellChanged: (String columnKey, int rowIndex, dynamic oldValue, dynamic newValue) {
+    // Handle changes for individual (non-merged) cells here
+    // e.g., update data[rowIndex][columnKey] = newValue;
+  },
+  onMergedCellChanged: (String groupId, String columnKey, dynamic newValue) {
+    // This callback is for changes in merged cells.
+    // You need to find the specific data entry within the merged group to update.
+
+    // Example: Find the group and update the data at the spanningRowIndex
+    final group = yourMergedGroupsList.firstWhere((g) => g.groupId == groupId);
+    final spanningRowOriginalIndex = group.originalIndices[group.getSpanningRowIndex(columnKey)];
+
+    // Update your underlying data source for the specific cell
+    setState(() {
+      yourDataSource[spanningRowOriginalIndex][columnKey] = newValue;
+    });
+
+    print('Merged cell in group "$groupId", column "$columnKey" changed to "$newValue"');
+  },
+);
+```
+
+**Key Points for `onMergedCellChanged`:**
+
+*   **`groupId`**: The unique identifier of the `MergedRowGroup` that contains the edited cell.
+*   **`columnKey`**: The key of the column whose merged cell was changed.
+*   **`newValue`**: The new value entered into the merged cell.
+*   **Data Update Logic**: Your implementation of `onMergedCellChanged` should locate the correct data entry within your original data source that corresponds to the `spanningRowIndex` of the merged cell and update its value. If other rows in the merged group conceptually share this data, you might need to manually propagate the change to them in your data source.
+
+For a more detailed understanding of `MergedRowGroup` and `MergeCellConfig`, please refer to the [Merged Rows documentation](MERGED_ROWS.md).
+
 ## Customizing the Editing UI
 
 You can customize the appearance of cells in editing mode using `TablePlusEditableTheme` within your `TablePlusTheme`.
