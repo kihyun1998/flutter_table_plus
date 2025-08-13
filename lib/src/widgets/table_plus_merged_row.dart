@@ -238,16 +238,31 @@ class TablePlusMergedRow extends TablePlusRowWidget {
             : null,
       ),
       child: Center(
-        child: SizedBox(
-          width: selectionTheme.checkboxSize,
-          height: selectionTheme.checkboxSize,
-          child: Checkbox(
-            value: isSelected,
-            onChanged: (value) => onRowSelectionChanged(mergeGroup.groupId),
-            activeColor: selectionTheme.checkboxColor,
-            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            visualDensity: VisualDensity.compact,
-          ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: selectionTheme.checkboxSize,
+              height: selectionTheme.checkboxSize,
+              child: Checkbox(
+                value: isSelected,
+                onChanged: (value) => onRowSelectionChanged(mergeGroup.groupId),
+                activeColor: selectionTheme.checkboxColor,
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                visualDensity: VisualDensity.compact,
+              ),
+            ),
+            if (mergeGroup.rowCount > 1) ...[
+              SizedBox(height: 4),
+              Text(
+                '${mergeGroup.rowCount} rows',
+                style: TextStyle(
+                  fontSize: 10,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+            ],
+          ],
         ),
       ),
     );

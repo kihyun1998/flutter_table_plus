@@ -478,6 +478,43 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
     return allWidths;
   }
 
+  /// Get the actual number of selectable units considering merged groups.
+  /// Each merged group counts as 1 selectable unit, regardless of how many rows it contains.
+  int _getSelectableRowCount() {
+    if (!widget.isSelectable || widget.data.isEmpty) return 0;
+    
+    Set<int> processedIndices = {};
+    int selectableCount = 0;
+    
+    for (int i = 0; i < widget.data.length; i++) {
+      if (processedIndices.contains(i)) continue;
+      
+      // Check if this row is part of a merged group
+      final mergeGroup = _getMergedGroupForRow(i);
+      if (mergeGroup != null) {
+        // This row is part of a merged group - count as 1 selectable unit
+        selectableCount++;
+        processedIndices.addAll(mergeGroup.originalIndices);
+      } else {
+        // Regular row - count as 1 selectable unit
+        selectableCount++;
+        processedIndices.add(i);
+      }
+    }
+    
+    return selectableCount;
+  }
+
+  /// Find the merged group that contains the specified row index.
+  MergedRowGroup? _getMergedGroupForRow(int rowIndex) {
+    for (final group in widget.mergedGroups) {
+      if (group.originalIndices.contains(rowIndex)) {
+        return group;
+      }
+    }
+    return null;
+  }
+
   /// Calculate widths for regular columns (excluding selection column)
   List<double> _calculateRegularColumnWidths(
       List<TablePlusColumn> columns, double totalWidth) {
@@ -612,7 +649,7 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                               selectionMode: widget.selectionMode,
                               selectedRows: widget.selectedRows,
                               sortCycleOrder: widget.sortCycleOrder,
-                              totalRowCount: widget.data.length,
+                              totalRowCount: _getSelectableRowCount(),
                               selectionTheme: theme.selectionTheme,
                               tooltipTheme: theme.tooltipTheme,
                               onSelectAll: widget.onSelectAll,

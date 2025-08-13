@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'pages/table_example_page.dart';
 import 'pages/simple_merged_example.dart';
 import 'pages/complex_merged_example.dart';
+import 'pages/selectable_merged_example.dart';
 
 void main() {
   runApp(const MyApp());
@@ -85,6 +86,23 @@ class ExampleHomePage extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                       builder: (context) => const ComplexMergedExample(),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 8),
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.checklist),
+                title: const Text('Selectable Merged Table'),
+                subtitle: const Text('Selection functionality with merged rows'),
+                trailing: const Icon(Icons.arrow_forward_ios),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SelectableMergedExample(),
                     ),
                   );
                 },

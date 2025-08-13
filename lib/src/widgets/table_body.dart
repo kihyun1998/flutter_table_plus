@@ -189,11 +189,42 @@ class TablePlusBody extends StatelessWidget {
   }
 
   /// Handle row selection toggle.
+  /// For merged groups, this handles both group IDs and individual row IDs.
   void _handleRowSelectionToggle(String rowId) {
     if (onRowSelectionChanged == null) return;
 
     final isCurrentlySelected = selectedRows.contains(rowId);
 
+    // Check if this rowId represents a merged group
+    final mergeGroup = _getMergedGroupById(rowId);
+    
+    if (mergeGroup != null) {
+      // This is a merged group selection
+      _handleMergedGroupSelectionToggle(mergeGroup, isCurrentlySelected);
+    } else {
+      // This is a regular row selection
+      _handleRegularRowSelectionToggle(rowId, isCurrentlySelected);
+    }
+  }
+
+  /// Handle selection toggle for merged groups.
+  void _handleMergedGroupSelectionToggle(MergedRowGroup mergeGroup, bool isCurrentlySelected) {
+    if (selectionMode == SelectionMode.single) {
+      if (!isCurrentlySelected) {
+        // Select the entire merged group
+        onRowSelectionChanged!(mergeGroup.groupId, true);
+      } else {
+        // Deselect the merged group
+        onRowSelectionChanged!(mergeGroup.groupId, false);
+      }
+    } else {
+      // For multiple selection mode, toggle the entire merged group
+      onRowSelectionChanged!(mergeGroup.groupId, !isCurrentlySelected);
+    }
+  }
+
+  /// Handle selection toggle for regular rows.
+  void _handleRegularRowSelectionToggle(String rowId, bool isCurrentlySelected) {
     if (selectionMode == SelectionMode.single) {
       // For single selection mode, always try to select the row
       // The parent widget should handle clearing other selections
@@ -207,6 +238,16 @@ class TablePlusBody extends StatelessWidget {
       // For multiple selection mode, toggle the selection
       onRowSelectionChanged!(rowId, !isCurrentlySelected);
     }
+  }
+
+  /// Find merged group by group ID.
+  MergedRowGroup? _getMergedGroupById(String groupId) {
+    for (final group in mergedGroups) {
+      if (group.groupId == groupId) {
+        return group;
+      }
+    }
+    return null;
   }
 
   @override
