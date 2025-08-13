@@ -1,3 +1,7 @@
+## 1.11.1
+
+*   **IMPROVEMENT**: Improved focusing on modification for editable cells.
+
 ## 1.11.0
 
 *   **FEAT**: Introduced merged row functionality.
