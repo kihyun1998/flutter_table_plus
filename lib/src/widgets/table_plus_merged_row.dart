@@ -527,10 +527,6 @@ class TablePlusMergedRow extends TablePlusRowWidget {
   Widget? _buildSelectionCell() {
     if (!isSelectable) return null;
 
-    final selectionColumn = columns.firstWhere(
-      (col) => col.key == '__selection__',
-      orElse: () => throw StateError('Selection column not found'),
-    );
     final width = columnWidths.isNotEmpty ? columnWidths[0] : 50.0;
     final singleRowHeight = calculatedHeight ?? theme.rowHeight;
     final mergedHeight = singleRowHeight * mergeGroup.rowCount;
