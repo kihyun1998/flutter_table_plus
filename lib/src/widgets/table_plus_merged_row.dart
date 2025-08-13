@@ -253,6 +253,7 @@ class TablePlusMergedRow extends TablePlusRowWidget {
               }
             },
             child: TextField(
+              autofocus: true,
               controller: controller,
               style: theme.editingTextStyle,
               textAlign: column.textAlign,
@@ -461,6 +462,7 @@ class TablePlusMergedRow extends TablePlusRowWidget {
               }
             },
             child: TextField(
+              autofocus: true,
               controller: controller,
               style: theme.editingTextStyle,
               textAlign: column.textAlign,
