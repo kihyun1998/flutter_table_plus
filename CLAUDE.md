@@ -69,11 +69,13 @@ dart doc .                      # Generate API documentation
 - **`lib/src/widgets/table_body.dart`**: Body rows implementation with selection and editing
 - **`lib/src/widgets/synced_scroll_controllers.dart`**: Synchronized scrolling logic
 - **`lib/src/widgets/custom_ink_well.dart`**: Custom tap handling widget
+- **`lib/src/widgets/table_plus_merged_row.dart`**: Merged row rendering widget for grouped data display
 
 ### Data Models
 
 - **`lib/src/models/table_column.dart`**: TablePlusColumn model defining column properties
 - **`lib/src/models/table_columns_builder.dart`**: Builder pattern for creating ordered columns safely
+- **`lib/src/models/merged_row_group.dart`**: MergedRowGroup and MergeCellConfig models for grouped row functionality
 - **`lib/src/models/theme/theme.dart`**: Comprehensive theming system with nested theme classes
 - **`lib/src/models/tooltip_behavior.dart`**: Tooltip display behavior configuration
 
@@ -82,8 +84,9 @@ dart doc .                      # Generate API documentation
 1. **Map-based Data Structure**: Tables use `List<Map<String, dynamic>>` for row data, requiring unique row ID fields for selection features (default: 'id', configurable via `rowIdKey`)
 2. **Builder Pattern**: TableColumnsBuilder prevents order conflicts and manages column ordering automatically
 3. **Synchronized Scrolling**: Custom scroll controller synchronization between header and body
-4. **Theme Composition**: Nested theme classes (TablePlusTheme, TablePlusHeaderTheme, etc.) for granular styling control
-5. **State Management Ready**: Designed to work with state management solutions like Riverpod (see documentation/RIVERPOD_GENERATOR_GUIDE.md)
+4. **Merged Row Groups**: MergedRowGroup system for visually combining multiple data rows with configurable merge behavior per column
+5. **Theme Composition**: Nested theme classes (TablePlusTheme, TablePlusHeaderTheme, etc.) for granular styling control
+6. **State Management Ready**: Designed to work with state management solutions like Riverpod (see documentation/RIVERPOD_GENERATOR_GUIDE.md)
 
 ### Widget Lifecycle
 
@@ -92,6 +95,7 @@ FlutterTablePlus follows a composition pattern where:
 - Column reordering updates the column map and triggers rebuilds
 - Selection state is managed externally and passed down as props
 - Editing state can coexist with selection state
+- Merged row groups are treated as single units for selection and editing operations
 
 ### Data Flow
 
@@ -111,6 +115,7 @@ FlutterTablePlus follows a composition pattern where:
 - **Sort Cycle Configuration**: Sort cycle order is configurable between ascending-first and descending-first patterns
 - **Row Height Management**: Supports both uniform and dynamic row height modes. Dynamic mode calculates heights based on content when `textOverflow: TextOverflow.visible` is used
 - **Tooltip Control**: Fine-grained tooltip behavior control for both cells and headers via `tooltipBehavior` and `headerTooltipBehavior` properties
+- **Merged Rows**: MergedRowGroup functionality allows grouping consecutive rows with configurable merge behavior per column. Supports custom content, selection, and editing within merged cells
 
 ## Code Patterns & Conventions
 
@@ -118,6 +123,7 @@ FlutterTablePlus follows a composition pattern where:
 - Row data: `List<Map<String, dynamic>>` where keys match column keys
 - Selection feature: Each row must have unique row ID field (default: 'id', configurable via `rowIdKey`)
 - Column definitions: Use `TableColumnsBuilder` for safe column creation
+- Merged rows: MergedRowGroup requires consecutive `originalIndices` from the data list
 
 ### Widget Composition Pattern
 - Header and body are separate widgets with synchronized scroll controllers
@@ -138,6 +144,7 @@ Comprehensive documentation is available in the `documentation/` directory:
 - THEMING.md: Complete theming guide
 - ADVANCED_COLUMNS.md: Advanced column features
 - EMPTY_STATE.md: Handling empty table states
+- MERGED_ROWS.md: Complete guide to merged row functionality with examples
 - RIVERPOD_GENERATOR_GUIDE.md: State management integration
 
 # important-instruction-reminders
