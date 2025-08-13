@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'pages/table_example_page.dart';
 import 'pages/simple_merged_example.dart';
+import 'pages/complex_merged_example.dart';
 
 void main() {
   runApp(const MyApp());
@@ -67,6 +68,23 @@ class ExampleHomePage extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                       builder: (context) => const SimpleMergedExample(),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 8),
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.table_rows),
+                title: const Text('Complex Merged Table'),
+                subtitle: const Text('Multiple columns, custom content, multiple groups'),
+                trailing: const Icon(Icons.arrow_forward_ios),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ComplexMergedExample(),
                     ),
                   );
                 },
