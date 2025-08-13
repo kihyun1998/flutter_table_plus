@@ -2,14 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../flutter_table_plus.dart' show TablePlusSelectionTheme;
+import '../models/merged_row_group.dart';
 import '../models/table_column.dart';
 import '../models/theme/body_theme.dart' show TablePlusBodyTheme;
 import '../models/theme/editable_theme.dart' show TablePlusEditableTheme;
 import '../models/theme/tooltip_theme.dart' show TablePlusTooltipTheme;
 import '../models/tooltip_behavior.dart';
-import '../utils/text_overflow_detector.dart';
 import '../utils/text_height_calculator.dart';
+import '../utils/text_overflow_detector.dart';
 import 'custom_ink_well.dart';
+import 'table_plus_merged_row.dart';
+import 'table_plus_row_widget.dart';
 
 /// A widget that renders the data rows of the table.
 class TablePlusBody extends StatelessWidget {
@@ -21,6 +24,7 @@ class TablePlusBody extends StatelessWidget {
     required this.columnWidths,
     required this.theme,
     required this.verticalController,
+    this.mergedGroups = const [],
     this.rowIdKey = 'id',
     this.isSelectable = false,
     this.selectionMode = SelectionMode.multiple,
@@ -36,6 +40,7 @@ class TablePlusBody extends StatelessWidget {
     this.getCellController,
     this.onCellTap,
     this.onStopEditing,
+    this.onMergedCellChanged,
     this.rowHeightMode = RowHeightMode.uniform,
     this.minRowHeight = 48.0,
     this.onRowHeightsCalculated,
@@ -49,6 +54,9 @@ class TablePlusBody extends StatelessWidget {
 
   /// The calculated width for each column.
   final List<double> columnWidths;
+
+  /// List of merged row groups.
+  final List<MergedRowGroup> mergedGroups;
 
   /// The theme configuration for the table body.
   final TablePlusBodyTheme theme;
@@ -103,6 +111,10 @@ class TablePlusBody extends StatelessWidget {
   /// Callback to stop current editing.
   final void Function({required bool save})? onStopEditing;
 
+  /// Callback when a merged cell value is changed.
+  final void Function(String groupId, String columnKey, dynamic newValue)?
+      onMergedCellChanged;
+
   /// The row height calculation mode for the table.
   final RowHeightMode rowHeightMode;
 
@@ -137,6 +149,43 @@ class TablePlusBody extends StatelessWidget {
   /// Extract the row ID from row data.
   String? _getRowId(Map<String, dynamic> rowData) {
     return rowData[rowIdKey]?.toString();
+  }
+
+  /// Find the merged group that contains the specified row index.
+  MergedRowGroup? _getMergedGroupForRow(int rowIndex) {
+    for (final group in mergedGroups) {
+      if (group.originalIndices.contains(rowIndex)) {
+        return group;
+      }
+    }
+    return null;
+  }
+
+  /// Get the list of indices that should actually be rendered.
+  /// This excludes rows that are part of merge groups (except the first row of each group).
+  List<int> _getRenderableIndices() {
+    List<int> renderableIndices = [];
+    Set<int> processedIndices = {};
+
+    for (int i = 0; i < data.length; i++) {
+      if (processedIndices.contains(i)) continue;
+
+      final mergeGroup = _getMergedGroupForRow(i);
+      if (mergeGroup != null) {
+        // Add only the first row of the merge group
+        if (mergeGroup.originalIndices.first == i) {
+          renderableIndices.add(i);
+        }
+        // Mark all rows in this group as processed
+        processedIndices.addAll(mergeGroup.originalIndices);
+      } else {
+        // Regular row - add it
+        renderableIndices.add(i);
+        processedIndices.add(i);
+      }
+    }
+
+    return renderableIndices;
   }
 
   /// Handle row selection toggle.
@@ -202,47 +251,91 @@ class TablePlusBody extends StatelessWidget {
       });
     }
 
+    final renderableIndices = _getRenderableIndices();
+
     return ListView.builder(
       controller: verticalController,
       physics: const ClampingScrollPhysics(),
-      itemCount: data.length,
+      itemCount: renderableIndices.length,
       itemBuilder: (context, index) {
-        final rowData = data[index];
-        final rowId = _getRowId(rowData);
-        final isSelected = rowId != null && selectedRows.contains(rowId);
-
-        return _TablePlusRow(
-          rowIndex: index,
-          rowData: rowData,
-          rowId: rowId,
-          columns: columns,
-          columnWidths: columnWidths,
-          theme: theme,
-          backgroundColor: _getRowColor(index, isSelected),
-          isLastRow: index == data.length - 1,
-          isSelectable: isSelectable,
-          selectionMode: selectionMode,
-          isSelected: isSelected,
-          selectionTheme: selectionTheme,
-          onRowSelectionChanged: _handleRowSelectionToggle,
-          onRowDoubleTap: onRowDoubleTap,
-          onRowSecondaryTap: onRowSecondaryTap,
-          isEditable: isEditable,
-          editableTheme: editableTheme,
-          tooltipTheme: tooltipTheme,
-          isCellEditing: isCellEditing,
-          getCellController: getCellController,
-          onCellTap: onCellTap,
-          onStopEditing: onStopEditing,
-          calculatedHeight: rowHeights.isNotEmpty ? rowHeights[index] : null,
-        );
+        final actualIndex = renderableIndices[index];
+        return _buildRowWidget(actualIndex, rowHeights);
       },
     );
+  }
+
+  /// Build a row widget for the given index.
+  /// This method can be overridden or extended to support different row types.
+  TablePlusRowWidget _buildRowWidget(int index, Map<int, double> rowHeights) {
+    // Check if this index is part of a merged group
+    final mergeGroup = _getMergedGroupForRow(index);
+
+    if (mergeGroup != null && mergeGroup.originalIndices.first == index) {
+      // This is the first row in a merge group - create a merged row
+      final isSelected = selectedRows.contains(mergeGroup.groupId);
+
+      return TablePlusMergedRow(
+        mergeGroup: mergeGroup,
+        allData: data,
+        columns: columns,
+        columnWidths: columnWidths,
+        theme: theme,
+        backgroundColor: _getRowColor(index, isSelected),
+        isLastRow: mergeGroup.originalIndices.last == data.length - 1,
+        isSelectable: isSelectable,
+        selectionMode: selectionMode,
+        isSelected: isSelected,
+        selectionTheme: selectionTheme,
+        onRowSelectionChanged: _handleRowSelectionToggle,
+        isEditable: isEditable,
+        editableTheme: editableTheme,
+        tooltipTheme: tooltipTheme,
+        isCellEditing: isCellEditing,
+        getCellController: getCellController,
+        onCellTap: onCellTap,
+        onStopEditing: onStopEditing,
+        onRowDoubleTap: onRowDoubleTap,
+        onRowSecondaryTap: onRowSecondaryTap,
+        onMergedCellChanged: onMergedCellChanged,
+        calculatedHeight: rowHeights.isNotEmpty ? rowHeights[index] : null,
+      );
+    } else {
+      // This is a normal row (not part of any merge group)
+      final rowData = data[index];
+      final rowId = _getRowId(rowData);
+      final isSelected = rowId != null && selectedRows.contains(rowId);
+
+      return _TablePlusRow(
+        rowIndex: index,
+        rowData: rowData,
+        rowId: rowId,
+        columns: columns,
+        columnWidths: columnWidths,
+        theme: theme,
+        backgroundColor: _getRowColor(index, isSelected),
+        isLastRow: index == data.length - 1,
+        isSelectable: isSelectable,
+        selectionMode: selectionMode,
+        isSelected: isSelected,
+        selectionTheme: selectionTheme,
+        onRowSelectionChanged: _handleRowSelectionToggle,
+        onRowDoubleTap: onRowDoubleTap,
+        onRowSecondaryTap: onRowSecondaryTap,
+        isEditable: isEditable,
+        editableTheme: editableTheme,
+        tooltipTheme: tooltipTheme,
+        isCellEditing: isCellEditing,
+        getCellController: getCellController,
+        onCellTap: onCellTap,
+        onStopEditing: onStopEditing,
+        calculatedHeight: rowHeights.isNotEmpty ? rowHeights[index] : null,
+      );
+    }
   }
 }
 
 /// A single table row widget.
-class _TablePlusRow extends StatelessWidget {
+class _TablePlusRow extends TablePlusRowWidget {
   const _TablePlusRow({
     required this.rowIndex,
     required this.rowData,
@@ -275,7 +368,9 @@ class _TablePlusRow extends StatelessWidget {
   final List<TablePlusColumn> columns;
   final List<double> columnWidths;
   final TablePlusBodyTheme theme;
+  @override
   final Color backgroundColor;
+  @override
   final bool isLastRow;
   final bool isSelectable;
   final SelectionMode selectionMode;
@@ -292,7 +387,15 @@ class _TablePlusRow extends StatelessWidget {
   final void Function({required bool save})? onStopEditing;
   final void Function(String rowId)? onRowDoubleTap;
   final void Function(String rowId)? onRowSecondaryTap;
+  @override
   final double? calculatedHeight;
+
+  // Implementation of TablePlusRowWidget abstract methods
+  @override
+  int get effectiveRowCount => 1;
+
+  @override
+  List<int> get originalDataIndices => [rowIndex];
 
   /// Handle row tap for selection.
   /// Only works when not in editable mode.

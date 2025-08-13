@@ -20,6 +20,7 @@ library;
 export 'src/models/table_column.dart';
 export 'src/models/table_columns_builder.dart';
 export 'src/models/tooltip_behavior.dart';
+export 'src/models/merged_row_group.dart';
 
 /// Theme
 export 'src/models/theme/body_theme.dart';

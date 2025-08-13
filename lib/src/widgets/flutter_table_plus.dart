@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../flutter_table_plus.dart' show TablePlusTheme;
 import '../models/table_column.dart';
+import '../models/merged_row_group.dart';
 import '../utils/text_height_calculator.dart';
 import 'synced_scroll_controllers.dart';
 import 'table_body.dart';
@@ -24,6 +25,7 @@ class FlutterTablePlus extends StatefulWidget {
     super.key,
     required this.columns,
     required this.data,
+    this.mergedGroups = const [],
     this.theme,
     this.rowIdKey = 'id',
     this.isSelectable = false,
@@ -38,6 +40,7 @@ class FlutterTablePlus extends StatefulWidget {
     this.onSort,
     this.isEditable = false,
     this.onCellChanged,
+    this.onMergedCellChanged,
     this.onRowDoubleTap,
     this.onRowSecondaryTap,
     this.noDataWidget,
@@ -55,6 +58,9 @@ class FlutterTablePlus extends StatefulWidget {
   ///
   /// ⚠️ **For selection features**: Each row must have a unique field matching [rowIdKey].
   final List<Map<String, dynamic>> data;
+
+  /// List of merged row groups configuration.
+  final List<MergedRowGroup> mergedGroups;
 
   /// The theme configuration for the table.
   /// If not provided, [TablePlusTheme.defaultTheme] will be used.
@@ -123,6 +129,10 @@ class FlutterTablePlus extends StatefulWidget {
   /// - Escape key is pressed (reverts to old value)
   /// - The text field loses focus
   final CellChangedCallback? onCellChanged;
+
+  /// Callback when a merged cell value is changed.
+  /// Provides the group ID, column key, and new value.
+  final void Function(String groupId, String columnKey, dynamic newValue)? onMergedCellChanged;
 
   /// Callback when a row is double-tapped.
   /// Provides the row ID. Only active when [isSelectable] is true.
@@ -621,6 +631,7 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                   : TablePlusBody(
                                       columns: visibleColumns,
                                       data: widget.data,
+                                      mergedGroups: widget.mergedGroups,
                                       columnWidths: columnWidths,
                                       theme: theme.bodyTheme,
                                       verticalController:
@@ -643,6 +654,7 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                       getCellController: _getCellController,
                                       onCellTap: _handleCellTap,
                                       onStopEditing: _stopCurrentEditing,
+                                      onMergedCellChanged: widget.onMergedCellChanged,
                                       // Row height calculation properties
                                       rowHeightMode: widget.rowHeightMode,
                                       minRowHeight: widget.minRowHeight,
