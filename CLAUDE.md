@@ -58,7 +58,8 @@ dart doc .                      # Generate API documentation
 
 - **`lib/src/models/table_column.dart`**: TablePlusColumn model defining column properties
 - **`lib/src/models/table_columns_builder.dart`**: Builder pattern for creating ordered columns safely
-- **`lib/src/models/table_theme.dart`**: Comprehensive theming system with nested theme classes
+- **`lib/src/models/theme/theme.dart`**: Comprehensive theming system with nested theme classes
+- **`lib/src/models/tooltip_behavior.dart`**: Tooltip display behavior configuration
 
 ### Key Architectural Patterns
 
@@ -92,6 +93,8 @@ FlutterTablePlus follows a composition pattern where:
 - **Theme Architecture**: Uses nested theme classes (TablePlusTheme > TablePlusHeaderTheme/TablePlusBodyTheme/etc.) for granular control
 - **Custom Cell Rendering**: `cellBuilder` property allows rendering any Flutter widget in cells but can impact performance with large datasets
 - **Sort Cycle Configuration**: Sort cycle order is configurable between ascending-first and descending-first patterns
+- **Row Height Management**: Supports both uniform and dynamic row height modes. Dynamic mode calculates heights based on content when `textOverflow: TextOverflow.visible` is used
+- **Tooltip Control**: Fine-grained tooltip behavior control for both cells and headers via `tooltipBehavior` and `headerTooltipBehavior` properties
 
 ## Code Patterns & Conventions
 
@@ -118,9 +121,10 @@ Comprehensive documentation is available in the `documentation/` directory:
 - SORTING.md: Column sorting configuration
 - THEMING.md: Complete theming guide
 - ADVANCED_COLUMNS.md: Advanced column features
+- EMPTY_STATE.md: Handling empty table states
 - RIVERPOD_GENERATOR_GUIDE.md: State management integration
 
-## important-instruction-reminders
+# important-instruction-reminders
 Do what has been asked; nothing more, nothing less.
 NEVER create files unless they're absolutely necessary for achieving your goal.
 ALWAYS prefer editing an existing file to creating a new one.
