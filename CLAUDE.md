@@ -6,6 +6,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Flutter Table Plus is a highly customizable and efficient table widget for Flutter that provides synchronized scrolling, theming, sorting, selection, column reordering, and cell editing capabilities. The package is structured as a Flutter library with comprehensive documentation and examples.
 
+## Package Philosophy
+
+Flutter Table Plus follows a **"UI-only, data-agnostic"** philosophy. This package intentionally does NOT manage your data or state. Instead, it provides powerful widgets and helper utilities that work seamlessly with any data management approach you prefer.
+
+### Core Principles
+
+1. **No Data Management**: The package never stores, mutates, or manages your table data internally. All data operations (sorting, filtering, pagination, etc.) remain under your complete control.
+
+2. **Callback-Driven**: User interactions (sort clicks, selections, edits) are communicated back to you through callbacks. You decide how to handle these interactions in your application.
+
+3. **State Management Agnostic**: Works equally well with setState, Provider, Riverpod, Bloc, or any other state management solution. The choice is yours.
+
+4. **Maximum Flexibility**: By not making assumptions about your data structure or business logic, the package can adapt to diverse use cases - from simple static tables to complex enterprise data grids.
+
+This philosophy ensures that Flutter Table Plus remains a lightweight, focused UI component that enhances rather than constrains your application architecture.
+
 ## Environment Notes
 
 **IMPORTANT**: Claude Code runs in WSL environment while the user is on Windows. When Flutter/Dart commands need to be executed (flutter test, flutter analyze, dart format, etc.), DO NOT attempt to run them directly. Instead, ask the user to run these commands on their Windows environment.
