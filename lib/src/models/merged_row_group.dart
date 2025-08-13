@@ -7,6 +7,7 @@ class MergeCellConfig {
     required this.shouldMerge,
     this.spanningRowIndex = 0,
     this.mergedContent,
+    this.isEditable = false,
   });
 
   /// Whether this column should be merged for this group.
@@ -21,6 +22,11 @@ class MergeCellConfig {
   /// Custom widget content to display in the merged cell.
   /// If null, the content from the row at [spanningRowIndex] will be used.
   final Widget? mergedContent;
+
+  /// Whether this merged cell should be editable.
+  /// Only applies to merged cells without custom [mergedContent].
+  /// If [mergedContent] is provided, this field is ignored.
+  final bool isEditable;
 }
 
 /// Represents a group of rows that should be merged together for specific columns.
@@ -60,5 +66,15 @@ class MergedRowGroup {
   /// Returns custom merged content for the specified column, if any.
   Widget? getMergedContent(String columnKey) {
     return mergeConfig[columnKey]?.mergedContent;
+  }
+
+  /// Returns true if the merged cell for the specified column is editable.
+  /// Only merged cells without custom content can be editable.
+  bool isMergedCellEditable(String columnKey) {
+    final config = mergeConfig[columnKey];
+    if (config == null || !config.shouldMerge || config.mergedContent != null) {
+      return false;
+    }
+    return config.isEditable;
   }
 }
