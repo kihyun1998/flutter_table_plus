@@ -197,7 +197,7 @@ class TablePlusBody extends StatelessWidget {
 
     // Check if this rowId represents a merged group
     final mergeGroup = _getMergedGroupById(rowId);
-    
+
     if (mergeGroup != null) {
       // This is a merged group selection
       _handleMergedGroupSelectionToggle(mergeGroup, isCurrentlySelected);
@@ -208,7 +208,8 @@ class TablePlusBody extends StatelessWidget {
   }
 
   /// Handle selection toggle for merged groups.
-  void _handleMergedGroupSelectionToggle(MergedRowGroup mergeGroup, bool isCurrentlySelected) {
+  void _handleMergedGroupSelectionToggle(
+      MergedRowGroup mergeGroup, bool isCurrentlySelected) {
     if (selectionMode == SelectionMode.single) {
       if (!isCurrentlySelected) {
         // Select the entire merged group
@@ -224,7 +225,8 @@ class TablePlusBody extends StatelessWidget {
   }
 
   /// Handle selection toggle for regular rows.
-  void _handleRegularRowSelectionToggle(String rowId, bool isCurrentlySelected) {
+  void _handleRegularRowSelectionToggle(
+      String rowId, bool isCurrentlySelected) {
     if (selectionMode == SelectionMode.single) {
       // For single selection mode, always try to select the row
       // The parent widget should handle clearing other selections
@@ -830,7 +832,8 @@ class _TablePlusCellState extends State<_TablePlusCell> {
       width: widget.width,
       height: widget.calculatedHeight ?? widget.theme.rowHeight,
       padding: widget.isCellEditing
-          ? widget.editableTheme.cellContainerPadding // Use editable theme's container padding
+          ? widget.editableTheme
+              .cellContainerPadding // Use editable theme's container padding
           : widget.theme.padding,
       decoration: BoxDecoration(
         color: backgroundColor,

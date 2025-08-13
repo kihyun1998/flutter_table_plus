@@ -132,7 +132,8 @@ class FlutterTablePlus extends StatefulWidget {
 
   /// Callback when a merged cell value is changed.
   /// Provides the group ID, column key, and new value.
-  final void Function(String groupId, String columnKey, dynamic newValue)? onMergedCellChanged;
+  final void Function(String groupId, String columnKey, dynamic newValue)?
+      onMergedCellChanged;
 
   /// Callback when a row is double-tapped.
   /// Provides the row ID. Only active when [isSelectable] is true.
@@ -482,13 +483,13 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
   /// Each merged group counts as 1 selectable unit, regardless of how many rows it contains.
   int _getSelectableRowCount() {
     if (!widget.isSelectable || widget.data.isEmpty) return 0;
-    
+
     Set<int> processedIndices = {};
     int selectableCount = 0;
-    
+
     for (int i = 0; i < widget.data.length; i++) {
       if (processedIndices.contains(i)) continue;
-      
+
       // Check if this row is part of a merged group
       final mergeGroup = _getMergedGroupForRow(i);
       if (mergeGroup != null) {
@@ -501,7 +502,7 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
         processedIndices.add(i);
       }
     }
-    
+
     return selectableCount;
   }
 
@@ -691,7 +692,8 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                       getCellController: _getCellController,
                                       onCellTap: _handleCellTap,
                                       onStopEditing: _stopCurrentEditing,
-                                      onMergedCellChanged: widget.onMergedCellChanged,
+                                      onMergedCellChanged:
+                                          widget.onMergedCellChanged,
                                       // Row height calculation properties
                                       rowHeightMode: widget.rowHeightMode,
                                       minRowHeight: widget.minRowHeight,

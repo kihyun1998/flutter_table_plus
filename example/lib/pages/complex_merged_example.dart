@@ -9,11 +9,41 @@ class ComplexMergedExample extends StatelessWidget {
   Widget build(BuildContext context) {
     // Sample data with more complex merging scenarios
     final List<Map<String, dynamic>> data = [
-      {'id': '1', 'name': 'Alice', 'department': 'IT', 'salary': 100, 'level': 'Senior'},
-      {'id': '2', 'name': 'Bob', 'department': 'IT', 'salary': 120, 'level': 'Junior'},
-      {'id': '3', 'name': 'Charlie', 'department': 'IT', 'salary': 110, 'level': 'Senior'},
-      {'id': '4', 'name': 'David', 'department': 'Sales', 'salary': 90, 'level': 'Manager'},
-      {'id': '5', 'name': 'Eve', 'department': 'Sales', 'salary': 95, 'level': 'Senior'},
+      {
+        'id': '1',
+        'name': 'Alice',
+        'department': 'IT',
+        'salary': 100,
+        'level': 'Senior'
+      },
+      {
+        'id': '2',
+        'name': 'Bob',
+        'department': 'IT',
+        'salary': 120,
+        'level': 'Junior'
+      },
+      {
+        'id': '3',
+        'name': 'Charlie',
+        'department': 'IT',
+        'salary': 110,
+        'level': 'Senior'
+      },
+      {
+        'id': '4',
+        'name': 'David',
+        'department': 'Sales',
+        'salary': 90,
+        'level': 'Manager'
+      },
+      {
+        'id': '5',
+        'name': 'Eve',
+        'department': 'Sales',
+        'salary': 95,
+        'level': 'Senior'
+      },
     ];
 
     // Column configuration
@@ -67,7 +97,8 @@ class ComplexMergedExample extends StatelessWidget {
                 children: [
                   Icon(Icons.computer, color: Colors.blue, size: 20),
                   Text('IT', style: TextStyle(fontWeight: FontWeight.bold)),
-                  Text('Team', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                  Text('Team',
+                      style: TextStyle(fontSize: 12, color: Colors.grey)),
                 ],
               ),
             ),

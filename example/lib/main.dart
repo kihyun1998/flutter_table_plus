@@ -80,7 +80,8 @@ class ExampleHomePage extends StatelessWidget {
               child: ListTile(
                 leading: const Icon(Icons.table_rows),
                 title: const Text('Complex Merged Table'),
-                subtitle: const Text('Multiple columns, custom content, multiple groups'),
+                subtitle: const Text(
+                    'Multiple columns, custom content, multiple groups'),
                 trailing: const Icon(Icons.arrow_forward_ios),
                 onTap: () {
                   Navigator.push(
@@ -97,7 +98,8 @@ class ExampleHomePage extends StatelessWidget {
               child: ListTile(
                 leading: const Icon(Icons.checklist),
                 title: const Text('Selectable Merged Table'),
-                subtitle: const Text('Selection functionality with merged rows'),
+                subtitle:
+                    const Text('Selection functionality with merged rows'),
                 trailing: const Icon(Icons.arrow_forward_ios),
                 onTap: () {
                   Navigator.push(

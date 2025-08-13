@@ -225,7 +225,8 @@ class TablePlusMergedRow extends TablePlusRowWidget {
     return Container(
       width: double.infinity,
       height: mergedHeight,
-      padding: theme.cellContainerPadding, // Use editable theme's container padding
+      padding:
+          theme.cellContainerPadding, // Use editable theme's container padding
       child: Align(
         alignment:
             column.alignment, // Follow column alignment like regular cells
@@ -436,7 +437,8 @@ class TablePlusMergedRow extends TablePlusRowWidget {
     return Container(
       width: double.infinity,
       height: cellHeight,
-      padding: theme.cellContainerPadding, // Use editable theme's container padding
+      padding:
+          theme.cellContainerPadding, // Use editable theme's container padding
       child: Align(
         alignment:
             column.alignment, // Follow column alignment like regular cells

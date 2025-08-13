@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 /// Abstract base class for table row widgets.
-/// 
+///
 /// This allows for different types of row implementations (normal rows, merged rows, etc.)
 /// while maintaining a consistent interface for the ListView builder.
 abstract class TablePlusRowWidget extends StatelessWidget {
