@@ -61,16 +61,4 @@ class MergedRowGroup {
   Widget? getMergedContent(String columnKey) {
     return mergeConfig[columnKey]?.mergedContent;
   }
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    return other is MergedRowGroup &&
-        other.groupId == groupId &&
-        other.originalIndices.length == originalIndices.length &&
-        other.originalIndices.every((index) => originalIndices.contains(index));
-  }
-
-  @override
-  int get hashCode => Object.hash(groupId, originalIndices);
 }
