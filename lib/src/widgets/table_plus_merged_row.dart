@@ -95,8 +95,10 @@ class TablePlusMergedRow extends TablePlusRowWidget {
   }
 
   /// Handle merged cell value change.
-  void _handleMergedCellValueChange(String columnKey, int dataIndex, String? newValue) {
-    if (onMergedCellChanged != null && mergeGroup.shouldMergeColumn(columnKey)) {
+  void _handleMergedCellValueChange(
+      String columnKey, int dataIndex, String? newValue) {
+    if (onMergedCellChanged != null &&
+        mergeGroup.shouldMergeColumn(columnKey)) {
       onMergedCellChanged!(mergeGroup.groupId, columnKey, newValue);
     }
   }
@@ -128,26 +130,21 @@ class TablePlusMergedRow extends TablePlusRowWidget {
     final mergedHeight = singleRowHeight * mergeGroup.rowCount;
 
     // Check if this merged cell is editable
-    final isCellEditable = isEditable && 
-                          column.editable && 
-                          mergeGroup.isMergedCellEditable(column.key);
-    final isCurrentlyEditing = isCellEditable && 
-                              isCellEditing?.call(spanningDataIndex, column.key) == true;
+    final isCellEditable = isEditable &&
+        column.editable &&
+        mergeGroup.isMergedCellEditable(column.key);
+    final isCurrentlyEditing = isCellEditable &&
+        isCellEditing?.call(spanningDataIndex, column.key) == true;
 
     Widget content;
-    
+
     if (mergedContent != null) {
       // Custom merged content - not editable
       content = mergedContent;
     } else if (isCurrentlyEditing) {
       // Editing mode for merged cell
       content = _buildMergedCellEditingTextField(
-        context, 
-        column, 
-        spanningDataIndex, 
-        rowData,
-        mergedHeight
-      );
+          context, column, spanningDataIndex, rowData, mergedHeight);
     } else if (column.cellBuilder != null) {
       // Custom cell builder
       content = Container(
@@ -225,64 +222,95 @@ class TablePlusMergedRow extends TablePlusRowWidget {
     final controller = getCellController?.call(dataIndex, column.key);
     final theme = editableTheme;
 
-    return Container(
+    return SizedBox(
       width: double.infinity,
       height: mergedHeight,
-      padding: EdgeInsets.all(4), // Smaller padding for merged cells
-      child: KeyboardListener(
-        focusNode: FocusNode(),
-        onKeyEvent: (event) {
-          if (event is KeyDownEvent) {
-            if (event.logicalKey == LogicalKeyboardKey.enter) {
+      // padding: theme.padding ??
+      //     const EdgeInsets.all(8), // Use theme padding like regular cells
+      child: Align(
+        alignment:
+            column.alignment, // Follow column alignment like regular cells
+        child: Focus(
+          onFocusChange: (hasFocus) {
+            // Auto-save when focus is lost (like regular cells)
+            if (!hasFocus) {
+              _handleMergedCellValueChange(
+                  column.key, dataIndex, controller?.text);
               onStopEditing?.call(save: true);
-            } else if (event.logicalKey == LogicalKeyboardKey.escape) {
-              onStopEditing?.call(save: false);
             }
-          }
-        },
-        child: TextField(
-          controller: controller,
-          style: theme.editingTextStyle,
-          textAlign: column.textAlign,
-          textAlignVertical: TextAlignVertical.center,
-          cursorColor: theme.cursorColor,
-          maxLines: null, // Allow multiple lines for tall merged cells
-          expands: true,  // Fill the available height
-          decoration: InputDecoration(
-            hintText: column.hintText,
-            hintStyle: theme.hintStyle,
-            contentPadding: theme.textFieldPadding,
-            isDense: theme.isDense,
-            filled: theme.filled,
-            fillColor: theme.fillColor ?? theme.editingCellColor.withValues(alpha: 0.7),
-            border: OutlineInputBorder(
-              borderRadius: theme.borderRadius ?? theme.editingBorderRadius,
-              borderSide: BorderSide(
-                color: theme.enabledBorderColor ?? 
-                       theme.editingBorderColor.withValues(alpha: 0.5),
-                width: 1.0,
+          },
+          child: KeyboardListener(
+            focusNode: FocusNode(),
+            onKeyEvent: (event) {
+              if (event is KeyDownEvent) {
+                if (event.logicalKey == LogicalKeyboardKey.enter) {
+                  _handleMergedCellValueChange(
+                      column.key, dataIndex, controller?.text);
+                  onStopEditing?.call(save: true);
+                } else if (event.logicalKey == LogicalKeyboardKey.escape) {
+                  onStopEditing?.call(save: false);
+                }
+              }
+            },
+            child: TextField(
+              controller: controller,
+              style: theme.editingTextStyle,
+              textAlign: column.textAlign,
+              textAlignVertical: theme.textAlignVertical, // Use theme alignment
+              cursorColor: theme.cursorColor,
+              decoration: InputDecoration(
+                hintText: column.hintText,
+                hintStyle: theme.hintStyle,
+                contentPadding: theme.textFieldPadding,
+                isDense: theme.isDense,
+                filled: theme.filled,
+                fillColor: theme.fillColor ?? theme.editingCellColor,
+                // Use the same border configuration as regular cells
+                border: OutlineInputBorder(
+                  borderRadius: theme.borderRadius ?? theme.editingBorderRadius,
+                  borderSide: BorderSide(
+                    color: theme.enabledBorderColor ??
+                        theme.editingBorderColor.withValues(alpha: 0.5),
+                    width: 1.0,
+                  ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: theme.borderRadius ?? theme.editingBorderRadius,
+                  borderSide: BorderSide(
+                    color: theme.enabledBorderColor ??
+                        theme.editingBorderColor.withValues(alpha: 0.5),
+                    width: 1.0,
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: theme.borderRadius ?? theme.editingBorderRadius,
+                  borderSide: BorderSide(
+                    color: theme.focusedBorderColor ?? theme.editingBorderColor,
+                    width: theme.editingBorderWidth,
+                  ),
+                ),
+                errorBorder: OutlineInputBorder(
+                  borderRadius: theme.borderRadius ?? theme.editingBorderRadius,
+                  borderSide: BorderSide(
+                    color: Colors.red.shade400,
+                    width: 1.0,
+                  ),
+                ),
+                focusedErrorBorder: OutlineInputBorder(
+                  borderRadius: theme.borderRadius ?? theme.editingBorderRadius,
+                  borderSide: BorderSide(
+                    color: Colors.red.shade600,
+                    width: theme.editingBorderWidth,
+                  ),
+                ),
               ),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: theme.borderRadius ?? theme.editingBorderRadius,
-              borderSide: BorderSide(
-                color: theme.enabledBorderColor ?? 
-                       theme.editingBorderColor.withValues(alpha: 0.5),
-                width: 1.0,
-              ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: theme.borderRadius ?? theme.editingBorderRadius,
-              borderSide: BorderSide(
-                color: theme.focusedBorderColor ?? theme.editingBorderColor,
-                width: theme.editingBorderWidth,
-              ),
+              onSubmitted: (_) {
+                _handleMergedCellValueChange(
+                    column.key, dataIndex, controller?.text);
+                onStopEditing?.call(save: true);
+              },
             ),
           ),
-          onSubmitted: (_) {
-            _handleMergedCellValueChange(column.key, dataIndex, controller?.text);
-            onStopEditing?.call(save: true);
-          },
         ),
       ),
     );
@@ -306,20 +334,15 @@ class TablePlusMergedRow extends TablePlusRowWidget {
 
           // Check if this individual cell is editable
           final isCellEditable = isEditable && column.editable;
-          final isCurrentlyEditing = isCellEditable && 
-                                    isCellEditing?.call(originalIndex, column.key) == true;
+          final isCurrentlyEditing = isCellEditable &&
+              isCellEditing?.call(originalIndex, column.key) == true;
 
           Widget content;
-          
+
           if (isCurrentlyEditing) {
             // Editing mode for individual cell
             content = _buildStackedCellEditingTextField(
-              context, 
-              column, 
-              originalIndex, 
-              rowData,
-              singleRowHeight
-            );
+                context, column, originalIndex, rowData, singleRowHeight);
           } else if (column.cellBuilder != null) {
             content = Container(
               alignment: column.alignment,
@@ -373,13 +396,15 @@ class TablePlusMergedRow extends TablePlusRowWidget {
                       border: Border(
                         right: theme.showVerticalDividers
                             ? BorderSide(
-                                color: theme.dividerColor.withValues(alpha: 0.5),
+                                color:
+                                    theme.dividerColor.withValues(alpha: 0.5),
                                 width: 1,
                               )
                             : BorderSide.none,
                         bottom: !isLastRow && theme.showHorizontalDividers
                             ? BorderSide(
-                                color: theme.dividerColor.withValues(alpha: 0.3),
+                                color:
+                                    theme.dividerColor.withValues(alpha: 0.3),
                                 width: 1,
                               )
                             : BorderSide.none,
@@ -409,62 +434,89 @@ class TablePlusMergedRow extends TablePlusRowWidget {
     final controller = getCellController?.call(dataIndex, column.key);
     final theme = editableTheme;
 
-    return Container(
+    return SizedBox(
       width: double.infinity,
       height: cellHeight,
-      padding: EdgeInsets.all(2), // Very small padding for stacked cells
-      child: KeyboardListener(
-        focusNode: FocusNode(),
-        onKeyEvent: (event) {
-          if (event is KeyDownEvent) {
-            if (event.logicalKey == LogicalKeyboardKey.enter) {
+      // padding: theme.padding ?? EdgeInsets.all(8), // Use theme padding like regular cells
+      child: Align(
+        alignment:
+            column.alignment, // Follow column alignment like regular cells
+        child: Focus(
+          onFocusChange: (hasFocus) {
+            // Auto-save when focus is lost (like regular cells)
+            if (!hasFocus) {
               onStopEditing?.call(save: true);
-            } else if (event.logicalKey == LogicalKeyboardKey.escape) {
-              onStopEditing?.call(save: false);
             }
-          }
-        },
-        child: TextField(
-          controller: controller,
-          style: theme.editingTextStyle,
-          textAlign: column.textAlign,
-          textAlignVertical: TextAlignVertical.center,
-          cursorColor: theme.cursorColor,
-          decoration: InputDecoration(
-            hintText: column.hintText,
-            hintStyle: theme.hintStyle,
-            contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            isDense: true,
-            filled: theme.filled,
-            fillColor: theme.fillColor ?? theme.editingCellColor.withValues(alpha: 0.8),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(4),
-              borderSide: BorderSide(
-                color: theme.enabledBorderColor ?? 
-                       theme.editingBorderColor.withValues(alpha: 0.5),
-                width: 1.0,
+          },
+          child: KeyboardListener(
+            focusNode: FocusNode(),
+            onKeyEvent: (event) {
+              if (event is KeyDownEvent) {
+                if (event.logicalKey == LogicalKeyboardKey.enter) {
+                  onStopEditing?.call(save: true);
+                } else if (event.logicalKey == LogicalKeyboardKey.escape) {
+                  onStopEditing?.call(save: false);
+                }
+              }
+            },
+            child: TextField(
+              controller: controller,
+              style: theme.editingTextStyle,
+              textAlign: column.textAlign,
+              textAlignVertical: theme.textAlignVertical, // Use theme alignment
+              cursorColor: theme.cursorColor,
+              decoration: InputDecoration(
+                hintText: column.hintText,
+                hintStyle: theme.hintStyle,
+                contentPadding: theme.textFieldPadding,
+                isDense: theme.isDense,
+                filled: theme.filled,
+                fillColor: theme.fillColor ?? theme.editingCellColor,
+                // Use the same border configuration as regular cells
+                border: OutlineInputBorder(
+                  borderRadius: theme.borderRadius ?? theme.editingBorderRadius,
+                  borderSide: BorderSide(
+                    color: theme.enabledBorderColor ??
+                        theme.editingBorderColor.withValues(alpha: 0.5),
+                    width: 1.0,
+                  ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: theme.borderRadius ?? theme.editingBorderRadius,
+                  borderSide: BorderSide(
+                    color: theme.enabledBorderColor ??
+                        theme.editingBorderColor.withValues(alpha: 0.5),
+                    width: 1.0,
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: theme.borderRadius ?? theme.editingBorderRadius,
+                  borderSide: BorderSide(
+                    color: theme.focusedBorderColor ?? theme.editingBorderColor,
+                    width: theme.editingBorderWidth,
+                  ),
+                ),
+                errorBorder: OutlineInputBorder(
+                  borderRadius: theme.borderRadius ?? theme.editingBorderRadius,
+                  borderSide: BorderSide(
+                    color: Colors.red.shade400,
+                    width: 1.0,
+                  ),
+                ),
+                focusedErrorBorder: OutlineInputBorder(
+                  borderRadius: theme.borderRadius ?? theme.editingBorderRadius,
+                  borderSide: BorderSide(
+                    color: Colors.red.shade600,
+                    width: theme.editingBorderWidth,
+                  ),
+                ),
               ),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(4),
-              borderSide: BorderSide(
-                color: theme.enabledBorderColor ?? 
-                       theme.editingBorderColor.withValues(alpha: 0.5),
-                width: 1.0,
-              ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(4),
-              borderSide: BorderSide(
-                color: theme.focusedBorderColor ?? theme.editingBorderColor,
-                width: theme.editingBorderWidth,
-              ),
+              onSubmitted: (_) {
+                // For stacked cells, this is a regular cell change, not a merged cell change
+                onStopEditing?.call(save: true);
+              },
             ),
           ),
-          onSubmitted: (_) {
-            // For stacked cells, this is a regular cell change, not a merged cell change
-            onStopEditing?.call(save: true);
-          },
         ),
       ),
     );
@@ -511,7 +563,7 @@ class TablePlusMergedRow extends TablePlusRowWidget {
               ),
             ),
             if (mergeGroup.rowCount > 1) ...[
-              SizedBox(height: 4),
+              const SizedBox(height: 4),
               Text(
                 '${mergeGroup.rowCount} rows',
                 style: TextStyle(

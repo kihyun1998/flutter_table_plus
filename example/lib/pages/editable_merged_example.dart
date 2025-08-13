@@ -69,6 +69,8 @@ class _EditableMergedExampleState extends State<EditableMergedExample> {
       label: 'ID',
       order: 0,
       width: 60,
+      alignment: Alignment.center, // Center align for better visibility
+      textAlign: TextAlign.center,
       editable: false, // ID is not editable
     ),
     'name': TablePlusColumn(
@@ -76,6 +78,8 @@ class _EditableMergedExampleState extends State<EditableMergedExample> {
       label: 'Name',
       order: 1,
       width: 120,
+      alignment: Alignment.center, // Center align for better visibility
+      textAlign: TextAlign.center,
       editable: true,
       hintText: 'Enter name',
     ),
@@ -84,6 +88,8 @@ class _EditableMergedExampleState extends State<EditableMergedExample> {
       label: 'Department',
       order: 2,
       width: 150,
+      alignment: Alignment.center, // Center align for better visibility
+      textAlign: TextAlign.center,
       editable: true,
       hintText: 'Enter department',
     ),
@@ -92,6 +98,8 @@ class _EditableMergedExampleState extends State<EditableMergedExample> {
       label: 'Level',
       order: 3,
       width: 100,
+      alignment: Alignment.center, // Center align for better visibility
+      textAlign: TextAlign.center,
       editable: true,
       hintText: 'Enter level',
     ),
@@ -100,6 +108,8 @@ class _EditableMergedExampleState extends State<EditableMergedExample> {
       label: 'Salary',
       order: 4,
       width: 100,
+      alignment: Alignment.center, // Center align for better visibility
+      textAlign: TextAlign.center,
       editable: true,
       hintText: 'Enter salary',
     ),
@@ -108,6 +118,8 @@ class _EditableMergedExampleState extends State<EditableMergedExample> {
       label: 'Notes',
       order: 5,
       width: 150,
+      alignment: Alignment.centerLeft, // Left align for notes (better for text)
+      textAlign: TextAlign.left,
       editable: true,
       hintText: 'Enter notes',
     ),
@@ -251,10 +263,11 @@ class _EditableMergedExampleState extends State<EditableMergedExample> {
                     const SizedBox(height: 8),
                     const Text(
                       'Features demonstrated:\n'
-                      '• Merged cells that can be edited\n'
+                      '• Merged cells that can be edited (same style as regular cells)\n'
                       '• Individual cells within merge groups\n'
-                      '• Different callback handling for merged vs regular cells\n'
-                      '• Visual feedback during editing',
+                      '• Auto-save when clicking outside (focus lost)\n'
+                      '• Center/left alignment support in editing mode\n'
+                      '• Different callback handling for merged vs regular cells',
                     ),
                     const SizedBox(height: 12),
                     Container(
@@ -327,7 +340,8 @@ class _EditableMergedExampleState extends State<EditableMergedExample> {
                       '• Click any editable cell to start editing\n'
                       '• Merged cells span multiple rows\n'
                       '• Press Enter to save, Escape to cancel\n'
-                      '• Green cells are editable, others are not',
+                      '• Click outside cell to auto-save\n'
+                      '• Text is center/left aligned as configured',
                       style: TextStyle(fontSize: 12),
                     ),
                   ],
