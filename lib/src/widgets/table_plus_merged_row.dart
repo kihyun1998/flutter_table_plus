@@ -222,11 +222,10 @@ class TablePlusMergedRow extends TablePlusRowWidget {
     final controller = getCellController?.call(dataIndex, column.key);
     final theme = editableTheme;
 
-    return SizedBox(
+    return Container(
       width: double.infinity,
       height: mergedHeight,
-      // padding: theme.padding ??
-      //     const EdgeInsets.all(8), // Use theme padding like regular cells
+      padding: theme.cellContainerPadding, // Use editable theme's container padding
       child: Align(
         alignment:
             column.alignment, // Follow column alignment like regular cells
@@ -434,10 +433,10 @@ class TablePlusMergedRow extends TablePlusRowWidget {
     final controller = getCellController?.call(dataIndex, column.key);
     final theme = editableTheme;
 
-    return SizedBox(
+    return Container(
       width: double.infinity,
       height: cellHeight,
-      // padding: theme.padding ?? EdgeInsets.all(8), // Use theme padding like regular cells
+      padding: theme.cellContainerPadding, // Use editable theme's container padding
       child: Align(
         alignment:
             column.alignment, // Follow column alignment like regular cells

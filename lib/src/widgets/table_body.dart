@@ -830,7 +830,7 @@ class _TablePlusCellState extends State<_TablePlusCell> {
       width: widget.width,
       height: widget.calculatedHeight ?? widget.theme.rowHeight,
       padding: widget.isCellEditing
-          ? EdgeInsets.zero // TextField handles its own padding
+          ? widget.editableTheme.cellContainerPadding // Use editable theme's container padding
           : widget.theme.padding,
       decoration: BoxDecoration(
         color: backgroundColor,

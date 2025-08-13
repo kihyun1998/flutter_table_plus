@@ -15,6 +15,7 @@ class TablePlusEditableTheme {
     this.editingBorderRadius = const BorderRadius.all(Radius.circular(4.0)),
     this.textFieldPadding =
         const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+    this.cellContainerPadding = const EdgeInsets.all(8.0),
     this.cursorColor = const Color(0xFF2196F3),
     this.textAlignVertical = TextAlignVertical.center,
     this.focusedBorderColor,
@@ -45,6 +46,10 @@ class TablePlusEditableTheme {
 
   /// The padding inside the text field when editing.
   final EdgeInsets textFieldPadding;
+
+  /// The padding for the container that wraps the text field during editing.
+  /// This controls the space around the text field within the cell.
+  final EdgeInsets cellContainerPadding;
 
   /// The cursor color in the text field.
   final Color cursorColor;
@@ -83,6 +88,7 @@ class TablePlusEditableTheme {
     double? editingBorderWidth,
     BorderRadius? editingBorderRadius,
     EdgeInsets? textFieldPadding,
+    EdgeInsets? cellContainerPadding,
     Color? cursorColor,
     TextAlignVertical? textAlignVertical,
     Color? focusedBorderColor,
@@ -100,6 +106,7 @@ class TablePlusEditableTheme {
       editingBorderWidth: editingBorderWidth ?? this.editingBorderWidth,
       editingBorderRadius: editingBorderRadius ?? this.editingBorderRadius,
       textFieldPadding: textFieldPadding ?? this.textFieldPadding,
+      cellContainerPadding: cellContainerPadding ?? this.cellContainerPadding,
       cursorColor: cursorColor ?? this.cursorColor,
       textAlignVertical: textAlignVertical ?? this.textAlignVertical,
       focusedBorderColor: focusedBorderColor ?? this.focusedBorderColor,
