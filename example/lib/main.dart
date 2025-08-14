@@ -5,6 +5,7 @@ import 'pages/simple_merged_example.dart';
 import 'pages/complex_merged_example.dart';
 import 'pages/selectable_merged_example.dart';
 import 'pages/editable_merged_example.dart';
+import 'pages/sortable_example.dart';
 
 void main() {
   runApp(const MyApp());
@@ -123,6 +124,23 @@ class ExampleHomePage extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                       builder: (context) => const EditableMergedExample(),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 8),
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.sort),
+                title: const Text('Sortable Table'),
+                subtitle: const Text('Table with sorting functionality and 10 sample records'),
+                trailing: const Icon(Icons.arrow_forward_ios),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SortableExample(),
                     ),
                   );
                 },
