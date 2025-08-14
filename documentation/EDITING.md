@@ -77,7 +77,7 @@ To make a merged cell editable, you need to configure the `isEditable` property 
 final List<MergedRowGroup> mergedGroups = [
   MergedRowGroup(
     groupId: 'it_group',
-    originalIndices: [0, 1, 2], // Alice, Bob, Charlie
+    rowKeys: ['1', '2', '3'], // Alice, Bob, Charlie (using their id values)
     mergeConfig: {
       'department': MergeCellConfig(
         shouldMerge: true,
@@ -119,7 +119,8 @@ FlutterTablePlus(
 
     // Example: Find the group and update the data at the spanningRowIndex
     final group = yourMergedGroupsList.firstWhere((g) => g.groupId == groupId);
-    final spanningRowOriginalIndex = group.originalIndices[group.getSpanningRowIndex(columnKey)];
+    final spanningRowKey = group.getSpanningRowKey(columnKey);
+    final spanningRowOriginalIndex = data.indexWhere((row) => row['id']?.toString() == spanningRowKey);
 
     // Update your underlying data source for the specific cell
     setState(() {

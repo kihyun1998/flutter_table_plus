@@ -128,7 +128,8 @@ class EmployeeTableNotifier extends _$EmployeeTableNotifier {
         // Only add if not part of any merged group
         bool isPartOfMergedGroup = false;
         for (final group in state.mergedGroups) {
-          if (group.originalIndices.contains(state.allEmployees.indexOf(employee))) {
+          final employeeId = employee['id']?.toString();
+          if (employeeId != null && group.rowKeys.contains(employeeId)) {
             isPartOfMergedGroup = true;
             break;
           }
@@ -172,7 +173,8 @@ class EmployeeTableNotifier extends _$EmployeeTableNotifier {
   /// Updates a merged cell's value
   void handleMergedCellChange(String groupId, String columnKey, dynamic newValue) {
     final group = state.mergedGroups.firstWhere((g) => g.groupId == groupId);
-    final spanningRowOriginalIndex = group.originalIndices[group.getSpanningRowIndex(columnKey)];
+    final spanningRowKey = group.getSpanningRowKey(columnKey);
+    final spanningRowOriginalIndex = state.allEmployees.indexWhere((emp) => emp['id']?.toString() == spanningRowKey);
 
     final newList = state.allEmployees.map((item) {
       if (state.allEmployees.indexOf(item) == spanningRowOriginalIndex) {

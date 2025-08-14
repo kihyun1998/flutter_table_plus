@@ -102,7 +102,7 @@ class _SelectableMergedExampleState extends State<SelectableMergedExample> {
     // IT department group - 3 rows merged
     MergedRowGroup(
       groupId: 'it_group',
-      originalIndices: [0, 1, 2], // Alice, Bob, Charlie
+      rowKeys: ['1', '2', '3'], // Alice, Bob, Charlie
       mergeConfig: {
         'department': MergeCellConfig(
           shouldMerge: true,
@@ -143,7 +143,7 @@ class _SelectableMergedExampleState extends State<SelectableMergedExample> {
     // Sales department group - 2 rows merged
     MergedRowGroup(
       groupId: 'sales_group',
-      originalIndices: [3, 4], // David, Eve
+      rowKeys: ['4', '5'], // David, Eve
       mergeConfig: {
         'department': MergeCellConfig(
           shouldMerge: true,

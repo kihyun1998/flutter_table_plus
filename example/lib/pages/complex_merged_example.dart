@@ -85,7 +85,7 @@ class ComplexMergedExample extends StatelessWidget {
       // IT department group - merge ID, Department, and Level columns
       MergedRowGroup(
         groupId: 'it_group',
-        originalIndices: [0, 1, 2], // Alice, Bob, Charlie
+        rowKeys: ['1', '2', '3'], // Alice, Bob, Charlie
         mergeConfig: {
           'id': MergeCellConfig(
             shouldMerge: true,
@@ -145,7 +145,7 @@ class ComplexMergedExample extends StatelessWidget {
       // Sales department group - different merge pattern
       MergedRowGroup(
         groupId: 'sales_group',
-        originalIndices: [3, 4], // David, Eve
+        rowKeys: ['4', '5'], // David, Eve
         mergeConfig: {
           'department': MergeCellConfig(
             shouldMerge: true,

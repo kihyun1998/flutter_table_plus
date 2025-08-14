@@ -153,8 +153,13 @@ class TablePlusBody extends StatelessWidget {
 
   /// Find the merged group that contains the specified row index.
   MergedRowGroup? _getMergedGroupForRow(int rowIndex) {
+    if (rowIndex >= data.length) return null;
+    final rowData = data[rowIndex];
+    final rowKey = rowData[rowIdKey]?.toString();
+    if (rowKey == null) return null;
+
     for (final group in mergedGroups) {
-      if (group.originalIndices.contains(rowIndex)) {
+      if (group.rowKeys.contains(rowKey)) {
         return group;
       }
     }
@@ -173,11 +178,20 @@ class TablePlusBody extends StatelessWidget {
       final mergeGroup = _getMergedGroupForRow(i);
       if (mergeGroup != null) {
         // Add only the first row of the merge group
-        if (mergeGroup.originalIndices.first == i) {
+        final firstRowKey = mergeGroup.rowKeys.first;
+        final firstRowIndex =
+            data.indexWhere((row) => row[rowIdKey]?.toString() == firstRowKey);
+        if (firstRowIndex == i) {
           renderableIndices.add(i);
         }
         // Mark all rows in this group as processed
-        processedIndices.addAll(mergeGroup.originalIndices);
+        for (final rowKey in mergeGroup.rowKeys) {
+          final rowIndex =
+              data.indexWhere((row) => row[rowIdKey]?.toString() == rowKey);
+          if (rowIndex != -1) {
+            processedIndices.add(rowIndex);
+          }
+        }
       } else {
         // Regular row - add it
         renderableIndices.add(i);
@@ -313,67 +327,78 @@ class TablePlusBody extends StatelessWidget {
     // Check if this index is part of a merged group
     final mergeGroup = _getMergedGroupForRow(index);
 
-    if (mergeGroup != null && mergeGroup.originalIndices.first == index) {
-      // This is the first row in a merge group - create a merged row
-      final isSelected = selectedRows.contains(mergeGroup.groupId);
+    if (mergeGroup != null) {
+      final firstRowKey = mergeGroup.rowKeys.first;
+      final firstRowIndex =
+          data.indexWhere((row) => row[rowIdKey]?.toString() == firstRowKey);
+      if (firstRowIndex == index) {
+        // This is the first row in a merge group - create a merged row
+        final isSelected = selectedRows.contains(mergeGroup.groupId);
 
-      return TablePlusMergedRow(
-        mergeGroup: mergeGroup,
-        allData: data,
-        columns: columns,
-        columnWidths: columnWidths,
-        theme: theme,
-        backgroundColor: _getRowColor(index, isSelected),
-        isLastRow: mergeGroup.originalIndices.last == data.length - 1,
-        isSelectable: isSelectable,
-        selectionMode: selectionMode,
-        isSelected: isSelected,
-        selectionTheme: selectionTheme,
-        onRowSelectionChanged: _handleRowSelectionToggle,
-        isEditable: isEditable,
-        editableTheme: editableTheme,
-        tooltipTheme: tooltipTheme,
-        isCellEditing: isCellEditing,
-        getCellController: getCellController,
-        onCellTap: onCellTap,
-        onStopEditing: onStopEditing,
-        onRowDoubleTap: onRowDoubleTap,
-        onRowSecondaryTap: onRowSecondaryTap,
-        onMergedCellChanged: onMergedCellChanged,
-        calculatedHeight: rowHeights.isNotEmpty ? rowHeights[index] : null,
-      );
-    } else {
-      // This is a normal row (not part of any merge group)
-      final rowData = data[index];
-      final rowId = _getRowId(rowData);
-      final isSelected = rowId != null && selectedRows.contains(rowId);
-
-      return _TablePlusRow(
-        rowIndex: index,
-        rowData: rowData,
-        rowId: rowId,
-        columns: columns,
-        columnWidths: columnWidths,
-        theme: theme,
-        backgroundColor: _getRowColor(index, isSelected),
-        isLastRow: index == data.length - 1,
-        isSelectable: isSelectable,
-        selectionMode: selectionMode,
-        isSelected: isSelected,
-        selectionTheme: selectionTheme,
-        onRowSelectionChanged: _handleRowSelectionToggle,
-        onRowDoubleTap: onRowDoubleTap,
-        onRowSecondaryTap: onRowSecondaryTap,
-        isEditable: isEditable,
-        editableTheme: editableTheme,
-        tooltipTheme: tooltipTheme,
-        isCellEditing: isCellEditing,
-        getCellController: getCellController,
-        onCellTap: onCellTap,
-        onStopEditing: onStopEditing,
-        calculatedHeight: rowHeights.isNotEmpty ? rowHeights[index] : null,
-      );
+        return TablePlusMergedRow(
+          mergeGroup: mergeGroup,
+          allData: data,
+          columns: columns,
+          columnWidths: columnWidths,
+          theme: theme,
+          backgroundColor: _getRowColor(index, isSelected),
+          isLastRow: (() {
+            final lastRowKey = mergeGroup.rowKeys.last;
+            final lastRowIndex = data
+                .indexWhere((row) => row[rowIdKey]?.toString() == lastRowKey);
+            return lastRowIndex == data.length - 1;
+          })(),
+          isSelectable: isSelectable,
+          selectionMode: selectionMode,
+          isSelected: isSelected,
+          selectionTheme: selectionTheme,
+          onRowSelectionChanged: _handleRowSelectionToggle,
+          isEditable: isEditable,
+          editableTheme: editableTheme,
+          tooltipTheme: tooltipTheme,
+          rowIdKey: rowIdKey,
+          isCellEditing: isCellEditing,
+          getCellController: getCellController,
+          onCellTap: onCellTap,
+          onStopEditing: onStopEditing,
+          onRowDoubleTap: onRowDoubleTap,
+          onRowSecondaryTap: onRowSecondaryTap,
+          onMergedCellChanged: onMergedCellChanged,
+          calculatedHeight: rowHeights.isNotEmpty ? rowHeights[index] : null,
+        );
+      }
     }
+
+    // This is a normal row (not part of any merge group)
+    final rowData = data[index];
+    final rowId = _getRowId(rowData);
+    final isSelected = rowId != null && selectedRows.contains(rowId);
+
+    return _TablePlusRow(
+      rowIndex: index,
+      rowData: rowData,
+      rowId: rowId,
+      columns: columns,
+      columnWidths: columnWidths,
+      theme: theme,
+      backgroundColor: _getRowColor(index, isSelected),
+      isLastRow: index == data.length - 1,
+      isSelectable: isSelectable,
+      selectionMode: selectionMode,
+      isSelected: isSelected,
+      selectionTheme: selectionTheme,
+      onRowSelectionChanged: _handleRowSelectionToggle,
+      onRowDoubleTap: onRowDoubleTap,
+      onRowSecondaryTap: onRowSecondaryTap,
+      isEditable: isEditable,
+      editableTheme: editableTheme,
+      tooltipTheme: tooltipTheme,
+      isCellEditing: isCellEditing,
+      getCellController: getCellController,
+      onCellTap: onCellTap,
+      onStopEditing: onStopEditing,
+      calculatedHeight: rowHeights.isNotEmpty ? rowHeights[index] : null,
+    );
   }
 }
 

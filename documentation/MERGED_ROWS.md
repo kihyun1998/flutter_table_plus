@@ -35,7 +35,7 @@ The `MergedRowGroup` class defines a set of original data rows that should be gr
 class MergedRowGroup {
   const MergedRowGroup({
     required this.groupId,
-    required this.originalIndices,
+    required this.rowKeys,
     required this.mergeConfig,
   });
 
@@ -43,16 +43,16 @@ class MergedRowGroup {
   /// Used for selection and editing operations.
   final String groupId;
 
-  /// List of original data indices that belong to this group.
-  /// These indices refer to positions in the original data list.
-  final List<int> originalIndices;
+  /// List of row keys that belong to this group.
+  /// These keys refer to the unique identifiers of rows in the data list.
+  final List<String> rowKeys;
 
   /// Configuration for how each column should be merged within this group.
   /// Key: column key, Value: merge configuration for that column.
   final Map<String, MergeCellConfig> mergeConfig;
 
   /// Returns the number of rows in this group.
-  int get rowCount => originalIndices.length;
+  int get rowCount => rowKeys.length;
 
   /// Returns true if the specified column should be merged for this group.
   bool shouldMergeColumn(String columnKey);
@@ -69,7 +69,7 @@ class MergedRowGroup {
 ```
 
 *   **`groupId`**: A unique string identifier for this specific group of merged rows. This ID is used for selection and editing operations when dealing with merged groups.
-*   **`originalIndices`**: A list of 0-based integer indices from your original `data` list that belong to this merged group. These indices *must* be consecutive and correspond to the rows you wish to merge.
+*   **`rowKeys`**: A list of row keys (string identifiers) from your original `data` list that belong to this merged group. These keys must correspond to the unique identifier field (specified by `rowIdKey`) of the rows you wish to merge.
 *   **`mergeConfig`**: A map where keys are column keys (e.g., `'department'`, `'level'`) and values are `MergeCellConfig` objects. This map specifies how each column within this group should behave regarding merging.
 
 ### MergeCellConfig
@@ -105,8 +105,8 @@ class MergeCellConfig {
 }
 ```
 
-*   **`shouldMerge`**: A boolean indicating whether the cells in this specific column should be merged across the `originalIndices` defined in the parent `MergedRowGroup`. If `false`, each row in the group will display its individual cell content for this column.
-*   **`spanningRowIndex`**: When `shouldMerge` is `true`, this 0-based index specifies which row *within the `originalIndices` list* (not the global data list) will display the merged content. For example, if `originalIndices` is `[0, 1, 2]` and `spanningRowIndex` is `1`, the content from the original data row at index `1` will be displayed in the merged cell. Defaults to `0` (the first row in the group).
+*   **`shouldMerge`**: A boolean indicating whether the cells in this specific column should be merged across the `rowKeys` defined in the parent `MergedRowGroup`. If `false`, each row in the group will display its individual cell content for this column.
+*   **`spanningRowIndex`**: When `shouldMerge` is `true`, this 0-based index specifies which row *within the `rowKeys` list* will display the merged content. For example, if `rowKeys` is `['user1', 'user2', 'user3']` and `spanningRowIndex` is `1`, the content from the row with key `'user2'` will be displayed in the merged cell. Defaults to `0` (the first row in the group).
 *   **`mergedContent`**: An optional `Widget` that can be used to provide custom content for the merged cell. If provided, this widget will be displayed instead of the default text content from the `spanningRowIndex`. This is useful for displaying icons, custom layouts, or aggregated information.
 *   **`isEditable`**: A boolean indicating whether this merged cell should be editable. This property is only considered if `shouldMerge` is `true` and `mergedContent` is `null`. If `mergedContent` is provided, the cell is considered custom-rendered and cannot be edited via the default text field.
 
@@ -158,7 +158,7 @@ To merge the 'IT' department for Alice and Bob (original indices 0 and 1):
 final List<MergedRowGroup> mergedGroups = [
   MergedRowGroup(
     groupId: 'it_dept_group',
-    originalIndices: [0, 1], // Alice and Bob
+    rowKeys: ['1', '2'], // Alice and Bob (using their id values)
     mergeConfig: {
       'department': MergeCellConfig(
         shouldMerge: true,
@@ -205,7 +205,7 @@ Here, we merge 'department' with custom content and 'level' with default content
 final List<MergedRowGroup> mergedGroups = [
   MergedRowGroup(
     groupId: 'it_group',
-    originalIndices: [0, 1, 2], // Alice, Bob, Charlie
+    rowKeys: ['1', '2', '3'], // Alice, Bob, Charlie (using their id values)
     mergeConfig: {
       'department': MergeCellConfig(
         shouldMerge: true,
@@ -357,7 +357,8 @@ class _EditableMergedExampleState extends State<EditableMergedExample> {
       // Find the group and update the appropriate row's data
       final group = mergedGroups.firstWhere((g) => g.groupId == groupId);
       final spanningRowIndex = group.getSpanningRowIndex(columnKey);
-      final dataIndex = group.originalIndices[spanningRowIndex];
+      final spanningRowKey = group.getSpanningRowKey(columnKey);
+      final dataIndex = data.indexWhere((row) => row['id']?.toString() == spanningRowKey);
 
       data[dataIndex][columnKey] = newValue;
       // Update your data source for the merged cell
@@ -383,7 +384,7 @@ class _EditableMergedExampleState extends State<EditableMergedExample> {
 
 ## 8. Considerations and Best Practices
 
-*   **Consecutive Indices**: Ensure that the `originalIndices` in `MergedRowGroup` are always consecutive. The merging logic relies on this assumption.
+*   **Valid Row Keys**: Ensure that all `rowKeys` in `MergedRowGroup` correspond to existing rows in your data list and match the unique identifier field specified by `rowIdKey`.
 *   **Data Consistency**: When a merged cell is edited, remember that the change applies to the single data entry at the `spanningRowIndex` within your original `data` list. If other rows in the merged group conceptually share this data, you might need to manually update them in your data source after `onMergedCellChanged` is triggered.
 *   **`mergedContent` vs. `isEditable`**: If you provide `mergedContent`, the cell will not be editable. Choose between custom content or editability for merged cells.
 *   **Performance**: For very large datasets with many merged groups, ensure your `mergeConfig` is optimized.

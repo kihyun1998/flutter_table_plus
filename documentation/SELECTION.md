@@ -83,8 +83,13 @@ class _SelectableTablePageState extends State<SelectableTablePage> {
 
   // Helper to find merged group for a given original data index
   MergedRowGroup? _getMergedGroupForRow(int rowIndex) {
+    if (rowIndex >= widget.data.length) return null;
+    final rowData = widget.data[rowIndex];
+    final rowKey = rowData[_rowIdKey]?.toString();
+    if (rowKey == null) return null;
+    
     for (final group in widget.mergedGroups) {
-      if (group.originalIndices.contains(rowIndex)) {
+      if (group.rowKeys.contains(rowKey)) {
         return group;
       }
     }
@@ -125,7 +130,12 @@ class _SelectableTablePageState extends State<SelectableTablePage> {
               final mergedGroup = _getMergedGroupForRow(i);
               if (mergedGroup != null) {
                 allSelectableIds.add(mergedGroup.groupId);
-                processedOriginalIndices.addAll(mergedGroup.originalIndices);
+                for (final rowKey in mergedGroup.rowKeys) {
+                  final rowIndex = widget.data.indexWhere((row) => row[_rowIdKey]?.toString() == rowKey);
+                  if (rowIndex != -1) {
+                    processedOriginalIndices.add(rowIndex);
+                  }
+                }
               } else {
                 allSelectableIds.add(widget.data[i][_rowIdKey].toString());
                 processedOriginalIndices.add(i);

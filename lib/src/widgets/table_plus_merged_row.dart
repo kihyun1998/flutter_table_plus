@@ -29,6 +29,7 @@ class TablePlusMergedRow extends TablePlusRowWidget {
     required this.isEditable,
     required this.editableTheme,
     required this.tooltipTheme,
+    required this.rowIdKey,
     this.isCellEditing,
     this.getCellController,
     this.onCellTap,
@@ -44,6 +45,7 @@ class TablePlusMergedRow extends TablePlusRowWidget {
   final List<TablePlusColumn> columns;
   final List<double> columnWidths;
   final TablePlusBodyTheme theme;
+  final String rowIdKey;
   @override
   final Color backgroundColor;
   @override
@@ -73,7 +75,14 @@ class TablePlusMergedRow extends TablePlusRowWidget {
   int get effectiveRowCount => 1; // Visually appears as one row
 
   @override
-  List<int> get originalDataIndices => mergeGroup.originalIndices;
+  List<int> get originalDataIndices {
+    // Convert rowKeys back to indices for compatibility
+    return mergeGroup.rowKeys
+        .map((rowKey) =>
+            allData.indexWhere((row) => row[rowIdKey]?.toString() == rowKey))
+        .where((index) => index != -1)
+        .toList();
+  }
 
   /// Handle row tap for selection.
   void _handleRowTap() {
@@ -89,9 +98,9 @@ class TablePlusMergedRow extends TablePlusRowWidget {
     }
   }
 
-  /// Get the data for a specific row index within the merge group.
-  Map<String, dynamic> _getRowData(int originalIndex) {
-    return allData[originalIndex];
+  /// Get the data for a specific row key within the merge group.
+  Map<String, dynamic>? _getRowData(String rowKey) {
+    return mergeGroup.getRowData(allData, rowKey, rowIdKey);
   }
 
   /// Handle merged cell value change.
@@ -121,9 +130,8 @@ class TablePlusMergedRow extends TablePlusRowWidget {
   Widget _buildMergedCell(
       BuildContext context, TablePlusColumn column, double? width) {
     final mergedContent = mergeGroup.getMergedContent(column.key);
-    final spanningRowIndex = mergeGroup.getSpanningRowIndex(column.key);
-    final spanningDataIndex = mergeGroup.originalIndices[spanningRowIndex];
-    final rowData = _getRowData(spanningDataIndex);
+    final spanningRowKey = mergeGroup.getSpanningRowKey(column.key);
+    final rowData = _getRowData(spanningRowKey);
 
     // Calculate height for merged cell (height of all merged rows combined)
     final singleRowHeight = calculatedHeight ?? theme.rowHeight;
@@ -133,7 +141,10 @@ class TablePlusMergedRow extends TablePlusRowWidget {
     final isCellEditable = isEditable &&
         column.editable &&
         mergeGroup.isMergedCellEditable(column.key);
+    final spanningDataIndex = allData
+        .indexWhere((row) => row[rowIdKey]?.toString() == spanningRowKey);
     final isCurrentlyEditing = isCellEditable &&
+        spanningDataIndex != -1 &&
         isCellEditing?.call(spanningDataIndex, column.key) == true;
 
     Widget content;
@@ -144,13 +155,13 @@ class TablePlusMergedRow extends TablePlusRowWidget {
     } else if (isCurrentlyEditing) {
       // Editing mode for merged cell
       content = _buildMergedCellEditingTextField(
-          context, column, spanningDataIndex, rowData, mergedHeight);
+          context, column, spanningDataIndex, rowData ?? {}, mergedHeight);
     } else if (column.cellBuilder != null) {
       // Custom cell builder
       content = Container(
         alignment: column.alignment,
         padding: theme.padding,
-        child: column.cellBuilder!(context, rowData),
+        child: column.cellBuilder!(context, rowData ?? {}),
       );
     } else {
       // Default text content
@@ -158,7 +169,7 @@ class TablePlusMergedRow extends TablePlusRowWidget {
         alignment: column.alignment,
         padding: theme.padding,
         child: Text(
-          rowData[column.key]?.toString() ?? '',
+          (rowData ?? {})[column.key]?.toString() ?? '',
           style: theme.textStyle,
           textAlign: column.textAlign,
           overflow: column.textOverflow,
@@ -327,15 +338,18 @@ class TablePlusMergedRow extends TablePlusRowWidget {
       width: width,
       height: totalHeight,
       child: Column(
-        children: mergeGroup.originalIndices.asMap().entries.map((entry) {
+        children: mergeGroup.rowKeys.asMap().entries.map((entry) {
           final index = entry.key;
-          final originalIndex = entry.value;
-          final rowData = _getRowData(originalIndex);
-          final isLastRow = index == mergeGroup.originalIndices.length - 1;
+          final rowKey = entry.value;
+          final rowData = _getRowData(rowKey);
+          final isLastRow = index == mergeGroup.rowKeys.length - 1;
 
           // Check if this individual cell is editable
           final isCellEditable = isEditable && column.editable;
+          final originalIndex =
+              allData.indexWhere((row) => row[rowIdKey]?.toString() == rowKey);
           final isCurrentlyEditing = isCellEditable &&
+              originalIndex != -1 &&
               isCellEditing?.call(originalIndex, column.key) == true;
 
           Widget content;
@@ -343,19 +357,19 @@ class TablePlusMergedRow extends TablePlusRowWidget {
           if (isCurrentlyEditing) {
             // Editing mode for individual cell
             content = _buildStackedCellEditingTextField(
-                context, column, originalIndex, rowData, singleRowHeight);
+                context, column, originalIndex, rowData ?? {}, singleRowHeight);
           } else if (column.cellBuilder != null) {
             content = Container(
               alignment: column.alignment,
               padding: theme.padding,
-              child: column.cellBuilder!(context, rowData),
+              child: column.cellBuilder!(context, rowData ?? {}),
             );
           } else {
             content = Container(
               alignment: column.alignment,
               padding: theme.padding,
               child: Text(
-                rowData[column.key]?.toString() ?? '',
+                (rowData ?? {})[column.key]?.toString() ?? '',
                 style: theme.textStyle,
                 textAlign: column.textAlign,
                 overflow: column.textOverflow,

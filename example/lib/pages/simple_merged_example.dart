@@ -46,7 +46,7 @@ class SimpleMergedExample extends StatelessWidget {
     final List<MergedRowGroup> mergedGroups = [
       MergedRowGroup(
         groupId: 'm1',
-        originalIndices: [0, 1], // Rows 0 and 1 (aman and bman)
+        rowKeys: ['1', '2'], // Rows with id '1' and '2' (aman and bman)
         mergeConfig: {
           'department': MergeCellConfig(
             shouldMerge: true,

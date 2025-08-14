@@ -130,7 +130,7 @@ class _EditableMergedExampleState extends State<EditableMergedExample> {
     // IT department group
     MergedRowGroup(
       groupId: 'it_group',
-      originalIndices: [0, 1, 2], // Alice, Bob, Charlie
+      rowKeys: ['1', '2', '3'], // Alice, Bob, Charlie
       mergeConfig: {
         'department': MergeCellConfig(
           shouldMerge: true,
@@ -148,7 +148,7 @@ class _EditableMergedExampleState extends State<EditableMergedExample> {
     // Sales department group
     MergedRowGroup(
       groupId: 'sales_group',
-      originalIndices: [3, 4], // David, Eve
+      rowKeys: ['4', '5'], // David, Eve
       mergeConfig: {
         'department': MergeCellConfig(
           shouldMerge: true,
@@ -186,14 +186,17 @@ class _EditableMergedExampleState extends State<EditableMergedExample> {
     setState(() {
       // Find the group and update the appropriate row's data
       final group = mergedGroups.firstWhere((g) => g.groupId == groupId);
-      final spanningRowIndex = group.getSpanningRowIndex(columnKey);
-      final dataIndex = group.originalIndices[spanningRowIndex];
+      final spanningRowKey = group.getSpanningRowKey(columnKey);
+      final dataIndex = data.indexWhere((row) => row['id']?.toString() == spanningRowKey);
+      
+      if (dataIndex != -1) {
+        final oldValue = data[dataIndex][columnKey];
+        data[dataIndex][columnKey] = newValue;
+        
+        lastAction =
+            'Changed $groupId\'s merged $columnKey from "$oldValue" to "$newValue"';
+      }
 
-      final oldValue = data[dataIndex][columnKey];
-      data[dataIndex][columnKey] = newValue;
-
-      lastAction =
-          'Changed $groupId\'s merged $columnKey from "$oldValue" to "$newValue"';
     });
   }
 

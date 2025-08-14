@@ -123,7 +123,7 @@ FlutterTablePlus follows a composition pattern where:
 - Row data: `List<Map<String, dynamic>>` where keys match column keys
 - Selection feature: Each row must have unique row ID field (default: 'id', configurable via `rowIdKey`)
 - Column definitions: Use `TableColumnsBuilder` for safe column creation
-- Merged rows: MergedRowGroup requires consecutive `originalIndices` from the data list
+- Merged rows: MergedRowGroup requires valid `rowKeys` that correspond to the unique identifier field (`rowIdKey`) in the data list
 
 ### Widget Composition Pattern
 - Header and body are separate widgets with synchronized scroll controllers

@@ -3,8 +3,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../../flutter_table_plus.dart' show TablePlusTheme;
-import '../models/table_column.dart';
 import '../models/merged_row_group.dart';
+import '../models/table_column.dart';
 import '../utils/text_height_calculator.dart';
 import 'synced_scroll_controllers.dart';
 import 'table_body.dart';
@@ -495,7 +495,13 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
       if (mergeGroup != null) {
         // This row is part of a merged group - count as 1 selectable unit
         selectableCount++;
-        processedIndices.addAll(mergeGroup.originalIndices);
+        for (final rowKey in mergeGroup.rowKeys) {
+          final rowIndex = widget.data
+              .indexWhere((row) => row[widget.rowIdKey]?.toString() == rowKey);
+          if (rowIndex != -1) {
+            processedIndices.add(rowIndex);
+          }
+        }
       } else {
         // Regular row - count as 1 selectable unit
         selectableCount++;
@@ -508,8 +514,13 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
 
   /// Find the merged group that contains the specified row index.
   MergedRowGroup? _getMergedGroupForRow(int rowIndex) {
+    if (rowIndex >= widget.data.length) return null;
+    final rowData = widget.data[rowIndex];
+    final rowKey = rowData[widget.rowIdKey]?.toString();
+    if (rowKey == null) return null;
+
     for (final group in widget.mergedGroups) {
-      if (group.originalIndices.contains(rowIndex)) {
+      if (group.rowKeys.contains(rowKey)) {
         return group;
       }
     }
