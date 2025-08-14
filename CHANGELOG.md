@@ -1,3 +1,15 @@
+## 1.12.0
+
+*   **FEAT**: Added support for dynamic row height.
+    *   Introduced `RowHeightMode.dynamic` to allow rows to resize based on content.
+    *   Added `minRowHeight` to control the minimum height of a row.
+    *   Added a new example page to demonstrate dynamic row height.
+*   **FEAT**: Improved sorting with merged rows.
+    *   Merged groups are now dynamically generated based on the sorted data, ensuring they are correctly displayed after sorting.
+*   **REFACTOR**: `MergedRowGroup` now uses `rowKeys` instead of `originalIndices` for a more robust implementation.
+*   **FIX**: Corrected the alternate row color logic to use the render index, ensuring correct striping after sorting.
+*   **FIX**: Fixed an issue where the background color of rows was not being applied correctly.
+
 ## 1.11.1
 
 *   **IMPROVEMENT**: Improved focusing on modification for editable cells.

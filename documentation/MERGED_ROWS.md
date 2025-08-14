@@ -388,6 +388,7 @@ class _EditableMergedExampleState extends State<EditableMergedExample> {
 *   **Data Consistency**: When a merged cell is edited, remember that the change applies to the single data entry at the `spanningRowIndex` within your original `data` list. If other rows in the merged group conceptually share this data, you might need to manually update them in your data source after `onMergedCellChanged` is triggered.
 *   **`mergedContent` vs. `isEditable`**: If you provide `mergedContent`, the cell will not be editable. Choose between custom content or editability for merged cells.
 *   **Performance**: For very large datasets with many merged groups, ensure your `mergeConfig` is optimized.
+*   **Sorting**: When sorting a table with merged rows, the entire `MergedRowGroup` is treated as a single unit. For correct behavior, it is highly recommended to dynamically generate the `mergedGroups` list based on the sorted data. This ensures that groups are correctly identified after the data order changes. For a detailed example, refer to the `sortable_example.dart` file in the example project.
 *   **Selection Mode**: In `SelectionMode.single`, selecting a merged group will deselect any previously selected individual rows or other merged groups.
 *   **Row Height**: Merged rows will visually span the height of all their constituent original rows. Ensure your `rowHeightMode` and `minRowHeight` settings accommodate this.
 *   **Column Visibility**: If a column involved in merging is made invisible, the merging behavior for that column will not be displayed.

@@ -233,3 +233,16 @@ FlutterTablePlus(
   onSort: userCanSort ? _handleSort : null, // Dynamically enable/disable
 );
 ```
+
+## 6. Sorting with Merged Rows
+
+When using sorting in a table that contains merged rows, it's important to understand how they interact.
+
+- **Group Integrity**: When you sort a column, the rows within a `MergedRowGroup` will always be moved together. The entire group is treated as a single block for sorting purposes.
+- **Dynamic Merged Groups**: For correct behavior, it is **highly recommended** to dynamically generate the `mergedGroups` list based on the *currently sorted* data. If your `mergedGroups` are static, they will not reflect the new data order after a sort, leading to incorrect rendering.
+- **Implementation**:
+    1.  In your `onSort` callback, first sort your `data` list.
+    2.  After sorting, generate a new `mergedGroups` list based on the new order of the `data`.
+    3.  Pass both the sorted `data` and the new `mergedGroups` to `setState` to rebuild the table.
+
+For a detailed implementation of this approach, see the `sortable_example.dart` file in the example project. It provides a comprehensive example of how to handle sorting logic while preserving merged group integrity.

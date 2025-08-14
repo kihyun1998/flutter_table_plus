@@ -81,7 +81,7 @@ This theme controls the appearance of the data rows in the table body.
 
 - `rowHeight`: The height of each data row. This value acts as a baseline. When `FlutterTablePlus`'s `rowHeightMode` is set to `RowHeightMode.uniform`, all rows will adopt this height or expand to the tallest content if `textOverflow: TextOverflow.visible` is used. When `rowHeightMode` is `RowHeightMode.dynamic`, this `rowHeight` acts as the initial minimum height, which can be further controlled by `minRowHeight` in `FlutterTablePlus`.
 - `backgroundColor`: The default background color for rows.
-- `alternateRowColor`: If set, creates a striped (zebra) effect by applying this color to odd-indexed rows.
+- `alternateRowColor`: If set, creates a striped (zebra) effect. This color is applied to the rows that are at an odd *rendering* index (1, 3, 5, ...), not necessarily the odd index in your original data list. This ensures the striping is correct even after sorting or filtering.
 - `textStyle`: The default `TextStyle` for cell content.
 - `padding`: The padding within each data cell.
 - `showHorizontalDividers`: Whether to show horizontal lines between rows.
