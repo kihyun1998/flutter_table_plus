@@ -187,16 +187,16 @@ class _EditableMergedExampleState extends State<EditableMergedExample> {
       // Find the group and update the appropriate row's data
       final group = mergedGroups.firstWhere((g) => g.groupId == groupId);
       final spanningRowKey = group.getSpanningRowKey(columnKey);
-      final dataIndex = data.indexWhere((row) => row['id']?.toString() == spanningRowKey);
-      
+      final dataIndex =
+          data.indexWhere((row) => row['id']?.toString() == spanningRowKey);
+
       if (dataIndex != -1) {
         final oldValue = data[dataIndex][columnKey];
         data[dataIndex][columnKey] = newValue;
-        
+
         lastAction =
             'Changed $groupId\'s merged $columnKey from "$oldValue" to "$newValue"';
       }
-
     });
   }
 

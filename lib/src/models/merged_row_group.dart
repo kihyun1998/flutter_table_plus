@@ -70,7 +70,8 @@ class MergedRowGroup {
   }
 
   /// Returns the row data for a specific row key from the provided data list.
-  Map<String, dynamic>? getRowData(List<Map<String, dynamic>> allData, String rowKey, String rowIdKey) {
+  Map<String, dynamic>? getRowData(
+      List<Map<String, dynamic>> allData, String rowKey, String rowIdKey) {
     try {
       return allData.firstWhere((row) => row[rowIdKey]?.toString() == rowKey);
     } catch (e) {
@@ -79,7 +80,8 @@ class MergedRowGroup {
   }
 
   /// Returns all row data for this group from the provided data list.
-  List<Map<String, dynamic>> getAllRowData(List<Map<String, dynamic>> allData, String rowIdKey) {
+  List<Map<String, dynamic>> getAllRowData(
+      List<Map<String, dynamic>> allData, String rowIdKey) {
     return rowKeys
         .map((rowKey) => getRowData(allData, rowKey, rowIdKey))
         .where((data) => data != null)

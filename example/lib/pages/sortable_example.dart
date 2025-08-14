@@ -30,7 +30,8 @@ class _SortableExampleState extends State<SortableExample> {
     },
     {
       'id': '7',
-      'name': 'George Wilson with a very long name that should wrap to multiple lines',
+      'name':
+          'George Wilson with a very long name that should wrap to multiple lines',
       'department': 'Engineering',
       'salary': 102000,
       'age': 38,
@@ -367,7 +368,8 @@ class _SortableExampleState extends State<SortableExample> {
                 data: data,
                 rowIdKey: 'id',
                 mergedGroups: mergedGroups,
-                rowHeightMode: RowHeightMode.dynamic, // Enable dynamic height calculation
+                rowHeightMode:
+                    RowHeightMode.dynamic, // Enable dynamic height calculation
                 minRowHeight: 48.0,
                 onSort: (col, dir) {
                   _handleSort(col, dir);
@@ -510,7 +512,8 @@ class _SortableExampleState extends State<SortableExample> {
           },
           {
             'id': '7',
-            'name': 'George Wilson with a very long name that should wrap to multiple lines',
+            'name':
+                'George Wilson with a very long name that should wrap to multiple lines',
             'department': 'Engineering',
             'salary': 102000,
             'age': 38,

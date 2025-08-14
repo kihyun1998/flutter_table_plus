@@ -135,7 +135,8 @@ class ExampleHomePage extends StatelessWidget {
               child: ListTile(
                 leading: const Icon(Icons.sort),
                 title: const Text('Sortable Table'),
-                subtitle: const Text('Table with sorting functionality and 10 sample records'),
+                subtitle: const Text(
+                    'Table with sorting functionality and 10 sample records'),
                 trailing: const Icon(Icons.arrow_forward_ios),
                 onTap: () {
                   Navigator.push(
@@ -152,7 +153,8 @@ class ExampleHomePage extends StatelessWidget {
               child: ListTile(
                 leading: const Icon(Icons.height),
                 title: const Text('Dynamic Height Testing'),
-                subtitle: const Text('Test uniform vs dynamic row height modes'),
+                subtitle:
+                    const Text('Test uniform vs dynamic row height modes'),
                 trailing: const Icon(Icons.arrow_forward_ios),
                 onTap: () {
                   Navigator.push(

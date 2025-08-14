@@ -147,12 +147,12 @@ class TextHeightCalculator {
   }
 
   /// Calculates row heights considering merged groups.
-  /// 
+  ///
   /// This function first calculates individual row heights, then ensures that all rows
   /// within the same merged group have the same height (the maximum height within the group).
   ///
   /// [data] - Table data
-  /// [columns] - Column definitions  
+  /// [columns] - Column definitions
   /// [mergedGroups] - List of merged row groups
   /// [bodyTextStyle] - Default text style for body cells
   /// [bodyPadding] - Default padding for body cells
@@ -190,11 +190,13 @@ class TextHeightCalculator {
 
       // Find all row indices in this group and determine the maximum height
       for (final rowKey in group.rowKeys) {
-        final rowIndex = data.indexWhere((row) => row[rowIdKey]?.toString() == rowKey);
+        final rowIndex =
+            data.indexWhere((row) => row[rowIdKey]?.toString() == rowKey);
         if (rowIndex != -1) {
           groupRowIndices.add(rowIndex);
           if (individualHeights.containsKey(rowIndex)) {
-            maxGroupHeight = math.max(maxGroupHeight, individualHeights[rowIndex]!);
+            maxGroupHeight =
+                math.max(maxGroupHeight, individualHeights[rowIndex]!);
           }
         }
       }
