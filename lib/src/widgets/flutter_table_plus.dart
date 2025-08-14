@@ -479,13 +479,14 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
     return allWidths;
   }
 
-  /// Get the actual number of selectable units considering merged groups.
-  /// Each merged group counts as 1 selectable unit, regardless of how many rows it contains.
-  int _getSelectableRowCount() {
-    if (!widget.isSelectable || widget.data.isEmpty) return 0;
+  /// Get the total number of displayed rows considering merged groups.
+  /// Each merged group counts as 1 displayed row, regardless of how many data rows it contains.
+  /// This count is used for both selection features and sort functionality.
+  int _getTotalRowCount() {
+    if (widget.data.isEmpty) return 0;
 
     Set<int> processedIndices = {};
-    int selectableCount = 0;
+    int totalCount = 0;
 
     for (int i = 0; i < widget.data.length; i++) {
       if (processedIndices.contains(i)) continue;
@@ -493,8 +494,8 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
       // Check if this row is part of a merged group
       final mergeGroup = _getMergedGroupForRow(i);
       if (mergeGroup != null) {
-        // This row is part of a merged group - count as 1 selectable unit
-        selectableCount++;
+        // This row is part of a merged group - count as 1 displayed row
+        totalCount++;
         for (final rowKey in mergeGroup.rowKeys) {
           final rowIndex = widget.data
               .indexWhere((row) => row[widget.rowIdKey]?.toString() == rowKey);
@@ -503,13 +504,13 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
           }
         }
       } else {
-        // Regular row - count as 1 selectable unit
-        selectableCount++;
+        // Regular row - count as 1 displayed row
+        totalCount++;
         processedIndices.add(i);
       }
     }
 
-    return selectableCount;
+    return totalCount;
   }
 
   /// Find the merged group that contains the specified row index.
@@ -661,7 +662,7 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                               selectionMode: widget.selectionMode,
                               selectedRows: widget.selectedRows,
                               sortCycleOrder: widget.sortCycleOrder,
-                              totalRowCount: _getSelectableRowCount(),
+                              totalRowCount: _getTotalRowCount(),
                               selectionTheme: theme.selectionTheme,
                               tooltipTheme: theme.tooltipTheme,
                               onSelectAll: widget.onSelectAll,

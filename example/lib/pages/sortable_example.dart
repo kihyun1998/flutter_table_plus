@@ -374,7 +374,6 @@ class _SortableExampleState extends State<SortableExample> {
                 rowIdKey: 'id',
                 mergedGroups: mergedGroups,
                 onSort: (col, dir) {
-                  print('🔥 onSort called: $col -> $dir');
                   _handleSort(col, dir);
                 },
                 sortColumnKey: currentSortColumn,
