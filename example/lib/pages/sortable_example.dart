@@ -101,111 +101,103 @@ class _SortableExampleState extends State<SortableExample> {
   String? currentSortColumn;
   SortDirection? currentSortDirection;
 
-  // Merged groups configuration - group by department
-  List<MergedRowGroup> get mergedGroups => [
-        // Engineering Department Group
-        MergedRowGroup(
-          groupId: 'engineering_group',
-          rowKeys: ['1', '3', '7', '9'], // Alice, Charlie, George, Ian
-          mergeConfig: {
-            'department': MergeCellConfig(
-              shouldMerge: true,
-              spanningRowIndex: 0, // Show in first row
-              mergedContent: Container(
-                alignment: Alignment.center,
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.blue.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.computer, color: Colors.blue.shade600, size: 16),
-                    const SizedBox(width: 4),
-                    const Text(
-                      'Engineering',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
+  // Dynamic merged groups configuration - updates based on current data order
+  List<MergedRowGroup> get mergedGroups => _generateMergedGroups();
+
+  // Generate merged groups based on current data order
+  List<MergedRowGroup> _generateMergedGroups() {
+    // Group data by department and track their positions in current data
+    final Map<String, List<String>> departmentGroups = {};
+
+    for (int i = 0; i < data.length; i++) {
+      final row = data[i];
+      final department = row['department'] as String;
+      final rowId = row['id'] as String;
+
+      departmentGroups.putIfAbsent(department, () => []).add(rowId);
+    }
+
+    // Only create merged groups for departments with more than 1 employee
+    final List<MergedRowGroup> groups = [];
+
+    departmentGroups.forEach((department, rowIds) {
+      if (rowIds.length > 1) {
+        // Create merged group based on department
+        Widget mergedContent;
+        Color color;
+        IconData icon;
+
+        switch (department) {
+          case 'Engineering':
+            color = Colors.blue;
+            icon = Icons.computer;
+            break;
+          case 'Marketing':
+            color = Colors.orange;
+            icon = Icons.campaign;
+            break;
+          case 'Finance':
+            color = Colors.green;
+            icon = Icons.account_balance;
+            break;
+          default:
+            color = Colors.grey;
+            icon = Icons.business;
+        }
+
+        mergedContent = Container(
+          alignment: Alignment.center,
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: color.withValues(alpha: 0.3)),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: Colors.red, size: 16),
+              const SizedBox(width: 4),
+              Text(
+                department,
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
-            ),
-            // Other columns show individual values
-          },
-        ),
-        // Marketing Department Group
-        MergedRowGroup(
-          groupId: 'marketing_group',
-          rowKeys: ['2', '8'], // Bob, Hannah
-          mergeConfig: {
-            'department': MergeCellConfig(
-              shouldMerge: true,
-              spanningRowIndex: 0,
-              mergedContent: Container(
-                alignment: Alignment.center,
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.orange.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                  border:
-                      Border.all(color: Colors.orange.withValues(alpha: 0.3)),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.campaign,
-                        color: Colors.orange.shade600, size: 16),
-                    const SizedBox(width: 4),
-                    const Text(
-                      'Marketing',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
+            ],
+          ),
+        );
+
+        groups.add(
+          MergedRowGroup(
+            groupId: '${department.toLowerCase()}_group',
+            rowKeys: rowIds,
+            mergeConfig: {
+              'department': MergeCellConfig(
+                shouldMerge: true,
+                spanningRowIndex: 0,
+                mergedContent: mergedContent,
               ),
-            ),
-          },
-        ),
-        // Finance Department Group
-        MergedRowGroup(
-          groupId: 'finance_group',
-          rowKeys: ['6', '10'], // Fiona, Julia
-          mergeConfig: {
-            'department': MergeCellConfig(
-              shouldMerge: true,
-              spanningRowIndex: 0,
-              mergedContent: Container(
-                alignment: Alignment.center,
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.green.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                  border:
-                      Border.all(color: Colors.green.withValues(alpha: 0.3)),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.account_balance,
-                        color: Colors.green.shade600, size: 16),
-                    const SizedBox(width: 4),
-                    const Text(
-                      'Finance',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          },
-        ),
-      ];
+            },
+          ),
+        );
+      }
+    });
+
+    return groups;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Ensure merged groups are properly initialized
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    print('🔧 BUILD: sort=$currentSortColumn, dir=$currentSortDirection');
     // Column configuration with sorting enabled
     final Map<String, TablePlusColumn> columns = {
       'id': TablePlusColumn(
@@ -492,59 +484,112 @@ class _SortableExampleState extends State<SortableExample> {
       currentSortColumn = columnKey;
       currentSortDirection = direction;
 
-      // If sorting by department, we need special handling for merged groups
-      if (columnKey == 'department') {
-        // Group data by department first, then sort within groups
-        final Map<String, List<Map<String, dynamic>>> departmentGroups = {};
-
-        for (final row in data) {
-          final dept = row['department'] as String;
-          departmentGroups.putIfAbsent(dept, () => []).add(row);
-        }
-
-        // Sort department names
-        final sortedDepartments = departmentGroups.keys.toList();
-        sortedDepartments.sort((a, b) {
-          final comparison = a.toLowerCase().compareTo(b.toLowerCase());
-          return direction == SortDirection.ascending
-              ? comparison
-              : -comparison;
-        });
-
-        // Rebuild data maintaining department groups
-        data.clear();
-        for (final dept in sortedDepartments) {
-          data.addAll(departmentGroups[dept]!);
-        }
-      } else {
-        // For other columns, sort normally but try to maintain department grouping when values are equal
-        data.sort((a, b) {
-          dynamic valueA = a[columnKey];
-          dynamic valueB = b[columnKey];
-
-          // Handle different data types
-          int comparison;
-          if (valueA is String && valueB is String) {
-            comparison = valueA.toLowerCase().compareTo(valueB.toLowerCase());
-          } else if (valueA is num && valueB is num) {
-            comparison = valueA.compareTo(valueB);
-          } else {
-            comparison = valueA.toString().compareTo(valueB.toString());
-          }
-
-          // If values are equal, maintain department grouping as secondary sort
-          if (comparison == 0) {
-            final deptA = a['department'] as String;
-            final deptB = b['department'] as String;
-            comparison = deptA.compareTo(deptB);
-          }
-
-          // Apply sort direction
-          return direction == SortDirection.ascending
-              ? comparison
-              : -comparison;
-        });
+      // Reset to none means restore original order
+      if (direction == SortDirection.none) {
+        // Restore original data order
+        data = [
+          {
+            'id': '1',
+            'name': 'Alice Johnson',
+            'department': 'Engineering',
+            'salary': 95000,
+            'age': 28,
+            'location': 'New York'
+          },
+          {
+            'id': '3',
+            'name': 'Charlie Brown',
+            'department': 'Engineering',
+            'salary': 88000,
+            'age': 25,
+            'location': 'Texas'
+          },
+          {
+            'id': '7',
+            'name': 'George Wilson',
+            'department': 'Engineering',
+            'salary': 102000,
+            'age': 38,
+            'location': 'Oregon'
+          },
+          {
+            'id': '9',
+            'name': 'Ian Foster',
+            'department': 'Engineering',
+            'salary': 89000,
+            'age': 31,
+            'location': 'Colorado'
+          },
+          {
+            'id': '2',
+            'name': 'Bob Smith',
+            'department': 'Marketing',
+            'salary': 75000,
+            'age': 32,
+            'location': 'California'
+          },
+          {
+            'id': '8',
+            'name': 'Hannah Davis',
+            'department': 'Marketing',
+            'salary': 71000,
+            'age': 26,
+            'location': 'Arizona'
+          },
+          {
+            'id': '6',
+            'name': 'Fiona Green',
+            'department': 'Finance',
+            'salary': 78000,
+            'age': 29,
+            'location': 'Washington'
+          },
+          {
+            'id': '10',
+            'name': 'Julia Roberts',
+            'department': 'Finance',
+            'salary': 85000,
+            'age': 34,
+            'location': 'Michigan'
+          },
+          {
+            'id': '4',
+            'name': 'Diana Prince',
+            'department': 'HR',
+            'salary': 82000,
+            'age': 35,
+            'location': 'Florida'
+          },
+          {
+            'id': '5',
+            'name': 'Ethan Hunt',
+            'department': 'Security',
+            'salary': 92000,
+            'age': 30,
+            'location': 'Nevada'
+          },
+        ];
+        return;
       }
+
+      // Sort data by the specified column
+      data.sort((a, b) {
+        dynamic valueA = a[columnKey];
+        dynamic valueB = b[columnKey];
+
+        // Handle different data types
+        int comparison;
+        if (valueA is String && valueB is String) {
+          comparison = valueA.toLowerCase().compareTo(valueB.toLowerCase());
+        } else if (valueA is num && valueB is num) {
+          comparison = valueA.compareTo(valueB);
+        } else {
+          comparison = valueA.toString().compareTo(valueB.toString());
+        }
+
+        // Apply sort direction
+        return direction == SortDirection.ascending ? comparison : -comparison;
+      });
     });
   }
 }
