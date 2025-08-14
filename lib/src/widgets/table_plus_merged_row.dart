@@ -600,6 +600,7 @@ class TablePlusMergedRow extends TablePlusRowWidget {
     Widget rowContent = Container(
       height: mergedHeight,
       decoration: BoxDecoration(
+        color: backgroundColor,
         border: (!isLastRow && theme.showHorizontalDividers)
             ? Border(
                 bottom: BorderSide(

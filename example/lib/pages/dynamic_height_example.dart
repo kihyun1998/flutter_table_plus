@@ -369,7 +369,7 @@ class _DynamicHeightExampleState extends State<DynamicHeightExample> {
                     dividerColor: Colors.grey.shade300,
                   ),
                   bodyTheme: TablePlusBodyTheme(
-                    alternateRowColor: Colors.grey.shade50,
+                    alternateRowColor: Colors.blue.shade50,
                     rowHeight: _minRowHeight,
                     textStyle: const TextStyle(fontSize: 13),
                     dividerColor: Colors.grey.shade200,

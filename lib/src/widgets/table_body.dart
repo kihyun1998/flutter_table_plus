@@ -318,14 +318,19 @@ class TablePlusBody extends StatelessWidget {
       itemCount: renderableIndices.length,
       itemBuilder: (context, index) {
         final actualIndex = renderableIndices[index];
-        return _buildRowWidget(actualIndex, rowHeights);
+        return _buildRowWidget(
+            actualIndex, rowHeights, index); // Pass rendering index
       },
     );
   }
 
   /// Build a row widget for the given index.
   /// This method can be overridden or extended to support different row types.
-  TablePlusRowWidget _buildRowWidget(int index, Map<int, double> rowHeights) {
+  /// [index] - Original data index
+  /// [rowHeights] - Calculated row heights
+  /// [renderIndex] - Rendering order index (for alternateRowColor)
+  TablePlusRowWidget _buildRowWidget(
+      int index, Map<int, double> rowHeights, int renderIndex) {
     // Check if this index is part of a merged group
     final mergeGroup = _getMergedGroupForRow(index);
 
@@ -343,7 +348,7 @@ class TablePlusBody extends StatelessWidget {
           columns: columns,
           columnWidths: columnWidths,
           theme: theme,
-          backgroundColor: _getRowColor(index, isSelected),
+          backgroundColor: _getRowColor(renderIndex, isSelected),
           isLastRow: (() {
             final lastRowKey = mergeGroup.rowKeys.last;
             final lastRowIndex = data
@@ -383,7 +388,7 @@ class TablePlusBody extends StatelessWidget {
       columns: columns,
       columnWidths: columnWidths,
       theme: theme,
-      backgroundColor: _getRowColor(index, isSelected),
+      backgroundColor: _getRowColor(renderIndex, isSelected),
       isLastRow: index == data.length - 1,
       isSelectable: isSelectable,
       selectionMode: selectionMode,
@@ -490,7 +495,7 @@ class _TablePlusRow extends TablePlusRowWidget {
     Widget rowContent = Container(
       height: calculatedHeight ?? theme.rowHeight,
       decoration: BoxDecoration(
-        // color: backgroundColor,
+        color: backgroundColor,
         border: (!isLastRow && theme.showHorizontalDividers)
             ? Border(
                 bottom: BorderSide(
