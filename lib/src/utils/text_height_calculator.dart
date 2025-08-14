@@ -31,11 +31,6 @@ class TextHeightCalculator {
       return _getSingleLineHeight(textStyle) + padding.vertical;
     }
 
-    // For visible overflow, calculate exact text height without extra spacing
-    if (text.trim().isEmpty) {
-      return padding.vertical;
-    }
-
     // Calculate available width for text (subtract horizontal padding)
     final availableWidth = math.max(0.0, width - padding.horizontal);
 
@@ -43,22 +38,17 @@ class TextHeightCalculator {
       return _getSingleLineHeight(textStyle) + padding.vertical;
     }
 
-    // Create TextPainter with StrutStyle for accurate height calculation
+    // Create TextPainter to measure actual text dimensions
     final textPainter = TextPainter(
       text: TextSpan(text: text, style: textStyle),
       maxLines: maxLines,
       textDirection: TextDirection.ltr,
-      strutStyle: StrutStyle.fromTextStyle(textStyle),
     );
 
-    // Layout with available width and proper constraints
-    textPainter.layout(
-      minWidth: 0,
-      maxWidth: availableWidth,
-    );
+    // Layout the text with available width
+    textPainter.layout(maxWidth: availableWidth);
 
-    // Return TextPainter height directly for most accurate result
-    // This includes proper line metrics with StrutStyle consideration
+    // Return height plus padding
     return textPainter.height + padding.vertical;
   }
 
