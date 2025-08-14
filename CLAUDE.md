@@ -145,6 +145,7 @@ Comprehensive documentation is available in the `documentation/` directory:
 - ADVANCED_COLUMNS.md: Advanced column features
 - EMPTY_STATE.md: Handling empty table states
 - MERGED_ROWS.md: Complete guide to merged row functionality with examples
+- DYNAMIC_HEIGHT.md: Row height management and text overflow behavior 
 - RIVERPOD_GENERATOR_GUIDE.md: State management integration
 
 # important-instruction-reminders
