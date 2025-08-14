@@ -286,17 +286,19 @@ class TablePlusBody extends StatelessWidget {
       );
     }
 
-    // Calculate row heights if needed
+    // Calculate row heights if needed (considering merged groups)
     final Map<int, double> rowHeights = _shouldCalculateDynamicHeights()
-        ? TextHeightCalculator.calculateRowHeights(
+        ? TextHeightCalculator.calculateMergedRowHeights(
             data: data,
             columns: {
               for (int i = 0; i < columns.length; i++)
                 columns[i].key: columns[i]
             },
+            mergedGroups: mergedGroups,
             bodyTextStyle: theme.textStyle,
             bodyPadding: theme.padding,
             mode: rowHeightMode,
+            rowIdKey: rowIdKey,
             minRowHeight: minRowHeight,
           )
         : {};

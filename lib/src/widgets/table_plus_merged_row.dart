@@ -133,9 +133,10 @@ class TablePlusMergedRow extends TablePlusRowWidget {
     final spanningRowKey = mergeGroup.getSpanningRowKey(column.key);
     final rowData = _getRowData(spanningRowKey);
 
-    // Calculate height for merged cell (height of all merged rows combined)
-    final singleRowHeight = calculatedHeight ?? theme.rowHeight;
-    final mergedHeight = singleRowHeight * mergeGroup.rowCount;
+    // Calculate height for merged cell
+    // calculatedHeight already considers merged group heights, so we use it directly for the total group height
+    final groupHeight = calculatedHeight ?? theme.rowHeight;
+    final mergedHeight = groupHeight * mergeGroup.rowCount;
 
     // Check if this merged cell is editable
     final isCellEditable = isEditable &&
@@ -331,8 +332,8 @@ class TablePlusMergedRow extends TablePlusRowWidget {
   /// Build stacked cells for non-merged columns.
   Widget _buildStackedCells(
       BuildContext context, TablePlusColumn column, double? width) {
-    final singleRowHeight = calculatedHeight ?? theme.rowHeight;
-    final totalHeight = singleRowHeight * mergeGroup.rowCount;
+    final groupHeight = calculatedHeight ?? theme.rowHeight;
+    final totalHeight = groupHeight * mergeGroup.rowCount;
 
     return SizedBox(
       width: width,
@@ -357,7 +358,7 @@ class TablePlusMergedRow extends TablePlusRowWidget {
           if (isCurrentlyEditing) {
             // Editing mode for individual cell
             content = _buildStackedCellEditingTextField(
-                context, column, originalIndex, rowData ?? {}, singleRowHeight);
+                context, column, originalIndex, rowData ?? {}, groupHeight);
           } else if (column.cellBuilder != null) {
             content = Container(
               alignment: column.alignment,
@@ -544,8 +545,8 @@ class TablePlusMergedRow extends TablePlusRowWidget {
     if (!isSelectable) return null;
 
     final width = columnWidths.isNotEmpty ? columnWidths[0] : 50.0;
-    final singleRowHeight = calculatedHeight ?? theme.rowHeight;
-    final mergedHeight = singleRowHeight * mergeGroup.rowCount;
+    final groupHeight = calculatedHeight ?? theme.rowHeight;
+    final mergedHeight = groupHeight * mergeGroup.rowCount;
 
     return Container(
       width: width,
@@ -593,8 +594,8 @@ class TablePlusMergedRow extends TablePlusRowWidget {
 
   @override
   Widget build(BuildContext context) {
-    final singleRowHeight = calculatedHeight ?? theme.rowHeight;
-    final mergedHeight = singleRowHeight * mergeGroup.rowCount;
+    final groupHeight = calculatedHeight ?? theme.rowHeight;
+    final mergedHeight = groupHeight * mergeGroup.rowCount;
 
     Widget rowContent = Container(
       height: mergedHeight,

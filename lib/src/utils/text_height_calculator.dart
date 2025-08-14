@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../models/merged_row_group.dart';
 import '../models/table_column.dart';
 
 /// Utility class for calculating text heights in table cells.
@@ -143,6 +144,68 @@ class TextHeightCalculator {
     return columns.values
         .where((col) => col.visible)
         .any((col) => col.textOverflow == TextOverflow.visible);
+  }
+
+  /// Calculates row heights considering merged groups.
+  /// 
+  /// This function first calculates individual row heights, then ensures that all rows
+  /// within the same merged group have the same height (the maximum height within the group).
+  ///
+  /// [data] - Table data
+  /// [columns] - Column definitions  
+  /// [mergedGroups] - List of merged row groups
+  /// [bodyTextStyle] - Default text style for body cells
+  /// [bodyPadding] - Default padding for body cells
+  /// [mode] - Height calculation mode (uniform or dynamic)
+  /// [rowIdKey] - Key used to identify rows (default: 'id')
+  /// [minRowHeight] - Minimum allowed row height
+  static Map<int, double> calculateMergedRowHeights({
+    required List<Map<String, dynamic>> data,
+    required Map<String, TablePlusColumn> columns,
+    required List<MergedRowGroup> mergedGroups,
+    required TextStyle bodyTextStyle,
+    required EdgeInsets bodyPadding,
+    required RowHeightMode mode,
+    String rowIdKey = 'id',
+    double minRowHeight = 48.0,
+  }) {
+    if (data.isEmpty) {
+      return {};
+    }
+
+    // Step 1: Calculate individual row heights using existing logic
+    final individualHeights = calculateRowHeights(
+      data: data,
+      columns: columns,
+      bodyTextStyle: bodyTextStyle,
+      bodyPadding: bodyPadding,
+      mode: mode,
+      minRowHeight: minRowHeight,
+    );
+
+    // Step 2: Process merged groups to ensure uniform heights within each group
+    for (final group in mergedGroups) {
+      double maxGroupHeight = minRowHeight;
+      final groupRowIndices = <int>[];
+
+      // Find all row indices in this group and determine the maximum height
+      for (final rowKey in group.rowKeys) {
+        final rowIndex = data.indexWhere((row) => row[rowIdKey]?.toString() == rowKey);
+        if (rowIndex != -1) {
+          groupRowIndices.add(rowIndex);
+          if (individualHeights.containsKey(rowIndex)) {
+            maxGroupHeight = math.max(maxGroupHeight, individualHeights[rowIndex]!);
+          }
+        }
+      }
+
+      // Apply the maximum height to all rows in this group
+      for (final rowIndex in groupRowIndices) {
+        individualHeights[rowIndex] = maxGroupHeight;
+      }
+    }
+
+    return individualHeights;
   }
 
   /// Clears the internal cache. Useful for memory management in long-running applications.

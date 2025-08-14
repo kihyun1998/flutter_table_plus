@@ -30,11 +30,11 @@ class _SortableExampleState extends State<SortableExample> {
     },
     {
       'id': '7',
-      'name': 'George Wilson',
+      'name': 'George Wilson with a very long name that should wrap to multiple lines',
       'department': 'Engineering',
       'salary': 102000,
       'age': 38,
-      'location': 'Oregon'
+      'location': 'Oregon State with a very long location name'
     },
     {
       'id': '9',
@@ -213,6 +213,7 @@ class _SortableExampleState extends State<SortableExample> {
         order: 1,
         width: 150,
         sortable: true,
+        textOverflow: TextOverflow.visible, // Enable dynamic height calculation
       ),
       'department': TablePlusColumn(
         key: 'department',
@@ -253,13 +254,14 @@ class _SortableExampleState extends State<SortableExample> {
         order: 5,
         width: 120,
         sortable: true,
+        textOverflow: TextOverflow.visible, // Enable dynamic height calculation
       ),
     };
 
-    // Debug columns
-    columns.forEach((key, col) {
-      print('📋 $key: sortable=${col.sortable}');
-    });
+    // Debug columns (commented out for production)
+    // columns.forEach((key, col) {
+    //   print('📋 $key: sortable=${col.sortable}');
+    // });
 
     return Scaffold(
       appBar: AppBar(
@@ -365,6 +367,8 @@ class _SortableExampleState extends State<SortableExample> {
                 data: data,
                 rowIdKey: 'id',
                 mergedGroups: mergedGroups,
+                rowHeightMode: RowHeightMode.dynamic, // Enable dynamic height calculation
+                minRowHeight: 48.0,
                 onSort: (col, dir) {
                   _handleSort(col, dir);
                 },
@@ -506,11 +510,11 @@ class _SortableExampleState extends State<SortableExample> {
           },
           {
             'id': '7',
-            'name': 'George Wilson',
+            'name': 'George Wilson with a very long name that should wrap to multiple lines',
             'department': 'Engineering',
             'salary': 102000,
             'age': 38,
-            'location': 'Oregon'
+            'location': 'Oregon State with a very long location name'
           },
           {
             'id': '9',

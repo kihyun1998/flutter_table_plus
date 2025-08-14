@@ -6,6 +6,7 @@ import 'pages/complex_merged_example.dart';
 import 'pages/selectable_merged_example.dart';
 import 'pages/editable_merged_example.dart';
 import 'pages/sortable_example.dart';
+import 'pages/dynamic_height_example.dart';
 
 void main() {
   runApp(const MyApp());
@@ -141,6 +142,23 @@ class ExampleHomePage extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                       builder: (context) => const SortableExample(),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 8),
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.height),
+                title: const Text('Dynamic Height Testing'),
+                subtitle: const Text('Test uniform vs dynamic row height modes'),
+                trailing: const Icon(Icons.arrow_forward_ios),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const DynamicHeightExample(),
                     ),
                   );
                 },
