@@ -211,32 +211,17 @@ class TablePlusBody extends StatelessWidget {
   /// Handle selection toggle for merged groups.
   void _handleMergedGroupSelectionToggle(
       MergedRowGroup mergeGroup, bool isCurrentlySelected) {
-    if (selectionMode == SelectionMode.single) {
-      if (!isCurrentlySelected) {
-        // Select the entire merged group
-        onRowSelectionChanged!(mergeGroup.groupId, true);
-      } else {
-        // Deselect the merged group
-        onRowSelectionChanged!(mergeGroup.groupId, false);
-      }
-    } else {
-      // For multiple selection mode, toggle the entire merged group
-      onRowSelectionChanged!(mergeGroup.groupId, !isCurrentlySelected);
-    }
+    // For both single and multiple selection modes, toggle the selection
+    onRowSelectionChanged!(mergeGroup.groupId, !isCurrentlySelected);
   }
 
   /// Handle selection toggle for regular rows.
   void _handleRegularRowSelectionToggle(
       String rowId, bool isCurrentlySelected) {
     if (selectionMode == SelectionMode.single) {
-      // For single selection mode, always try to select the row
-      // The parent widget should handle clearing other selections
-      if (!isCurrentlySelected) {
-        onRowSelectionChanged!(rowId, true);
-      } else {
-        // Allow deselecting in single mode
-        onRowSelectionChanged!(rowId, false);
-      }
+      // For single selection mode, toggle the selection
+      // If already selected, deselect it; if not selected, select it
+      onRowSelectionChanged!(rowId, !isCurrentlySelected);
     } else {
       // For multiple selection mode, toggle the selection
       onRowSelectionChanged!(rowId, !isCurrentlySelected);
@@ -463,11 +448,9 @@ class _TablePlusRow extends TablePlusRowWidget {
     if (!isSelectable || rowId == null) return;
 
     if (selectionMode == SelectionMode.single) {
-      // For single selection mode, always select this row
-      // The parent should handle clearing other selections
-      if (!isSelected) {
-        onRowSelectionChanged(rowId!);
-      }
+      // For single selection mode, toggle the selection
+      // If already selected, deselect it; if not selected, select it
+      onRowSelectionChanged(rowId!);
     } else {
       // For multiple selection mode, toggle the selection
       onRowSelectionChanged(rowId!);

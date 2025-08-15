@@ -19,6 +19,14 @@ FlutterTablePlus(
 
 When `isSelectable` is `true`, a checkbox column appears by default, and tapping a row toggles its selection state. In `single` mode, the "Select All" checkbox is automatically hidden.
 
+### Single Selection Mode Behavior
+
+In `SelectionMode.single`:
+- Only one row can be selected at a time
+- When a new row is selected, the previously selected row is automatically deselected
+- **Toggle Behavior**: Clicking on an already selected row will deselect it, allowing for no rows to be selected
+- This toggle behavior works consistently across all selection methods (row tap, checkbox click, merged row selection)
+
 ## 2. Providing a Unique Row Identifier
 
 For the selection feature to work correctly, every row in your `data` list must have a unique identifier. By default, the widget looks for a key named `'id'`.

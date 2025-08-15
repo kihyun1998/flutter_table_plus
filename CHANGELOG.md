@@ -1,3 +1,11 @@
+## 1.13.2
+
+*   **BUG FIX**: Fixed single selection mode toggle behavior.
+    *   Fixed issue where clicking on an already selected row in `SelectionMode.single` would not deselect the row.
+    *   Updated row tap handling logic to consistently support toggle behavior in both single and multiple selection modes.
+    *   Fixed similar issue in merged row groups when using single selection mode.
+    *   Improved consistency across all selection interaction methods (row tap, checkbox click, merged row selection).
+
 ## 1.13.1
 
 *   **FEAT**: Added `calculateRowHeight` callback for external row height calculation.

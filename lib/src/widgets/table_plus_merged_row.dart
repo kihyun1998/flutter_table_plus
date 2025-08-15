@@ -89,13 +89,8 @@ class TablePlusMergedRow extends TablePlusRowWidget {
     if (isEditable) return;
     if (!isSelectable) return;
 
-    if (selectionMode == SelectionMode.single) {
-      if (!isSelected) {
-        onRowSelectionChanged(mergeGroup.groupId);
-      }
-    } else {
-      onRowSelectionChanged(mergeGroup.groupId);
-    }
+    // For both single and multiple selection modes, toggle the selection
+    onRowSelectionChanged(mergeGroup.groupId);
   }
 
   /// Get the data for a specific row key within the merge group.
