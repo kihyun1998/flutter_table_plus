@@ -8,7 +8,6 @@ import '../models/theme/body_theme.dart' show TablePlusBodyTheme;
 import '../models/theme/editable_theme.dart' show TablePlusEditableTheme;
 import '../models/theme/tooltip_theme.dart' show TablePlusTooltipTheme;
 import '../models/tooltip_behavior.dart';
-import '../utils/text_height_calculator.dart';
 import '../utils/text_overflow_detector.dart';
 import 'custom_ink_well.dart';
 import 'table_plus_merged_row.dart';
@@ -41,9 +40,6 @@ class TablePlusBody extends StatelessWidget {
     this.onCellTap,
     this.onStopEditing,
     this.onMergedCellChanged,
-    this.rowHeightMode = RowHeightMode.uniform,
-    this.minRowHeight = 48.0,
-    this.onRowHeightsCalculated,
   });
 
   /// The list of columns for the table.
@@ -115,21 +111,6 @@ class TablePlusBody extends StatelessWidget {
   final void Function(String groupId, String columnKey, dynamic newValue)?
       onMergedCellChanged;
 
-  /// The row height calculation mode for the table.
-  final RowHeightMode rowHeightMode;
-
-  /// The minimum height for table rows.
-  final double minRowHeight;
-
-  /// Callback when row heights are calculated for dynamic height mode.
-  final void Function(Map<int, double> heights)? onRowHeightsCalculated;
-
-  /// Check if dynamic heights should be calculated based on TextOverflow.visible columns.
-  bool _shouldCalculateDynamicHeights() {
-    return TextHeightCalculator.hasVisibleOverflowColumns(
-      {for (int i = 0; i < columns.length; i++) columns[i].key: columns[i]},
-    );
-  }
 
   /// Get the background color for a row at the given index.
   Color _getRowColor(int index, bool isSelected) {
@@ -286,29 +267,6 @@ class TablePlusBody extends StatelessWidget {
       );
     }
 
-    // Calculate row heights if needed (considering merged groups)
-    final Map<int, double> rowHeights = _shouldCalculateDynamicHeights()
-        ? TextHeightCalculator.calculateMergedRowHeights(
-            data: data,
-            columns: {
-              for (int i = 0; i < columns.length; i++)
-                columns[i].key: columns[i]
-            },
-            mergedGroups: mergedGroups,
-            bodyTextStyle: theme.textStyle,
-            bodyPadding: theme.padding,
-            mode: rowHeightMode,
-            rowIdKey: rowIdKey,
-            minRowHeight: minRowHeight,
-          )
-        : {};
-
-    // Notify parent about calculated heights
-    if (onRowHeightsCalculated != null && rowHeights.isNotEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        onRowHeightsCalculated!(rowHeights);
-      });
-    }
 
     final renderableIndices = _getRenderableIndices();
 
@@ -318,8 +276,7 @@ class TablePlusBody extends StatelessWidget {
       itemCount: renderableIndices.length,
       itemBuilder: (context, index) {
         final actualIndex = renderableIndices[index];
-        return _buildRowWidget(
-            actualIndex, rowHeights, index); // Pass rendering index
+        return _buildRowWidget(actualIndex, index); // Pass rendering index
       },
     );
   }
@@ -327,10 +284,8 @@ class TablePlusBody extends StatelessWidget {
   /// Build a row widget for the given index.
   /// This method can be overridden or extended to support different row types.
   /// [index] - Original data index
-  /// [rowHeights] - Calculated row heights
   /// [renderIndex] - Rendering order index (for alternateRowColor)
-  TablePlusRowWidget _buildRowWidget(
-      int index, Map<int, double> rowHeights, int renderIndex) {
+  TablePlusRowWidget _buildRowWidget(int index, int renderIndex) {
     // Check if this index is part of a merged group
     final mergeGroup = _getMergedGroupForRow(index);
 
@@ -371,7 +326,7 @@ class TablePlusBody extends StatelessWidget {
           onRowDoubleTap: onRowDoubleTap,
           onRowSecondaryTap: onRowSecondaryTap,
           onMergedCellChanged: onMergedCellChanged,
-          calculatedHeight: rowHeights.isNotEmpty ? rowHeights[index] : null,
+          calculatedHeight: null,
         );
       }
     }
@@ -404,7 +359,7 @@ class TablePlusBody extends StatelessWidget {
       getCellController: getCellController,
       onCellTap: onCellTap,
       onStopEditing: onStopEditing,
-      calculatedHeight: rowHeights.isNotEmpty ? rowHeights[index] : null,
+      calculatedHeight: null,
     );
   }
 }

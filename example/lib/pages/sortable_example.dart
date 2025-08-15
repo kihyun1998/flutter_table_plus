@@ -214,7 +214,7 @@ class _SortableExampleState extends State<SortableExample> {
         order: 1,
         width: 150,
         sortable: true,
-        textOverflow: TextOverflow.visible, // Enable dynamic height calculation
+        textOverflow: TextOverflow.ellipsis,
       ),
       'department': TablePlusColumn(
         key: 'department',
@@ -255,7 +255,7 @@ class _SortableExampleState extends State<SortableExample> {
         order: 5,
         width: 120,
         sortable: true,
-        textOverflow: TextOverflow.visible, // Enable dynamic height calculation
+        textOverflow: TextOverflow.ellipsis,
       ),
     };
 
@@ -368,9 +368,6 @@ class _SortableExampleState extends State<SortableExample> {
                 data: data,
                 rowIdKey: 'id',
                 mergedGroups: mergedGroups,
-                rowHeightMode:
-                    RowHeightMode.dynamic, // Enable dynamic height calculation
-                minRowHeight: 48.0,
                 onSort: (col, dir) {
                   _handleSort(col, dir);
                 },

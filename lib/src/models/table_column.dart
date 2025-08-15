@@ -34,17 +34,6 @@ enum SelectionMode {
   single,
 }
 
-/// Enum representing the row height calculation mode for tables.
-enum RowHeightMode {
-  /// All rows have the same height (default).
-  /// Uses the maximum calculated height across all rows for uniform appearance.
-  uniform,
-
-  /// Each row has its own calculated height.
-  /// More space-efficient but can result in uneven row heights.
-  dynamic,
-}
-
 /// Callback type for when a cell value is changed in editable mode.
 ///
 /// [columnKey]: The key of the column that was edited.

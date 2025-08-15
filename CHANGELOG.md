@@ -1,3 +1,12 @@
+## 1.13.0
+
+*   **BREAKING CHANGE**: Removed dynamic row height feature for performance and stability.
+    *   Removed `RowHeightMode` enum and `rowHeightMode` parameter.
+    *   Removed `minRowHeight` parameter.
+    *   Removed `TextHeightCalculator` utility class.
+    *   All tables now use fixed row height from theme (reverted to v1.9.0 behavior).
+    *   This change resolves scroll position issues with large datasets and improves overall performance.
+
 ## 1.12.0
 
 *   **FEAT**: Added support for dynamic row height.

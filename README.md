@@ -24,7 +24,6 @@ A highly customizable and efficient table widget for Flutter. It provides a rich
 
 ## Features
 
-- **Dynamic Row Height**: Rows can now dynamically adjust their height based on content (`RowHeightMode.dynamic`), ensuring optimal display for varying data lengths. A `minRowHeight` property is also available for fine-grained control.
 - **Dynamic Scrollbar Visibility**: Scrollbars are now dynamically shown or hidden based on content overflow, providing a cleaner UI when not needed.
 - **Synchronized Scrolling**: Header and body scroll horizontally in perfect sync.
 - **Advanced Theming**: Deeply customize headers, rows, and scrollbars. Use `decoration` for advanced header styling (gradients, borders) and fine-tune row interaction effects like `hoverColor`, `splashColor`, and `highlightColor`.
@@ -173,35 +172,6 @@ FlutterTablePlus(
 )
 ```
 
-### 📏 Row Height Management
-
-`FlutterTablePlus` offers flexible control over row heights, allowing you to choose between uniform or dynamic sizing.
-
-- **`rowHeightMode`**: Defines how row heights are calculated.
-    - `RowHeightMode.uniform` (default): All rows will have the same height, determined by the tallest content in any row. This ensures a consistent visual appearance.
-    - `RowHeightMode.dynamic`: Each row will calculate its height independently based on its content. This can be more space-efficient but may result in uneven row heights.
-
-- **`minRowHeight`**: Specifies the minimum height for any row. This is particularly useful when `rowHeightMode` is `dynamic` to ensure rows don't become too small. Defaults to `48.0`.
-
-These properties primarily affect rows where columns have `textOverflow: TextOverflow.visible` set, allowing content to expand beyond the initial cell boundaries.
-
-```dart
-FlutterTablePlus(
-  // ... other properties
-  rowHeightMode: RowHeightMode.dynamic, // Enable dynamic row heights
-  minRowHeight: 60.0, // Ensure a minimum height of 60 pixels
-  columns: [
-    TablePlusColumn(
-      key: 'description',
-      label: 'Description',
-      width: 200,
-      textOverflow: TextOverflow.visible, // Allow text to expand
-    ),
-    // ... other columns
-  ],
-  // ...
-)
-```
 
 ## Conditional Feature Control
 
@@ -239,4 +209,3 @@ For more advanced use cases and detailed guides, please refer to our documentati
   - [Theming and Styling](documentation/THEMING.md)
   - [Advanced Column Settings](documentation/ADVANCED_COLUMNS.md)
   - [Merged Rows](documentation/MERGED_ROWS.md)
-  - [Dynamic Row Height](documentation/DYNAMIC_HEIGHT.md)

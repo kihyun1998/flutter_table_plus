@@ -113,7 +113,6 @@ FlutterTablePlus follows a composition pattern where:
 - **Theme Architecture**: Uses nested theme classes (TablePlusTheme > TablePlusHeaderTheme/TablePlusBodyTheme/etc.) for granular control
 - **Custom Cell Rendering**: `cellBuilder` property allows rendering any Flutter widget in cells but can impact performance with large datasets
 - **Sort Cycle Configuration**: Sort cycle order is configurable between ascending-first and descending-first patterns
-- **Row Height Management**: Supports both uniform and dynamic row height modes. Dynamic mode calculates heights based on content when `textOverflow: TextOverflow.visible` is used
 - **Tooltip Control**: Fine-grained tooltip behavior control for both cells and headers via `tooltipBehavior` and `headerTooltipBehavior` properties
 - **Merged Rows**: MergedRowGroup functionality allows grouping consecutive rows with configurable merge behavior per column. Supports custom content, selection, and editing within merged cells
 
@@ -145,7 +144,7 @@ Comprehensive documentation is available in the `documentation/` directory:
 - ADVANCED_COLUMNS.md: Advanced column features
 - EMPTY_STATE.md: Handling empty table states
 - MERGED_ROWS.md: Complete guide to merged row functionality with examples
-- DYNAMIC_HEIGHT.md: Row height management and text overflow behavior 
+ 
 - RIVERPOD_GENERATOR_GUIDE.md: State management integration
 
 # important-instruction-reminders

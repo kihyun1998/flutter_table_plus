@@ -14,7 +14,6 @@ class TableAppBarActions extends StatelessWidget {
     required this.showVerticalDividers,
     required this.showNoDataExample,
     required this.textOverflow,
-    required this.rowHeightMode,
     required this.onResetSort,
     required this.onResetColumnOrder,
     required this.onToggleVerticalDividers,
@@ -26,7 +25,6 @@ class TableAppBarActions extends StatelessWidget {
     required this.onShowColumnVisibilityDialog,
     required this.onToggleNoDataExample,
     required this.onChangeTextOverflow,
-    required this.onToggleRowHeightMode,
   });
 
   final String? sortColumnKey;
@@ -38,7 +36,6 @@ class TableAppBarActions extends StatelessWidget {
   final bool showVerticalDividers;
   final bool showNoDataExample;
   final TextOverflow textOverflow;
-  final RowHeightMode rowHeightMode;
 
   final VoidCallback onResetSort;
   final VoidCallback onResetColumnOrder;
@@ -51,7 +48,6 @@ class TableAppBarActions extends StatelessWidget {
   final VoidCallback onShowColumnVisibilityDialog;
   final VoidCallback onToggleNoDataExample;
   final Function(TextOverflow) onChangeTextOverflow;
-  final VoidCallback onToggleRowHeightMode;
 
   @override
   Widget build(BuildContext context) {
@@ -238,47 +234,9 @@ class TableAppBarActions extends StatelessWidget {
                 ],
               ),
             ),
-            PopupMenuItem<TextOverflow>(
-              value: TextOverflow.visible,
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.visibility,
-                    color: textOverflow == TextOverflow.visible
-                        ? Colors.indigo
-                        : Colors.grey,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Visible',
-                    style: TextStyle(
-                      color: textOverflow == TextOverflow.visible
-                          ? Colors.indigo
-                          : null,
-                      fontWeight: textOverflow == TextOverflow.visible
-                          ? FontWeight.bold
-                          : null,
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ],
         ),
 
-        // Row height mode toggle button
-        IconButton(
-          onPressed: onToggleRowHeightMode,
-          icon: Icon(
-            rowHeightMode == RowHeightMode.uniform
-                ? Icons.horizontal_rule
-                : Icons.height,
-            color: rowHeightMode == RowHeightMode.dynamic ? Colors.brown : null,
-          ),
-          tooltip: rowHeightMode == RowHeightMode.uniform
-              ? 'Switch to Dynamic Row Heights'
-              : 'Switch to Uniform Row Heights',
-        ),
       ],
     );
   }
