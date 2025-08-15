@@ -7,6 +7,7 @@ import 'pages/selectable_merged_example.dart';
 import 'pages/editable_merged_example.dart';
 import 'pages/sortable_example.dart';
 import 'pages/dynamic_height_example.dart';
+import 'pages/frozen_test_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -44,6 +45,23 @@ class ExampleHomePage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.lock, color: Colors.green),
+                title: const Text('1단계: Frozen 속성 테스트'),
+                subtitle: const Text('frozen 속성 추가 확인'),
+                trailing: const Icon(Icons.arrow_forward_ios),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const FrozenTestPage(),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 8),
             Card(
               child: ListTile(
                 leading: const Icon(Icons.table_chart),
