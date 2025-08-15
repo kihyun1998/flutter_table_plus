@@ -164,8 +164,7 @@ class _SyncedScrollControllersState extends State<SyncedScrollControllers> {
     }
 
     // Check if slave position is valid and within bounds
-    if (slave.position.outOfRange || 
-        slave.position.maxScrollExtent < 0) {
+    if (slave.position.outOfRange || slave.position.maxScrollExtent < 0) {
       return;
     }
 
@@ -173,13 +172,13 @@ class _SyncedScrollControllersState extends State<SyncedScrollControllers> {
     if (_doNotReissueJump[master] == null ||
         _doNotReissueJump[master]! == false) {
       _doNotReissueJump[slave] = true;
-      
+
       // Calculate target offset, ensuring it's within valid bounds
       final targetOffset = master.offset.clamp(
-        0.0, 
+        0.0,
         slave.position.maxScrollExtent,
       );
-      
+
       // Only jump if there's a significant difference to avoid micro-jumps
       if ((slave.offset - targetOffset).abs() > 0.1) {
         slave.jumpTo(targetOffset);

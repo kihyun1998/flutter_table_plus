@@ -115,8 +115,8 @@ class TablePlusBody extends StatelessWidget {
   /// Callback to calculate the height of a specific row.
   /// Provides row index and row data, and should return the height for that row.
   /// If null, uses the fixed row height from the theme.
-  final double? Function(int rowIndex, Map<String, dynamic> rowData)? calculateRowHeight;
-
+  final double? Function(int rowIndex, Map<String, dynamic> rowData)?
+      calculateRowHeight;
 
   /// Get the background color for a row at the given index.
   Color _getRowColor(int index, bool isSelected) {
@@ -258,7 +258,6 @@ class TablePlusBody extends StatelessWidget {
       );
     }
 
-
     final renderableIndices = _getRenderableIndices();
 
     return ListView.builder(
@@ -293,13 +292,14 @@ class TablePlusBody extends StatelessWidget {
       if (firstRowIndex == index) {
         // This is the first row in a merge group - create a merged row
         final isSelected = selectedRows.contains(mergeGroup.groupId);
-        
+
         // Calculate merged row height (sum of all rows in the group)
         double? mergedHeight;
         if (calculateRowHeight != null) {
           double totalHeight = 0;
           for (final rowKey in mergeGroup.rowKeys) {
-            final rowIndex = data.indexWhere((row) => row[rowIdKey]?.toString() == rowKey);
+            final rowIndex =
+                data.indexWhere((row) => row[rowIdKey]?.toString() == rowKey);
             if (rowIndex != -1) {
               final height = calculateRowHeight!(rowIndex, data[rowIndex]);
               if (height != null) {

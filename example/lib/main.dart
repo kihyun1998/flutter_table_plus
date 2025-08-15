@@ -154,7 +154,8 @@ class ExampleHomePage extends StatelessWidget {
               child: ListTile(
                 leading: const Icon(Icons.height),
                 title: const Text('Dynamic Height Table'),
-                subtitle: const Text('TextOverflow.visible with dynamic heights'),
+                subtitle:
+                    const Text('TextOverflow.visible with dynamic heights'),
                 trailing: const Icon(Icons.arrow_forward_ios),
                 onTap: () {
                   Navigator.push(
@@ -171,7 +172,8 @@ class ExampleHomePage extends StatelessWidget {
               child: ListTile(
                 leading: const Icon(Icons.lock),
                 title: const Text('Frozen Columns Demo'),
-                subtitle: const Text('Fixed columns with horizontal scroll, sorting, selection, editing'),
+                subtitle: const Text(
+                    'Fixed columns with horizontal scroll, sorting, selection, editing'),
                 trailing: const Icon(Icons.arrow_forward_ios),
                 onTap: () {
                   Navigator.push(

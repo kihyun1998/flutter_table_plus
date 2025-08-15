@@ -236,7 +236,6 @@ class TableAppBarActions extends StatelessWidget {
             ),
           ],
         ),
-
       ],
     );
   }

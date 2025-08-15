@@ -22,19 +22,22 @@ class _DynamicHeightExampleState extends State<DynamicHeightExample> {
     {
       'id': '2',
       'name': 'Jane Smith',
-      'description': 'This is a much longer description that will wrap to multiple lines when TextOverflow.visible is used. It contains a lot of text to demonstrate the dynamic height calculation feature.',
+      'description':
+          'This is a much longer description that will wrap to multiple lines when TextOverflow.visible is used. It contains a lot of text to demonstrate the dynamic height calculation feature.',
       'status': 'Inactive',
     },
     {
       'id': '3',
       'name': 'Bob Johnson',
-      'description': 'Medium length description that might need one or two lines depending on the column width and font size.',
+      'description':
+          'Medium length description that might need one or two lines depending on the column width and font size.',
       'status': 'Active',
     },
     {
       'id': '4',
       'name': 'Alice Brown',
-      'description': 'Another very long description with multiple sentences. This demonstrates how the table can handle varying content lengths gracefully. The row height will adjust automatically based on the content, providing a better user experience.',
+      'description':
+          'Another very long description with multiple sentences. This demonstrates how the table can handle varying content lengths gracefully. The row height will adjust automatically based on the content, providing a better user experience.',
       'status': 'Pending',
     },
     {
@@ -46,7 +49,8 @@ class _DynamicHeightExampleState extends State<DynamicHeightExample> {
     {
       'id': '6',
       'name': 'Diana Prince',
-      'description': 'This is an extremely long description that contains multiple paragraphs worth of text. It demonstrates how the dynamic height calculation works with very long content. The text will continue to wrap and expand the row as needed. This is the first paragraph. And here is the second paragraph with even more content to make the description longer and test the vertical expansion feature thoroughly.',
+      'description':
+          'This is an extremely long description that contains multiple paragraphs worth of text. It demonstrates how the dynamic height calculation works with very long content. The text will continue to wrap and expand the row as needed. This is the first paragraph. And here is the second paragraph with even more content to make the description longer and test the vertical expansion feature thoroughly.',
       'status': 'Active',
     },
     {
@@ -64,13 +68,15 @@ class _DynamicHeightExampleState extends State<DynamicHeightExample> {
     {
       'id': '9',
       'name': 'George Miller',
-      'description': 'This description has a moderate amount of text that should wrap to about two or three lines depending on the available space and font settings.',
+      'description':
+          'This description has a moderate amount of text that should wrap to about two or three lines depending on the available space and font settings.',
       'status': 'Active',
     },
     {
       'id': '10',
       'name': 'Helen Garcia',
-      'description': 'Another extremely detailed description that spans multiple lines. This one includes various technical details, specifications, and comprehensive information about the subject matter. It demonstrates the flexibility of the dynamic height system and how it handles extensive text content without compromising the user interface.',
+      'description':
+          'Another extremely detailed description that spans multiple lines. This one includes various technical details, specifications, and comprehensive information about the subject matter. It demonstrates the flexibility of the dynamic height system and how it handles extensive text content without compromising the user interface.',
       'status': 'Inactive',
     },
     {
@@ -82,7 +88,8 @@ class _DynamicHeightExampleState extends State<DynamicHeightExample> {
     {
       'id': '12',
       'name': 'Julia Martinez',
-      'description': 'This is a comprehensive description that includes detailed information about various aspects of the topic. It covers multiple points and provides extensive coverage of the subject matter at hand.',
+      'description':
+          'This is a comprehensive description that includes detailed information about various aspects of the topic. It covers multiple points and provides extensive coverage of the subject matter at hand.',
       'status': 'Pending',
     },
     {
@@ -94,13 +101,15 @@ class _DynamicHeightExampleState extends State<DynamicHeightExample> {
     {
       'id': '14',
       'name': 'Linda Wang',
-      'description': 'A thorough and detailed explanation that encompasses various elements and provides comprehensive coverage of the topic. This description demonstrates how the system handles substantial amounts of text content while maintaining proper formatting and readability.',
+      'description':
+          'A thorough and detailed explanation that encompasses various elements and provides comprehensive coverage of the topic. This description demonstrates how the system handles substantial amounts of text content while maintaining proper formatting and readability.',
       'status': 'Inactive',
     },
     {
       'id': '15',
       'name': 'Michael Johnson',
-      'description': 'Standard description with normal length content that fits comfortably within typical display parameters.',
+      'description':
+          'Standard description with normal length content that fits comfortably within typical display parameters.',
       'status': 'Active',
     },
     {
@@ -112,7 +121,8 @@ class _DynamicHeightExampleState extends State<DynamicHeightExample> {
     {
       'id': '17',
       'name': 'Oliver Thompson',
-      'description': 'This extensive description provides comprehensive details about various aspects and includes multiple components of information. It serves as an excellent example of how the dynamic height feature adapts to accommodate longer text content while preserving the overall table structure and user experience.',
+      'description':
+          'This extensive description provides comprehensive details about various aspects and includes multiple components of information. It serves as an excellent example of how the dynamic height feature adapts to accommodate longer text content while preserving the overall table structure and user experience.',
       'status': 'Active',
     },
     {
@@ -130,7 +140,8 @@ class _DynamicHeightExampleState extends State<DynamicHeightExample> {
     {
       'id': '20',
       'name': 'Rachel Green',
-      'description': 'This is a substantial description that contains multiple sentences and covers various topics in detail. It demonstrates the dynamic height calculation system\'s ability to handle extensive text content while maintaining proper formatting and ensuring optimal user experience across different content lengths.',
+      'description':
+          'This is a substantial description that contains multiple sentences and covers various topics in detail. It demonstrates the dynamic height calculation system\'s ability to handle extensive text content while maintaining proper formatting and ensuring optimal user experience across different content lengths.',
       'status': 'Active',
     },
     {
@@ -148,7 +159,8 @@ class _DynamicHeightExampleState extends State<DynamicHeightExample> {
     {
       'id': '23',
       'name': 'Victor Hugo',
-      'description': 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
+      'description':
+          'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
       'status': 'Pending',
     },
     {
@@ -160,28 +172,29 @@ class _DynamicHeightExampleState extends State<DynamicHeightExample> {
     {
       'id': '25',
       'name': 'Xavier Smith',
-      'description': 'This comprehensive example showcases the full capabilities of the dynamic height system with extensive content that spans multiple lines and demonstrates various aspects of text rendering and height calculation functionality.',
+      'description':
+          'This comprehensive example showcases the full capabilities of the dynamic height system with extensive content that spans multiple lines and demonstrates various aspects of text rendering and height calculation functionality.',
       'status': 'Inactive',
     },
   ];
 
   late List<TablePlusColumn> columns;
   late List<double> columnWidths;
-  
+
   // Selection state
   Set<String> selectedRows = {};
-  
+
   // Sorting state
   String? sortColumnKey;
   SortDirection sortDirection = SortDirection.none;
-  
+
   // Editing state
   bool isEditingEnabled = false;
 
   @override
   void initState() {
     super.initState();
-    
+
     // Define columns with TextOverflow.visible for description
     columns = [
       TablePlusColumn(
@@ -252,7 +265,7 @@ class _DynamicHeightExampleState extends State<DynamicHeightExample> {
     setState(() {
       sortColumnKey = columnKey;
       sortDirection = direction;
-      
+
       if (direction == SortDirection.none) {
         // Reset to original order - you might want to store original order
         // For now, we'll sort by ID
@@ -261,16 +274,18 @@ class _DynamicHeightExampleState extends State<DynamicHeightExample> {
         data.sort((a, b) {
           dynamic aValue = a[columnKey];
           dynamic bValue = b[columnKey];
-          
+
           // Handle null values
           if (aValue == null && bValue == null) return 0;
-          if (aValue == null) return direction == SortDirection.ascending ? -1 : 1;
-          if (bValue == null) return direction == SortDirection.ascending ? 1 : -1;
-          
+          if (aValue == null)
+            return direction == SortDirection.ascending ? -1 : 1;
+          if (bValue == null)
+            return direction == SortDirection.ascending ? 1 : -1;
+
           // Convert to strings for comparison
           String aStr = aValue.toString().toLowerCase();
           String bStr = bValue.toString().toLowerCase();
-          
+
           int result = aStr.compareTo(bStr);
           return direction == SortDirection.ascending ? result : -result;
         });
@@ -332,16 +347,19 @@ class _DynamicHeightExampleState extends State<DynamicHeightExample> {
                     });
                   },
                   icon: Icon(isEditingEnabled ? Icons.check : Icons.edit),
-                  label: Text(isEditingEnabled ? 'Exit Edit Mode' : 'Enter Edit Mode'),
+                  label: Text(
+                      isEditingEnabled ? 'Exit Edit Mode' : 'Enter Edit Mode'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: isEditingEnabled ? Colors.green : Colors.blue,
+                    backgroundColor:
+                        isEditingEnabled ? Colors.green : Colors.blue,
                     foregroundColor: Colors.white,
                   ),
                 ),
                 const SizedBox(width: 12),
                 if (isEditingEnabled)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
                       color: Colors.orange.shade100,
                       border: Border.all(color: Colors.orange.shade300),
@@ -349,7 +367,8 @@ class _DynamicHeightExampleState extends State<DynamicHeightExample> {
                     ),
                     child: const Text(
                       '💡 Click cells to edit (Name, Description, Status)',
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                      style:
+                          TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
                     ),
                   ),
               ],
@@ -376,7 +395,8 @@ class _DynamicHeightExampleState extends State<DynamicHeightExample> {
                 isEditable: isEditingEnabled,
                 onCellChanged: _handleCellChanged,
                 // Use the helper utility to calculate row heights
-                calculateRowHeight: TableRowHeightCalculator.createHeightCalculator(
+                calculateRowHeight:
+                    TableRowHeightCalculator.createHeightCalculator(
                   columns: columns,
                   columnWidths: columnWidths,
                   defaultTextStyle: textStyle,
