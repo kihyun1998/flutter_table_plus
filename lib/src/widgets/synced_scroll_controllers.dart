@@ -159,14 +159,31 @@ class _SyncedScrollControllersState extends State<SyncedScrollControllers> {
   }
 
   void _jumpToNoCascade(ScrollController master, ScrollController slave) {
-    if (!master.hasClients || !slave.hasClients || slave.position.outOfRange) {
+    if (!master.hasClients || !slave.hasClients) {
       return;
     }
 
+    // Check if slave position is valid and within bounds
+    if (slave.position.outOfRange || 
+        slave.position.maxScrollExtent < 0) {
+      return;
+    }
+
+    // Prevent cascading jumps
     if (_doNotReissueJump[master] == null ||
         _doNotReissueJump[master]! == false) {
       _doNotReissueJump[slave] = true;
-      slave.jumpTo(master.offset);
+      
+      // Calculate target offset, ensuring it's within valid bounds
+      final targetOffset = master.offset.clamp(
+        0.0, 
+        slave.position.maxScrollExtent,
+      );
+      
+      // Only jump if there's a significant difference to avoid micro-jumps
+      if ((slave.offset - targetOffset).abs() > 0.1) {
+        slave.jumpTo(targetOffset);
+      }
     } else {
       _doNotReissueJump[master] = false;
     }

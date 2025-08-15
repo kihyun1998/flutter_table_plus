@@ -10,6 +10,7 @@ import 'pages/dynamic_height_example.dart';
 import 'pages/frozen_test_page.dart';
 import 'pages/frozen_step2_test.dart';
 import 'pages/frozen_step3_test.dart';
+import 'pages/frozen_step4_test.dart';
 
 void main() {
   runApp(const MyApp());
@@ -92,6 +93,23 @@ class ExampleHomePage extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                       builder: (context) => const FrozenStep3Test(),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 8),
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.sync, color: Colors.purple),
+                title: const Text('4단계: 수직 스크롤 동기화 테스트'),
+                subtitle: const Text('frozen/scrollable 영역 수직 스크롤 동기화'),
+                trailing: const Icon(Icons.arrow_forward_ios),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const FrozenStep4Test(),
                     ),
                   );
                 },
