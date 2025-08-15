@@ -7,10 +7,7 @@ import 'pages/selectable_merged_example.dart';
 import 'pages/editable_merged_example.dart';
 import 'pages/sortable_example.dart';
 import 'pages/dynamic_height_example.dart';
-import 'pages/frozen_test_page.dart';
-import 'pages/frozen_step2_test.dart';
-import 'pages/frozen_step3_test.dart';
-import 'pages/frozen_step4_test.dart';
+import 'pages/frozen_columns_demo.dart';
 
 void main() {
   runApp(const MyApp());
@@ -48,74 +45,6 @@ class ExampleHomePage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Card(
-              child: ListTile(
-                leading: const Icon(Icons.lock, color: Colors.green),
-                title: const Text('1단계: Frozen 속성 테스트'),
-                subtitle: const Text('frozen 속성 추가 확인'),
-                trailing: const Icon(Icons.arrow_forward_ios),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const FrozenTestPage(),
-                    ),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 8),
-            Card(
-              child: ListTile(
-                leading: const Icon(Icons.splitscreen, color: Colors.blue),
-                title: const Text('2단계: 컬럼 분리 로직 테스트'),
-                subtitle: const Text('frozen/scrollable 컬럼 분리 확인'),
-                trailing: const Icon(Icons.arrow_forward_ios),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const FrozenStep2Test(),
-                    ),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 8),
-            Card(
-              child: ListTile(
-                leading: const Icon(Icons.view_column, color: Colors.orange),
-                title: const Text('3단계: Row 기반 레이아웃 테스트'),
-                subtitle: const Text('freeze/scrollable 영역 분리 확인'),
-                trailing: const Icon(Icons.arrow_forward_ios),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const FrozenStep3Test(),
-                    ),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 8),
-            Card(
-              child: ListTile(
-                leading: const Icon(Icons.sync, color: Colors.purple),
-                title: const Text('4단계: 수직 스크롤 동기화 테스트'),
-                subtitle: const Text('frozen/scrollable 영역 수직 스크롤 동기화'),
-                trailing: const Icon(Icons.arrow_forward_ios),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const FrozenStep4Test(),
-                    ),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 8),
             Card(
               child: ListTile(
                 leading: const Icon(Icons.table_chart),
@@ -232,6 +161,23 @@ class ExampleHomePage extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                       builder: (context) => const DynamicHeightExample(),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 8),
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.lock),
+                title: const Text('Frozen Columns Demo'),
+                subtitle: const Text('Fixed columns with horizontal scroll, sorting, selection, editing'),
+                trailing: const Icon(Icons.arrow_forward_ios),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const FrozenColumnsDemo(),
                     ),
                   );
                 },
