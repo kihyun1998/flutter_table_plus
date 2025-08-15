@@ -350,12 +350,26 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
         maxWidth: _currentTheme.selectionTheme.checkboxColumnWidth,
         alignment: Alignment.center,
         textAlign: TextAlign.center,
+        frozen: true, // Selection column is always frozen
       );
 
       return [selectionColumn, ...visibleColumns];
     }
 
     return visibleColumns;
+  }
+
+  /// Get frozen columns from visible columns.
+  /// Frozen columns are displayed on the left side and don't scroll horizontally.
+  /// Selection column (if present) is automatically frozen.
+  List<TablePlusColumn> get _frozenColumns {
+    return _visibleColumns.where((col) => col.frozen).toList();
+  }
+
+  /// Get scrollable columns from visible columns.
+  /// Scrollable columns can be scrolled horizontally.
+  List<TablePlusColumn> get _scrollableColumns {
+    return _visibleColumns.where((col) => !col.frozen).toList();
   }
 
   /// Calculate the total height of all data rows.
@@ -556,7 +570,19 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
   @override
   Widget build(BuildContext context) {
     final visibleColumns = _visibleColumns;
+    final frozenColumns = _frozenColumns;
+    final scrollableColumns = _scrollableColumns;
     final theme = _currentTheme;
+
+    // Debug output for column separation (will be removed later)
+    assert(() {
+      print('=== Freeze Column Debug ===');
+      print('Total visible columns: ${visibleColumns.length}');
+      print('Frozen columns: ${frozenColumns.length} - ${frozenColumns.map((c) => c.key).join(', ')}');
+      print('Scrollable columns: ${scrollableColumns.length} - ${scrollableColumns.map((c) => c.key).join(', ')}');
+      print('============================');
+      return true;
+    }());
 
     return LayoutBuilder(
       builder: (context, constraints) {

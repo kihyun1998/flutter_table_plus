@@ -8,6 +8,7 @@ import 'pages/editable_merged_example.dart';
 import 'pages/sortable_example.dart';
 import 'pages/dynamic_height_example.dart';
 import 'pages/frozen_test_page.dart';
+import 'pages/frozen_step2_test.dart';
 
 void main() {
   runApp(const MyApp());
@@ -56,6 +57,23 @@ class ExampleHomePage extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                       builder: (context) => const FrozenTestPage(),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 8),
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.splitscreen, color: Colors.blue),
+                title: const Text('2단계: 컬럼 분리 로직 테스트'),
+                subtitle: const Text('frozen/scrollable 컬럼 분리 확인'),
+                trailing: const Icon(Icons.arrow_forward_ios),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const FrozenStep2Test(),
                     ),
                   );
                 },
