@@ -728,6 +728,41 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                             ),
                           ),
 
+                        // Frozen Column Divider
+                        if (_frozenColumns.isNotEmpty &&
+                            _scrollableColumns.isNotEmpty)
+                          SizedBox(
+                            width: theme.dividerTheme.thickness,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Header Divider
+                                Container(
+                                  width: theme.dividerTheme.thickness,
+                                  height: theme.headerTheme.height,
+                                  margin: EdgeInsets.only(
+                                    top: theme.dividerTheme.indent,
+                                    bottom: theme.dividerTheme.endIndent,
+                                  ),
+                                  color: theme.dividerTheme.getEffectiveColor(),
+                                ),
+                                // Body Divider (flexible height)
+                                if (widget.data.isNotEmpty)
+                                  Expanded(
+                                    child: Container(
+                                      width: theme.dividerTheme.thickness,
+                                      margin: EdgeInsets.only(
+                                        top: theme.dividerTheme.indent,
+                                        bottom: theme.dividerTheme.endIndent,
+                                      ),
+                                      color: theme.dividerTheme
+                                          .getEffectiveColor(),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+
                         // Scrollable Area (right side)
                         if (_scrollableColumns.isNotEmpty)
                           Expanded(
@@ -834,7 +869,7 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                       ),
                                     ),
                                   )
-                                : Container(
+                                : SizedBox(
                                     width: 1, // Minimal width when no space
                                     child: Column(
                                       children: [
@@ -897,7 +932,10 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                   controller: verticalScrollbarController,
                                   scrollDirection: Axis.vertical,
                                   child: SizedBox(
-                                    height: tableDataHeight,
+                                    height: needsHorizontalScroll
+                                        ? tableDataHeight -
+                                            theme.scrollbarTheme.width
+                                        : tableDataHeight,
                                     width: theme.scrollbarTheme.width,
                                   ),
                                 ),

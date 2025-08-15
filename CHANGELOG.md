@@ -1,3 +1,18 @@
+## 1.14.0
+
+*   **FEAT**: Added frozen column divider feature.
+    *   Introduced `TablePlusDividerTheme` for customizing divider appearance.
+    *   Added divider between frozen and scrollable columns with configurable color, thickness, and margins.
+    *   Header divider displays at fixed header height, body divider matches actual data content height.
+    *   Divider automatically appears when both frozen and scrollable columns are present.
+    *   Added divider theme configuration to main `TablePlusTheme` class.
+*   **BUG FIX**: Fixed layout overflow issues in constrained height containers.
+    *   Resolved Column overflow errors when table is placed in fixed-height containers like Card.
+    *   Improved divider positioning to work correctly with flexible layouts.
+*   **BUG FIX**: Fixed vertical scrollbar track height calculation.
+    *   Corrected scrollbar track height to account for horizontal scrollbar space.
+    *   Eliminated extra bottom padding in vertical scrollbar when horizontal scrollbar is present.
+
 ## 1.13.2
 
 *   **BUG FIX**: Fixed single selection mode toggle behavior.

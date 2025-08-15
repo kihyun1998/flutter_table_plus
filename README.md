@@ -32,6 +32,7 @@ A highly customizable and efficient table widget for Flutter. It provides a rich
 - **Column Sorting**: Supports multi-state sorting (ascending, descending, none) with a configurable sort cycle.
 - **Merged Rows**: Visually group and merge multiple data rows into a single unit for specific columns, supporting custom content, selection, and editing within merged cells.
 - **Row Selection & Editing**: Enable row selection and cell editing simultaneously, now fully compatible with merged rows. Supports double-tap and secondary-tap events on rows.
+- **Frozen Columns**: Pin important columns to the left side with an optional visual divider between frozen and scrollable areas.
 - **Column Reordering**: Easily reorder columns with drag-and-drop.
 - **Column Visibility**: Dynamically show or hide individual columns.
 - **Smart Text Handling**: Control text overflow (`ellipsis`, `clip`, `visible`). Tooltips for both **cells and headers** can be configured to appear always, only when text overflows, or never, giving you precise control over user feedback.
@@ -45,7 +46,7 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  flutter_table_plus: ^1.13.2
+  flutter_table_plus: ^1.14.0
 ```
 
 Then, run `flutter pub get` in your terminal.

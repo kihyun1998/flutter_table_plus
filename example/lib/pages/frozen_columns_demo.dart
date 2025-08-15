@@ -522,32 +522,38 @@ class _FrozenColumnsDemoState extends State<FrozenColumnsDemo> {
             ),
           ),
 
-          // Table
-          Expanded(
-            child: FlutterTablePlus(
-              columns: _columns,
-              data: _sortedData,
-              isSelectable: _isSelectable,
-              selectionMode: _selectionMode,
-              selectedRows: _selectedRows,
-              onRowSelectionChanged: _handleRowSelectionChanged,
-              onSelectAll: _handleSelectAll,
-              onColumnReorder: _isReorderable ? _handleColumnReorder : null,
-              sortColumnKey: _sortColumnKey,
-              sortDirection: _sortDirection,
-              onSort: _isSortable ? _handleSort : null,
-              isEditable: _isEditable,
-              onCellChanged: _handleCellChanged,
-              onRowDoubleTap: (rowId) {
-                final employee =
-                    _sortedData.firstWhere((row) => row['id'] == rowId);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Double-tapped on ${employee['name']}'),
-                    duration: const Duration(seconds: 2),
-                  ),
-                );
-              },
+          // Table in Card with fixed height
+          Container(
+            margin: const EdgeInsets.all(16),
+            height: 500,
+            child: Card(
+              elevation: 4,
+              clipBehavior: Clip.antiAlias,
+              child: FlutterTablePlus(
+                columns: _columns,
+                data: _sortedData,
+                isSelectable: _isSelectable,
+                selectionMode: _selectionMode,
+                selectedRows: _selectedRows,
+                onRowSelectionChanged: _handleRowSelectionChanged,
+                onSelectAll: _handleSelectAll,
+                onColumnReorder: _isReorderable ? _handleColumnReorder : null,
+                sortColumnKey: _sortColumnKey,
+                sortDirection: _sortDirection,
+                onSort: _isSortable ? _handleSort : null,
+                isEditable: _isEditable,
+                onCellChanged: _handleCellChanged,
+                onRowDoubleTap: (rowId) {
+                  final employee =
+                      _sortedData.firstWhere((row) => row['id'] == rowId);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Double-tapped on ${employee['name']}'),
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                },
+              ),
             ),
           ),
         ],
