@@ -453,11 +453,6 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
         0.0, (sum, col) => sum + max(col.width, col.minWidth));
   }
 
-  /// Get minimum width needed for frozen columns.
-  double get _frozenColumnsMinWidth {
-    return _frozenColumns.fold(0.0, (sum, col) => sum + col.minWidth);
-  }
-
   /// Get minimum width needed for scrollable columns.
   double get _scrollableColumnsMinWidth {
     return _scrollableColumns.fold(0.0, (sum, col) => sum + col.minWidth);
@@ -569,9 +564,6 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
 
   @override
   Widget build(BuildContext context) {
-    final visibleColumns = _visibleColumns;
-    final frozenColumns = _frozenColumns;
-    final scrollableColumns = _scrollableColumns;
     final theme = _currentTheme;
 
     return LayoutBuilder(
@@ -580,9 +572,7 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
         final double availableWidth = constraints.maxWidth;
 
         // Calculate minimum required widths
-        final double frozenMinWidth = _frozenColumnsMinWidth;
         final double scrollableMinWidth = _scrollableColumnsMinWidth;
-        final double totalMinWidth = frozenMinWidth + scrollableMinWidth;
 
         // Calculate actual frozen width (preferred or minimum)
         final double frozenWidth = _frozenColumnsWidth;
