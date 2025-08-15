@@ -9,6 +9,7 @@ import 'pages/sortable_example.dart';
 import 'pages/dynamic_height_example.dart';
 import 'pages/frozen_test_page.dart';
 import 'pages/frozen_step2_test.dart';
+import 'pages/frozen_step3_test.dart';
 
 void main() {
   runApp(const MyApp());
@@ -74,6 +75,23 @@ class ExampleHomePage extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                       builder: (context) => const FrozenStep2Test(),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 8),
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.view_column, color: Colors.orange),
+                title: const Text('3단계: Row 기반 레이아웃 테스트'),
+                subtitle: const Text('freeze/scrollable 영역 분리 확인'),
+                trailing: const Icon(Icons.arrow_forward_ios),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const FrozenStep3Test(),
                     ),
                   );
                 },

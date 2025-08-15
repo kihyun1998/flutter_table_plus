@@ -4,6 +4,7 @@
       "Bash(rm:*)"
     ],
     "deny": [],
-    "ask": []
+    "ask": [],
+    "defaultMode": "acceptEdits"
   }
 }

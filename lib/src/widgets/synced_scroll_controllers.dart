@@ -23,6 +23,7 @@ class SyncedScrollControllers extends StatefulWidget {
   /// The `builder` function provides the following controllers:
   /// - `verticalDataController`: The primary controller for vertical scrolling of data.
   /// - `verticalScrollbarController`: The controller for the vertical scrollbar.
+  /// - `verticalFrozenController`: The controller for vertical scrolling in frozen area.
   /// - `horizontalMainController`: The primary controller for horizontal scrolling (shared by header and data).
   /// - `horizontalScrollbarController`: The controller for the horizontal scrollbar.
   const SyncedScrollControllers({
@@ -44,12 +45,14 @@ class SyncedScrollControllers extends StatefulWidget {
   /// [context]: The build context.
   /// [verticalDataController]: The primary controller for vertical scrolling of data.
   /// [verticalScrollbarController]: The controller for the vertical scrollbar.
+  /// [verticalFrozenController]: The controller for vertical scrolling in frozen area.
   /// [horizontalMainController]: The primary controller for horizontal scrolling (shared by header and data).
   /// [horizontalScrollbarController]: The controller for the horizontal scrollbar.
   final Widget Function(
     BuildContext context,
     ScrollController verticalDataController,
     ScrollController verticalScrollbarController,
+    ScrollController verticalFrozenController,
     ScrollController horizontalMainController,
     ScrollController horizontalScrollbarController,
   ) builder;
@@ -60,8 +63,9 @@ class SyncedScrollControllers extends StatefulWidget {
 }
 
 class _SyncedScrollControllersState extends State<SyncedScrollControllers> {
-  ScrollController? _sc11; // 메인 수직 (ListView 용)
+  ScrollController? _sc11; // 메인 수직 (Scrollable Area 용)
   late ScrollController _sc12; // 수직 스크롤바
+  late ScrollController _sc13; // Frozen Area 수직
   ScrollController? _sc21; // 메인 수평 (헤더 & 데이터 공통)
   late ScrollController _sc22; // 수평 스크롤바
 
@@ -90,7 +94,7 @@ class _SyncedScrollControllersState extends State<SyncedScrollControllers> {
   void _initControllers() {
     _doNotReissueJump.clear();
 
-    // 수직 스크롤 컨트롤러 (메인, ListView 용)
+    // 수직 스크롤 컨트롤러 (메인, Scrollable Area 용)
     _sc11 = widget.scrollController ?? ScrollController();
 
     // 수평 스크롤 컨트롤러 (메인, 헤더와 데이터 영역의 가로 스크롤 공통)
@@ -104,6 +108,13 @@ class _SyncedScrollControllersState extends State<SyncedScrollControllers> {
               : 0.0,
         );
 
+    // Frozen Area 수직 스크롤 컨트롤러
+    _sc13 = ScrollController(
+      initialScrollOffset: _sc11!.hasClients && _sc11!.positions.isNotEmpty
+          ? _sc11!.offset
+          : 0.0,
+    );
+
     // 수평 스크롤바 컨트롤러
     _sc22 = widget.horizontalScrollbarController ??
         ScrollController(
@@ -114,6 +125,7 @@ class _SyncedScrollControllersState extends State<SyncedScrollControllers> {
 
     // 각 쌍의 컨트롤러를 동기화합니다.
     _syncScrollControllers(_sc11!, _sc12);
+    _syncScrollControllers(_sc11!, _sc13); // 메인과 Frozen 수직 동기화
     _syncScrollControllers(_sc21!, _sc22);
   }
 
@@ -129,6 +141,7 @@ class _SyncedScrollControllersState extends State<SyncedScrollControllers> {
     if (widget.horizontalScrollController == null) _sc21?.dispose();
     if (widget.verticalScrollbarController == null) _sc12.dispose();
     if (widget.horizontalScrollbarController == null) _sc22.dispose();
+    _sc13.dispose(); // 항상 내부에서 생성하므로 항상 dispose
   }
 
   final Map<ScrollController, bool> _doNotReissueJump = {};
@@ -164,6 +177,7 @@ class _SyncedScrollControllersState extends State<SyncedScrollControllers> {
         context,
         _sc11!,
         _sc12,
+        _sc13,
         _sc21!,
         _sc22,
       );

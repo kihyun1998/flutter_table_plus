@@ -11,28 +11,30 @@ class FrozenStep2Test extends StatelessWidget {
         title: const Text('2단계: 컬럼 분리 로직 테스트'),
         backgroundColor: Colors.blue.shade100,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              '2단계 테스트: 컬럼 분리 로직',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            
-            // 테스트 케이스 1: 선택 기능 없음
-            _buildTestCase1(),
-            const SizedBox(height: 16),
-            
-            // 테스트 케이스 2: 선택 기능 있음
-            _buildTestCase2(),
-            const SizedBox(height: 16),
-            
-            // 테스트 케이스 3: 혼합 컬럼
-            _buildTestCase3(),
-          ],
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                '2단계 테스트: 컬럼 분리 로직',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+
+              // 테스트 케이스 1: 선택 기능 없음
+              _buildTestCase1(),
+              const SizedBox(height: 16),
+
+              // 테스트 케이스 2: 선택 기능 있음
+              _buildTestCase2(),
+              const SizedBox(height: 16),
+
+              // 테스트 케이스 3: 혼합 컬럼
+              _buildTestCase3(),
+            ],
+          ),
         ),
       ),
     );
@@ -66,16 +68,24 @@ class FrozenStep2Test extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('테스트 케이스 1: 선택 기능 없음', 
-                     style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text('테스트 케이스 1: 선택 기능 없음',
+                style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             SizedBox(
               height: 200,
               child: FlutterTablePlus(
                 columns: columns,
                 data: const [
-                  {'name': 'John', 'email': 'john@example.com', 'phone': '123-456-7890'},
-                  {'name': 'Jane', 'email': 'jane@example.com', 'phone': '098-765-4321'},
+                  {
+                    'name': 'John',
+                    'email': 'john@example.com',
+                    'phone': '123-456-7890'
+                  },
+                  {
+                    'name': 'Jane',
+                    'email': 'jane@example.com',
+                    'phone': '098-765-4321'
+                  },
                 ],
                 isSelectable: false,
               ),
@@ -116,16 +126,26 @@ class FrozenStep2Test extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('테스트 케이스 2: 선택 기능 있음', 
-                     style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text('테스트 케이스 2: 선택 기능 있음',
+                style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             SizedBox(
               height: 200,
               child: FlutterTablePlus(
                 columns: columns,
                 data: const [
-                  {'id': '1', 'name': 'John', 'email': 'john@example.com', 'phone': '123-456-7890'},
-                  {'id': '2', 'name': 'Jane', 'email': 'jane@example.com', 'phone': '098-765-4321'},
+                  {
+                    'id': '1',
+                    'name': 'John',
+                    'email': 'john@example.com',
+                    'phone': '123-456-7890'
+                  },
+                  {
+                    'id': '2',
+                    'name': 'Jane',
+                    'email': 'jane@example.com',
+                    'phone': '098-765-4321'
+                  },
                 ],
                 isSelectable: true,
                 selectedRows: const {'1'},
@@ -135,7 +155,8 @@ class FrozenStep2Test extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            const Text('예상: selection column과 name이 frozen, email과 phone이 scrollable'),
+            const Text(
+                '예상: selection column과 name이 frozen, email과 phone이 scrollable'),
           ],
         ),
       ),
@@ -182,8 +203,8 @@ class FrozenStep2Test extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('테스트 케이스 3: 혼합 컬럼 (긴 테이블)', 
-                     style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text('테스트 케이스 3: 혼합 컬럼 (긴 테이블)',
+                style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             SizedBox(
               height: 200,
@@ -191,16 +212,16 @@ class FrozenStep2Test extends StatelessWidget {
                 columns: columns,
                 data: const [
                   {
-                    'id': '1', 
-                    'name': 'John Doe', 
-                    'email': 'john.doe@example.com', 
+                    'id': '1',
+                    'name': 'John Doe',
+                    'email': 'john.doe@example.com',
                     'phone': '123-456-7890',
                     'address': '123 Main Street, Springfield, IL 62701',
                   },
                   {
-                    'id': '2', 
-                    'name': 'Jane Smith', 
-                    'email': 'jane.smith@example.com', 
+                    'id': '2',
+                    'name': 'Jane Smith',
+                    'email': 'jane.smith@example.com',
                     'phone': '098-765-4321',
                     'address': '456 Oak Avenue, Springfield, IL 62702',
                   },
