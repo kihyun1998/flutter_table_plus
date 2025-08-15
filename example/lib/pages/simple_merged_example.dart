@@ -90,7 +90,8 @@ class SimpleMergedExample extends StatelessWidget {
             const SizedBox(height: 16),
 
             // Table
-            Expanded(
+            SizedBox(
+              height: 600, // Fixed height for better visibility
               child: Card(
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),

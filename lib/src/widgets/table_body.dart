@@ -40,6 +40,7 @@ class TablePlusBody extends StatelessWidget {
     this.onCellTap,
     this.onStopEditing,
     this.onMergedCellChanged,
+    this.calculateRowHeight,
   });
 
   /// The list of columns for the table.
@@ -110,6 +111,11 @@ class TablePlusBody extends StatelessWidget {
   /// Callback when a merged cell value is changed.
   final void Function(String groupId, String columnKey, dynamic newValue)?
       onMergedCellChanged;
+
+  /// Callback to calculate the height of a specific row.
+  /// Provides row index and row data, and should return the height for that row.
+  /// If null, uses the fixed row height from the theme.
+  final double? Function(int rowIndex, Map<String, dynamic> rowData)? calculateRowHeight;
 
 
   /// Get the background color for a row at the given index.
@@ -281,6 +287,12 @@ class TablePlusBody extends StatelessWidget {
     );
   }
 
+  /// Calculate the height for a specific row.
+  double? _calculateRowHeight(int index) {
+    if (calculateRowHeight == null || index >= data.length) return null;
+    return calculateRowHeight!(index, data[index]);
+  }
+
   /// Build a row widget for the given index.
   /// This method can be overridden or extended to support different row types.
   /// [index] - Original data index
@@ -296,6 +308,22 @@ class TablePlusBody extends StatelessWidget {
       if (firstRowIndex == index) {
         // This is the first row in a merge group - create a merged row
         final isSelected = selectedRows.contains(mergeGroup.groupId);
+        
+        // Calculate merged row height (sum of all rows in the group)
+        double? mergedHeight;
+        if (calculateRowHeight != null) {
+          double totalHeight = 0;
+          for (final rowKey in mergeGroup.rowKeys) {
+            final rowIndex = data.indexWhere((row) => row[rowIdKey]?.toString() == rowKey);
+            if (rowIndex != -1) {
+              final height = calculateRowHeight!(rowIndex, data[rowIndex]);
+              if (height != null) {
+                totalHeight += height;
+              }
+            }
+          }
+          mergedHeight = totalHeight > 0 ? totalHeight : null;
+        }
 
         return TablePlusMergedRow(
           mergeGroup: mergeGroup,
@@ -326,7 +354,7 @@ class TablePlusBody extends StatelessWidget {
           onRowDoubleTap: onRowDoubleTap,
           onRowSecondaryTap: onRowSecondaryTap,
           onMergedCellChanged: onMergedCellChanged,
-          calculatedHeight: null,
+          calculatedHeight: mergedHeight,
         );
       }
     }
@@ -335,6 +363,7 @@ class TablePlusBody extends StatelessWidget {
     final rowData = data[index];
     final rowId = _getRowId(rowData);
     final isSelected = rowId != null && selectedRows.contains(rowId);
+    final calculatedHeight = _calculateRowHeight(index);
 
     return _TablePlusRow(
       rowIndex: index,
@@ -359,7 +388,7 @@ class TablePlusBody extends StatelessWidget {
       getCellController: getCellController,
       onCellTap: onCellTap,
       onStopEditing: onStopEditing,
-      calculatedHeight: null,
+      calculatedHeight: calculatedHeight,
     );
   }
 }

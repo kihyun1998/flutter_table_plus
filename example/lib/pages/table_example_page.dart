@@ -483,7 +483,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
 
             // Table with fixed height
             SizedBox(
-              height: 600, // Fixed height for table
+              height: 800, // Fixed height for table
               child: Card(
                 elevation: 2,
                 child: Padding(

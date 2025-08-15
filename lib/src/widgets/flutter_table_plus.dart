@@ -43,6 +43,7 @@ class FlutterTablePlus extends StatefulWidget {
     this.onRowDoubleTap,
     this.onRowSecondaryTap,
     this.noDataWidget,
+    this.calculateRowHeight,
   });
 
   /// The map of columns to display in the table.
@@ -143,6 +144,14 @@ class FlutterTablePlus extends StatefulWidget {
   /// Widget to display when there is no data to show in the table.
   /// If not provided, nothing will be displayed when data is empty.
   final Widget? noDataWidget;
+
+  /// Callback to calculate the height of a specific row.
+  /// Provides row index and row data, and should return the height for that row.
+  /// If null, uses the fixed row height from the theme.
+  /// 
+  /// This is useful for supporting TextOverflow.visible or other dynamic height needs.
+  /// The calculation should be efficient as it may be called frequently.
+  final double? Function(int rowIndex, Map<String, dynamic> rowData)? calculateRowHeight;
 
   @override
   State<FlutterTablePlus> createState() => _FlutterTablePlusState();
@@ -351,8 +360,49 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
 
   /// Calculate the total height of all data rows.
   double _calculateTotalDataHeight() {
-    // Use fixed row height from theme
-    return widget.data.length * _currentTheme.bodyTheme.rowHeight;
+    if (widget.data.isEmpty) return 0;
+    
+    double totalHeight = 0;
+    
+    if (widget.calculateRowHeight != null) {
+      // Use dynamic height calculation
+      Set<int> processedIndices = {};
+      
+      for (int i = 0; i < widget.data.length; i++) {
+        if (processedIndices.contains(i)) continue;
+        
+        // Check if this row is part of a merged group
+        final mergeGroup = _getMergedGroupForRow(i);
+        if (mergeGroup != null) {
+          // Calculate merged row height (sum of all rows in the group)
+          double mergedHeight = 0;
+          for (final rowKey in mergeGroup.rowKeys) {
+            final rowIndex = widget.data.indexWhere((row) => row[widget.rowIdKey]?.toString() == rowKey);
+            if (rowIndex != -1) {
+              final height = widget.calculateRowHeight!(rowIndex, widget.data[rowIndex]);
+              if (height != null) {
+                mergedHeight += height;
+              } else {
+                mergedHeight += _currentTheme.bodyTheme.rowHeight; // fallback
+              }
+              processedIndices.add(rowIndex);
+            }
+          }
+          totalHeight += mergedHeight;
+        } else {
+          // Regular row
+          final height = widget.calculateRowHeight!(i, widget.data[i]);
+          totalHeight += height ?? _currentTheme.bodyTheme.rowHeight; // fallback
+          processedIndices.add(i);
+        }
+      }
+    } else {
+      // Use fixed row height from theme for all displayable rows
+      final displayedRowCount = _getTotalRowCount();
+      totalHeight = displayedRowCount * _currentTheme.bodyTheme.rowHeight;
+    }
+    
+    return totalHeight;
   }
 
   /// Calculate the actual width for each column based on available space.
@@ -626,6 +676,7 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                       onStopEditing: _stopCurrentEditing,
                                       onMergedCellChanged:
                                           widget.onMergedCellChanged,
+                                      calculateRowHeight: widget.calculateRowHeight,
                                     ),
                             ),
                           ],

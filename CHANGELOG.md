@@ -1,3 +1,16 @@
+## 1.13.1
+
+*   **FEAT**: Added `calculateRowHeight` callback for external row height calculation.
+    *   Introduced optional `calculateRowHeight` parameter to `FlutterTablePlus`.
+    *   Added `TableRowHeightCalculator` utility class with helper methods.
+    *   Supports `TextOverflow.visible` with proper height calculation.
+    *   Scrollbar height calculation now accounts for dynamic row heights.
+    *   Includes comprehensive example demonstrating all features together.
+*   **IMPROVEMENT**: Enhanced example applications.
+    *   Added Dynamic Height Example with selection, sorting, and editing features.
+    *   Increased table heights across all examples for better visibility.
+    *   Added scrollable main page for better navigation.
+
 ## 1.13.0
 
 *   **BREAKING CHANGE**: Removed dynamic row height feature for performance and stability.

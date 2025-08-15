@@ -34,3 +34,6 @@ export 'src/models/theme/tooltip_theme.dart';
 /// Widgets
 export 'src/widgets/custom_ink_well.dart';
 export 'src/widgets/flutter_table_plus.dart';
+
+/// Utilities
+export 'src/utils/table_row_height_calculator.dart';

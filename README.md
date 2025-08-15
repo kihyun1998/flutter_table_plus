@@ -24,6 +24,7 @@ A highly customizable and efficient table widget for Flutter. It provides a rich
 
 ## Features
 
+- **Dynamic Row Heights**: Support for `TextOverflow.visible` with external height calculation via `calculateRowHeight` callback and `TableRowHeightCalculator` utility.
 - **Dynamic Scrollbar Visibility**: Scrollbars are now dynamically shown or hidden based on content overflow, providing a cleaner UI when not needed.
 - **Synchronized Scrolling**: Header and body scroll horizontally in perfect sync.
 - **Advanced Theming**: Deeply customize headers, rows, and scrollbars. Use `decoration` for advanced header styling (gradients, borders) and fine-tune row interaction effects like `hoverColor`, `splashColor`, and `highlightColor`.
@@ -33,7 +34,7 @@ A highly customizable and efficient table widget for Flutter. It provides a rich
 - **Row Selection & Editing**: Enable row selection and cell editing simultaneously, now fully compatible with merged rows. Supports double-tap and secondary-tap events on rows.
 - **Column Reordering**: Easily reorder columns with drag-and-drop.
 - **Column Visibility**: Dynamically show or hide individual columns.
-- **Smart Text Handling**: Control text overflow (`ellipsis`, `clip`, etc.). Tooltips for both **cells and headers** can be configured to appear always, only when text overflows, or never, giving you precise control over user feedback.
+- **Smart Text Handling**: Control text overflow (`ellipsis`, `clip`, `visible`). Tooltips for both **cells and headers** can be configured to appear always, only when text overflows, or never, giving you precise control over user feedback.
 - **Custom Cell Widgets**: Render any widget inside a cell using `cellBuilder` for maximum flexibility.
 - **Conditional Feature Control**: Dynamically enable/disable features like sorting and column reordering based on user permissions or application state.
 - **Code Refinements**: Removed deprecated code and updated to the latest syntax for improved maintainability and performance.
@@ -44,7 +45,7 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  flutter_table_plus: ^1.12.0
+  flutter_table_plus: ^1.13.1
 ```
 
 Then, run `flutter pub get` in your terminal.
@@ -172,6 +173,33 @@ FlutterTablePlus(
 )
 ```
 
+### 📏 Dynamic Row Heights
+
+Support `TextOverflow.visible` with proper height calculation:
+
+```dart
+final columns = [
+  TablePlusColumn(
+    key: 'description',
+    label: 'Description',
+    width: 300,
+    textOverflow: TextOverflow.visible, // Enable text wrapping
+  ),
+];
+
+FlutterTablePlus(
+  columns: Map.fromEntries(columns.map((col) => MapEntry(col.key, col))),
+  data: data,
+  // Add dynamic height calculation
+  calculateRowHeight: TableRowHeightCalculator.createHeightCalculator(
+    columns: columns,
+    columnWidths: columns.map((col) => col.width).toList(),
+    defaultTextStyle: TextStyle(fontSize: 14),
+    minHeight: 48.0,
+  ),
+)
+```
+
 
 ## Conditional Feature Control
 
@@ -202,6 +230,7 @@ For more advanced use cases and detailed guides, please refer to our documentati
   - [Integrating with Riverpod (Code Generator)](documentation/RIVERPOD_GENERATOR_GUIDE.md)
 
 - **Feature Guides**
+  - [Dynamic Row Heights](documentation/DYNAMIC_HEIGHT.md)
   - [Handling Empty State](documentation/EMPTY_STATE.md)
   - [Cell Editing](documentation/EDITING.md)
   - [Sorting](documentation/SORTING.md)

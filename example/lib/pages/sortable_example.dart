@@ -358,7 +358,7 @@ class _SortableExampleState extends State<SortableExample> {
 
             // Table section
             Container(
-              height: 500, // Increased table height
+              height: 700, // Increased table height
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.grey.shade300),
                 borderRadius: BorderRadius.circular(8),
