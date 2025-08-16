@@ -609,7 +609,6 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
             context,
             verticalScrollController,
             verticalScrollbarController,
-            verticalFrozenController,
             horizontalScrollController,
             horizontalScrollbarController,
           ) {
@@ -629,8 +628,8 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                 ),
                 child: Stack(
                   children: [
-                    // Main table area with Row layout (frozen + scrollable)
-                    Row(
+                    // Main table area with unified single ListView approach
+                    Column(
                       children: [
                         // Frozen Area (left side)
                         if (_frozenColumns.isNotEmpty)
