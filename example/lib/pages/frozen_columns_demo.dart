@@ -450,6 +450,15 @@ class _FrozenColumnsDemoState extends State<FrozenColumnsDemo> {
     );
   }
 
+  void _toggleColumnVisibility(String columnKey) {
+    setState(() {
+      final column = _columns[columnKey];
+      if (column != null) {
+        _columns[columnKey] = column.copyWith(visible: !column.visible);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -474,89 +483,144 @@ class _FrozenColumnsDemoState extends State<FrozenColumnsDemo> {
             onPressed: () => setState(() => _isSortable = !_isSortable),
             tooltip: 'Toggle Sorting',
           ),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.view_column),
+            tooltip: 'Column Visibility',
+            onSelected: _toggleColumnVisibility,
+            itemBuilder: (context) {
+              return _columns.entries
+                  .where((entry) => entry.key != 'id') // Keep ID always visible
+                  .map((entry) {
+                final column = entry.value;
+                return PopupMenuItem<String>(
+                  value: entry.key,
+                  child: Row(
+                    children: [
+                      Icon(
+                        column.visible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                        size: 18,
+                        color: column.visible ? Colors.green : Colors.grey,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(column.label),
+                      if (column.frozen)
+                        Container(
+                          margin: const EdgeInsets.only(left: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.blue.shade100,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            'Frozen',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Colors.blue.shade700,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                );
+              }).toList();
+            },
+          ),
         ],
       ),
-      body: Column(
-        children: [
-          // Control Panel
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade50,
-              border: Border(bottom: BorderSide(color: Colors.grey.shade300)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Frozen Columns Feature Demo',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Employee ID and Full Name are frozen (always visible). Other columns scroll horizontally.',
-                  style: TextStyle(color: Colors.grey.shade600),
-                ),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 8,
-                  children: [
-                    Chip(
-                      label: Text('Selected: ${_selectedRows.length}'),
-                      backgroundColor: _selectedRows.isNotEmpty
-                          ? Colors.blue.shade100
-                          : null,
-                    ),
-                    Chip(
-                      label: Text('Mode: ${_selectionMode.name}'),
-                    ),
-                    if (_sortColumnKey != null)
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            // Control Panel
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade50,
+                border: Border(bottom: BorderSide(color: Colors.grey.shade300)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Frozen Columns Feature Demo',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Employee ID and Full Name are frozen (always visible). Use the column visibility menu to show/hide columns.',
+                    style: TextStyle(color: Colors.grey.shade600),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    children: [
+                      Chip(
+                        label: Text('Selected: ${_selectedRows.length}'),
+                        backgroundColor: _selectedRows.isNotEmpty
+                            ? Colors.blue.shade100
+                            : null,
+                      ),
+                      Chip(
+                        label: Text('Mode: ${_selectionMode.name}'),
+                      ),
                       Chip(
                         label: Text(
-                            'Sorted by: $_sortColumnKey (${_sortDirection.name})'),
-                        backgroundColor: Colors.green.shade100,
+                            'Visible: ${_columns.values.where((col) => col.visible).length}/${_columns.length}'),
+                        backgroundColor: Colors.purple.shade100,
                       ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-
-          // Table in Card with fixed height
-          Container(
-            margin: const EdgeInsets.all(16),
-            height: 500,
-            child: Card(
-              elevation: 4,
-              clipBehavior: Clip.antiAlias,
-              child: FlutterTablePlus(
-                columns: _columns,
-                data: _sortedData,
-                isSelectable: _isSelectable,
-                selectionMode: _selectionMode,
-                selectedRows: _selectedRows,
-                onRowSelectionChanged: _handleRowSelectionChanged,
-                onSelectAll: _handleSelectAll,
-                onColumnReorder: _isReorderable ? _handleColumnReorder : null,
-                sortColumnKey: _sortColumnKey,
-                sortDirection: _sortDirection,
-                onSort: _isSortable ? _handleSort : null,
-                isEditable: _isEditable,
-                onCellChanged: _handleCellChanged,
-                onRowDoubleTap: (rowId) {
-                  final employee =
-                      _sortedData.firstWhere((row) => row['id'] == rowId);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Double-tapped on ${employee['name']}'),
-                      duration: const Duration(seconds: 2),
-                    ),
-                  );
-                },
+                      if (_sortColumnKey != null)
+                        Chip(
+                          label: Text(
+                              'Sorted by: $_sortColumnKey (${_sortDirection.name})'),
+                          backgroundColor: Colors.green.shade100,
+                        ),
+                    ],
+                  ),
+                ],
               ),
             ),
-          ),
-        ],
+
+            // Table in Card with fixed height
+            Container(
+              margin: const EdgeInsets.all(16),
+              height: 500,
+              child: Card(
+                elevation: 4,
+                clipBehavior: Clip.antiAlias,
+                child: FlutterTablePlus(
+                  columns: _columns,
+                  data: _sortedData,
+                  isSelectable: _isSelectable,
+                  selectionMode: _selectionMode,
+                  selectedRows: _selectedRows,
+                  onRowSelectionChanged: _handleRowSelectionChanged,
+                  onSelectAll: _handleSelectAll,
+                  onColumnReorder: _isReorderable ? _handleColumnReorder : null,
+                  sortColumnKey: _sortColumnKey,
+                  sortDirection: _sortDirection,
+                  onSort: _isSortable ? _handleSort : null,
+                  isEditable: _isEditable,
+                  onCellChanged: _handleCellChanged,
+                  onRowDoubleTap: (rowId) {
+                    final employee =
+                        _sortedData.firstWhere((row) => row['id'] == rowId);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Double-tapped on ${employee['name']}'),
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
