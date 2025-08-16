@@ -23,7 +23,7 @@ class CustomInkWell extends StatefulWidget {
   /// Defaults to 300 milliseconds.
   final Duration doubleClickTime;
 
-  final Color backgroundColor;
+  final Color? backgroundColor;
 
   /// The color of the ink splash when the [CustomInkWell] is tapped.
   final Color? splashColor;
@@ -45,7 +45,7 @@ class CustomInkWell extends StatefulWidget {
     this.onDoubleTap,
     this.onSecondaryTap,
     this.doubleClickTime = const Duration(milliseconds: 300),
-    required this.backgroundColor,
+    this.backgroundColor,
     this.splashColor,
     this.highlightColor,
     this.hoverColor,
@@ -94,7 +94,9 @@ class _CustomInkWellState extends State<CustomInkWell> {
     return Material(
       color: Colors.transparent,
       child: Ink(
-        decoration: BoxDecoration(color: widget.backgroundColor),
+        decoration: widget.backgroundColor != null 
+            ? BoxDecoration(color: widget.backgroundColor)
+            : null,
         child: InkWell(
           onTap: (widget.onTap != null || widget.onDoubleTap != null)
               ? _handleTap

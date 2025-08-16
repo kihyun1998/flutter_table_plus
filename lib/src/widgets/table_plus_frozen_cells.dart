@@ -125,14 +125,14 @@ class TablePlusFrozenCells extends StatelessWidget {
           final column = entry.value;
           final width = index < columnWidths.length ? columnWidths[index] : column.width;
 
-          return _buildCell(column, width);
+          return _buildCell(context, column, width);
         }).toList(),
       ),
     );
   }
 
   /// Build a single cell for the given column.
-  Widget _buildCell(TablePlusColumn column, double width) {
+  Widget _buildCell(BuildContext context, TablePlusColumn column, double width) {
     final cellValue = rowData[column.key];
     final isEditing = isCellEditing?.call(rowIndex, column.key) ?? false;
 
@@ -186,7 +186,7 @@ class TablePlusFrozenCells extends StatelessWidget {
     return TextField(
       controller: controller,
       style: editableTheme.editingTextStyle,
-      textAlign: column.textAlign ?? TextAlign.left,
+      textAlign: column.textAlign,
       decoration: InputDecoration(
         hintText: column.hintText,
         hintStyle: editableTheme.hintStyle,

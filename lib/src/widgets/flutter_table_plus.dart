@@ -668,16 +668,22 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                             return SizedBox(
                                               height: max(constraints.maxHeight,
                                                   tableDataHeight),
+                                              child: Container(
+                                                // TODO: Replace with new unified TablePlusBody
+                                                child: Text('Frozen Body - Under Construction'),
+                                              ),
+                                              /*
                                               child: TablePlusBody(
-                                                columns: _frozenColumns,
+                                                frozenColumns: _frozenColumns,
+                                                scrollableColumns: const [],
+                                                frozenColumnWidths: frozenColumnWidths,
+                                                scrollableColumnWidths: const [],
                                                 data: widget.data,
-                                                mergedGroups:
-                                                    widget.mergedGroups,
-                                                columnWidths:
-                                                    frozenColumnWidths,
+                                                mergedGroups: widget.mergedGroups,
                                                 theme: theme.bodyTheme,
-                                                verticalController:
-                                                    verticalFrozenController,
+                                                dividerTheme: theme.dividerTheme,
+                                                verticalController: verticalScrollController,
+                                                horizontalScrollController: horizontalScrollController,
                                                 rowIdKey: widget.rowIdKey,
                                                 isSelectable:
                                                     widget.isSelectable,
@@ -709,6 +715,7 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                                 calculateRowHeight:
                                                     widget.calculateRowHeight,
                                               ),
+                                              */
                                             );
                                           },
                                         ),
@@ -802,18 +809,22 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                                             constraints
                                                                 .maxHeight,
                                                             tableDataHeight),
+                                                        child: Container(
+                                                          // TODO: Replace with new unified TablePlusBody
+                                                          child: Text('Scrollable Body - Under Construction'),
+                                                        ),
+                                                        /*
                                                         child: TablePlusBody(
-                                                          columns:
-                                                              _scrollableColumns,
+                                                          frozenColumns: const [],
+                                                          scrollableColumns: _scrollableColumns,
+                                                          frozenColumnWidths: const [],
+                                                          scrollableColumnWidths: scrollableColumnWidths,
                                                           data: widget.data,
-                                                          mergedGroups: widget
-                                                              .mergedGroups,
-                                                          columnWidths:
-                                                              scrollableColumnWidths,
-                                                          theme:
-                                                              theme.bodyTheme,
-                                                          verticalController:
-                                                              verticalScrollController,
+                                                          mergedGroups: widget.mergedGroups,
+                                                          theme: theme.bodyTheme,
+                                                          dividerTheme: theme.dividerTheme,
+                                                          verticalController: verticalScrollController,
+                                                          horizontalScrollController: horizontalScrollController,
                                                           rowIdKey:
                                                               widget.rowIdKey,
                                                           isSelectable:
@@ -850,6 +861,7 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                                           calculateRowHeight: widget
                                                               .calculateRowHeight,
                                                         ),
+                                                        */
                                                       );
                                                     },
                                                   ),

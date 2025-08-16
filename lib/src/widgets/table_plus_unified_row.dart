@@ -9,7 +9,6 @@ import '../models/theme/tooltip_theme.dart' show TablePlusTooltipTheme;
 import '../models/theme/divider_theme.dart' show TablePlusDividerTheme;
 import 'table_plus_frozen_cells.dart';
 import 'table_plus_scrollable_cells.dart';
-import 'table_plus_merged_row.dart';
 import 'table_plus_row_widget.dart';
 
 /// A unified row widget that handles both frozen and scrollable columns in a single row.

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../../flutter_table_plus.dart' show TablePlusSelectionTheme;
 import '../models/merged_row_group.dart';
@@ -8,10 +7,6 @@ import '../models/theme/body_theme.dart' show TablePlusBodyTheme;
 import '../models/theme/editable_theme.dart' show TablePlusEditableTheme;
 import '../models/theme/tooltip_theme.dart' show TablePlusTooltipTheme;
 import '../models/theme/divider_theme.dart' show TablePlusDividerTheme;
-import '../models/tooltip_behavior.dart';
-import '../utils/text_overflow_detector.dart';
-import 'custom_ink_well.dart';
-import 'table_plus_merged_row.dart';
 import 'table_plus_row_widget.dart';
 import 'table_plus_unified_row.dart';
 
@@ -138,25 +133,6 @@ class TablePlusBody extends StatelessWidget {
   final double? Function(int rowIndex, Map<String, dynamic> rowData)?
       calculateRowHeight;
 
-  /// Get the background color for a row at the given index.
-  Color _getRowColor(int index, bool isSelected) {
-    // Selected rows get selection color
-    if (isSelected && isSelectable) {
-      return selectionTheme.selectedRowColor;
-    }
-
-    // Alternate row colors
-    if (theme.alternateRowColor != null && index.isOdd) {
-      return theme.alternateRowColor!;
-    }
-
-    return theme.backgroundColor;
-  }
-
-  /// Extract the row ID from row data.
-  String? _getRowId(Map<String, dynamic> rowData) {
-    return rowData[rowIdKey]?.toString();
-  }
 
   /// Find the merged group that contains the specified row index.
   MergedRowGroup? _getMergedGroupForRow(int rowIndex) {
@@ -242,11 +218,6 @@ class TablePlusBody extends StatelessWidget {
     );
   }
 
-  /// Calculate the height for a specific row.
-  double? _calculateRowHeight(int index) {
-    if (calculateRowHeight == null || index >= data.length) return null;
-    return calculateRowHeight!(index, data[index]);
-  }
 
   /// Build a unified row widget for the given index.
   /// This method creates a single row that handles both frozen and scrollable columns.
