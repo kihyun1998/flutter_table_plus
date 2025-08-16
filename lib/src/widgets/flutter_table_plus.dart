@@ -6,8 +6,8 @@ import '../../flutter_table_plus.dart' show TablePlusTheme;
 import '../models/merged_row_group.dart';
 import '../models/table_column.dart';
 import 'synced_scroll_controllers.dart';
-import 'table_body.dart';
 import 'table_header.dart';
+import 'table_body.dart';
 
 /// A highly customizable and efficient table widget for Flutter.
 ///
@@ -609,7 +609,6 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
             context,
             verticalScrollController,
             verticalScrollbarController,
-            verticalFrozenController,
             horizontalScrollController,
             horizontalScrollbarController,
           ) {
@@ -629,14 +628,15 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                 ),
                 child: Stack(
                   children: [
-                    // Main table area with Row layout (frozen + scrollable)
-                    Row(
+                    // Main table area with unified single ListView approach
+                    Column(
                       children: [
                         // Frozen Area (left side)
                         if (_frozenColumns.isNotEmpty)
                           SizedBox(
                             width: frozenWidth,
                             child: Column(
+                              mainAxisSize: MainAxisSize.min,
                               children: [
                                 // Frozen Header
                                 TablePlusHeader(
@@ -659,7 +659,8 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                 ),
 
                                 // Frozen Body
-                                Expanded(
+                                Flexible(
+                                  fit: FlexFit.loose,
                                   child: widget.data.isEmpty &&
                                           widget.noDataWidget != null
                                       ? widget.noDataWidget!
@@ -670,45 +671,33 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                               height: max(constraints.maxHeight,
                                                   tableDataHeight),
                                               child: TablePlusBody(
-                                                columns: _frozenColumns,
+                                                frozenColumns: _frozenColumns,
+                                                scrollableColumns: const [],
+                                                frozenColumnWidths: frozenColumnWidths,
+                                                scrollableColumnWidths: const [],
                                                 data: widget.data,
-                                                mergedGroups:
-                                                    widget.mergedGroups,
-                                                columnWidths:
-                                                    frozenColumnWidths,
+                                                mergedGroups: widget.mergedGroups,
                                                 theme: theme.bodyTheme,
-                                                verticalController:
-                                                    verticalFrozenController,
+                                                dividerTheme: theme.dividerTheme,
+                                                verticalController: verticalScrollController,
+                                                horizontalScrollController: horizontalScrollController,
                                                 rowIdKey: widget.rowIdKey,
-                                                isSelectable:
-                                                    widget.isSelectable,
-                                                selectionMode:
-                                                    widget.selectionMode,
-                                                selectedRows:
-                                                    widget.selectedRows,
-                                                selectionTheme:
-                                                    theme.selectionTheme,
-                                                onRowSelectionChanged: widget
-                                                    .onRowSelectionChanged,
-                                                onRowDoubleTap:
-                                                    widget.onRowDoubleTap,
-                                                onRowSecondaryTap:
-                                                    widget.onRowSecondaryTap,
+                                                isSelectable: widget.isSelectable,
+                                                selectionMode: widget.selectionMode,
+                                                selectedRows: widget.selectedRows,
+                                                selectionTheme: theme.selectionTheme,
+                                                onRowSelectionChanged: widget.onRowSelectionChanged,
+                                                onRowDoubleTap: widget.onRowDoubleTap,
+                                                onRowSecondaryTap: widget.onRowSecondaryTap,
                                                 isEditable: widget.isEditable,
-                                                editableTheme:
-                                                    theme.editableTheme,
-                                                tooltipTheme:
-                                                    theme.tooltipTheme,
+                                                editableTheme: theme.editableTheme,
+                                                tooltipTheme: theme.tooltipTheme,
                                                 isCellEditing: _isCellEditing,
-                                                getCellController:
-                                                    _getCellController,
+                                                getCellController: _getCellController,
                                                 onCellTap: _handleCellTap,
-                                                onStopEditing:
-                                                    _stopCurrentEditing,
-                                                onMergedCellChanged:
-                                                    widget.onMergedCellChanged,
-                                                calculateRowHeight:
-                                                    widget.calculateRowHeight,
+                                                onStopEditing: _stopCurrentEditing,
+                                                onMergedCellChanged: widget.onMergedCellChanged,
+                                                calculateRowHeight: widget.calculateRowHeight,
                                               ),
                                             );
                                           },
@@ -764,6 +753,7 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                     child: SizedBox(
                                       width: scrollableContentWidth,
                                       child: Column(
+                                        mainAxisSize: MainAxisSize.min,
                                         children: [
                                           // Scrollable Header
                                           TablePlusHeader(
@@ -790,7 +780,8 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                           ),
 
                                           // Scrollable Body
-                                          Expanded(
+                                          Flexible(
+                                            fit: FlexFit.loose,
                                             child: widget.data.isEmpty &&
                                                     widget.noDataWidget != null
                                                 ? Container() // No data widget only shown in frozen area
@@ -804,52 +795,33 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                                                 .maxHeight,
                                                             tableDataHeight),
                                                         child: TablePlusBody(
-                                                          columns:
-                                                              _scrollableColumns,
+                                                          frozenColumns: const [],
+                                                          scrollableColumns: _scrollableColumns,
+                                                          frozenColumnWidths: const [],
+                                                          scrollableColumnWidths: scrollableColumnWidths,
                                                           data: widget.data,
-                                                          mergedGroups: widget
-                                                              .mergedGroups,
-                                                          columnWidths:
-                                                              scrollableColumnWidths,
-                                                          theme:
-                                                              theme.bodyTheme,
-                                                          verticalController:
-                                                              verticalScrollController,
-                                                          rowIdKey:
-                                                              widget.rowIdKey,
-                                                          isSelectable:
-                                                              false, // Selection handled in frozen area
-                                                          selectionMode: widget
-                                                              .selectionMode,
-                                                          selectedRows: widget
-                                                              .selectedRows,
-                                                          selectionTheme: theme
-                                                              .selectionTheme,
-                                                          onRowSelectionChanged:
-                                                              null, // Handled in frozen area
-                                                          onRowDoubleTap:
-                                                              null, // Handed in frozen area
-                                                          onRowSecondaryTap:
-                                                              null, // Handled in frozen area
-                                                          isEditable:
-                                                              widget.isEditable,
-                                                          editableTheme: theme
-                                                              .editableTheme,
-                                                          tooltipTheme: theme
-                                                              .tooltipTheme,
-                                                          isCellEditing:
-                                                              _isCellEditing,
-                                                          getCellController:
-                                                              _getCellController,
-                                                          onCellTap:
-                                                              _handleCellTap,
-                                                          onStopEditing:
-                                                              _stopCurrentEditing,
-                                                          onMergedCellChanged:
-                                                              widget
-                                                                  .onMergedCellChanged,
-                                                          calculateRowHeight: widget
-                                                              .calculateRowHeight,
+                                                          mergedGroups: widget.mergedGroups,
+                                                          theme: theme.bodyTheme,
+                                                          dividerTheme: theme.dividerTheme,
+                                                          verticalController: verticalScrollController,
+                                                          horizontalScrollController: horizontalScrollController,
+                                                          rowIdKey: widget.rowIdKey,
+                                                          isSelectable: false, // Selection handled in frozen area
+                                                          selectionMode: widget.selectionMode,
+                                                          selectedRows: widget.selectedRows,
+                                                          selectionTheme: theme.selectionTheme,
+                                                          onRowSelectionChanged: null, // Handled in frozen area
+                                                          onRowDoubleTap: null, // Handled in frozen area
+                                                          onRowSecondaryTap: null, // Handled in frozen area
+                                                          isEditable: widget.isEditable,
+                                                          editableTheme: theme.editableTheme,
+                                                          tooltipTheme: theme.tooltipTheme,
+                                                          isCellEditing: _isCellEditing,
+                                                          getCellController: _getCellController,
+                                                          onCellTap: _handleCellTap,
+                                                          onStopEditing: _stopCurrentEditing,
+                                                          onMergedCellChanged: widget.onMergedCellChanged,
+                                                          calculateRowHeight: widget.calculateRowHeight,
                                                         ),
                                                       );
                                                     },
