@@ -79,14 +79,20 @@ dart doc .                      # Generate API documentation
 - **`lib/src/models/theme/theme.dart`**: Comprehensive theming system with nested theme classes
 - **`lib/src/models/tooltip_behavior.dart`**: Tooltip display behavior configuration
 
+### Utility Classes
+
+- **`lib/src/utils/table_row_height_calculator.dart`**: External row height calculation utility for dynamic heights with TextOverflow.visible support
+- **`lib/src/utils/text_overflow_detector.dart`**: Text overflow detection utility for tooltip and layout decisions
+
 ### Key Architectural Patterns
 
 1. **Map-based Data Structure**: Tables use `List<Map<String, dynamic>>` for row data, requiring unique row ID fields for selection features (default: 'id', configurable via `rowIdKey`)
 2. **Builder Pattern**: TableColumnsBuilder prevents order conflicts and manages column ordering automatically
 3. **Synchronized Scrolling**: Custom scroll controller synchronization between header and body
 4. **Merged Row Groups**: MergedRowGroup system for visually combining multiple data rows with configurable merge behavior per column
-5. **Theme Composition**: Nested theme classes (TablePlusTheme, TablePlusHeaderTheme, etc.) for granular styling control
-6. **State Management Ready**: Designed to work with state management solutions like Riverpod (see documentation/RIVERPOD_GENERATOR_GUIDE.md)
+5. **Frozen Columns**: Left-pinned columns with optional divider theming for improved data visibility
+6. **Theme Composition**: Nested theme classes (TablePlusTheme, TablePlusHeaderTheme, etc.) for granular styling control
+7. **State Management Ready**: Designed to work with state management solutions like Riverpod (see documentation/RIVERPOD_GENERATOR_GUIDE.md)
 
 ### Widget Lifecycle
 
@@ -144,7 +150,7 @@ Comprehensive documentation is available in the `documentation/` directory:
 - ADVANCED_COLUMNS.md: Advanced column features
 - EMPTY_STATE.md: Handling empty table states
 - MERGED_ROWS.md: Complete guide to merged row functionality with examples
- 
+- DYNAMIC_HEIGHT.md: Dynamic row heights with TextOverflow.visible support and TableRowHeightCalculator utility
 - RIVERPOD_GENERATOR_GUIDE.md: State management integration
 
 # important-instruction-reminders
