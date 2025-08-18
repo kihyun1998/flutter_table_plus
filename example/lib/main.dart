@@ -63,7 +63,8 @@ class ExampleHomePage extends StatelessWidget {
               child: ListTile(
                 leading: const Icon(Icons.merge_type),
                 title: const Text('Comprehensive Merged Table'),
-                subtitle: const Text('All features: sorting, editing, selection, reordering, theming'),
+                subtitle: const Text(
+                    'All features: sorting, editing, selection, reordering, theming'),
                 trailing: const Icon(Icons.arrow_forward_ios),
                 onTap: () {
                   Navigator.push(

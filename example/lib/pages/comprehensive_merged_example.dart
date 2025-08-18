@@ -211,16 +211,16 @@ class _ComprehensiveMergedExampleState
   // Merged row groups - dynamically generated based on current data order
   List<MergedRowGroup> get _mergedGroups {
     final Map<String, List<String>> departmentGroups = {};
-    
+
     // Group row IDs by department based on current data order
     for (final row in _data) {
       final dept = row['department'] as String;
       final id = row['id'] as String;
       departmentGroups.putIfAbsent(dept, () => []).add(id);
     }
-    
+
     final groups = <MergedRowGroup>[];
-    
+
     // Engineering group
     if (departmentGroups.containsKey('Engineering')) {
       groups.add(MergedRowGroup(
@@ -261,7 +261,7 @@ class _ComprehensiveMergedExampleState
         },
       ));
     }
-    
+
     // Marketing group
     if (departmentGroups.containsKey('Marketing')) {
       groups.add(MergedRowGroup(
@@ -302,7 +302,7 @@ class _ComprehensiveMergedExampleState
         },
       ));
     }
-    
+
     // Sales group
     if (departmentGroups.containsKey('Sales')) {
       groups.add(MergedRowGroup(
@@ -343,7 +343,7 @@ class _ComprehensiveMergedExampleState
         },
       ));
     }
-    
+
     return groups;
   }
 
