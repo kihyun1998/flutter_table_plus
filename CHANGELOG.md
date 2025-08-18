@@ -1,3 +1,11 @@
+## 1.14.1
+
+*   **FEAT**: Added `lastRowBorderBehavior` to `TablePlusBodyTheme` to control the visibility of the last row's bottom border (`never`, `always`, `smart`).
+*   **FIX**: Fixed an issue where sorting did not work correctly with merged rows in the example.
+*   **DOCS**: Added a comprehensive example (`comprehensive_merged_example.dart`) demonstrating various table features together.
+*   **CHORE**: Updated the main example page to link to the new comprehensive example.
+*   **CHORE**: Updated an icon in the frozen columns demo.
+
 ## 1.14.0
 
 *   **FEAT**: Added frozen column divider feature.
@@ -199,7 +207,7 @@
 
 ## 1.1.1
 
-* Update README.md
+*   Update README.md
 
 ## 1.1.0
 

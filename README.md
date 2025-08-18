@@ -27,7 +27,7 @@ A highly customizable and efficient table widget for Flutter. It provides a rich
 - **Dynamic Row Heights**: Support for `TextOverflow.visible` with external height calculation via `calculateRowHeight` callback and `TableRowHeightCalculator` utility.
 - **Dynamic Scrollbar Visibility**: Scrollbars are now dynamically shown or hidden based on content overflow, providing a cleaner UI when not needed.
 - **Synchronized Scrolling**: Header and body scroll horizontally in perfect sync.
-- **Advanced Theming**: Deeply customize headers, rows, and scrollbars. Use `decoration` for advanced header styling (gradients, borders) and fine-tune row interaction effects like `hoverColor`, `splashColor`, and `highlightColor`.
+- **Advanced Theming**: Deeply customize headers, rows, and scrollbars. Use `decoration` for advanced header styling, fine-tune row interaction effects, and control the last row's bottom border with `lastRowBorderBehavior`.
 - **Flexible Data Handling**: Use the `rowIdKey` property to specify a custom unique identifier for your rows, removing the need for a mandatory `'id'` key.
 - **Column Sorting**: Supports multi-state sorting (ascending, descending, none) with a configurable sort cycle.
 - **Merged Rows**: Visually group and merge multiple data rows into a single unit for specific columns, supporting custom content, selection, and editing within merged cells.
@@ -46,7 +46,7 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  flutter_table_plus: ^1.14.0
+  flutter_table_plus: ^1.14.1
 ```
 
 Then, run `flutter pub get` in your terminal.

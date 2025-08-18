@@ -192,4 +192,29 @@ theme: const TablePlusTheme(
 ## 8. Tooltip Styling (`TablePlusTooltipTheme`)
 
 Controls the appearance of tooltips that appear when cell content overflows. See `ADVANCED_COLUMNS.md` for more details.
-''
+
+## 9. Last Row Border Behavior (`lastRowBorderBehavior`)
+
+The `lastRowBorderBehavior` property in `TablePlusBodyTheme` gives you fine-grained control over when the bottom border of the very last row in the table is displayed. This is useful for achieving a clean, polished look in different scenarios.
+
+It takes a `LastRowBorderBehavior` enum with three possible values:
+
+-   `LastRowBorderBehavior.never` (Default): The last row will never have a bottom border. This is the classic behavior.
+-   `LastRowBorderBehavior.always`: The last row will always have a bottom border. This can be useful to create a clear boundary for the table.
+-   `LastRowBorderBehavior.smart`: The border is shown or hidden based on whether the table content requires vertical scrolling.
+    -   **If content fits (no scrollbar)**: The border is shown to provide a clean, enclosed look.
+    -   **If content overflows (scrollbar is present)**: The border is hidden, indicating that there is more content to see.
+
+### Example
+
+```dart
+theme: const TablePlusTheme(
+  bodyTheme: TablePlusBodyTheme(
+    // Other properties...
+    showHorizontalDividers: true,
+    dividerColor: Colors.grey.shade300,
+    lastRowBorderBehavior: LastRowBorderBehavior.smart, // Use smart behavior
+  ),
+),
+```
+'''
