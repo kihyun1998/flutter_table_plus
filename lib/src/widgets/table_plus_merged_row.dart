@@ -188,14 +188,20 @@ class TablePlusMergedRow extends TablePlusRowWidget {
       content = Container(
         alignment: column.alignment,
         padding: theme.padding,
-        child: column.cellBuilder!(context, rowData ?? {}),
+        child: Align(
+          alignment: column.alignment,
+          child: column.cellBuilder!(context, rowData ?? {}),
+        ),
       );
     } else {
       // Default text content
       final displayValue = (rowData ?? {})[column.key]?.toString() ?? '';
       Widget textWidget = Text(
         displayValue,
-        style: theme.textStyle,
+        style: selectionTheme.getEffectiveTextStyle(
+          isSelected,
+          theme.textStyle,
+        ),
         textAlign: column.textAlign,
         overflow: column.textOverflow,
       );
@@ -393,13 +399,19 @@ class TablePlusMergedRow extends TablePlusRowWidget {
             content = Container(
               alignment: column.alignment,
               padding: theme.padding,
-              child: column.cellBuilder!(context, rowData ?? {}),
+              child: Align(
+                alignment: column.alignment,
+                child: column.cellBuilder!(context, rowData ?? {}),
+              ),
             );
           } else {
             final displayValue = (rowData ?? {})[column.key]?.toString() ?? '';
             Widget textWidget = Text(
               displayValue,
-              style: theme.textStyle,
+              style: selectionTheme.getEffectiveTextStyle(
+                isSelected,
+                theme.textStyle,
+              ),
               textAlign: column.textAlign,
               overflow: column.textOverflow,
             );
@@ -605,9 +617,15 @@ class TablePlusMergedRow extends TablePlusRowWidget {
           return true; // If no space available, consider it overflow
         }
 
+        // Use effective text style that considers selection state
+        final effectiveTextStyle = selectionTheme.getEffectiveTextStyle(
+          isSelected,
+          theme.textStyle,
+        );
+
         return TextOverflowDetector.willTextOverflow(
           text: displayValue,
-          style: theme.textStyle,
+          style: effectiveTextStyle,
           maxWidth: maxTextWidth,
           textAlign: column.textAlign,
         );
