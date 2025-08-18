@@ -36,7 +36,7 @@ class _ComprehensiveMergedExampleState
   final List<Map<String, dynamic>> _data = [
     {
       'id': '1',
-      'name': 'Alice Johnson',
+      'name': 'Alexandriana Seraphina Aethelreda Abernathy',
       'department': 'Engineering',
       'position': 'Senior Developer',
       'salary': 120000,
@@ -109,14 +109,14 @@ class _ComprehensiveMergedExampleState
   // Columns configuration
   late final Map<String, TablePlusColumn> _columns = {
     'name': TablePlusColumn(
-      key: 'name',
-      label: 'Employee Name',
-      order: 1,
-      width: 180,
-      minWidth: 120,
-      sortable: true,
-      editable: true,
-    ),
+        key: 'name',
+        label: 'Employee Name',
+        order: 1,
+        width: 180,
+        minWidth: 120,
+        sortable: true,
+        editable: true,
+        tooltipBehavior: TooltipBehavior.onOverflowOnly),
     'department': TablePlusColumn(
       key: 'department',
       label: 'Department',

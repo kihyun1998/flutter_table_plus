@@ -8,6 +8,8 @@ import '../models/table_column.dart';
 import '../models/theme/body_theme.dart' show TablePlusBodyTheme;
 import '../models/theme/editable_theme.dart' show TablePlusEditableTheme;
 import '../models/theme/tooltip_theme.dart' show TablePlusTooltipTheme;
+import '../models/tooltip_behavior.dart';
+import '../utils/text_overflow_detector.dart';
 import 'custom_ink_well.dart';
 import 'table_plus_row_widget.dart';
 
@@ -190,15 +192,21 @@ class TablePlusMergedRow extends TablePlusRowWidget {
       );
     } else {
       // Default text content
+      final displayValue = (rowData ?? {})[column.key]?.toString() ?? '';
+      Widget textWidget = Text(
+        displayValue,
+        style: theme.textStyle,
+        textAlign: column.textAlign,
+        overflow: column.textOverflow,
+      );
+
+      // Wrap with tooltip if needed
+      textWidget = _wrapWithTooltip(textWidget, displayValue, column, width ?? column.width);
+
       content = Container(
         alignment: column.alignment,
         padding: theme.padding,
-        child: Text(
-          (rowData ?? {})[column.key]?.toString() ?? '',
-          style: theme.textStyle,
-          textAlign: column.textAlign,
-          overflow: column.textOverflow,
-        ),
+        child: textWidget,
       );
     }
 
@@ -388,15 +396,21 @@ class TablePlusMergedRow extends TablePlusRowWidget {
               child: column.cellBuilder!(context, rowData ?? {}),
             );
           } else {
+            final displayValue = (rowData ?? {})[column.key]?.toString() ?? '';
+            Widget textWidget = Text(
+              displayValue,
+              style: theme.textStyle,
+              textAlign: column.textAlign,
+              overflow: column.textOverflow,
+            );
+
+            // Wrap with tooltip if needed
+            textWidget = _wrapWithTooltip(textWidget, displayValue, column, width ?? column.width);
+
             content = Container(
               alignment: column.alignment,
               padding: theme.padding,
-              child: Text(
-                (rowData ?? {})[column.key]?.toString() ?? '',
-                style: theme.textStyle,
-                textAlign: column.textAlign,
-                overflow: column.textOverflow,
-              ),
+              child: textWidget,
             );
           }
 
@@ -560,6 +574,62 @@ class TablePlusMergedRow extends TablePlusRowWidget {
         ),
       ),
     );
+  }
+
+  /// Determines whether a tooltip should be shown based on the column's tooltip behavior.
+  bool _shouldShowTooltip(String displayValue, TablePlusColumn column, double maxWidth) {
+    // Basic checks - tooltip must be enabled and text must not be empty
+    if (!tooltipTheme.enabled || displayValue.isEmpty) {
+      return false;
+    }
+
+    switch (column.tooltipBehavior) {
+      case TooltipBehavior.never:
+        return false;
+
+      case TooltipBehavior.always:
+        return column.textOverflow == TextOverflow.ellipsis;
+
+      case TooltipBehavior.onOverflowOnly:
+        // Only show tooltip if text overflow is ellipsis AND text actually overflows
+        if (column.textOverflow != TextOverflow.ellipsis) {
+          return false;
+        }
+
+        // Account for padding that might be applied to the cell content
+        final cellPadding = theme.padding;
+        final paddingWidth = cellPadding.horizontal;
+        final maxTextWidth = maxWidth - paddingWidth;
+
+        if (maxTextWidth <= 0) {
+          return true; // If no space available, consider it overflow
+        }
+
+        return TextOverflowDetector.willTextOverflow(
+          text: displayValue,
+          style: theme.textStyle,
+          maxWidth: maxTextWidth,
+          textAlign: column.textAlign,
+        );
+    }
+  }
+
+  /// Wraps a text widget with tooltip if needed.
+  Widget _wrapWithTooltip(Widget textWidget, String displayValue, TablePlusColumn column, double maxWidth) {
+    if (_shouldShowTooltip(displayValue, column, maxWidth)) {
+      return Tooltip(
+        message: displayValue,
+        textStyle: tooltipTheme.textStyle,
+        decoration: tooltipTheme.decoration,
+        padding: tooltipTheme.padding,
+        margin: tooltipTheme.margin,
+        waitDuration: tooltipTheme.waitDuration,
+        showDuration: tooltipTheme.showDuration,
+        preferBelow: tooltipTheme.preferBelow,
+        child: textWidget,
+      );
+    }
+    return textWidget;
   }
 
   /// Build selection cell for merged row.
