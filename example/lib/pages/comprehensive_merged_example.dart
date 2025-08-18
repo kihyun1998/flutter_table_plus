@@ -29,6 +29,8 @@ class _ComprehensiveMergedExampleState
 
   // Table state
   final Set<String> _selectedRows = {};
+  String? _currentSortColumn;
+  SortDirection? _currentSortDirection;
 
   // Sample data representing employees grouped by department
   final List<Map<String, dynamic>> _data = [
@@ -206,13 +208,24 @@ class _ComprehensiveMergedExampleState
     ),
   };
 
-  // Merged row groups - group by department
+  // Merged row groups - dynamically generated based on current data order
   List<MergedRowGroup> get _mergedGroups {
-    return [
-      // Engineering group
-      MergedRowGroup(
+    final Map<String, List<String>> departmentGroups = {};
+    
+    // Group row IDs by department based on current data order
+    for (final row in _data) {
+      final dept = row['department'] as String;
+      final id = row['id'] as String;
+      departmentGroups.putIfAbsent(dept, () => []).add(id);
+    }
+    
+    final groups = <MergedRowGroup>[];
+    
+    // Engineering group
+    if (departmentGroups.containsKey('Engineering')) {
+      groups.add(MergedRowGroup(
         groupId: 'eng_group',
-        rowKeys: ['1', '2', '3'],
+        rowKeys: departmentGroups['Engineering']!,
         mergeConfig: {
           'department': MergeCellConfig(
             shouldMerge: true,
@@ -231,7 +244,7 @@ class _ComprehensiveMergedExampleState
                     ),
                   ),
                   Text(
-                    '3 employees',
+                    '${departmentGroups['Engineering']!.length} employees',
                     style: TextStyle(
                       fontSize: 11,
                       color: Colors.grey.shade600,
@@ -243,14 +256,17 @@ class _ComprehensiveMergedExampleState
           ),
           'location': MergeCellConfig(
             shouldMerge: true,
-            spanningRowIndex: 0, // Use Alice's location for the group
+            spanningRowIndex: 0,
           ),
         },
-      ),
-      // Marketing group
-      MergedRowGroup(
+      ));
+    }
+    
+    // Marketing group
+    if (departmentGroups.containsKey('Marketing')) {
+      groups.add(MergedRowGroup(
         groupId: 'marketing_group',
-        rowKeys: ['4', '5'],
+        rowKeys: departmentGroups['Marketing']!,
         mergeConfig: {
           'department': MergeCellConfig(
             shouldMerge: true,
@@ -269,7 +285,7 @@ class _ComprehensiveMergedExampleState
                     ),
                   ),
                   Text(
-                    '2 employees',
+                    '${departmentGroups['Marketing']!.length} employees',
                     style: TextStyle(
                       fontSize: 11,
                       color: Colors.grey.shade600,
@@ -281,14 +297,17 @@ class _ComprehensiveMergedExampleState
           ),
           'location': MergeCellConfig(
             shouldMerge: true,
-            spanningRowIndex: 0, // Use Diana's location for the group
+            spanningRowIndex: 0,
           ),
         },
-      ),
-      // Sales group
-      MergedRowGroup(
+      ));
+    }
+    
+    // Sales group
+    if (departmentGroups.containsKey('Sales')) {
+      groups.add(MergedRowGroup(
         groupId: 'sales_group',
-        rowKeys: ['6', '7'],
+        rowKeys: departmentGroups['Sales']!,
         mergeConfig: {
           'department': MergeCellConfig(
             shouldMerge: true,
@@ -307,7 +326,7 @@ class _ComprehensiveMergedExampleState
                     ),
                   ),
                   Text(
-                    '2 employees',
+                    '${departmentGroups['Sales']!.length} employees',
                     style: TextStyle(
                       fontSize: 11,
                       color: Colors.grey.shade600,
@@ -319,11 +338,13 @@ class _ComprehensiveMergedExampleState
           ),
           'location': MergeCellConfig(
             shouldMerge: true,
-            spanningRowIndex: 0, // Use Frank's location for the group
+            spanningRowIndex: 0,
           ),
         },
-      ),
-    ];
+      ));
+    }
+    
+    return groups;
   }
 
   @override
@@ -458,6 +479,8 @@ class _ComprehensiveMergedExampleState
 
               // Sorting
               onSort: _isSortable ? _handleSort : null,
+              sortColumnKey: _currentSortColumn,
+              sortDirection: _currentSortDirection ?? SortDirection.none,
 
               // Column reordering
               onColumnReorder: _isReorderable ? _handleColumnReorder : null,
@@ -515,46 +538,106 @@ class _ComprehensiveMergedExampleState
 
   void _handleSort(String columnKey, SortDirection direction) {
     setState(() {
-      final ascending = direction == SortDirection.ascending;
+      _currentSortColumn = columnKey;
+      _currentSortDirection = direction;
 
-      // Group data by department to maintain merged row structure
-      final Map<String, List<Map<String, dynamic>>> groupedData = {};
-      for (final row in _data) {
-        final dept = row['department'] as String;
-        groupedData.putIfAbsent(dept, () => []).add(row);
+      // Reset to none means restore original order
+      if (direction == SortDirection.none) {
+        // Restore original data order
+        _data.clear();
+        _data.addAll([
+          {
+            'id': '1',
+            'name': 'Alice Johnson',
+            'department': 'Engineering',
+            'position': 'Senior Developer',
+            'salary': 120000,
+            'experience': 8,
+            'location': 'New York',
+            'status': 'Active'
+          },
+          {
+            'id': '2',
+            'name': 'Bob Smith',
+            'department': 'Engineering',
+            'position': 'Junior Developer',
+            'salary': 85000,
+            'experience': 3,
+            'location': 'New York',
+            'status': 'Active'
+          },
+          {
+            'id': '3',
+            'name': 'Charlie Brown',
+            'department': 'Engineering',
+            'position': 'Tech Lead',
+            'salary': 150000,
+            'experience': 12,
+            'location': 'New York',
+            'status': 'Active'
+          },
+          {
+            'id': '4',
+            'name': 'Diana Prince',
+            'department': 'Marketing',
+            'position': 'Marketing Manager',
+            'salary': 95000,
+            'experience': 6,
+            'location': 'San Francisco',
+            'status': 'Active'
+          },
+          {
+            'id': '5',
+            'name': 'Eve Wilson',
+            'department': 'Marketing',
+            'position': 'Content Specialist',
+            'salary': 70000,
+            'experience': 4,
+            'location': 'San Francisco',
+            'status': 'On Leave'
+          },
+          {
+            'id': '6',
+            'name': 'Frank Miller',
+            'department': 'Sales',
+            'position': 'Sales Director',
+            'salary': 110000,
+            'experience': 10,
+            'location': 'Chicago',
+            'status': 'Active'
+          },
+          {
+            'id': '7',
+            'name': 'Grace Lee',
+            'department': 'Sales',
+            'position': 'Account Executive',
+            'salary': 80000,
+            'experience': 5,
+            'location': 'Chicago',
+            'status': 'Active'
+          },
+        ]);
+        return;
       }
 
-      // Sort within each department group
-      for (final group in groupedData.values) {
-        group.sort((a, b) {
-          final aValue = a[columnKey];
-          final bValue = b[columnKey];
+      // Sort entire data by the specified column
+      _data.sort((a, b) {
+        dynamic valueA = a[columnKey];
+        dynamic valueB = b[columnKey];
 
-          int comparison;
-          if (aValue is num && bValue is num) {
-            comparison = aValue.compareTo(bValue);
-          } else {
-            comparison = aValue.toString().compareTo(bValue.toString());
-          }
+        // Handle different data types
+        int comparison;
+        if (valueA is String && valueB is String) {
+          comparison = valueA.toLowerCase().compareTo(valueB.toLowerCase());
+        } else if (valueA is num && valueB is num) {
+          comparison = valueA.compareTo(valueB);
+        } else {
+          comparison = valueA.toString().compareTo(valueB.toString());
+        }
 
-          return ascending ? comparison : -comparison;
-        });
-      }
-
-      // Sort department groups themselves if sorting by department
-      final sortedDepartments = groupedData.keys.toList();
-      if (columnKey == 'department') {
-        sortedDepartments.sort((a, b) {
-          final comparison = a.compareTo(b);
-          return ascending ? comparison : -comparison;
-        });
-      }
-
-      // Rebuild the data list maintaining group structure
-      _data.clear();
-      for (final dept in sortedDepartments) {
-        _data.addAll(groupedData[dept]!);
-      }
+        // Apply sort direction
+        return direction == SortDirection.ascending ? comparison : -comparison;
+      });
     });
   }
 
