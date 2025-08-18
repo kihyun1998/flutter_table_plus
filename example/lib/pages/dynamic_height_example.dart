@@ -276,12 +276,15 @@ class _DynamicHeightExampleState extends State<DynamicHeightExample> {
           dynamic bValue = b[columnKey];
 
           // Handle null values
-          if (aValue == null && bValue == null) return 0;
-          if (aValue == null)
+          if (aValue == null && bValue == null) {
+            return 0;
+          }
+          if (aValue == null) {
             return direction == SortDirection.ascending ? -1 : 1;
-          if (bValue == null)
+          }
+          if (bValue == null) {
             return direction == SortDirection.ascending ? 1 : -1;
-
+          }
           // Convert to strings for comparison
           String aStr = aValue.toString().toLowerCase();
           String bStr = bValue.toString().toLowerCase();
