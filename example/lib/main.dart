@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'pages/table_example_page.dart';
-import 'pages/simple_merged_example.dart';
-import 'pages/complex_merged_example.dart';
-import 'pages/selectable_merged_example.dart';
-import 'pages/editable_merged_example.dart';
+import 'pages/comprehensive_merged_example.dart';
 import 'pages/sortable_example.dart';
 import 'pages/dynamic_height_example.dart';
 import 'pages/frozen_columns_demo.dart';
@@ -65,67 +62,14 @@ class ExampleHomePage extends StatelessWidget {
             Card(
               child: ListTile(
                 leading: const Icon(Icons.merge_type),
-                title: const Text('Simple Merged Table'),
-                subtitle: const Text('2 rows merged in Department column'),
+                title: const Text('Comprehensive Merged Table'),
+                subtitle: const Text('All features: sorting, editing, selection, reordering, theming'),
                 trailing: const Icon(Icons.arrow_forward_ios),
                 onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const SimpleMergedExample(),
-                    ),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 8),
-            Card(
-              child: ListTile(
-                leading: const Icon(Icons.table_rows),
-                title: const Text('Complex Merged Table'),
-                subtitle: const Text(
-                    'Multiple columns, custom content, multiple groups'),
-                trailing: const Icon(Icons.arrow_forward_ios),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const ComplexMergedExample(),
-                    ),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 8),
-            Card(
-              child: ListTile(
-                leading: const Icon(Icons.checklist),
-                title: const Text('Selectable Merged Table'),
-                subtitle:
-                    const Text('Selection functionality with merged rows'),
-                trailing: const Icon(Icons.arrow_forward_ios),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const SelectableMergedExample(),
-                    ),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 8),
-            Card(
-              child: ListTile(
-                leading: const Icon(Icons.edit),
-                title: const Text('Editable Merged Table'),
-                subtitle: const Text('Cell editing with merged rows'),
-                trailing: const Icon(Icons.arrow_forward_ios),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const EditableMergedExample(),
+                      builder: (context) => const ComprehensiveMergedExample(),
                     ),
                   );
                 },
