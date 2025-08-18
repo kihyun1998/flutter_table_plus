@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../flutter_table_plus.dart' show TablePlusSelectionTheme;
+import '../../flutter_table_plus.dart'
+    show TablePlusSelectionTheme, LastRowBorderBehavior;
 import '../models/merged_row_group.dart';
 import '../models/table_column.dart';
 import '../models/theme/body_theme.dart' show TablePlusBodyTheme;
@@ -38,6 +39,7 @@ class TablePlusMergedRow extends TablePlusRowWidget {
     this.onRowSecondaryTap,
     this.onMergedCellChanged,
     this.calculatedHeight,
+    this.needsVerticalScroll = false,
   });
 
   final MergedRowGroup mergeGroup;
@@ -70,6 +72,10 @@ class TablePlusMergedRow extends TablePlusRowWidget {
   @override
   final double? calculatedHeight;
 
+  /// Whether the table needs vertical scrolling.
+  /// Used to determine if the last row should have a bottom border.
+  final bool needsVerticalScroll;
+
   // Implementation of TablePlusRowWidget abstract methods
   @override
   int get effectiveRowCount => 1; // Visually appears as one row
@@ -96,6 +102,29 @@ class TablePlusMergedRow extends TablePlusRowWidget {
   /// Get the data for a specific row key within the merge group.
   Map<String, dynamic>? _getRowData(String rowKey) {
     return mergeGroup.getRowData(allData, rowKey, rowIdKey);
+  }
+
+  /// Determines whether to show a bottom border for the merged row.
+  ///
+  /// Takes into account the row position (last vs non-last) and the theme's
+  /// [LastRowBorderBehavior] setting to decide if a border should be shown.
+  bool _shouldShowBottomBorder(bool isLastRow, TablePlusBodyTheme theme) {
+    // Don't show any borders if horizontal dividers are disabled
+    if (!theme.showHorizontalDividers) return false;
+
+    // Always show border for non-last rows
+    if (!isLastRow) return true;
+
+    // For last row, check the border behavior setting
+    switch (theme.lastRowBorderBehavior) {
+      case LastRowBorderBehavior.never:
+        return false;
+      case LastRowBorderBehavior.always:
+        return true;
+      case LastRowBorderBehavior.smart:
+        // Show border only when there's no vertical scroll
+        return !needsVerticalScroll;
+    }
   }
 
   /// Handle merged cell value change.
@@ -335,10 +364,8 @@ class TablePlusMergedRow extends TablePlusRowWidget {
       height: totalHeight,
       child: Column(
         children: mergeGroup.rowKeys.asMap().entries.map((entry) {
-          final index = entry.key;
           final rowKey = entry.value;
           final rowData = _getRowData(rowKey);
-          final isLastRow = index == mergeGroup.rowKeys.length - 1;
 
           // Check if this individual cell is editable
           final isCellEditable = isEditable && column.editable;
@@ -383,7 +410,7 @@ class TablePlusMergedRow extends TablePlusRowWidget {
                           width: 1,
                         )
                       : BorderSide.none,
-                  bottom: !isLastRow && theme.showHorizontalDividers
+                  bottom: _shouldShowBottomBorder(isLastRow, theme)
                       ? BorderSide(
                           color: theme.dividerColor.withValues(alpha: 0.3),
                           width: 1,
@@ -412,7 +439,7 @@ class TablePlusMergedRow extends TablePlusRowWidget {
                                 width: 1,
                               )
                             : BorderSide.none,
-                        bottom: !isLastRow && theme.showHorizontalDividers
+                        bottom: _shouldShowBottomBorder(isLastRow, theme)
                             ? BorderSide(
                                 color:
                                     theme.dividerColor.withValues(alpha: 0.3),
@@ -596,7 +623,7 @@ class TablePlusMergedRow extends TablePlusRowWidget {
       height: mergedHeight,
       decoration: BoxDecoration(
         color: backgroundColor,
-        border: (!isLastRow && theme.showHorizontalDividers)
+        border: _shouldShowBottomBorder(isLastRow, theme)
             ? Border(
                 bottom: BorderSide(
                   color: theme.dividerColor,

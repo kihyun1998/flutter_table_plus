@@ -1,5 +1,19 @@
 import 'package:flutter/material.dart';
 
+/// Enum for controlling when to show bottom border on the last row.
+enum LastRowBorderBehavior {
+  /// Never show bottom border on the last row (default, current behavior).
+  never,
+
+  /// Always show bottom border on the last row.
+  always,
+
+  /// Smart behavior: show bottom border only when there's no vertical scroll.
+  /// When the table content fits within the viewport, shows the border for a clean finish.
+  /// When vertical scrolling is needed, hides the border since more content is available.
+  smart,
+}
+
 /// Theme configuration for the table body.
 class TablePlusBodyTheme {
   /// Creates a [TablePlusBodyTheme] with the specified styling properties.
@@ -16,6 +30,7 @@ class TablePlusBodyTheme {
     this.dividerThickness = 1.0,
     this.showVerticalDividers = true,
     this.showHorizontalDividers = true,
+    this.lastRowBorderBehavior = LastRowBorderBehavior.never,
   });
 
   /// The height of each data row.
@@ -46,6 +61,13 @@ class TablePlusBodyTheme {
   /// Whether to show horizontal dividers between rows.
   final bool showHorizontalDividers;
 
+  /// Controls when to show bottom border on the last row.
+  ///
+  /// - [LastRowBorderBehavior.never]: Never show bottom border on last row (default)
+  /// - [LastRowBorderBehavior.always]: Always show bottom border on last row
+  /// - [LastRowBorderBehavior.smart]: Show border only when no vertical scroll
+  final LastRowBorderBehavior lastRowBorderBehavior;
+
   /// Creates a copy of this theme with the given fields replaced with new values.
   TablePlusBodyTheme copyWith({
     double? rowHeight,
@@ -57,6 +79,7 @@ class TablePlusBodyTheme {
     double? dividerThickness,
     bool? showVerticalDividers,
     bool? showHorizontalDividers,
+    LastRowBorderBehavior? lastRowBorderBehavior,
   }) {
     return TablePlusBodyTheme(
       rowHeight: rowHeight ?? this.rowHeight,
@@ -69,6 +92,8 @@ class TablePlusBodyTheme {
       showVerticalDividers: showVerticalDividers ?? this.showVerticalDividers,
       showHorizontalDividers:
           showHorizontalDividers ?? this.showHorizontalDividers,
+      lastRowBorderBehavior:
+          lastRowBorderBehavior ?? this.lastRowBorderBehavior,
     );
   }
 }

@@ -323,6 +323,10 @@ class _EditableMergedExampleState extends State<EditableMergedExample> {
                     isEditable: true,
                     onCellChanged: _handleCellChanged,
                     onMergedCellChanged: _handleMergedCellChanged,
+                    theme: TablePlusTheme(
+                        bodyTheme: TablePlusBodyTheme(
+                            lastRowBorderBehavior: LastRowBorderBehavior.always,
+                            dividerColor: Colors.red)),
                   ),
                 ),
               ),

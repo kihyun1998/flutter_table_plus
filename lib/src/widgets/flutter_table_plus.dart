@@ -680,6 +680,8 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                                 verticalController:
                                                     verticalFrozenController,
                                                 rowIdKey: widget.rowIdKey,
+                                                needsVerticalScroll:
+                                                    needsVerticalScroll,
                                                 isSelectable:
                                                     widget.isSelectable,
                                                 selectionMode:
@@ -813,6 +815,8 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                                               scrollableColumnWidths,
                                                           theme:
                                                               theme.bodyTheme,
+                                                          needsVerticalScroll:
+                                                              needsVerticalScroll,
                                                           verticalController:
                                                               verticalScrollController,
                                                           rowIdKey:

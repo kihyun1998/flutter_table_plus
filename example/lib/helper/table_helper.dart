@@ -236,6 +236,7 @@ class TableHelper {
         showHorizontalDividers: true,
         dividerColor: Colors.grey.shade300,
         dividerThickness: 1.0,
+        lastRowBorderBehavior: LastRowBorderBehavior.always,
       ),
       scrollbarTheme: const TablePlusScrollbarTheme(
         hoverOnly: true,

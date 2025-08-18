@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../flutter_table_plus.dart' show TablePlusSelectionTheme;
+import '../../flutter_table_plus.dart'
+    show TablePlusSelectionTheme, LastRowBorderBehavior;
 import '../models/merged_row_group.dart';
 import '../models/table_column.dart';
 import '../models/theme/body_theme.dart' show TablePlusBodyTheme;
@@ -41,6 +42,7 @@ class TablePlusBody extends StatelessWidget {
     this.onStopEditing,
     this.onMergedCellChanged,
     this.calculateRowHeight,
+    this.needsVerticalScroll = false,
   });
 
   /// The list of columns for the table.
@@ -117,6 +119,11 @@ class TablePlusBody extends StatelessWidget {
   /// If null, uses the fixed row height from the theme.
   final double? Function(int rowIndex, Map<String, dynamic> rowData)?
       calculateRowHeight;
+
+  /// Whether the table needs vertical scrolling.
+  /// Used to determine if the last row should have a bottom border based on
+  /// the [TablePlusBodyTheme.lastRowBorderBehavior] setting.
+  final bool needsVerticalScroll;
 
   /// Get the background color for a row at the given index.
   Color _getRowColor(int index, bool isSelected) {
@@ -340,6 +347,7 @@ class TablePlusBody extends StatelessWidget {
           onRowSecondaryTap: onRowSecondaryTap,
           onMergedCellChanged: onMergedCellChanged,
           calculatedHeight: mergedHeight,
+          needsVerticalScroll: needsVerticalScroll,
         );
       }
     }
@@ -374,6 +382,7 @@ class TablePlusBody extends StatelessWidget {
       onCellTap: onCellTap,
       onStopEditing: onStopEditing,
       calculatedHeight: calculatedHeight,
+      needsVerticalScroll: needsVerticalScroll,
     );
   }
 }
@@ -404,6 +413,7 @@ class _TablePlusRow extends TablePlusRowWidget {
     this.onRowDoubleTap,
     this.onRowSecondaryTap,
     this.calculatedHeight,
+    this.needsVerticalScroll = false,
   });
 
   final int rowIndex;
@@ -433,6 +443,7 @@ class _TablePlusRow extends TablePlusRowWidget {
   final void Function(String rowId)? onRowSecondaryTap;
   @override
   final double? calculatedHeight;
+  final bool needsVerticalScroll;
 
   // Implementation of TablePlusRowWidget abstract methods
   @override
@@ -440,6 +451,29 @@ class _TablePlusRow extends TablePlusRowWidget {
 
   @override
   List<int> get originalDataIndices => [rowIndex];
+
+  /// Determines whether to show a bottom border for this row.
+  ///
+  /// Takes into account the row position (last vs non-last) and the theme's
+  /// [LastRowBorderBehavior] setting to decide if a border should be shown.
+  bool _shouldShowBottomBorder(bool isLastRow, TablePlusBodyTheme theme) {
+    // Don't show any borders if horizontal dividers are disabled
+    if (!theme.showHorizontalDividers) return false;
+
+    // Always show border for non-last rows
+    if (!isLastRow) return true;
+
+    // For last row, check the border behavior setting
+    switch (theme.lastRowBorderBehavior) {
+      case LastRowBorderBehavior.never:
+        return false;
+      case LastRowBorderBehavior.always:
+        return true;
+      case LastRowBorderBehavior.smart:
+        // Show border only when there's no vertical scroll
+        return !needsVerticalScroll;
+    }
+  }
 
   /// Handle row tap for selection.
   /// Only works when not in editable mode.
@@ -463,7 +497,7 @@ class _TablePlusRow extends TablePlusRowWidget {
       height: calculatedHeight ?? theme.rowHeight,
       decoration: BoxDecoration(
         color: backgroundColor,
-        border: (!isLastRow && theme.showHorizontalDividers)
+        border: _shouldShowBottomBorder(isLastRow, theme)
             ? Border(
                 bottom: BorderSide(
                   color: theme.dividerColor,
