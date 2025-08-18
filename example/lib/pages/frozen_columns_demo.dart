@@ -479,7 +479,7 @@ class _FrozenColumnsDemoState extends State<FrozenColumnsDemo> {
             tooltip: 'Toggle Editing',
           ),
           IconButton(
-            icon: Icon(_isSortable ? Icons.sort : Icons.sort_outlined),
+            icon: Icon(_isSortable ? Icons.block : Icons.sort),
             onPressed: () => setState(() => _isSortable = !_isSortable),
             tooltip: 'Toggle Sorting',
           ),
