@@ -1,15 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// Defines how heights should be calculated for merged row groups.
-enum MergedRowHeightMode {
-  /// All rows in the group use the same height (maximum of all row heights).
-  /// Provides visual consistency but may waste space for short content.
-  uniform,
-
-  /// Each row uses its individually calculated height.
-  /// Optimizes space usage but may result in visually uneven rows.
-  individual,
-}
 
 /// Configuration for how a specific cell should be merged within a group.
 class MergeCellConfig {
@@ -50,7 +40,6 @@ class MergedRowGroup {
     this.isExpandable = false,
     this.isExpanded = false,
     this.summaryRowData,
-    this.heightMode = MergedRowHeightMode.uniform,
   });
 
   /// Unique identifier for this merge group.
@@ -77,11 +66,6 @@ class MergedRowGroup {
   /// Key: column key, Value: data to display in that column's summary cell.
   /// Only columns with data in this map will show content in the summary row.
   final Map<String, dynamic>? summaryRowData;
-
-  /// How heights should be calculated for this merged row group.
-  /// - [MergedRowHeightMode.uniform]: All rows use the same height (maximum)
-  /// - [MergedRowHeightMode.individual]: Each row uses its calculated height
-  final MergedRowHeightMode heightMode;
 
   /// Returns the number of rows in this group.
   int get rowCount => rowKeys.length;
