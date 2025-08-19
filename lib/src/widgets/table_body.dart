@@ -310,7 +310,7 @@ class TablePlusBody extends StatelessWidget {
         if (calculateRowHeight != null) {
           final heights = <double>[];
           double totalHeight = 0;
-          
+
           // Calculate height for each row in the group
           for (final rowKey in mergeGroup.rowKeys) {
             final rowIndex =
@@ -329,13 +329,13 @@ class TablePlusBody extends StatelessWidget {
               totalHeight += theme.rowHeight;
             }
           }
-          
+
           // Add summary row height if expandable and expanded
           if (mergeGroup.isExpandable && mergeGroup.isExpanded) {
             heights.add(theme.rowHeight); // Summary row uses default height
             totalHeight += theme.rowHeight;
           }
-          
+
           individualHeights = heights;
           mergedHeight = totalHeight;
         }

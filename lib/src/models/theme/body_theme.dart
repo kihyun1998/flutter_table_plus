@@ -91,7 +91,8 @@ class TablePlusBodyTheme {
       rowHeight: rowHeight ?? this.rowHeight,
       backgroundColor: backgroundColor ?? this.backgroundColor,
       alternateRowColor: alternateRowColor ?? this.alternateRowColor,
-      summaryRowBackgroundColor: summaryRowBackgroundColor ?? this.summaryRowBackgroundColor,
+      summaryRowBackgroundColor:
+          summaryRowBackgroundColor ?? this.summaryRowBackgroundColor,
       textStyle: textStyle ?? this.textStyle,
       padding: padding ?? this.padding,
       dividerColor: dividerColor ?? this.dividerColor,

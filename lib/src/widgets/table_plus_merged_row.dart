@@ -169,7 +169,8 @@ class TablePlusMergedRow extends TablePlusRowWidget {
 
     // Calculate height for merged cell
     // calculatedHeight already considers merged group heights, so we use it directly for the total group height
-    final mergedHeight = calculatedHeight ?? (theme.rowHeight * mergeGroup.effectiveRowCount);
+    final mergedHeight =
+        calculatedHeight ?? (theme.rowHeight * mergeGroup.effectiveRowCount);
 
     // Check if this merged cell is editable
     final isCellEditable = isEditable &&
@@ -404,22 +405,23 @@ class TablePlusMergedRow extends TablePlusRowWidget {
   /// Build stacked cells for non-merged columns.
   Widget _buildStackedCells(BuildContext context, TablePlusColumn column,
       double? width, int columnIndex) {
-    final totalHeight = calculatedHeight ?? (theme.rowHeight * mergeGroup.effectiveRowCount);
-    
+    final totalHeight =
+        calculatedHeight ?? (theme.rowHeight * mergeGroup.effectiveRowCount);
+
     // Build all cells including summary row
     final List<Widget> cells = [];
 
     // Use maximum height for all rows (uniform height)
-    final maxHeight = individualHeights?.reduce((a, b) => a > b ? a : b) ?? 
-                     theme.rowHeight;
-    
+    final maxHeight =
+        individualHeights?.reduce((a, b) => a > b ? a : b) ?? theme.rowHeight;
+
     // Regular row cells
     for (final entry in mergeGroup.rowKeys.asMap().entries) {
       final rowIndex = entry.key;
       final rowKey = entry.value;
       final rowData = _getRowData(rowKey);
-      cells.add(_buildStackedRowCell(context, column, rowKey, rowData,
-          maxHeight, rowIndex, columnIndex));
+      cells.add(_buildStackedRowCell(
+          context, column, rowKey, rowData, maxHeight, rowIndex, columnIndex));
     }
 
     // Add summary row if expandable and expanded
@@ -615,8 +617,9 @@ class TablePlusMergedRow extends TablePlusRowWidget {
     return Expanded(
       child: Container(
         decoration: BoxDecoration(
-          color: theme.summaryRowBackgroundColor ?? 
-              theme.backgroundColor.withValues(alpha: 0.2), // Summary row background color
+          color: theme.summaryRowBackgroundColor ??
+              theme.backgroundColor
+                  .withValues(alpha: 0.2), // Summary row background color
           border: Border(
             right: theme.showVerticalDividers
                 ? BorderSide(
@@ -811,7 +814,8 @@ class TablePlusMergedRow extends TablePlusRowWidget {
     if (!isSelectable) return null;
 
     final width = columnWidths.isNotEmpty ? columnWidths[0] : 50.0;
-    final mergedHeight = calculatedHeight ?? (theme.rowHeight * mergeGroup.effectiveRowCount);
+    final mergedHeight =
+        calculatedHeight ?? (theme.rowHeight * mergeGroup.effectiveRowCount);
 
     return Container(
       width: width,
@@ -859,7 +863,8 @@ class TablePlusMergedRow extends TablePlusRowWidget {
 
   @override
   Widget build(BuildContext context) {
-    final mergedHeight = calculatedHeight ?? (theme.rowHeight * mergeGroup.effectiveRowCount);
+    final mergedHeight =
+        calculatedHeight ?? (theme.rowHeight * mergeGroup.effectiveRowCount);
 
     Widget rowContent = Container(
       height: mergedHeight,

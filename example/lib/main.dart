@@ -136,8 +136,8 @@ class ExampleHomePage extends StatelessWidget {
               child: ListTile(
                 leading: const Icon(Icons.expand_more, color: Colors.purple),
                 title: const Text('Expandable Summary Example'),
-                subtitle: const Text(
-                    'Merged rows with expandable summary totals'),
+                subtitle:
+                    const Text('Merged rows with expandable summary totals'),
                 trailing: const Icon(Icons.arrow_forward_ios),
                 onTap: () {
                   Navigator.push(

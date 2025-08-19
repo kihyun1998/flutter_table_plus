@@ -35,7 +35,6 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
   // State for managing editing
   bool isEditing = false;
 
-
   // State for managing column order (using Map like comprehensive example)
   late Map<String, TablePlusColumn> _columns;
 
@@ -429,13 +428,15 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
       ),
       bodyTheme: TablePlusBodyTheme(
         alternateRowColor: Color(0xFFFAFAFA), // Colors.grey.shade50 equivalent
-        summaryRowBackgroundColor: Color(0xFFE8F5E8), // Colors.green.shade50 equivalent
+        summaryRowBackgroundColor:
+            Color(0xFFE8F5E8), // Colors.green.shade50 equivalent
         textStyle: textStyle,
         padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       ),
       selectionTheme: TablePlusSelectionTheme(
         checkboxColor: Color(0xFF6A1B9A), // Colors.purple.shade600 equivalent
-        selectedRowColor: Color(0xFFE1BEE7), // Colors.purple.shade100 equivalent with alpha
+        selectedRowColor:
+            Color(0xFFE1BEE7), // Colors.purple.shade100 equivalent with alpha
       ),
     );
 
@@ -548,7 +549,8 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
                     onMergedCellChanged: _handleMergedCellChanged,
                     onColumnReorder: _handleColumnReorder,
                     // Use proper height calculation with theme padding
-                    calculateRowHeight: TableRowHeightCalculator.createHeightCalculator(
+                    calculateRowHeight:
+                        TableRowHeightCalculator.createHeightCalculator(
                       columns: columnList,
                       columnWidths: columnWidths,
                       defaultTextStyle: textStyle,

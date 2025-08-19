@@ -65,7 +65,8 @@ class TableRowHeightCalculator {
     required List<TablePlusColumn> columns,
     required List<double> columnWidths,
     required TextStyle defaultTextStyle,
-    EdgeInsets cellPadding = const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+    EdgeInsets cellPadding =
+        const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
     double minHeight = 48.0,
   }) {
     double maxHeight = minHeight;
@@ -125,7 +126,8 @@ class TableRowHeightCalculator {
     required List<TablePlusColumn> columns,
     required List<double> columnWidths,
     required TextStyle defaultTextStyle,
-    EdgeInsets cellPadding = const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+    EdgeInsets cellPadding =
+        const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
     double minHeight = 48.0,
   }) {
     return (int rowIndex, Map<String, dynamic> rowData) {

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-
 /// Configuration for how a specific cell should be merged within a group.
 class MergeCellConfig {
   /// Creates a [MergeCellConfig] with the specified settings.

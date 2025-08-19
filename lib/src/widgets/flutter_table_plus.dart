@@ -382,8 +382,8 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
   /// Get the height for an individual row.
   /// Returns calculated height if available, otherwise returns theme row height.
   double _getRowHeight(int index) {
-    return widget.calculateRowHeight?.call(index, widget.data[index]) 
-           ?? _currentTheme.bodyTheme.rowHeight;
+    return widget.calculateRowHeight?.call(index, widget.data[index]) ??
+        _currentTheme.bodyTheme.rowHeight;
   }
 
   /// Calculate the total height for a merged row group.
@@ -391,18 +391,18 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
   double _getMergedRowHeight(MergedRowGroup mergeGroup) {
     double totalHeight = 0;
     for (final rowKey in mergeGroup.rowKeys) {
-      final rowIndex = widget.data.indexWhere(
-          (row) => row[widget.rowIdKey]?.toString() == rowKey);
+      final rowIndex = widget.data
+          .indexWhere((row) => row[widget.rowIdKey]?.toString() == rowKey);
       if (rowIndex != -1) {
         totalHeight += _getRowHeight(rowIndex);
       }
     }
-    
+
     // Add summary row height if expandable and expanded
     if (mergeGroup.isExpandable && mergeGroup.isExpanded) {
       totalHeight += _currentTheme.bodyTheme.rowHeight;
     }
-    
+
     return totalHeight;
   }
 
@@ -423,8 +423,8 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
         totalHeight += _getMergedRowHeight(mergeGroup);
         // Add all merged row indices to processed set
         for (final rowKey in mergeGroup.rowKeys) {
-          final rowIndex = widget.data.indexWhere(
-              (row) => row[widget.rowIdKey]?.toString() == rowKey);
+          final rowIndex = widget.data
+              .indexWhere((row) => row[widget.rowIdKey]?.toString() == rowKey);
           if (rowIndex != -1) {
             processedIndices.add(rowIndex);
           }
@@ -725,8 +725,8 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                                     _stopCurrentEditing,
                                                 onMergedCellChanged:
                                                     widget.onMergedCellChanged,
-                                                onMergedRowExpandToggle:
-                                                    widget.onMergedRowExpandToggle,
+                                                onMergedRowExpandToggle: widget
+                                                    .onMergedRowExpandToggle,
                                                 calculateRowHeight:
                                                     widget.calculateRowHeight,
                                               ),
@@ -871,7 +871,8 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                                               widget
                                                                   .onMergedCellChanged,
                                                           onMergedRowExpandToggle:
-                                                              widget.onMergedRowExpandToggle,
+                                                              widget
+                                                                  .onMergedRowExpandToggle,
                                                           calculateRowHeight: widget
                                                               .calculateRowHeight,
                                                         ),
