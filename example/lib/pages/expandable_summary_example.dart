@@ -35,6 +35,9 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
   // State for managing editing
   bool isEditing = false;
 
+  // State for managing height mode
+  MergedRowHeightMode heightMode = MergedRowHeightMode.uniform;
+
   // State for managing column order (using Map like comprehensive example)
   late Map<String, TablePlusColumn> _columns;
 
@@ -407,6 +410,7 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
             spanningRowIndex: 0,
           ),
         },
+        heightMode: heightMode, // Use the current height mode
       ));
     }
 
@@ -479,8 +483,41 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
                       '📋 MERGED ROWS: Package ID and Quantity columns are merged\n'
                       '🎯 EXPANDABLE: Click expand icon (▶/▼) to show/hide package totals\n'
                       '✅ SELECTION: Select entire packages with checkboxes\n'
-                      '📊 SUMMARY: Green background summary rows show calculated totals',
+                      '📊 SUMMARY: Green background summary rows show calculated totals\n'
+                      '🎛️ HEIGHT MODE: Toggle between uniform and individual heights',
                       style: TextStyle(fontSize: 14, height: 1.5),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Text(
+                          'Height Mode: ',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: Colors.purple.shade700,
+                          ),
+                        ),
+                        SegmentedButton<MergedRowHeightMode>(
+                          segments: const [
+                            ButtonSegment<MergedRowHeightMode>(
+                              value: MergedRowHeightMode.uniform,
+                              label: Text('Uniform'),
+                              tooltip: 'All rows use maximum height (consistent but may waste space)',
+                            ),
+                            ButtonSegment<MergedRowHeightMode>(
+                              value: MergedRowHeightMode.individual,
+                              label: Text('Individual'),
+                              tooltip: 'Each row uses its calculated height (space efficient)',
+                            ),
+                          ],
+                          selected: {heightMode},
+                          onSelectionChanged: (Set<MergedRowHeightMode> newSelection) {
+                            setState(() {
+                              heightMode = newSelection.first;
+                            });
+                          },
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 12),
                     Wrap(

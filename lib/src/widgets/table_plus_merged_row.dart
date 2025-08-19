@@ -42,6 +42,7 @@ class TablePlusMergedRow extends TablePlusRowWidget {
     this.onMergedCellChanged,
     this.onMergedRowExpandToggle,
     this.calculatedHeight,
+    this.individualHeights,
     this.needsVerticalScroll = false,
   });
 
@@ -75,6 +76,11 @@ class TablePlusMergedRow extends TablePlusRowWidget {
   final void Function(String groupId)? onMergedRowExpandToggle;
   @override
   final double? calculatedHeight;
+
+  /// Individual heights for each row in the merge group.
+  /// Used when heightMode is MergedRowHeightMode.individual.
+  /// Index corresponds to rows in mergeGroup.rowKeys order, plus summary row if expanded.
+  final List<double>? individualHeights;
 
   /// Whether the table needs vertical scrolling.
   /// Used to determine if the last row should have a bottom border.
@@ -163,8 +169,7 @@ class TablePlusMergedRow extends TablePlusRowWidget {
 
     // Calculate height for merged cell
     // calculatedHeight already considers merged group heights, so we use it directly for the total group height
-    final groupHeight = calculatedHeight ?? theme.rowHeight;
-    final mergedHeight = groupHeight * mergeGroup.effectiveRowCount;
+    final mergedHeight = calculatedHeight ?? (theme.rowHeight * mergeGroup.effectiveRowCount);
 
     // Check if this merged cell is editable
     final isCellEditable = isEditable &&
@@ -399,24 +404,53 @@ class TablePlusMergedRow extends TablePlusRowWidget {
   /// Build stacked cells for non-merged columns.
   Widget _buildStackedCells(BuildContext context, TablePlusColumn column,
       double? width, int columnIndex) {
-    final groupHeight = calculatedHeight ?? theme.rowHeight;
-    final totalHeight = groupHeight * mergeGroup.effectiveRowCount;
-
+    final totalHeight = calculatedHeight ?? (theme.rowHeight * mergeGroup.effectiveRowCount);
+    
     // Build all cells including summary row
     final List<Widget> cells = [];
 
-    // Regular row cells
-    for (final entry in mergeGroup.rowKeys.asMap().entries) {
-      final rowIndex = entry.key;
-      final rowKey = entry.value;
-      final rowData = _getRowData(rowKey);
-      cells.add(_buildStackedRowCell(context, column, rowKey, rowData,
-          groupHeight, rowIndex, columnIndex));
-    }
+    // Determine cell heights based on height mode
+    if (mergeGroup.heightMode == MergedRowHeightMode.individual && 
+        individualHeights != null && individualHeights!.isNotEmpty) {
+      // Individual height mode: use specific heights for each row
+      
+      // Regular row cells
+      for (final entry in mergeGroup.rowKeys.asMap().entries) {
+        final rowIndex = entry.key;
+        final rowKey = entry.value;
+        final rowData = _getRowData(rowKey);
+        final cellHeight = rowIndex < individualHeights!.length 
+            ? individualHeights![rowIndex] 
+            : theme.rowHeight;
+        cells.add(_buildStackedRowCell(context, column, rowKey, rowData,
+            cellHeight, rowIndex, columnIndex));
+      }
 
-    // Add summary row if expandable and expanded
-    if (mergeGroup.isExpandable && mergeGroup.isExpanded) {
-      cells.add(_buildSummaryRowCell(context, column, groupHeight));
+      // Add summary row if expandable and expanded
+      if (mergeGroup.isExpandable && mergeGroup.isExpanded) {
+        final summaryHeight = individualHeights!.length > mergeGroup.rowKeys.length
+            ? individualHeights![mergeGroup.rowKeys.length]
+            : theme.rowHeight;
+        cells.add(_buildSummaryRowCell(context, column, summaryHeight));
+      }
+    } else {
+      // Uniform height mode: use maximum height for all rows
+      final maxHeight = individualHeights?.reduce((a, b) => a > b ? a : b) ?? 
+                       theme.rowHeight;
+      
+      // Regular row cells
+      for (final entry in mergeGroup.rowKeys.asMap().entries) {
+        final rowIndex = entry.key;
+        final rowKey = entry.value;
+        final rowData = _getRowData(rowKey);
+        cells.add(_buildStackedRowCell(context, column, rowKey, rowData,
+            maxHeight, rowIndex, columnIndex));
+      }
+
+      // Add summary row if expandable and expanded
+      if (mergeGroup.isExpandable && mergeGroup.isExpanded) {
+        cells.add(_buildSummaryRowCell(context, column, maxHeight));
+      }
     }
 
     return SizedBox(
@@ -803,8 +837,7 @@ class TablePlusMergedRow extends TablePlusRowWidget {
     if (!isSelectable) return null;
 
     final width = columnWidths.isNotEmpty ? columnWidths[0] : 50.0;
-    final groupHeight = calculatedHeight ?? theme.rowHeight;
-    final mergedHeight = groupHeight * mergeGroup.effectiveRowCount;
+    final mergedHeight = calculatedHeight ?? (theme.rowHeight * mergeGroup.effectiveRowCount);
 
     return Container(
       width: width,
@@ -852,8 +885,7 @@ class TablePlusMergedRow extends TablePlusRowWidget {
 
   @override
   Widget build(BuildContext context) {
-    final groupHeight = calculatedHeight ?? theme.rowHeight;
-    final mergedHeight = groupHeight * mergeGroup.effectiveRowCount;
+    final mergedHeight = calculatedHeight ?? (theme.rowHeight * mergeGroup.effectiveRowCount);
 
     Widget rowContent = Container(
       height: mergedHeight,

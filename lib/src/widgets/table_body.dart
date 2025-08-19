@@ -304,21 +304,40 @@ class TablePlusBody extends StatelessWidget {
         // This is the first row in a merge group - create a merged row
         final isSelected = selectedRows.contains(mergeGroup.groupId);
 
-        // Calculate merged row height (sum of all rows in the group)
+        // Calculate merged row height and individual heights
         double? mergedHeight;
+        List<double>? individualHeights;
         if (calculateRowHeight != null) {
+          final heights = <double>[];
           double totalHeight = 0;
+          
+          // Calculate height for each row in the group
           for (final rowKey in mergeGroup.rowKeys) {
             final rowIndex =
                 data.indexWhere((row) => row[rowIdKey]?.toString() == rowKey);
             if (rowIndex != -1) {
               final height = calculateRowHeight!(rowIndex, data[rowIndex]);
               if (height != null) {
+                heights.add(height);
                 totalHeight += height;
+              } else {
+                heights.add(theme.rowHeight);
+                totalHeight += theme.rowHeight;
               }
+            } else {
+              heights.add(theme.rowHeight);
+              totalHeight += theme.rowHeight;
             }
           }
-          mergedHeight = totalHeight > 0 ? totalHeight : null;
+          
+          // Add summary row height if expandable and expanded
+          if (mergeGroup.isExpandable && mergeGroup.isExpanded) {
+            heights.add(theme.rowHeight); // Summary row uses default height
+            totalHeight += theme.rowHeight;
+          }
+          
+          individualHeights = heights;
+          mergedHeight = totalHeight;
         }
 
         return TablePlusMergedRow(
@@ -352,6 +371,7 @@ class TablePlusBody extends StatelessWidget {
           onMergedCellChanged: onMergedCellChanged,
           onMergedRowExpandToggle: onMergedRowExpandToggle,
           calculatedHeight: mergedHeight,
+          individualHeights: individualHeights,
           needsVerticalScroll: needsVerticalScroll,
         );
       }
