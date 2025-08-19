@@ -577,6 +577,7 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
                       ),
                       bodyTheme: TablePlusBodyTheme(
                         alternateRowColor: Colors.grey.shade50,
+                        summaryRowBackgroundColor: Colors.green.shade50,
                       ),
                       selectionTheme: TablePlusSelectionTheme(
                         checkboxColor: Colors.purple.shade600,

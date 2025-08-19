@@ -21,6 +21,7 @@ class TablePlusBodyTheme {
     this.rowHeight = 48.0,
     this.backgroundColor = Colors.white,
     this.alternateRowColor,
+    this.summaryRowBackgroundColor,
     this.textStyle = const TextStyle(
       fontSize: 14,
       color: Color(0xFF212121),
@@ -42,6 +43,10 @@ class TablePlusBodyTheme {
   /// The alternate row color for striped tables.
   /// If null, all rows will use [backgroundColor].
   final Color? alternateRowColor;
+
+  /// The background color for summary rows in merged row groups.
+  /// If null, will use [backgroundColor] with alpha 0.2.
+  final Color? summaryRowBackgroundColor;
 
   /// The text style for body cells.
   final TextStyle textStyle;
@@ -73,6 +78,7 @@ class TablePlusBodyTheme {
     double? rowHeight,
     Color? backgroundColor,
     Color? alternateRowColor,
+    Color? summaryRowBackgroundColor,
     TextStyle? textStyle,
     EdgeInsets? padding,
     Color? dividerColor,
@@ -85,6 +91,7 @@ class TablePlusBodyTheme {
       rowHeight: rowHeight ?? this.rowHeight,
       backgroundColor: backgroundColor ?? this.backgroundColor,
       alternateRowColor: alternateRowColor ?? this.alternateRowColor,
+      summaryRowBackgroundColor: summaryRowBackgroundColor ?? this.summaryRowBackgroundColor,
       textStyle: textStyle ?? this.textStyle,
       padding: padding ?? this.padding,
       dividerColor: dividerColor ?? this.dividerColor,

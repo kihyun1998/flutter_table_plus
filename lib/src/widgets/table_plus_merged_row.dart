@@ -155,8 +155,8 @@ class TablePlusMergedRow extends TablePlusRowWidget {
   }
 
   /// Build a merged cell that spans multiple rows.
-  Widget _buildMergedCell(
-      BuildContext context, TablePlusColumn column, double? width, int columnIndex) {
+  Widget _buildMergedCell(BuildContext context, TablePlusColumn column,
+      double? width, int columnIndex) {
     final mergedContent = mergeGroup.getMergedContent(column.key);
     final spanningRowKey = mergeGroup.getSpanningRowKey(column.key);
     final rowData = _getRowData(spanningRowKey);
@@ -209,7 +209,8 @@ class TablePlusMergedRow extends TablePlusRowWidget {
       );
 
       // Wrap with tooltip if needed
-      textWidget = _wrapWithTooltip(textWidget, displayValue, column, width ?? column.width);
+      textWidget = _wrapWithTooltip(
+          textWidget, displayValue, column, width ?? column.width);
 
       // Add expand/collapse icon if this is the first merged column and expandable
       Widget cellContent = textWidget;
@@ -223,7 +224,9 @@ class TablePlusMergedRow extends TablePlusRowWidget {
                 child: Padding(
                   padding: const EdgeInsets.only(right: 8.0),
                   child: Icon(
-                    mergeGroup.isExpanded ? Icons.expand_less : Icons.expand_more,
+                    mergeGroup.isExpanded
+                        ? Icons.expand_less
+                        : Icons.expand_more,
                     size: 16,
                     color: theme.textStyle.color?.withValues(alpha: 0.7),
                   ),
@@ -394,22 +397,23 @@ class TablePlusMergedRow extends TablePlusRowWidget {
   }
 
   /// Build stacked cells for non-merged columns.
-  Widget _buildStackedCells(
-      BuildContext context, TablePlusColumn column, double? width, int columnIndex) {
+  Widget _buildStackedCells(BuildContext context, TablePlusColumn column,
+      double? width, int columnIndex) {
     final groupHeight = calculatedHeight ?? theme.rowHeight;
     final totalHeight = groupHeight * mergeGroup.effectiveRowCount;
 
     // Build all cells including summary row
     final List<Widget> cells = [];
-    
+
     // Regular row cells
     for (final entry in mergeGroup.rowKeys.asMap().entries) {
       final rowIndex = entry.key;
       final rowKey = entry.value;
       final rowData = _getRowData(rowKey);
-      cells.add(_buildStackedRowCell(context, column, rowKey, rowData, groupHeight, rowIndex, columnIndex));
+      cells.add(_buildStackedRowCell(context, column, rowKey, rowData,
+          groupHeight, rowIndex, columnIndex));
     }
-    
+
     // Add summary row if expandable and expanded
     if (mergeGroup.isExpandable && mergeGroup.isExpanded) {
       cells.add(_buildSummaryRowCell(context, column, groupHeight));
@@ -426,10 +430,10 @@ class TablePlusMergedRow extends TablePlusRowWidget {
 
   /// Build a single stacked row cell.
   Widget _buildStackedRowCell(
-      BuildContext context, 
-      TablePlusColumn column, 
-      String rowKey, 
-      Map<String, dynamic>? rowData, 
+      BuildContext context,
+      TablePlusColumn column,
+      String rowKey,
+      Map<String, dynamic>? rowData,
       double groupHeight,
       int rowIndex,
       int columnIndex) {
@@ -469,7 +473,8 @@ class TablePlusMergedRow extends TablePlusRowWidget {
       );
 
       // Wrap with tooltip if needed
-      textWidget = _wrapWithTooltip(textWidget, displayValue, column, groupHeight);
+      textWidget =
+          _wrapWithTooltip(textWidget, displayValue, column, groupHeight);
 
       // Add expand/collapse icon if this is the first row and first column and expandable
       Widget cellContent = textWidget;
@@ -483,7 +488,9 @@ class TablePlusMergedRow extends TablePlusRowWidget {
                 child: Padding(
                   padding: const EdgeInsets.only(right: 8.0),
                   child: Icon(
-                    mergeGroup.isExpanded ? Icons.expand_less : Icons.expand_more,
+                    mergeGroup.isExpanded
+                        ? Icons.expand_less
+                        : Icons.expand_more,
                     size: 16,
                     color: theme.textStyle.color?.withValues(alpha: 0.7),
                   ),
@@ -566,7 +573,7 @@ class TablePlusMergedRow extends TablePlusRowWidget {
     if (mergeGroup.hasSummaryData(column.key)) {
       final summaryData = mergeGroup.getSummaryData(column.key);
       final displayValue = summaryData?.toString() ?? '';
-      
+
       Widget textWidget = Text(
         displayValue,
         style: selectionTheme.getEffectiveTextStyle(
@@ -581,7 +588,8 @@ class TablePlusMergedRow extends TablePlusRowWidget {
       );
 
       // Wrap with tooltip if needed
-      textWidget = _wrapWithTooltip(textWidget, displayValue, column, groupHeight);
+      textWidget =
+          _wrapWithTooltip(textWidget, displayValue, column, groupHeight);
 
       content = Container(
         alignment: column.alignment,
@@ -599,7 +607,8 @@ class TablePlusMergedRow extends TablePlusRowWidget {
     return Expanded(
       child: Container(
         decoration: BoxDecoration(
-          color: theme.backgroundColor.withValues(alpha: 0.05), // Subtle background for summary
+          color: theme.summaryRowBackgroundColor ?? 
+              theme.backgroundColor.withValues(alpha: 0.2), // Summary row background color
           border: Border(
             right: theme.showVerticalDividers
                 ? BorderSide(
@@ -726,7 +735,8 @@ class TablePlusMergedRow extends TablePlusRowWidget {
   }
 
   /// Determines whether a tooltip should be shown based on the column's tooltip behavior.
-  bool _shouldShowTooltip(String displayValue, TablePlusColumn column, double maxWidth) {
+  bool _shouldShowTooltip(
+      String displayValue, TablePlusColumn column, double maxWidth) {
     // Basic checks - tooltip must be enabled and text must not be empty
     if (!tooltipTheme.enabled || displayValue.isEmpty) {
       return false;
@@ -770,7 +780,8 @@ class TablePlusMergedRow extends TablePlusRowWidget {
   }
 
   /// Wraps a text widget with tooltip if needed.
-  Widget _wrapWithTooltip(Widget textWidget, String displayValue, TablePlusColumn column, double maxWidth) {
+  Widget _wrapWithTooltip(Widget textWidget, String displayValue,
+      TablePlusColumn column, double maxWidth) {
     if (_shouldShowTooltip(displayValue, column, maxWidth)) {
       return Tooltip(
         message: displayValue,
