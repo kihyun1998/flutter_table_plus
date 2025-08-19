@@ -20,6 +20,9 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
     'EF-003': false,
   };
 
+  // State for managing row selection
+  Set<String> selectedRows = {};
+
   @override
   Widget build(BuildContext context) {
     // Sample data - Product packages with individual items
@@ -253,6 +256,7 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
                       '• Package ID and Quantity columns are merged\n'
                       '• Click the expand icon (▶/▼) to show/hide package totals\n'
                       '• Summary rows show calculated package totals\n'
+                      '• Select entire packages with checkboxes (merged row selection)\n'
                       '• Try expanding different packages to see the totals!',
                       style: TextStyle(fontSize: 14, height: 1.5),
                     ),
@@ -268,6 +272,24 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
                             expandedStates['EF-003'] ?? false, Colors.orange),
                       ],
                     ),
+                    if (selectedRows.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.purple.shade100,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.purple.shade300),
+                        ),
+                        child: Text(
+                          '📦 Selected: ${selectedRows.join(', ')} (${selectedRows.length} package${selectedRows.length > 1 ? 's' : ''})',
+                          style: TextStyle(
+                            color: Colors.purple.shade700,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -284,6 +306,28 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
                     columns: columns,
                     data: data,
                     mergedGroups: mergedGroups,
+                    isSelectable: true,
+                    selectionMode: SelectionMode.multiple,
+                    selectedRows: selectedRows,
+                    onRowSelectionChanged: (rowId, isSelected) {
+                      setState(() {
+                        if (isSelected) {
+                          selectedRows.add(rowId);
+                        } else {
+                          selectedRows.remove(rowId);
+                        }
+                      });
+                    },
+                    onSelectAll: (selectAll) {
+                      setState(() {
+                        if (selectAll) {
+                          // Select all package group IDs
+                          selectedRows.addAll(['AB-001', 'CD-002', 'EF-003']);
+                        } else {
+                          selectedRows.clear();
+                        }
+                      });
+                    },
                     onMergedRowExpandToggle: (groupId) {
                       setState(() {
                         expandedStates[groupId] =
@@ -300,6 +344,12 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
                       ),
                       bodyTheme: TablePlusBodyTheme(
                         alternateRowColor: Colors.grey.shade50,
+                      ),
+                      selectionTheme: TablePlusSelectionTheme(
+                        checkboxColor: Colors.purple.shade600,
+                        selectedRowColor:
+                            Colors.purple.shade100.withValues(alpha: 0.3),
+                        // hoverColor: Colors.purple.shade50.withValues(alpha: 0.5),
                       ),
                     ),
                   ),
