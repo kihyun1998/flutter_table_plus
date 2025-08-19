@@ -311,13 +311,36 @@ class _DynamicHeightExampleState extends State<DynamicHeightExample> {
   @override
   Widget build(BuildContext context) {
     const textStyle = TextStyle(fontSize: 14, color: Color(0xFF212121));
+    const theme = TablePlusTheme(
+      bodyTheme: TablePlusBodyTheme(
+        rowHeight: 48, // This is the fallback/minimum height
+        textStyle: textStyle,
+        padding: EdgeInsets.symmetric(horizontal: 64.0, vertical: 8.0),
+        showHorizontalDividers: true,
+        showVerticalDividers: true,
+      ),
+      selectionTheme: TablePlusSelectionTheme(
+        selectedRowColor: Color(0xFFE3F2FD),
+        checkboxColor: Color(0xFF1976D2),
+      ),
+      editableTheme: TablePlusEditableTheme(
+        editingCellColor: Color(0xFFFFF3E0),
+        editingBorderColor: Color(0xFFFF9800),
+        editingBorderWidth: 2.0,
+        editingTextStyle: TextStyle(
+          fontSize: 14,
+          color: Color(0xFF212121),
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Dynamic Height Example'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -397,36 +420,16 @@ class _DynamicHeightExampleState extends State<DynamicHeightExample> {
                 // Editing features
                 isEditable: isEditingEnabled,
                 onCellChanged: _handleCellChanged,
-                // Use the helper utility to calculate row heights
+                // Use the helper utility to calculate row heights with theme padding
                 calculateRowHeight:
                     TableRowHeightCalculator.createHeightCalculator(
                   columns: columns,
                   columnWidths: columnWidths,
                   defaultTextStyle: textStyle,
+                  cellPadding: theme.bodyTheme.padding,
                   minHeight: 48.0,
                 ),
-                theme: const TablePlusTheme(
-                  bodyTheme: TablePlusBodyTheme(
-                    rowHeight: 48, // This is the fallback/minimum height
-                    textStyle: textStyle,
-                    showHorizontalDividers: true,
-                    showVerticalDividers: true,
-                  ),
-                  selectionTheme: TablePlusSelectionTheme(
-                    selectedRowColor: Color(0xFFE3F2FD),
-                    checkboxColor: Color(0xFF1976D2),
-                  ),
-                  editableTheme: TablePlusEditableTheme(
-                    editingCellColor: Color(0xFFFFF3E0),
-                    editingBorderColor: Color(0xFFFF9800),
-                    editingBorderWidth: 2.0,
-                    editingTextStyle: TextStyle(
-                      fontSize: 14,
-                      color: Color(0xFF212121),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
+                theme: theme,
               ),
             ),
             const SizedBox(height: 16),

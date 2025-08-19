@@ -15,6 +15,7 @@ class TableRowHeightCalculator {
   /// - [textStyle]: The TextStyle to apply
   /// - [maxWidth]: The maximum width available for the text
   /// - [textAlign]: Text alignment (optional)
+  /// - [padding]: Cell padding (defaults to EdgeInsets.symmetric(vertical: 8.0))
   /// - [minHeight]: Minimum height to return (defaults to 48.0)
   ///
   /// Returns the calculated height needed to display the text.
@@ -23,6 +24,7 @@ class TableRowHeightCalculator {
     required TextStyle textStyle,
     required double maxWidth,
     TextAlign textAlign = TextAlign.start,
+    EdgeInsets padding = const EdgeInsets.symmetric(vertical: 8.0),
     double minHeight = 48.0,
   }) {
     if (text.isEmpty || maxWidth <= 0) {
@@ -38,9 +40,8 @@ class TableRowHeightCalculator {
 
     textPainter.layout(maxWidth: maxWidth);
 
-    // Add some padding for cell content
-    const double verticalPadding = 16.0; // Default cell padding
-    final calculatedHeight = textPainter.height + verticalPadding;
+    // Add cell padding
+    final calculatedHeight = textPainter.height + padding.vertical;
 
     return math.max(minHeight, calculatedHeight);
   }
@@ -55,6 +56,7 @@ class TableRowHeightCalculator {
   /// - [columns]: List of table columns
   /// - [columnWidths]: List of calculated column widths
   /// - [defaultTextStyle]: Default text style for cells
+  /// - [cellPadding]: Cell padding (defaults to EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0))
   /// - [minHeight]: Minimum height to return (defaults to 48.0)
   ///
   /// Returns the calculated height needed for the entire row.
@@ -63,6 +65,7 @@ class TableRowHeightCalculator {
     required List<TablePlusColumn> columns,
     required List<double> columnWidths,
     required TextStyle defaultTextStyle,
+    EdgeInsets cellPadding = const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
     double minHeight = 48.0,
   }) {
     double maxHeight = minHeight;
@@ -86,8 +89,7 @@ class TableRowHeightCalculator {
           columnWidths.isNotEmpty ? columnWidths[i] : column.width;
 
       // Account for cell padding when calculating available text width
-      const double horizontalPadding = 32.0; // Default cell horizontal padding
-      final availableTextWidth = columnWidth - horizontalPadding;
+      final availableTextWidth = columnWidth - cellPadding.horizontal;
 
       if (availableTextWidth <= 0) continue;
 
@@ -96,6 +98,7 @@ class TableRowHeightCalculator {
         textStyle: defaultTextStyle,
         maxWidth: availableTextWidth,
         textAlign: column.textAlign,
+        padding: cellPadding,
         minHeight: minHeight,
       );
 
@@ -114,6 +117,7 @@ class TableRowHeightCalculator {
   /// - [columns]: List of table columns
   /// - [columnWidths]: List of calculated column widths
   /// - [defaultTextStyle]: Default text style for cells
+  /// - [cellPadding]: Cell padding (defaults to EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0))
   /// - [minHeight]: Minimum height to return (defaults to 48.0)
   ///
   /// Returns a function that can be used as FlutterTablePlus.calculateRowHeight
@@ -121,6 +125,7 @@ class TableRowHeightCalculator {
     required List<TablePlusColumn> columns,
     required List<double> columnWidths,
     required TextStyle defaultTextStyle,
+    EdgeInsets cellPadding = const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
     double minHeight = 48.0,
   }) {
     return (int rowIndex, Map<String, dynamic> rowData) {
@@ -129,6 +134,7 @@ class TableRowHeightCalculator {
         columns: columns,
         columnWidths: columnWidths,
         defaultTextStyle: defaultTextStyle,
+        cellPadding: cellPadding,
         minHeight: minHeight,
       );
     };

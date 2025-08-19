@@ -120,7 +120,8 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
     {
       'id': '1',
       'package': 'AB-001',
-      'product': 'Premium High-Quality Product A with Extended Warranty and Advanced Features',
+      'product':
+          'Premium High-Quality Product A with Extended Warranty and Advanced Features',
       'price': 10000,
       'quantity': 5
     },
@@ -150,7 +151,8 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
     {
       'id': '5',
       'package': 'EF-003',
-      'product': 'Ultra-Advanced Product E with Cutting-Edge Technology, Multiple Configuration Options, and Comprehensive Support Package',
+      'product':
+          'Ultra-Advanced Product E with Cutting-Edge Technology, Multiple Configuration Options, and Comprehensive Support Package',
       'price': 20000,
       'quantity': 2
     },
@@ -238,7 +240,7 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
     },
   ];
 
-  // Sort function  
+  // Sort function
   void _handleSort(String columnKey, SortDirection direction) {
     setState(() {
       currentSortColumn = columnKey;
@@ -252,7 +254,7 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
         // Apply sorting
         data.sort((a, b) {
           dynamic valueA, valueB;
-          
+
           // Special handling for calculated 'total' column
           if (columnKey == 'total') {
             valueA = (a['price'] as int) * (a['quantity'] as int);
@@ -272,7 +274,9 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
           }
 
           // Apply sort direction
-          return direction == SortDirection.ascending ? comparison : -comparison;
+          return direction == SortDirection.ascending
+              ? comparison
+              : -comparison;
         });
       }
     });
@@ -283,9 +287,9 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
     data.sort((a, b) => int.parse(a['id']).compareTo(int.parse(b['id'])));
   }
 
-
   // Handle cell value changes
-  void _handleCellChanged(String columnKey, int rowIndex, dynamic oldValue, dynamic newValue) {
+  void _handleCellChanged(
+      String columnKey, int rowIndex, dynamic oldValue, dynamic newValue) {
     setState(() {
       if (newValue != null && rowIndex < data.length) {
         // Handle different data types
@@ -311,7 +315,8 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
   }
 
   // Handle merged cell value changes
-  void _handleMergedCellChanged(String groupId, String columnKey, dynamic newValue) {
+  void _handleMergedCellChanged(
+      String groupId, String columnKey, dynamic newValue) {
     setState(() {
       // Find all rows in the merged group and update the spanning row
       for (var i = 0; i < data.length; i++) {
@@ -349,10 +354,10 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
   double _calculateRowHeight(int rowIndex, Map<String, dynamic> rowData) {
     const double baseHeight = 48.0;
     const double maxHeight = 120.0;
-    
+
     // Get the product name to calculate height
     final productName = rowData['product']?.toString() ?? '';
-    
+
     // Simple calculation based on text length
     // In a real app, you'd use more sophisticated text measurement
     if (productName.length > 60) {
@@ -391,7 +396,7 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
     for (final entry in packageGroups.entries) {
       final packageId = entry.key;
       final rowKeys = entry.value;
-      
+
       groups.add(MergedRowGroup(
         groupId: packageId,
         rowKeys: rowKeys,
@@ -399,7 +404,8 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
         isExpanded: expandedStates[packageId] ?? false,
         summaryRowData: {
           'product': '📊 Package Total',
-          'total': '¥${calculatePackageTotal(rowKeys).toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (match) => '${match[1]},')}',
+          'total':
+              '¥${calculatePackageTotal(rowKeys).toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (match) => '${match[1]},')}',
           'quantity': '${rowKeys.length} sets',
         },
         mergeConfig: {
@@ -421,7 +427,6 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
 
   @override
   Widget build(BuildContext context) {
-
     // Using dynamic mergedGroups getter now
 
     return Scaffold(
