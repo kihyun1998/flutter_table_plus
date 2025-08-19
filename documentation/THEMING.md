@@ -83,6 +83,7 @@ This theme controls the appearance of the data rows in the table body.
 - `rowHeight`: The height of each data row. All rows will have this fixed height.
 - `backgroundColor`: The default background color for rows.
 - `alternateRowColor`: If set, creates a striped (zebra) effect. This color is applied to the rows that are at an odd *rendering* index (1, 3, 5, ...), not necessarily the odd index in your original data list. This ensures the striping is correct even after sorting or filtering.
+- `summaryRowBackgroundColor`: The background color for expandable summary rows in merged row groups. If not set, defaults to a semi-transparent version of the default background color.
 - `textStyle`: The default `TextStyle` for cell content.
 - `padding`: The padding within each data cell.
 - `showHorizontalDividers`: Whether to show horizontal lines between rows.
@@ -96,6 +97,7 @@ theme: const TablePlusTheme(
   bodyTheme: TablePlusBodyTheme(
     rowHeight: 52,
     alternateRowColor: Colors.grey.shade50, // Striped rows
+    summaryRowBackgroundColor: Colors.blue.shade50, // Summary row background
     textStyle: TextStyle(fontSize: 14, color: Colors.black87),
     showHorizontalDividers: true,
     dividerColor: Colors.grey.shade200,

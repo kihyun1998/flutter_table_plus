@@ -11,9 +11,10 @@ This document provides a comprehensive guide to using the merged row functionali
 3.  [Enabling Merged Rows](#enabling-merged-rows)
 4.  [Simple Merged Rows Example](#simple-merged-rows-example)
 5.  [Complex Merged Rows (Multiple Columns & Custom Content)](#complex-merged-rows-multiple-columns--custom-content)
-6.  [Selection with Merged Rows](#selection-with-merged-rows)
-7.  [Editing Merged Cells](#editing-merged-cells)
-8.  [Considerations and Best Practices](#considerations-and-best-practices)
+6.  [Expandable Summary Rows](#expandable-summary-rows)
+7.  [Selection with Merged Rows](#selection-with-merged-rows)
+8.  [Editing Merged Cells](#editing-merged-cells)
+9.  [Considerations and Best Practices](#considerations-and-best-practices)
 
 ---
 
@@ -37,6 +38,9 @@ class MergedRowGroup {
     required this.groupId,
     required this.rowKeys,
     required this.mergeConfig,
+    this.isExpandable = false,
+    this.isExpanded = false,
+    this.summaryRowData,
   });
 
   /// Unique identifier for this merge group.
@@ -50,6 +54,16 @@ class MergedRowGroup {
   /// Configuration for how each column should be merged within this group.
   /// Key: column key, Value: merge configuration for that column.
   final Map<String, MergeCellConfig> mergeConfig;
+
+  /// Whether this merge group supports expandable summary row functionality.
+  final bool isExpandable;
+
+  /// Whether the summary row is currently expanded.
+  final bool isExpanded;
+
+  /// Data to display in the summary row when expanded.
+  /// Key: column key, Value: data to display in that column's summary cell.
+  final Map<String, dynamic>? summaryRowData;
 
   /// Returns the number of rows in this group.
   int get rowCount => rowKeys.length;
@@ -246,7 +260,115 @@ final List<MergedRowGroup> mergedGroups = [
 ];
 ```
 
-## 6. Selection with Merged Rows
+## 6. Expandable Summary Rows
+
+Flutter Table Plus supports expandable summary rows for merged groups, allowing you to display calculated totals, counts, or any aggregated data that can be shown/hidden on demand.
+
+### Basic Setup
+
+To enable expandable summary functionality, set the following properties on your `MergedRowGroup`:
+
+```dart
+MergedRowGroup(
+  groupId: 'department-001',
+  rowKeys: ['emp1', 'emp2', 'emp3'],
+  mergeConfig: {
+    'department': MergeCellConfig(shouldMerge: true),
+  },
+  // Enable expandable functionality
+  isExpandable: true,
+  isExpanded: false, // Initially collapsed
+  // Define summary data to display
+  summaryRowData: {
+    'name': 'Total Employees',
+    'salary': '\$25,000', // Calculated total
+    'count': '3 employees',
+  },
+)
+```
+
+### Handling Expand/Collapse Events
+
+Add the `onMergedRowExpandToggle` callback to your `FlutterTablePlus`:
+
+```dart
+FlutterTablePlus(
+  // ... other properties
+  onMergedRowExpandToggle: (groupId) {
+    setState(() {
+      // Toggle the expanded state for the specific group
+      expandedStates[groupId] = !(expandedStates[groupId] ?? false);
+    });
+  },
+)
+```
+
+### Summary Row Features
+
+- **Automatic Icons**: Expand/collapse icons (▼/▶) automatically appear in the first column of expandable groups
+- **Custom Background**: Summary rows have a distinctive background color (configurable via `summaryRowBackgroundColor` in `TablePlusBodyTheme`)
+- **Selective Display**: Only columns with data in `summaryRowData` will show content in the summary row
+- **Rich Content**: Summary data can contain any displayable content (text, formatted numbers, counts, etc.)
+
+### Complete Example
+
+```dart
+class ExpandableSummaryExample extends StatefulWidget {
+  @override
+  _ExpandableSummaryExampleState createState() => _ExpandableSummaryExampleState();
+}
+
+class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
+  Map<String, bool> expandedStates = {
+    'dept-001': false,
+    'dept-002': true, // Start expanded
+  };
+
+  // Calculate totals dynamically
+  int calculateDepartmentTotal(List<String> rowKeys) {
+    return rowKeys.map((key) => 
+      data.firstWhere((row) => row['id'] == key)['salary'] as int
+    ).reduce((a, b) => a + b);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final mergedGroups = [
+      MergedRowGroup(
+        groupId: 'dept-001',
+        rowKeys: ['emp1', 'emp2'],
+        isExpandable: true,
+        isExpanded: expandedStates['dept-001'] ?? false,
+        summaryRowData: {
+          'name': '📊 Department Total',
+          'salary': '\$${calculateDepartmentTotal(['emp1', 'emp2'])}',
+          'position': '2 employees',
+        },
+        mergeConfig: {
+          'department': MergeCellConfig(shouldMerge: true),
+        },
+      ),
+    ];
+
+    return FlutterTablePlus(
+      mergedGroups: mergedGroups,
+      onMergedRowExpandToggle: (groupId) {
+        setState(() {
+          expandedStates[groupId] = !(expandedStates[groupId] ?? false);
+        });
+      },
+      theme: TablePlusTheme(
+        bodyTheme: TablePlusBodyTheme(
+          summaryRowBackgroundColor: Colors.green.shade50,
+        ),
+      ),
+      // ... other properties
+    );
+  }
+}
+```
+
+## 7. Selection with Merged Rows
 
 When `isSelectable` is `true` in `FlutterTablePlus`, merged groups are treated as single selectable units.
 

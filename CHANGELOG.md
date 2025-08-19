@@ -1,3 +1,20 @@
+## 1.14.2
+
+*   **FEAT**: Added expandable summary row functionality for merged row groups.
+    *   Added `isExpandable`, `isExpanded`, and `summaryRowData` properties to `MergedRowGroup`.
+    *   Added `onMergedRowExpandToggle` callback to `FlutterTablePlus` for handling expand/collapse interactions.
+    *   Summary rows can display calculated totals, counts, or any custom data.
+    *   Expand/collapse icons automatically appear in the first column of expandable groups.
+*   **FEAT**: Added `summaryRowBackgroundColor` to `TablePlusBodyTheme` for styling summary rows.
+*   **IMPROVEMENT**: Enhanced `TableRowHeightCalculator.createHeightCalculator` for more accurate height calculations.
+    *   Improved text layout calculations for complex scenarios.
+    *   Better handling of padding and text overflow in dynamic height scenarios.
+*   **FIX**: Fixed tooltip functionality in merged row cells.
+*   **FIX**: Improved merged row compatibility and rendering issues.
+*   **FIX**: Enhanced height calculation logic for merged row groups.
+*   **DOCS**: Added comprehensive `expandable_summary_example.dart` demonstrating expandable summary functionality.
+*   **DOCS**: Updated examples with better feature demonstrations and descriptions.
+
 ## 1.14.1
 
 *   **FEAT**: Added `lastRowBorderBehavior` to `TablePlusBodyTheme` to control the visibility of the last row's bottom border (`never`, `always`, `smart`).

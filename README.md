@@ -31,6 +31,7 @@ A highly customizable and efficient table widget for Flutter. It provides a rich
 - **Flexible Data Handling**: Use the `rowIdKey` property to specify a custom unique identifier for your rows, removing the need for a mandatory `'id'` key.
 - **Column Sorting**: Supports multi-state sorting (ascending, descending, none) with a configurable sort cycle.
 - **Merged Rows**: Visually group and merge multiple data rows into a single unit for specific columns, supporting custom content, selection, and editing within merged cells.
+- **Expandable Summary Rows**: Add collapsible summary rows to merged groups that can display calculated totals, counts, or any custom aggregated data.
 - **Row Selection & Editing**: Enable row selection and cell editing simultaneously, now fully compatible with merged rows. Supports double-tap and secondary-tap events on rows.
 - **Frozen Columns**: Pin important columns to the left side with an optional visual divider between frozen and scrollable areas.
 - **Column Reordering**: Easily reorder columns with drag-and-drop.
@@ -46,7 +47,7 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  flutter_table_plus: ^1.14.1
+  flutter_table_plus: ^1.14.2
 ```
 
 Then, run `flutter pub get` in your terminal.
