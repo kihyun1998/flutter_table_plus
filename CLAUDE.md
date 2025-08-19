@@ -55,7 +55,7 @@ cd example && flutter test      # Run example tests
 
 ### Package Development
 ```bash
-flutter packages pub publish --dry-run  # Test package publishing
+flutter pub publish --dry-run   # Test package publishing
 dart doc .                      # Generate API documentation
 ```
 
