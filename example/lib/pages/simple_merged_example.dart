@@ -2,8 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
 
 /// A simple example demonstrating merged row functionality.
-class SimpleMergedExample extends StatelessWidget {
+class SimpleMergedExample extends StatefulWidget {
   const SimpleMergedExample({super.key});
+
+  @override
+  State<SimpleMergedExample> createState() => _SimpleMergedExampleState();
+}
+
+class _SimpleMergedExampleState extends State<SimpleMergedExample> {
+  // State for expandable groups
+  Map<String, bool> expandedStates = {'m1': false};
 
   @override
   Widget build(BuildContext context) {
@@ -42,11 +50,18 @@ class SimpleMergedExample extends StatelessWidget {
       ),
     };
 
+
     // Merged groups configuration - merge IT department rows
     final List<MergedRowGroup> mergedGroups = [
       MergedRowGroup(
         groupId: 'm1',
         rowKeys: ['1', '2'], // Rows with id '1' and '2' (aman and bman)
+        isExpandable: true,
+        isExpanded: expandedStates['m1'] ?? false,
+        summaryRowData: {
+          'name': 'Total',
+          'salary': '400', // 100 + 300
+        },
         mergeConfig: {
           'department': MergeCellConfig(
             shouldMerge: true,
@@ -99,6 +114,11 @@ class SimpleMergedExample extends StatelessWidget {
                     columns: columns,
                     data: data,
                     mergedGroups: mergedGroups,
+                    onMergedRowExpandToggle: (groupId) {
+                      setState(() {
+                        expandedStates[groupId] = !(expandedStates[groupId] ?? false);
+                      });
+                    },
                   ),
                 ),
               ),

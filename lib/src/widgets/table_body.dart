@@ -41,6 +41,7 @@ class TablePlusBody extends StatelessWidget {
     this.onCellTap,
     this.onStopEditing,
     this.onMergedCellChanged,
+    this.onMergedRowExpandToggle,
     this.calculateRowHeight,
     this.needsVerticalScroll = false,
   });
@@ -113,6 +114,9 @@ class TablePlusBody extends StatelessWidget {
   /// Callback when a merged cell value is changed.
   final void Function(String groupId, String columnKey, dynamic newValue)?
       onMergedCellChanged;
+
+  /// Callback when a merged row group's expand/collapse state should be toggled.
+  final void Function(String groupId)? onMergedRowExpandToggle;
 
   /// Callback to calculate the height of a specific row.
   /// Provides row index and row data, and should return the height for that row.
@@ -346,6 +350,7 @@ class TablePlusBody extends StatelessWidget {
           onRowDoubleTap: onRowDoubleTap,
           onRowSecondaryTap: onRowSecondaryTap,
           onMergedCellChanged: onMergedCellChanged,
+          onMergedRowExpandToggle: onMergedRowExpandToggle,
           calculatedHeight: mergedHeight,
           needsVerticalScroll: needsVerticalScroll,
         );

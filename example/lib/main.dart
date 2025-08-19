@@ -5,6 +5,7 @@ import 'pages/comprehensive_merged_example.dart';
 import 'pages/sortable_example.dart';
 import 'pages/dynamic_height_example.dart';
 import 'pages/frozen_columns_demo.dart';
+import 'pages/expandable_summary_example.dart';
 
 void main() {
   runApp(const MyApp());
@@ -125,6 +126,24 @@ class ExampleHomePage extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                       builder: (context) => const FrozenColumnsDemo(),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 8),
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.expand_more, color: Colors.purple),
+                title: const Text('Expandable Summary Example'),
+                subtitle: const Text(
+                    'Merged rows with expandable summary totals'),
+                trailing: const Icon(Icons.arrow_forward_ios),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ExpandableSummaryExample(),
                     ),
                   );
                 },

@@ -42,6 +42,7 @@ class FlutterTablePlus extends StatefulWidget {
     this.onMergedCellChanged,
     this.onRowDoubleTap,
     this.onRowSecondaryTap,
+    this.onMergedRowExpandToggle,
     this.noDataWidget,
     this.calculateRowHeight,
   });
@@ -140,6 +141,11 @@ class FlutterTablePlus extends StatefulWidget {
   /// Callback when a row is right-clicked (or long-pressed on touch devices).
   /// Provides the row ID. Only active when [isSelectable] is true.
   final void Function(String rowId)? onRowSecondaryTap;
+
+  /// Callback when a merged row group's expand/collapse state should be toggled.
+  /// Provides the group ID for the group that was clicked.
+  /// The parent widget should handle updating the MergedRowGroup's isExpanded state.
+  final void Function(String groupId)? onMergedRowExpandToggle;
 
   /// Widget to display when there is no data to show in the table.
   /// If not provided, nothing will be displayed when data is empty.
@@ -709,6 +715,8 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                                     _stopCurrentEditing,
                                                 onMergedCellChanged:
                                                     widget.onMergedCellChanged,
+                                                onMergedRowExpandToggle:
+                                                    widget.onMergedRowExpandToggle,
                                                 calculateRowHeight:
                                                     widget.calculateRowHeight,
                                               ),
@@ -852,6 +860,8 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                                           onMergedCellChanged:
                                                               widget
                                                                   .onMergedCellChanged,
+                                                          onMergedRowExpandToggle:
+                                                              widget.onMergedRowExpandToggle,
                                                           calculateRowHeight: widget
                                                               .calculateRowHeight,
                                                         ),

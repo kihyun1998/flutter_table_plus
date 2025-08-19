@@ -36,6 +36,9 @@ class MergedRowGroup {
     required this.groupId,
     required this.rowKeys,
     required this.mergeConfig,
+    this.isExpandable = false,
+    this.isExpanded = false,
+    this.summaryRowData,
   });
 
   /// Unique identifier for this merge group.
@@ -49,6 +52,19 @@ class MergedRowGroup {
   /// Configuration for how each column should be merged within this group.
   /// Key: column key, Value: merge configuration for that column.
   final Map<String, MergeCellConfig> mergeConfig;
+
+  /// Whether this merge group supports expandable summary row functionality.
+  /// When true, an expand/collapse icon will be shown and summary row can be displayed.
+  final bool isExpandable;
+
+  /// Whether the summary row is currently expanded.
+  /// This state should be managed by the parent widget.
+  final bool isExpanded;
+
+  /// Data to display in the summary row when expanded.
+  /// Key: column key, Value: data to display in that column's summary cell.
+  /// Only columns with data in this map will show content in the summary row.
+  final Map<String, dynamic>? summaryRowData;
 
   /// Returns the number of rows in this group.
   int get rowCount => rowKeys.length;
@@ -103,4 +119,17 @@ class MergedRowGroup {
     }
     return config.isEditable;
   }
+
+  /// Returns true if this group has summary data for the specified column.
+  bool hasSummaryData(String columnKey) {
+    return summaryRowData?.containsKey(columnKey) ?? false;
+  }
+
+  /// Returns the summary data for the specified column.
+  dynamic getSummaryData(String columnKey) {
+    return summaryRowData?[columnKey];
+  }
+
+  /// Returns the effective row count including summary row if expanded.
+  int get effectiveRowCount => rowCount + (isExpandable && isExpanded ? 1 : 0);
 }
