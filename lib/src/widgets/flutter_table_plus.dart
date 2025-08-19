@@ -387,7 +387,7 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
   }
 
   /// Calculate the total height for a merged row group.
-  /// Sums the heights of all rows in the group.
+  /// Sums the heights of all rows in the group including summary row if expanded.
   double _getMergedRowHeight(MergedRowGroup mergeGroup) {
     double totalHeight = 0;
     for (final rowKey in mergeGroup.rowKeys) {
@@ -397,6 +397,12 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
         totalHeight += _getRowHeight(rowIndex);
       }
     }
+    
+    // Add summary row height if expandable and expanded
+    if (mergeGroup.isExpandable && mergeGroup.isExpanded) {
+      totalHeight += _currentTheme.bodyTheme.rowHeight;
+    }
+    
     return totalHeight;
   }
 
