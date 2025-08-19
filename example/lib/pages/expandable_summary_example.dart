@@ -545,12 +545,22 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
                       setState(() {
                         if (selectAll) {
                           // Select all package group IDs
-                          selectedRows.addAll(['AB-001', 'CD-002', 'EF-003', 'GH-004', 'IJ-005', 'KL-006', 'MN-007', 'OP-008']);
+                          selectedRows.addAll([
+                            'AB-001',
+                            'CD-002',
+                            'EF-003',
+                            'GH-004',
+                            'IJ-005',
+                            'KL-006',
+                            'MN-007',
+                            'OP-008'
+                          ]);
                         } else {
                           selectedRows.clear();
                         }
                       });
-                    },
+                    }, // Dynamic row height calculation for merged rows
+
                     onMergedRowExpandToggle: (groupId) {
                       setState(() {
                         expandedStates[groupId] =
