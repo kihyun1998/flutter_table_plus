@@ -350,24 +350,12 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
     });
   }
 
-  // Calculate dynamic row height based on content
-  double _calculateRowHeight(int rowIndex, Map<String, dynamic> rowData) {
-    const double baseHeight = 48.0;
-    const double maxHeight = 120.0;
-
-    // Get the product name to calculate height
-    final productName = rowData['product']?.toString() ?? '';
-
-    // Simple calculation based on text length
-    // In a real app, you'd use more sophisticated text measurement
-    if (productName.length > 60) {
-      return maxHeight; // Very long text
-    } else if (productName.length > 30) {
-      return 80.0; // Medium text
-    } else {
-      return baseHeight; // Short text
-    }
-  }
+  // Old manual height calculation - replaced with TableRowHeightCalculator
+  // double _calculateRowHeight(int rowIndex, Map<String, dynamic> rowData) {
+  //   // This was inaccurate because it only considered text length,
+  //   // not actual text rendering, font size, column width, or theme padding
+  //   ...
+  // }
 
   // Helper function to calculate package totals
   int calculatePackageTotal(List<String> rowKeys) {
@@ -428,6 +416,33 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
   @override
   Widget build(BuildContext context) {
     // Using dynamic mergedGroups getter now
+    const textStyle = TextStyle(fontSize: 14, color: Color(0xFF212121));
+    const theme = TablePlusTheme(
+      headerTheme: TablePlusHeaderTheme(
+        backgroundColor: Color(0xFFE1BEE7), // Colors.purple.shade50 equivalent
+        textStyle: TextStyle(
+          fontWeight: FontWeight.w600,
+          color: Color(0xFF4A148C), // Colors.purple.shade700 equivalent
+        ),
+        padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+      ),
+      bodyTheme: TablePlusBodyTheme(
+        alternateRowColor: Color(0xFFFAFAFA), // Colors.grey.shade50 equivalent
+        summaryRowBackgroundColor: Color(0xFFE8F5E8), // Colors.green.shade50 equivalent
+        textStyle: textStyle,
+        padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      ),
+      selectionTheme: TablePlusSelectionTheme(
+        checkboxColor: Color(0xFF6A1B9A), // Colors.purple.shade600 equivalent
+        selectedRowColor: Color(0xFFE1BEE7), // Colors.purple.shade100 equivalent with alpha
+      ),
+    );
+
+    // Get columns for height calculation
+    final columns = _columns.entries.toList()
+      ..sort((a, b) => a.value.order.compareTo(b.value.order));
+    final columnList = columns.map((e) => e.value).toList();
+    final columnWidths = columnList.map((col) => col.width).toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -531,7 +546,14 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
                     onCellChanged: _handleCellChanged,
                     onMergedCellChanged: _handleMergedCellChanged,
                     onColumnReorder: _handleColumnReorder,
-                    calculateRowHeight: _calculateRowHeight,
+                    // Use proper height calculation with theme padding
+                    calculateRowHeight: TableRowHeightCalculator.createHeightCalculator(
+                      columns: columnList,
+                      columnWidths: columnWidths,
+                      defaultTextStyle: textStyle,
+                      cellPadding: theme.bodyTheme.padding,
+                      minHeight: 48.0,
+                    ),
                     onRowSelectionChanged: (rowId, isSelected) {
                       setState(() {
                         if (isSelected) {
@@ -567,25 +589,7 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
                             !(expandedStates[groupId] ?? false);
                       });
                     },
-                    theme: TablePlusTheme(
-                      headerTheme: TablePlusHeaderTheme(
-                        backgroundColor: Colors.purple.shade50,
-                        textStyle: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          color: Colors.purple.shade700,
-                        ),
-                      ),
-                      bodyTheme: TablePlusBodyTheme(
-                        alternateRowColor: Colors.grey.shade50,
-                        summaryRowBackgroundColor: Colors.green.shade50,
-                      ),
-                      selectionTheme: TablePlusSelectionTheme(
-                        checkboxColor: Colors.purple.shade600,
-                        selectedRowColor:
-                            Colors.purple.shade100.withValues(alpha: 0.3),
-                        // hoverColor: Colors.purple.shade50.withValues(alpha: 0.5),
-                      ),
-                    ),
+                    theme: theme,
                   ),
                 ),
               ),
