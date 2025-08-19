@@ -34,6 +34,7 @@ class _ComprehensiveMergedExampleState
 
   // Sample data representing employees grouped by department
   final List<Map<String, dynamic>> _data = [
+    // Engineering Department
     {
       'id': '1',
       'name': 'Alexandriana Seraphina Aethelreda Abernathy',
@@ -65,6 +66,58 @@ class _ComprehensiveMergedExampleState
       'status': 'Active'
     },
     {
+      'id': '8',
+      'name': 'Henry Davis',
+      'department': 'Engineering',
+      'position': 'DevOps Engineer',
+      'salary': 110000,
+      'experience': 7,
+      'location': 'New York',
+      'status': 'Active'
+    },
+    {
+      'id': '9',
+      'name': 'Isabella Rodriguez',
+      'department': 'Engineering',
+      'position': 'Frontend Developer',
+      'salary': 95000,
+      'experience': 5,
+      'location': 'New York',
+      'status': 'Active'
+    },
+    {
+      'id': '10',
+      'name': 'Jack Thompson',
+      'department': 'Engineering',
+      'position': 'Backend Developer',
+      'salary': 105000,
+      'experience': 6,
+      'location': 'New York',
+      'status': 'Active'
+    },
+    {
+      'id': '11',
+      'name': 'Katherine Wilson',
+      'department': 'Engineering',
+      'position': 'QA Engineer',
+      'salary': 85000,
+      'experience': 4,
+      'location': 'New York',
+      'status': 'Active'
+    },
+    {
+      'id': '12',
+      'name': 'Liam Anderson',
+      'department': 'Engineering',
+      'position': 'Mobile Developer',
+      'salary': 100000,
+      'experience': 5,
+      'location': 'New York',
+      'status': 'On Leave'
+    },
+
+    // Marketing Department
+    {
       'id': '4',
       'name': 'Diana Prince',
       'department': 'Marketing',
@@ -85,6 +138,48 @@ class _ComprehensiveMergedExampleState
       'status': 'On Leave'
     },
     {
+      'id': '13',
+      'name': 'Michael Brown',
+      'department': 'Marketing',
+      'position': 'Digital Marketing Specialist',
+      'salary': 75000,
+      'experience': 3,
+      'location': 'San Francisco',
+      'status': 'Active'
+    },
+    {
+      'id': '14',
+      'name': 'Nina Garcia',
+      'department': 'Marketing',
+      'position': 'Brand Manager',
+      'salary': 88000,
+      'experience': 5,
+      'location': 'San Francisco',
+      'status': 'Active'
+    },
+    {
+      'id': '15',
+      'name': 'Oscar Kim',
+      'department': 'Marketing',
+      'position': 'Social Media Manager',
+      'salary': 65000,
+      'experience': 2,
+      'location': 'San Francisco',
+      'status': 'Active'
+    },
+    {
+      'id': '16',
+      'name': 'Paula Martinez',
+      'department': 'Marketing',
+      'position': 'Marketing Analyst',
+      'salary': 72000,
+      'experience': 3,
+      'location': 'San Francisco',
+      'status': 'Active'
+    },
+
+    // Sales Department
+    {
       'id': '6',
       'name': 'Frank Miller',
       'department': 'Sales',
@@ -103,6 +198,172 @@ class _ComprehensiveMergedExampleState
       'experience': 5,
       'location': 'Chicago',
       'status': 'Active'
+    },
+    {
+      'id': '17',
+      'name': 'Quinn Johnson',
+      'department': 'Sales',
+      'position': 'Sales Representative',
+      'salary': 65000,
+      'experience': 2,
+      'location': 'Chicago',
+      'status': 'Active'
+    },
+    {
+      'id': '18',
+      'name': 'Rachel White',
+      'department': 'Sales',
+      'position': 'Senior Account Executive',
+      'salary': 95000,
+      'experience': 7,
+      'location': 'Chicago',
+      'status': 'Active'
+    },
+    {
+      'id': '19',
+      'name': 'Samuel Turner',
+      'department': 'Sales',
+      'position': 'Business Development Manager',
+      'salary': 105000,
+      'experience': 8,
+      'location': 'Chicago',
+      'status': 'Active'
+    },
+    {
+      'id': '20',
+      'name': 'Tiffany Clark',
+      'department': 'Sales',
+      'position': 'Sales Coordinator',
+      'salary': 55000,
+      'experience': 1,
+      'location': 'Chicago',
+      'status': 'Active'
+    },
+
+    // HR Department
+    {
+      'id': '21',
+      'name': 'Uma Patel',
+      'department': 'HR',
+      'position': 'HR Director',
+      'salary': 115000,
+      'experience': 12,
+      'location': 'Austin',
+      'status': 'Active'
+    },
+    {
+      'id': '22',
+      'name': 'Victor Lopez',
+      'department': 'HR',
+      'position': 'HR Specialist',
+      'salary': 68000,
+      'experience': 4,
+      'location': 'Austin',
+      'status': 'Active'
+    },
+    {
+      'id': '23',
+      'name': 'Wendy Adams',
+      'department': 'HR',
+      'position': 'Recruiter',
+      'salary': 62000,
+      'experience': 3,
+      'location': 'Austin',
+      'status': 'Active'
+    },
+    {
+      'id': '24',
+      'name': 'Xavier Chen',
+      'department': 'HR',
+      'position': 'Training Coordinator',
+      'salary': 58000,
+      'experience': 2,
+      'location': 'Austin',
+      'status': 'On Leave'
+    },
+
+    // Finance Department
+    {
+      'id': '25',
+      'name': 'Yolanda Foster',
+      'department': 'Finance',
+      'position': 'Finance Director',
+      'salary': 125000,
+      'experience': 15,
+      'location': 'Boston',
+      'status': 'Active'
+    },
+    {
+      'id': '26',
+      'name': 'Zachary Moore',
+      'department': 'Finance',
+      'position': 'Senior Accountant',
+      'salary': 78000,
+      'experience': 6,
+      'location': 'Boston',
+      'status': 'Active'
+    },
+    {
+      'id': '27',
+      'name': 'Aria Scott',
+      'department': 'Finance',
+      'position': 'Financial Analyst',
+      'salary': 72000,
+      'experience': 4,
+      'location': 'Boston',
+      'status': 'Active'
+    },
+    {
+      'id': '28',
+      'name': 'Blake Rivera',
+      'department': 'Finance',
+      'position': 'Budget Analyst',
+      'salary': 70000,
+      'experience': 3,
+      'location': 'Boston',
+      'status': 'Active'
+    },
+    {
+      'id': '29',
+      'name': 'Chloe Taylor',
+      'department': 'Finance',
+      'position': 'Accounting Clerk',
+      'salary': 52000,
+      'experience': 1,
+      'location': 'Boston',
+      'status': 'Active'
+    },
+
+    // Operations Department
+    {
+      'id': '30',
+      'name': 'Dylan Hayes',
+      'department': 'Operations',
+      'position': 'Operations Manager',
+      'salary': 98000,
+      'experience': 9,
+      'location': 'Seattle',
+      'status': 'Active'
+    },
+    {
+      'id': '31',
+      'name': 'Emma Watson',
+      'department': 'Operations',
+      'position': 'Process Improvement Specialist',
+      'salary': 75000,
+      'experience': 5,
+      'location': 'Seattle',
+      'status': 'Active'
+    },
+    {
+      'id': '32',
+      'name': 'Felix Garcia',
+      'department': 'Operations',
+      'position': 'Operations Coordinator',
+      'salary': 58000,
+      'experience': 2,
+      'location': 'Seattle',
+      'status': 'On Leave'
     },
   ];
 
@@ -344,6 +605,129 @@ class _ComprehensiveMergedExampleState
       ));
     }
 
+    // HR group
+    if (departmentGroups.containsKey('HR')) {
+      groups.add(MergedRowGroup(
+        groupId: 'hr_group',
+        rowKeys: departmentGroups['HR']!,
+        mergeConfig: {
+          'department': MergeCellConfig(
+            shouldMerge: true,
+            mergedContent: Container(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.people, color: Colors.orange.shade600),
+                  const SizedBox(height: 4),
+                  Text(
+                    'HR',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.orange.shade700,
+                    ),
+                  ),
+                  Text(
+                    '${departmentGroups['HR']!.length} employees',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          'location': MergeCellConfig(
+            shouldMerge: true,
+            spanningRowIndex: 0,
+          ),
+        },
+      ));
+    }
+
+    // Finance group
+    if (departmentGroups.containsKey('Finance')) {
+      groups.add(MergedRowGroup(
+        groupId: 'finance_group',
+        rowKeys: departmentGroups['Finance']!,
+        mergeConfig: {
+          'department': MergeCellConfig(
+            shouldMerge: true,
+            mergedContent: Container(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.attach_money, color: Colors.indigo.shade600),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Finance',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.indigo.shade700,
+                    ),
+                  ),
+                  Text(
+                    '${departmentGroups['Finance']!.length} employees',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          'location': MergeCellConfig(
+            shouldMerge: true,
+            spanningRowIndex: 0,
+          ),
+        },
+      ));
+    }
+
+    // Operations group
+    if (departmentGroups.containsKey('Operations')) {
+      groups.add(MergedRowGroup(
+        groupId: 'operations_group',
+        rowKeys: departmentGroups['Operations']!,
+        mergeConfig: {
+          'department': MergeCellConfig(
+            shouldMerge: true,
+            mergedContent: Container(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.settings, color: Colors.teal.shade600),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Operations',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.teal.shade700,
+                    ),
+                  ),
+                  Text(
+                    '${departmentGroups['Operations']!.length} employees',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          'location': MergeCellConfig(
+            shouldMerge: true,
+            spanningRowIndex: 0,
+          ),
+        },
+      ));
+    }
+
     return groups;
   }
 
@@ -471,52 +855,66 @@ class _ComprehensiveMergedExampleState
           ),
 
           // Table
-          Expanded(
-            child: FlutterTablePlus(
-              columns: _columns,
-              data: _data,
-              mergedGroups: _mergedGroups,
+          SizedBox(
+            height: 500, // Fixed height to force vertical scrolling
+            child: Card(
+              margin: const EdgeInsets.all(16),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: FlutterTablePlus(
+                  columns: _columns,
+                  data: _data,
+                  mergedGroups: _mergedGroups,
 
-              // Sorting
-              onSort: _isSortable ? _handleSort : null,
-              sortColumnKey: _currentSortColumn,
-              sortDirection: _currentSortDirection ?? SortDirection.none,
+                  // Sorting
+                  onSort: _isSortable ? _handleSort : null,
+                  sortColumnKey: _currentSortColumn,
+                  sortDirection: _currentSortDirection ?? SortDirection.none,
 
-              // Column reordering
-              onColumnReorder: _isReorderable ? _handleColumnReorder : null,
+                  // Column reordering
+                  onColumnReorder: _isReorderable ? _handleColumnReorder : null,
 
-              // Selection
-              isSelectable: _isSelectable,
-              selectionMode: _selectionMode,
-              selectedRows: _selectedRows,
-              onRowSelectionChanged: _handleRowSelection,
+                  // Selection
+                  isSelectable: _isSelectable,
+                  selectionMode: _selectionMode,
+                  selectedRows: _selectedRows,
+                  onRowSelectionChanged: _handleRowSelection,
 
-              // Editing
-              isEditable: _isEditable,
-              onCellChanged: _handleCellChanged,
-              onMergedCellChanged: _handleMergedCellChanged,
+                  // Editing
+                  isEditable: _isEditable,
+                  onCellChanged: _handleCellChanged,
+                  onMergedCellChanged: _handleMergedCellChanged,
 
-              // Theme with custom border behavior
-              theme: TablePlusTheme(
-                bodyTheme: TablePlusBodyTheme(
-                  lastRowBorderBehavior: _borderBehavior,
-                  dividerColor: Colors.blue.shade200,
-                  alternateRowColor: Colors.blue.shade50,
-                ),
-                headerTheme: TablePlusHeaderTheme(
-                  backgroundColor: Colors.blue.shade50,
-                  textStyle: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    color: Colors.blue.shade800,
+                  // Dynamic row height calculation for merged rows
+                  calculateRowHeight: (rowIndex, rowData) {
+                    // Return the theme's default row height for each individual row
+                    // This will make merged groups sum up their constituent rows' heights
+                    return null; // Use default height from theme
+                  },
+
+                  // Theme with custom border behavior
+                  theme: TablePlusTheme(
+                    bodyTheme: TablePlusBodyTheme(
+                      lastRowBorderBehavior: _borderBehavior,
+                      dividerColor: Colors.blue.shade200,
+                      alternateRowColor: Colors.blue.shade50,
+                    ),
+                    headerTheme: TablePlusHeaderTheme(
+                      backgroundColor: Colors.blue.shade50,
+                      textStyle: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: Colors.blue.shade800,
+                      ),
+                    ),
+                    selectionTheme: TablePlusSelectionTheme(
+                      selectedRowColor: Colors.blue.shade100,
+                      checkboxColor: Colors.blue.shade600,
+                    ),
                   ),
-                ),
-                selectionTheme: TablePlusSelectionTheme(
-                  selectedRowColor: Colors.blue.shade100,
-                  checkboxColor: Colors.blue.shade600,
                 ),
               ),
             ),
-          ),
+          )
         ],
       ),
     );
@@ -546,9 +944,10 @@ class _ComprehensiveMergedExampleState
         // Restore original data order
         _data.clear();
         _data.addAll([
+          // Engineering Department
           {
             'id': '1',
-            'name': 'Alice Johnson',
+            'name': 'Alexandriana Seraphina Aethelreda Abernathy',
             'department': 'Engineering',
             'position': 'Senior Developer',
             'salary': 120000,
@@ -577,6 +976,58 @@ class _ComprehensiveMergedExampleState
             'status': 'Active'
           },
           {
+            'id': '8',
+            'name': 'Henry Davis',
+            'department': 'Engineering',
+            'position': 'DevOps Engineer',
+            'salary': 110000,
+            'experience': 7,
+            'location': 'New York',
+            'status': 'Active'
+          },
+          {
+            'id': '9',
+            'name': 'Isabella Rodriguez',
+            'department': 'Engineering',
+            'position': 'Frontend Developer',
+            'salary': 95000,
+            'experience': 5,
+            'location': 'New York',
+            'status': 'Active'
+          },
+          {
+            'id': '10',
+            'name': 'Jack Thompson',
+            'department': 'Engineering',
+            'position': 'Backend Developer',
+            'salary': 105000,
+            'experience': 6,
+            'location': 'New York',
+            'status': 'Active'
+          },
+          {
+            'id': '11',
+            'name': 'Katherine Wilson',
+            'department': 'Engineering',
+            'position': 'QA Engineer',
+            'salary': 85000,
+            'experience': 4,
+            'location': 'New York',
+            'status': 'Active'
+          },
+          {
+            'id': '12',
+            'name': 'Liam Anderson',
+            'department': 'Engineering',
+            'position': 'Mobile Developer',
+            'salary': 100000,
+            'experience': 5,
+            'location': 'New York',
+            'status': 'On Leave'
+          },
+
+          // Marketing Department
+          {
             'id': '4',
             'name': 'Diana Prince',
             'department': 'Marketing',
@@ -597,6 +1048,48 @@ class _ComprehensiveMergedExampleState
             'status': 'On Leave'
           },
           {
+            'id': '13',
+            'name': 'Michael Brown',
+            'department': 'Marketing',
+            'position': 'Digital Marketing Specialist',
+            'salary': 75000,
+            'experience': 3,
+            'location': 'San Francisco',
+            'status': 'Active'
+          },
+          {
+            'id': '14',
+            'name': 'Nina Garcia',
+            'department': 'Marketing',
+            'position': 'Brand Manager',
+            'salary': 88000,
+            'experience': 5,
+            'location': 'San Francisco',
+            'status': 'Active'
+          },
+          {
+            'id': '15',
+            'name': 'Oscar Kim',
+            'department': 'Marketing',
+            'position': 'Social Media Manager',
+            'salary': 65000,
+            'experience': 2,
+            'location': 'San Francisco',
+            'status': 'Active'
+          },
+          {
+            'id': '16',
+            'name': 'Paula Martinez',
+            'department': 'Marketing',
+            'position': 'Marketing Analyst',
+            'salary': 72000,
+            'experience': 3,
+            'location': 'San Francisco',
+            'status': 'Active'
+          },
+
+          // Sales Department
+          {
             'id': '6',
             'name': 'Frank Miller',
             'department': 'Sales',
@@ -615,6 +1108,172 @@ class _ComprehensiveMergedExampleState
             'experience': 5,
             'location': 'Chicago',
             'status': 'Active'
+          },
+          {
+            'id': '17',
+            'name': 'Quinn Johnson',
+            'department': 'Sales',
+            'position': 'Sales Representative',
+            'salary': 65000,
+            'experience': 2,
+            'location': 'Chicago',
+            'status': 'Active'
+          },
+          {
+            'id': '18',
+            'name': 'Rachel White',
+            'department': 'Sales',
+            'position': 'Senior Account Executive',
+            'salary': 95000,
+            'experience': 7,
+            'location': 'Chicago',
+            'status': 'Active'
+          },
+          {
+            'id': '19',
+            'name': 'Samuel Turner',
+            'department': 'Sales',
+            'position': 'Business Development Manager',
+            'salary': 105000,
+            'experience': 8,
+            'location': 'Chicago',
+            'status': 'Active'
+          },
+          {
+            'id': '20',
+            'name': 'Tiffany Clark',
+            'department': 'Sales',
+            'position': 'Sales Coordinator',
+            'salary': 55000,
+            'experience': 1,
+            'location': 'Chicago',
+            'status': 'Active'
+          },
+
+          // HR Department
+          {
+            'id': '21',
+            'name': 'Uma Patel',
+            'department': 'HR',
+            'position': 'HR Director',
+            'salary': 115000,
+            'experience': 12,
+            'location': 'Austin',
+            'status': 'Active'
+          },
+          {
+            'id': '22',
+            'name': 'Victor Lopez',
+            'department': 'HR',
+            'position': 'HR Specialist',
+            'salary': 68000,
+            'experience': 4,
+            'location': 'Austin',
+            'status': 'Active'
+          },
+          {
+            'id': '23',
+            'name': 'Wendy Adams',
+            'department': 'HR',
+            'position': 'Recruiter',
+            'salary': 62000,
+            'experience': 3,
+            'location': 'Austin',
+            'status': 'Active'
+          },
+          {
+            'id': '24',
+            'name': 'Xavier Chen',
+            'department': 'HR',
+            'position': 'Training Coordinator',
+            'salary': 58000,
+            'experience': 2,
+            'location': 'Austin',
+            'status': 'On Leave'
+          },
+
+          // Finance Department
+          {
+            'id': '25',
+            'name': 'Yolanda Foster',
+            'department': 'Finance',
+            'position': 'Finance Director',
+            'salary': 125000,
+            'experience': 15,
+            'location': 'Boston',
+            'status': 'Active'
+          },
+          {
+            'id': '26',
+            'name': 'Zachary Moore',
+            'department': 'Finance',
+            'position': 'Senior Accountant',
+            'salary': 78000,
+            'experience': 6,
+            'location': 'Boston',
+            'status': 'Active'
+          },
+          {
+            'id': '27',
+            'name': 'Aria Scott',
+            'department': 'Finance',
+            'position': 'Financial Analyst',
+            'salary': 72000,
+            'experience': 4,
+            'location': 'Boston',
+            'status': 'Active'
+          },
+          {
+            'id': '28',
+            'name': 'Blake Rivera',
+            'department': 'Finance',
+            'position': 'Budget Analyst',
+            'salary': 70000,
+            'experience': 3,
+            'location': 'Boston',
+            'status': 'Active'
+          },
+          {
+            'id': '29',
+            'name': 'Chloe Taylor',
+            'department': 'Finance',
+            'position': 'Accounting Clerk',
+            'salary': 52000,
+            'experience': 1,
+            'location': 'Boston',
+            'status': 'Active'
+          },
+
+          // Operations Department
+          {
+            'id': '30',
+            'name': 'Dylan Hayes',
+            'department': 'Operations',
+            'position': 'Operations Manager',
+            'salary': 98000,
+            'experience': 9,
+            'location': 'Seattle',
+            'status': 'Active'
+          },
+          {
+            'id': '31',
+            'name': 'Emma Watson',
+            'department': 'Operations',
+            'position': 'Process Improvement Specialist',
+            'salary': 75000,
+            'experience': 5,
+            'location': 'Seattle',
+            'status': 'Active'
+          },
+          {
+            'id': '32',
+            'name': 'Felix Garcia',
+            'department': 'Operations',
+            'position': 'Operations Coordinator',
+            'salary': 58000,
+            'experience': 2,
+            'location': 'Seattle',
+            'status': 'On Leave'
           },
         ]);
         return;
