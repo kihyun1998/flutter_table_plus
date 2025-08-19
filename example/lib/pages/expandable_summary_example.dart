@@ -18,6 +18,11 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
     'AB-001': false,
     'CD-002': true, // Start with this one expanded
     'EF-003': false,
+    'GH-004': false,
+    'IJ-005': false,
+    'KL-006': false,
+    'MN-007': false,
+    'OP-008': false,
   };
 
   // State for managing row selection
@@ -73,6 +78,86 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
         'product': 'Product F',
         'price': 25000,
         'quantity': 2
+      },
+
+      // GH Package
+      {
+        'id': '7',
+        'package': 'GH-004',
+        'product': 'Product G',
+        'price': 18000,
+        'quantity': 4
+      },
+      {
+        'id': '8',
+        'package': 'GH-004',
+        'product': 'Product H',
+        'price': 22000,
+        'quantity': 4
+      },
+
+      // IJ Package
+      {
+        'id': '9',
+        'package': 'IJ-005',
+        'product': 'Product I',
+        'price': 14000,
+        'quantity': 6
+      },
+      {
+        'id': '10',
+        'package': 'IJ-005',
+        'product': 'Product J',
+        'price': 16000,
+        'quantity': 6
+      },
+
+      // KL Package
+      {
+        'id': '11',
+        'package': 'KL-006',
+        'product': 'Product K',
+        'price': 30000,
+        'quantity': 1
+      },
+      {
+        'id': '12',
+        'package': 'KL-006',
+        'product': 'Product L',
+        'price': 35000,
+        'quantity': 1
+      },
+
+      // MN Package
+      {
+        'id': '13',
+        'package': 'MN-007',
+        'product': 'Product M',
+        'price': 12000,
+        'quantity': 8
+      },
+      {
+        'id': '14',
+        'package': 'MN-007',
+        'product': 'Product N',
+        'price': 18000,
+        'quantity': 8
+      },
+
+      // OP Package
+      {
+        'id': '15',
+        'package': 'OP-008',
+        'product': 'Product O',
+        'price': 24000,
+        'quantity': 3
+      },
+      {
+        'id': '16',
+        'package': 'OP-008',
+        'product': 'Product P',
+        'price': 26000,
+        'quantity': 3
       },
     ];
 
@@ -222,6 +307,136 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
           ),
         },
       ),
+
+      // GH Package
+      MergedRowGroup(
+        groupId: 'GH-004',
+        rowKeys: ['7', '8'],
+        isExpandable: true,
+        isExpanded: expandedStates['GH-004'] ?? false,
+        summaryRowData: {
+          'product': '📊 Package Total',
+          'total': '¥${calculatePackageTotal([
+                '7',
+                '8'
+              ]).toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (match) => '${match[1]},')}',
+          'quantity': '4 sets',
+        },
+        mergeConfig: {
+          'package': MergeCellConfig(
+            shouldMerge: true,
+            spanningRowIndex: 0,
+          ),
+          'quantity': MergeCellConfig(
+            shouldMerge: true,
+            spanningRowIndex: 0,
+          ),
+        },
+      ),
+
+      // IJ Package
+      MergedRowGroup(
+        groupId: 'IJ-005',
+        rowKeys: ['9', '10'],
+        isExpandable: true,
+        isExpanded: expandedStates['IJ-005'] ?? false,
+        summaryRowData: {
+          'product': '📊 Package Total',
+          'total': '¥${calculatePackageTotal([
+                '9',
+                '10'
+              ]).toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (match) => '${match[1]},')}',
+          'quantity': '6 sets',
+        },
+        mergeConfig: {
+          'package': MergeCellConfig(
+            shouldMerge: true,
+            spanningRowIndex: 0,
+          ),
+          'quantity': MergeCellConfig(
+            shouldMerge: true,
+            spanningRowIndex: 0,
+          ),
+        },
+      ),
+
+      // KL Package
+      MergedRowGroup(
+        groupId: 'KL-006',
+        rowKeys: ['11', '12'],
+        isExpandable: true,
+        isExpanded: expandedStates['KL-006'] ?? false,
+        summaryRowData: {
+          'product': '📊 Package Total',
+          'total': '¥${calculatePackageTotal([
+                '11',
+                '12'
+              ]).toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (match) => '${match[1]},')}',
+          'quantity': '1 set',
+        },
+        mergeConfig: {
+          'package': MergeCellConfig(
+            shouldMerge: true,
+            spanningRowIndex: 0,
+          ),
+          'quantity': MergeCellConfig(
+            shouldMerge: true,
+            spanningRowIndex: 0,
+          ),
+        },
+      ),
+
+      // MN Package
+      MergedRowGroup(
+        groupId: 'MN-007',
+        rowKeys: ['13', '14'],
+        isExpandable: true,
+        isExpanded: expandedStates['MN-007'] ?? false,
+        summaryRowData: {
+          'product': '📊 Package Total',
+          'total': '¥${calculatePackageTotal([
+                '13',
+                '14'
+              ]).toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (match) => '${match[1]},')}',
+          'quantity': '8 sets',
+        },
+        mergeConfig: {
+          'package': MergeCellConfig(
+            shouldMerge: true,
+            spanningRowIndex: 0,
+          ),
+          'quantity': MergeCellConfig(
+            shouldMerge: true,
+            spanningRowIndex: 0,
+          ),
+        },
+      ),
+
+      // OP Package
+      MergedRowGroup(
+        groupId: 'OP-008',
+        rowKeys: ['15', '16'],
+        isExpandable: true,
+        isExpanded: expandedStates['OP-008'] ?? false,
+        summaryRowData: {
+          'product': '📊 Package Total',
+          'total': '¥${calculatePackageTotal([
+                '15',
+                '16'
+              ]).toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (match) => '${match[1]},')}',
+          'quantity': '3 sets',
+        },
+        mergeConfig: {
+          'package': MergeCellConfig(
+            shouldMerge: true,
+            spanningRowIndex: 0,
+          ),
+          'quantity': MergeCellConfig(
+            shouldMerge: true,
+            spanningRowIndex: 0,
+          ),
+        },
+      ),
     ];
 
     return Scaffold(
@@ -252,12 +467,12 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
                     ),
                     const SizedBox(height: 12),
                     const Text(
-                      '• Product packages (AB, CD, EF) containing multiple items\n'
+                      '• 8 Product packages (AB~OP) containing multiple items\n'
                       '• Package ID and Quantity columns are merged\n'
                       '• Click the expand icon (▶/▼) to show/hide package totals\n'
                       '• Summary rows show calculated package totals\n'
                       '• Select entire packages with checkboxes (merged row selection)\n'
-                      '• Try expanding different packages to see the totals!',
+                      '• Vertical scroll to see all packages!',
                       style: TextStyle(fontSize: 14, height: 1.5),
                     ),
                     const SizedBox(height: 12),
@@ -270,6 +485,14 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
                             expandedStates['CD-002'] ?? false, Colors.green),
                         _buildStatusChip('EF-003',
                             expandedStates['EF-003'] ?? false, Colors.orange),
+                        Text(
+                          '... and 5 more packages',
+                          style: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontSize: 12,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
                       ],
                     ),
                     if (selectedRows.isNotEmpty) ...[
@@ -322,7 +545,7 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
                       setState(() {
                         if (selectAll) {
                           // Select all package group IDs
-                          selectedRows.addAll(['AB-001', 'CD-002', 'EF-003']);
+                          selectedRows.addAll(['AB-001', 'CD-002', 'EF-003', 'GH-004', 'IJ-005', 'KL-006', 'MN-007', 'OP-008']);
                         } else {
                           selectedRows.clear();
                         }
