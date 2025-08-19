@@ -28,141 +28,24 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
   // State for managing row selection
   Set<String> selectedRows = {};
 
+  // State for managing sort
+  String? currentSortColumn;
+  SortDirection? currentSortDirection;
+
+  // State for managing editing
+  bool isEditing = false;
+
+  // State for managing column order (using Map like comprehensive example)
+  late Map<String, TablePlusColumn> _columns;
+
   @override
-  Widget build(BuildContext context) {
-    // Sample data - Product packages with individual items
-    final List<Map<String, dynamic>> data = [
-      // AB Package
-      {
-        'id': '1',
-        'package': 'AB-001',
-        'product': 'Product A',
-        'price': 10000,
-        'quantity': 5
-      },
-      {
-        'id': '2',
-        'package': 'AB-001',
-        'product': 'Product B',
-        'price': 15000,
-        'quantity': 5
-      },
+  void initState() {
+    super.initState();
+    _initializeColumns();
+  }
 
-      // CD Package
-      {
-        'id': '3',
-        'package': 'CD-002',
-        'product': 'Product C',
-        'price': 8000,
-        'quantity': 3
-      },
-      {
-        'id': '4',
-        'package': 'CD-002',
-        'product': 'Product D',
-        'price': 12000,
-        'quantity': 3
-      },
-
-      // EF Package
-      {
-        'id': '5',
-        'package': 'EF-003',
-        'product': 'Product E',
-        'price': 20000,
-        'quantity': 2
-      },
-      {
-        'id': '6',
-        'package': 'EF-003',
-        'product': 'Product F',
-        'price': 25000,
-        'quantity': 2
-      },
-
-      // GH Package
-      {
-        'id': '7',
-        'package': 'GH-004',
-        'product': 'Product G',
-        'price': 18000,
-        'quantity': 4
-      },
-      {
-        'id': '8',
-        'package': 'GH-004',
-        'product': 'Product H',
-        'price': 22000,
-        'quantity': 4
-      },
-
-      // IJ Package
-      {
-        'id': '9',
-        'package': 'IJ-005',
-        'product': 'Product I',
-        'price': 14000,
-        'quantity': 6
-      },
-      {
-        'id': '10',
-        'package': 'IJ-005',
-        'product': 'Product J',
-        'price': 16000,
-        'quantity': 6
-      },
-
-      // KL Package
-      {
-        'id': '11',
-        'package': 'KL-006',
-        'product': 'Product K',
-        'price': 30000,
-        'quantity': 1
-      },
-      {
-        'id': '12',
-        'package': 'KL-006',
-        'product': 'Product L',
-        'price': 35000,
-        'quantity': 1
-      },
-
-      // MN Package
-      {
-        'id': '13',
-        'package': 'MN-007',
-        'product': 'Product M',
-        'price': 12000,
-        'quantity': 8
-      },
-      {
-        'id': '14',
-        'package': 'MN-007',
-        'product': 'Product N',
-        'price': 18000,
-        'quantity': 8
-      },
-
-      // OP Package
-      {
-        'id': '15',
-        'package': 'OP-008',
-        'product': 'Product O',
-        'price': 24000,
-        'quantity': 3
-      },
-      {
-        'id': '16',
-        'package': 'OP-008',
-        'product': 'Product P',
-        'price': 26000,
-        'quantity': 3
-      },
-    ];
-
-    // Define table columns
-    final Map<String, TablePlusColumn> columns = {
+  void _initializeColumns() {
+    _columns = {
       'package': TablePlusColumn(
         key: 'package',
         label: 'Package ID',
@@ -170,14 +53,19 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
         width: 120,
         textOverflow: TextOverflow.ellipsis,
         tooltipBehavior: TooltipBehavior.onOverflowOnly,
+        editable: true,
+        hintText: 'Enter package ID',
       ),
       'product': TablePlusColumn(
         key: 'product',
         label: 'Product Name',
         order: 1,
         width: 150,
-        textOverflow: TextOverflow.ellipsis,
-        tooltipBehavior: TooltipBehavior.onOverflowOnly,
+        textOverflow: TextOverflow.visible,
+        tooltipBehavior: TooltipBehavior.never,
+        sortable: true,
+        editable: true,
+        hintText: 'Enter product name',
       ),
       'price': TablePlusColumn(
         key: 'price',
@@ -185,6 +73,9 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
         order: 2,
         width: 100,
         textAlign: TextAlign.right,
+        sortable: true,
+        editable: true,
+        hintText: 'Enter price',
         cellBuilder: (context, rowData) {
           final price = rowData['price'] as int;
           return Text(
@@ -199,6 +90,9 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
         order: 3,
         width: 80,
         textAlign: TextAlign.center,
+        sortable: true,
+        editable: true,
+        hintText: 'Enter quantity',
       ),
       'total': TablePlusColumn(
         key: 'total',
@@ -206,6 +100,7 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
         order: 4,
         width: 120,
         textAlign: TextAlign.right,
+        sortable: true,
         cellBuilder: (context, rowData) {
           final price = rowData['price'] as int;
           final quantity = rowData['quantity'] as int;
@@ -217,231 +112,321 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
         },
       ),
     };
+  }
 
-    // Helper function to calculate package totals
-    int calculatePackageTotal(List<String> rowKeys) {
-      int total = 0;
-      for (final rowKey in rowKeys) {
-        final rowData = data.firstWhere((row) => row['id'] == rowKey);
-        total += (rowData['price'] as int) * (rowData['quantity'] as int);
+  // Sample data - Product packages with individual items
+  List<Map<String, dynamic>> data = [
+    // AB Package
+    {
+      'id': '1',
+      'package': 'AB-001',
+      'product': 'Premium High-Quality Product A with Extended Warranty and Advanced Features',
+      'price': 10000,
+      'quantity': 5
+    },
+    {
+      'id': '2',
+      'package': 'AB-001',
+      'product': 'Product B',
+      'price': 15000,
+      'quantity': 5
+    },
+    // CD Package
+    {
+      'id': '3',
+      'package': 'CD-002',
+      'product': 'Product C',
+      'price': 8000,
+      'quantity': 3
+    },
+    {
+      'id': '4',
+      'package': 'CD-002',
+      'product': 'Product D',
+      'price': 12000,
+      'quantity': 3
+    },
+    // EF Package
+    {
+      'id': '5',
+      'package': 'EF-003',
+      'product': 'Ultra-Advanced Product E with Cutting-Edge Technology, Multiple Configuration Options, and Comprehensive Support Package',
+      'price': 20000,
+      'quantity': 2
+    },
+    {
+      'id': '6',
+      'package': 'EF-003',
+      'product': 'Product F',
+      'price': 25000,
+      'quantity': 2
+    },
+    // GH Package
+    {
+      'id': '7',
+      'package': 'GH-004',
+      'product': 'Product G',
+      'price': 18000,
+      'quantity': 4
+    },
+    {
+      'id': '8',
+      'package': 'GH-004',
+      'product': 'Product H',
+      'price': 22000,
+      'quantity': 4
+    },
+    // IJ Package
+    {
+      'id': '9',
+      'package': 'IJ-005',
+      'product': 'Product I',
+      'price': 14000,
+      'quantity': 6
+    },
+    {
+      'id': '10',
+      'package': 'IJ-005',
+      'product': 'Product J',
+      'price': 16000,
+      'quantity': 6
+    },
+    // KL Package
+    {
+      'id': '11',
+      'package': 'KL-006',
+      'product': 'Product K',
+      'price': 30000,
+      'quantity': 1
+    },
+    {
+      'id': '12',
+      'package': 'KL-006',
+      'product': 'Product L',
+      'price': 35000,
+      'quantity': 1
+    },
+    // MN Package
+    {
+      'id': '13',
+      'package': 'MN-007',
+      'product': 'Product M',
+      'price': 12000,
+      'quantity': 8
+    },
+    {
+      'id': '14',
+      'package': 'MN-007',
+      'product': 'Product N',
+      'price': 18000,
+      'quantity': 8
+    },
+    // OP Package
+    {
+      'id': '15',
+      'package': 'OP-008',
+      'product': 'Product O',
+      'price': 24000,
+      'quantity': 3
+    },
+    {
+      'id': '16',
+      'package': 'OP-008',
+      'product': 'Product P',
+      'price': 26000,
+      'quantity': 3
+    },
+  ];
+
+  // Sort function  
+  void _handleSort(String columnKey, SortDirection direction) {
+    setState(() {
+      currentSortColumn = columnKey;
+      currentSortDirection = direction;
+
+      // Reset to none means restore original order
+      if (direction == SortDirection.none) {
+        // Restore original data order
+        _restoreOriginalOrder();
+      } else {
+        // Apply sorting
+        data.sort((a, b) {
+          dynamic valueA, valueB;
+          
+          // Special handling for calculated 'total' column
+          if (columnKey == 'total') {
+            valueA = (a['price'] as int) * (a['quantity'] as int);
+            valueB = (b['price'] as int) * (b['quantity'] as int);
+          } else {
+            valueA = a[columnKey];
+            valueB = b[columnKey];
+          }
+
+          int comparison;
+          if (valueA is String && valueB is String) {
+            comparison = valueA.toLowerCase().compareTo(valueB.toLowerCase());
+          } else if (valueA is num && valueB is num) {
+            comparison = valueA.compareTo(valueB);
+          } else {
+            comparison = valueA.toString().compareTo(valueB.toString());
+          }
+
+          // Apply sort direction
+          return direction == SortDirection.ascending ? comparison : -comparison;
+        });
       }
-      return total;
+    });
+  }
+
+  void _restoreOriginalOrder() {
+    // Restore to original order (can be enhanced to store original order)
+    data.sort((a, b) => int.parse(a['id']).compareTo(int.parse(b['id'])));
+  }
+
+
+  // Handle cell value changes
+  void _handleCellChanged(String columnKey, int rowIndex, dynamic oldValue, dynamic newValue) {
+    setState(() {
+      if (newValue != null && rowIndex < data.length) {
+        // Handle different data types
+        switch (columnKey) {
+          case 'price':
+          case 'quantity':
+            // Try to parse as number
+            if (newValue is String) {
+              final numValue = int.tryParse(newValue);
+              if (numValue != null) {
+                data[rowIndex][columnKey] = numValue;
+              }
+            } else if (newValue is num) {
+              data[rowIndex][columnKey] = newValue.toInt();
+            }
+            break;
+          default:
+            // String value
+            data[rowIndex][columnKey] = newValue.toString();
+        }
+      }
+    });
+  }
+
+  // Handle merged cell value changes
+  void _handleMergedCellChanged(String groupId, String columnKey, dynamic newValue) {
+    setState(() {
+      // Find all rows in the merged group and update the spanning row
+      for (var i = 0; i < data.length; i++) {
+        if (data[i]['package'] == groupId) {
+          // Update the first row in the group (spanning row)
+          if (columnKey == 'package') {
+            data[i][columnKey] = newValue;
+          }
+          break;
+        }
+      }
+    });
+  }
+
+  // Handle column reorder
+  void _handleColumnReorder(int oldIndex, int newIndex) {
+    setState(() {
+      // Convert column map to ordered list
+      final columnEntries = _columns.entries.toList()
+        ..sort((a, b) => a.value.order.compareTo(b.value.order));
+
+      // Reorder the list
+      final item = columnEntries.removeAt(oldIndex);
+      columnEntries.insert(newIndex, item);
+
+      // Update orders
+      for (int i = 0; i < columnEntries.length; i++) {
+        final key = columnEntries[i].key;
+        _columns[key] = _columns[key]!.copyWith(order: i);
+      }
+    });
+  }
+
+  // Calculate dynamic row height based on content
+  double _calculateRowHeight(int rowIndex, Map<String, dynamic> rowData) {
+    const double baseHeight = 48.0;
+    const double maxHeight = 120.0;
+    
+    // Get the product name to calculate height
+    final productName = rowData['product']?.toString() ?? '';
+    
+    // Simple calculation based on text length
+    // In a real app, you'd use more sophisticated text measurement
+    if (productName.length > 60) {
+      return maxHeight; // Very long text
+    } else if (productName.length > 30) {
+      return 80.0; // Medium text
+    } else {
+      return baseHeight; // Short text
+    }
+  }
+
+  // Helper function to calculate package totals
+  int calculatePackageTotal(List<String> rowKeys) {
+    int total = 0;
+    for (final rowKey in rowKeys) {
+      final rowData = data.firstWhere((row) => row['id'] == rowKey);
+      total += (rowData['price'] as int) * (rowData['quantity'] as int);
+    }
+    return total;
+  }
+
+  // Dynamic merged row groups based on current data order
+  List<MergedRowGroup> get mergedGroups {
+    final Map<String, List<String>> packageGroups = {};
+
+    // Group row IDs by package based on current data order
+    for (final row in data) {
+      final packageId = row['package'] as String;
+      final id = row['id'] as String;
+      packageGroups.putIfAbsent(packageId, () => []).add(id);
     }
 
-    // Merged groups configuration - merge by package
-    final List<MergedRowGroup> mergedGroups = [
-      // AB Package
-      MergedRowGroup(
-        groupId: 'AB-001',
-        rowKeys: ['1', '2'],
-        isExpandable: true,
-        isExpanded: expandedStates['AB-001'] ?? false,
-        summaryRowData: {
-          'product': '📊 Package Total',
-          'total': '¥${calculatePackageTotal([
-                '1',
-                '2'
-              ]).toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (match) => '${match[1]},')}',
-          'quantity': '5 sets',
-        },
-        mergeConfig: {
-          'package': MergeCellConfig(
-            shouldMerge: true,
-            spanningRowIndex: 0,
-          ),
-          'quantity': MergeCellConfig(
-            shouldMerge: true,
-            spanningRowIndex: 0,
-          ),
-        },
-      ),
+    final groups = <MergedRowGroup>[];
 
-      // CD Package
-      MergedRowGroup(
-        groupId: 'CD-002',
-        rowKeys: ['3', '4'],
+    // Create merged groups for each package
+    for (final entry in packageGroups.entries) {
+      final packageId = entry.key;
+      final rowKeys = entry.value;
+      
+      groups.add(MergedRowGroup(
+        groupId: packageId,
+        rowKeys: rowKeys,
         isExpandable: true,
-        isExpanded: expandedStates['CD-002'] ?? false,
+        isExpanded: expandedStates[packageId] ?? false,
         summaryRowData: {
           'product': '📊 Package Total',
-          'total': '¥${calculatePackageTotal([
-                '3',
-                '4'
-              ]).toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (match) => '${match[1]},')}',
-          'quantity': '3 sets',
+          'total': '¥${calculatePackageTotal(rowKeys).toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (match) => '${match[1]},')}',
+          'quantity': '${rowKeys.length} sets',
         },
         mergeConfig: {
           'package': MergeCellConfig(
             shouldMerge: true,
             spanningRowIndex: 0,
+            isEditable: true,
           ),
           'quantity': MergeCellConfig(
             shouldMerge: true,
             spanningRowIndex: 0,
           ),
         },
-      ),
+      ));
+    }
 
-      // EF Package
-      MergedRowGroup(
-        groupId: 'EF-003',
-        rowKeys: ['5', '6'],
-        isExpandable: true,
-        isExpanded: expandedStates['EF-003'] ?? false,
-        summaryRowData: {
-          'product': '📊 Package Total',
-          'total': '¥${calculatePackageTotal([
-                '5',
-                '6'
-              ]).toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (match) => '${match[1]},')}',
-          'quantity': '2 sets',
-        },
-        mergeConfig: {
-          'package': MergeCellConfig(
-            shouldMerge: true,
-            spanningRowIndex: 0,
-          ),
-          'quantity': MergeCellConfig(
-            shouldMerge: true,
-            spanningRowIndex: 0,
-          ),
-        },
-      ),
+    return groups;
+  }
 
-      // GH Package
-      MergedRowGroup(
-        groupId: 'GH-004',
-        rowKeys: ['7', '8'],
-        isExpandable: true,
-        isExpanded: expandedStates['GH-004'] ?? false,
-        summaryRowData: {
-          'product': '📊 Package Total',
-          'total': '¥${calculatePackageTotal([
-                '7',
-                '8'
-              ]).toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (match) => '${match[1]},')}',
-          'quantity': '4 sets',
-        },
-        mergeConfig: {
-          'package': MergeCellConfig(
-            shouldMerge: true,
-            spanningRowIndex: 0,
-          ),
-          'quantity': MergeCellConfig(
-            shouldMerge: true,
-            spanningRowIndex: 0,
-          ),
-        },
-      ),
+  @override
+  Widget build(BuildContext context) {
 
-      // IJ Package
-      MergedRowGroup(
-        groupId: 'IJ-005',
-        rowKeys: ['9', '10'],
-        isExpandable: true,
-        isExpanded: expandedStates['IJ-005'] ?? false,
-        summaryRowData: {
-          'product': '📊 Package Total',
-          'total': '¥${calculatePackageTotal([
-                '9',
-                '10'
-              ]).toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (match) => '${match[1]},')}',
-          'quantity': '6 sets',
-        },
-        mergeConfig: {
-          'package': MergeCellConfig(
-            shouldMerge: true,
-            spanningRowIndex: 0,
-          ),
-          'quantity': MergeCellConfig(
-            shouldMerge: true,
-            spanningRowIndex: 0,
-          ),
-        },
-      ),
-
-      // KL Package
-      MergedRowGroup(
-        groupId: 'KL-006',
-        rowKeys: ['11', '12'],
-        isExpandable: true,
-        isExpanded: expandedStates['KL-006'] ?? false,
-        summaryRowData: {
-          'product': '📊 Package Total',
-          'total': '¥${calculatePackageTotal([
-                '11',
-                '12'
-              ]).toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (match) => '${match[1]},')}',
-          'quantity': '1 set',
-        },
-        mergeConfig: {
-          'package': MergeCellConfig(
-            shouldMerge: true,
-            spanningRowIndex: 0,
-          ),
-          'quantity': MergeCellConfig(
-            shouldMerge: true,
-            spanningRowIndex: 0,
-          ),
-        },
-      ),
-
-      // MN Package
-      MergedRowGroup(
-        groupId: 'MN-007',
-        rowKeys: ['13', '14'],
-        isExpandable: true,
-        isExpanded: expandedStates['MN-007'] ?? false,
-        summaryRowData: {
-          'product': '📊 Package Total',
-          'total': '¥${calculatePackageTotal([
-                '13',
-                '14'
-              ]).toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (match) => '${match[1]},')}',
-          'quantity': '8 sets',
-        },
-        mergeConfig: {
-          'package': MergeCellConfig(
-            shouldMerge: true,
-            spanningRowIndex: 0,
-          ),
-          'quantity': MergeCellConfig(
-            shouldMerge: true,
-            spanningRowIndex: 0,
-          ),
-        },
-      ),
-
-      // OP Package
-      MergedRowGroup(
-        groupId: 'OP-008',
-        rowKeys: ['15', '16'],
-        isExpandable: true,
-        isExpanded: expandedStates['OP-008'] ?? false,
-        summaryRowData: {
-          'product': '📊 Package Total',
-          'total': '¥${calculatePackageTotal([
-                '15',
-                '16'
-              ]).toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (match) => '${match[1]},')}',
-          'quantity': '3 sets',
-        },
-        mergeConfig: {
-          'package': MergeCellConfig(
-            shouldMerge: true,
-            spanningRowIndex: 0,
-          ),
-          'quantity': MergeCellConfig(
-            shouldMerge: true,
-            spanningRowIndex: 0,
-          ),
-        },
-      ),
-    ];
+    // Using dynamic mergedGroups getter now
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Expandable Summary Example'),
+        title: const Text('Comprehensive Features Demo'),
         backgroundColor: Colors.purple.shade100,
       ),
       body: Padding(
@@ -458,7 +443,7 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Product Package Management',
+                      'Comprehensive Feature Demo: All Table Features Combined',
                       style:
                           Theme.of(context).textTheme.headlineSmall?.copyWith(
                                 color: Colors.purple.shade700,
@@ -467,12 +452,14 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
                     ),
                     const SizedBox(height: 12),
                     const Text(
-                      '• 8 Product packages (AB~OP) containing multiple items\n'
-                      '• Package ID and Quantity columns are merged\n'
-                      '• Click the expand icon (▶/▼) to show/hide package totals\n'
-                      '• Summary rows show calculated package totals\n'
-                      '• Select entire packages with checkboxes (merged row selection)\n'
-                      '• Vertical scroll to see all packages!',
+                      '🔍 SORTING: Click column headers to sort (Product, Price, Quantity, Total)\n'
+                      '✏️ EDITING: Double-click cells to edit (Package ID, Product, Price, Quantity)\n'
+                      '🔄 REORDERING: Drag column headers to reorder\n'
+                      '📏 DYNAMIC HEIGHT: Long product names auto-expand row height\n'
+                      '📋 MERGED ROWS: Package ID and Quantity columns are merged\n'
+                      '🎯 EXPANDABLE: Click expand icon (▶/▼) to show/hide package totals\n'
+                      '✅ SELECTION: Select entire packages with checkboxes\n'
+                      '📊 SUMMARY: Green background summary rows show calculated totals',
                       style: TextStyle(fontSize: 14, height: 1.5),
                     ),
                     const SizedBox(height: 12),
@@ -526,12 +513,20 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: FlutterTablePlus(
-                    columns: columns,
+                    columns: _columns,
                     data: data,
                     mergedGroups: mergedGroups,
                     isSelectable: true,
                     selectionMode: SelectionMode.multiple,
                     selectedRows: selectedRows,
+                    onSort: _handleSort,
+                    sortColumnKey: currentSortColumn,
+                    sortDirection: currentSortDirection ?? SortDirection.none,
+                    isEditable: true,
+                    onCellChanged: _handleCellChanged,
+                    onMergedCellChanged: _handleMergedCellChanged,
+                    onColumnReorder: _handleColumnReorder,
+                    calculateRowHeight: _calculateRowHeight,
                     onRowSelectionChanged: (rowId, isSelected) {
                       setState(() {
                         if (isSelected) {
