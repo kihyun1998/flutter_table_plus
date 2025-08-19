@@ -379,51 +379,55 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
     return _visibleColumns.where((col) => !col.frozen).toList();
   }
 
+  /// Get the height for an individual row.
+  /// Returns calculated height if available, otherwise returns theme row height.
+  double _getRowHeight(int index) {
+    return widget.calculateRowHeight?.call(index, widget.data[index]) 
+           ?? _currentTheme.bodyTheme.rowHeight;
+  }
+
+  /// Calculate the total height for a merged row group.
+  /// Sums the heights of all rows in the group.
+  double _getMergedRowHeight(MergedRowGroup mergeGroup) {
+    double totalHeight = 0;
+    for (final rowKey in mergeGroup.rowKeys) {
+      final rowIndex = widget.data.indexWhere(
+          (row) => row[widget.rowIdKey]?.toString() == rowKey);
+      if (rowIndex != -1) {
+        totalHeight += _getRowHeight(rowIndex);
+      }
+    }
+    return totalHeight;
+  }
+
   /// Calculate the total height of all data rows.
   double _calculateTotalDataHeight() {
     if (widget.data.isEmpty) return 0;
 
     double totalHeight = 0;
+    Set<int> processedIndices = {};
 
-    if (widget.calculateRowHeight != null) {
-      // Use dynamic height calculation
-      Set<int> processedIndices = {};
+    for (int i = 0; i < widget.data.length; i++) {
+      if (processedIndices.contains(i)) continue;
 
-      for (int i = 0; i < widget.data.length; i++) {
-        if (processedIndices.contains(i)) continue;
-
-        // Check if this row is part of a merged group
-        final mergeGroup = _getMergedGroupForRow(i);
-        if (mergeGroup != null) {
-          // Calculate merged row height (sum of all rows in the group)
-          double mergedHeight = 0;
-          for (final rowKey in mergeGroup.rowKeys) {
-            final rowIndex = widget.data.indexWhere(
-                (row) => row[widget.rowIdKey]?.toString() == rowKey);
-            if (rowIndex != -1) {
-              final height =
-                  widget.calculateRowHeight!(rowIndex, widget.data[rowIndex]);
-              if (height != null) {
-                mergedHeight += height;
-              } else {
-                mergedHeight += _currentTheme.bodyTheme.rowHeight; // fallback
-              }
-              processedIndices.add(rowIndex);
-            }
+      // Check if this row is part of a merged group
+      final mergeGroup = _getMergedGroupForRow(i);
+      if (mergeGroup != null) {
+        // Calculate merged row height using helper method
+        totalHeight += _getMergedRowHeight(mergeGroup);
+        // Add all merged row indices to processed set
+        for (final rowKey in mergeGroup.rowKeys) {
+          final rowIndex = widget.data.indexWhere(
+              (row) => row[widget.rowIdKey]?.toString() == rowKey);
+          if (rowIndex != -1) {
+            processedIndices.add(rowIndex);
           }
-          totalHeight += mergedHeight;
-        } else {
-          // Regular row
-          final height = widget.calculateRowHeight!(i, widget.data[i]);
-          totalHeight +=
-              height ?? _currentTheme.bodyTheme.rowHeight; // fallback
-          processedIndices.add(i);
         }
+      } else {
+        // Regular row - use helper method
+        totalHeight += _getRowHeight(i);
+        processedIndices.add(i);
       }
-    } else {
-      // Use fixed row height from theme for all displayable rows
-      final displayedRowCount = _getTotalRowCount();
-      totalHeight = displayedRowCount * _currentTheme.bodyTheme.rowHeight;
     }
 
     return totalHeight;

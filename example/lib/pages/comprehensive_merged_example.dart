@@ -885,13 +885,6 @@ class _ComprehensiveMergedExampleState
                   onCellChanged: _handleCellChanged,
                   onMergedCellChanged: _handleMergedCellChanged,
 
-                  // Dynamic row height calculation for merged rows
-                  calculateRowHeight: (rowIndex, rowData) {
-                    // Return the theme's default row height for each individual row
-                    // This will make merged groups sum up their constituent rows' heights
-                    return null; // Use default height from theme
-                  },
-
                   // Theme with custom border behavior
                   theme: TablePlusTheme(
                     bodyTheme: TablePlusBodyTheme(
