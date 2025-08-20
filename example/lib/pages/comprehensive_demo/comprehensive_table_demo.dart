@@ -10,7 +10,6 @@ import 'data/demo_data_source.dart';
 /// This demo showcases ALL features of Flutter Table Plus in a single page:
 /// - Basic table functionality (sorting, column reordering)
 /// - Selection and editing
-/// - Frozen columns
 /// - Merged rows
 /// - Expandable rows
 /// - Hover buttons
@@ -19,12 +18,11 @@ import 'data/demo_data_source.dart';
 /// Phase 1: Basic structure and data models ✅
 /// Phase 2: Basic table and sorting ✅
 /// Phase 3: Selection and editing ✅
-/// Phase 4: Frozen columns (pending)
-/// Phase 5: Merged rows (pending)
-/// Phase 6: Expandable rows (pending)
-/// Phase 7: Hover buttons (pending)
-/// Phase 8: Custom cells and themes (pending)
-/// Phase 9: Control panel and final integration (pending)
+/// Phase 4: Merged rows (pending)
+/// Phase 5: Expandable rows (pending)
+/// Phase 6: Hover buttons (pending)
+/// Phase 7: Custom cells and themes (pending)
+/// Phase 8: Control panel and final integration (pending)
 class ComprehensiveTableDemo extends StatefulWidget {
   const ComprehensiveTableDemo({super.key});
 
@@ -47,6 +45,10 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
   final Set<String> _selectedRows = <String>{};
   final bool _isEditable = true;
 
+  // Phase 4: Merged rows state
+  // bool _showMergedRows = false;
+  // List<MergedRowGroup> _mergedGroups = [];
+  
   // Future phases will add more state variables here:
   // - Theme configuration
   // - Feature toggles
@@ -628,7 +630,7 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
           ],
           const Spacer(),
           Text(
-            'Next: Phase 4 - Frozen Columns',
+            'Next: Phase 4 - Merged Rows',
             style: TextStyle(
               color: Colors.orange.shade700,
               fontWeight: FontWeight.w600,
