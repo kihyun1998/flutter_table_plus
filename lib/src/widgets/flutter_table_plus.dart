@@ -47,8 +47,6 @@ class FlutterTablePlus extends StatefulWidget {
     this.calculateRowHeight,
     this.hoverButtonBuilder,
     this.hoverButtonPosition = HoverButtonPosition.right,
-    this.onEdit,
-    this.onDelete,
   });
 
   /// The map of columns to display in the table.
@@ -200,23 +198,6 @@ class FlutterTablePlus extends StatefulWidget {
   /// - [HoverButtonPosition.right]: Buttons appear on the right side (default)
   final HoverButtonPosition hoverButtonPosition;
 
-  /// Callback function for edit button in default hover buttons.
-  ///
-  /// This is used when [hoverButtonBuilder] is null and the table uses
-  /// theme-based default hover buttons. Provides the row ID and row data.
-  ///
-  /// If both [onEdit] and [hoverButtonBuilder] are provided,
-  /// [hoverButtonBuilder] takes precedence.
-  final void Function(String rowId, Map<String, dynamic> rowData)? onEdit;
-
-  /// Callback function for delete button in default hover buttons.
-  ///
-  /// This is used when [hoverButtonBuilder] is null and the table uses
-  /// theme-based default hover buttons. Provides the row ID and row data.
-  ///
-  /// If both [onDelete] and [hoverButtonBuilder] are provided,
-  /// [hoverButtonBuilder] takes precedence.
-  final void Function(String rowId, Map<String, dynamic> rowData)? onDelete;
 
   @override
   State<FlutterTablePlus> createState() => _FlutterTablePlusState();
@@ -791,8 +772,6 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                                     widget.hoverButtonBuilder,
                                                 hoverButtonPosition:
                                                     widget.hoverButtonPosition,
-                                                onEdit: widget.onEdit,
-                                                onDelete: widget.onDelete,
                                                 hoverButtonTheme:
                                                     theme.hoverButtonTheme,
                                               ),
@@ -946,9 +925,6 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                                           hoverButtonPosition:
                                                               widget
                                                                   .hoverButtonPosition,
-                                                          onEdit: widget.onEdit,
-                                                          onDelete:
-                                                              widget.onDelete,
                                                           hoverButtonTheme: theme
                                                               .hoverButtonTheme,
                                                         ),

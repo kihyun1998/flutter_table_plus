@@ -34,8 +34,6 @@ class TablePlusRow extends TablePlusRowWidget {
     this.needsVerticalScroll = false,
     this.hoverButtonBuilder,
     this.hoverButtonPosition = HoverButtonPosition.right,
-    this.onEdit,
-    this.onDelete,
     this.hoverButtonTheme,
   });
 
@@ -75,11 +73,6 @@ class TablePlusRow extends TablePlusRowWidget {
   /// The position where hover buttons should be displayed.
   final HoverButtonPosition hoverButtonPosition;
 
-  /// Callback function for edit button in default hover buttons.
-  final void Function(String rowId, Map<String, dynamic> rowData)? onEdit;
-
-  /// Callback function for delete button in default hover buttons.
-  final void Function(String rowId, Map<String, dynamic> rowData)? onDelete;
 
   /// Theme configuration for hover buttons.
   final TablePlusHoverButtonTheme? hoverButtonTheme;
@@ -207,9 +200,6 @@ class _TablePlusRowState extends State<TablePlusRow> {
       if (widget.hoverButtonBuilder != null) {
         buttonWidget =
             widget.hoverButtonBuilder!(widget.rowId!, widget.rowData);
-      } else if ((widget.onEdit != null || widget.onDelete != null) &&
-          widget.hoverButtonTheme != null) {
-        buttonWidget = _buildDefaultHoverButtons();
       }
 
       if (buttonWidget != null) {
@@ -286,90 +276,4 @@ class _TablePlusRowState extends State<TablePlusRow> {
     return hoveredContent;
   }
 
-  /// Builds default hover buttons based on theme configuration.
-  Widget _buildDefaultHoverButtons() {
-    final theme = widget.hoverButtonTheme!;
-    final List<Widget> buttons = [];
-
-    // Add edit button if onEdit callback is provided
-    if (widget.onEdit != null) {
-      buttons.add(
-        IconButton(
-          icon: Icon(
-            theme.getEffectiveIconData('edit'),
-            size: theme.iconSize,
-            color: theme.getEffectiveIconColor('edit', context),
-          ),
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
-          onPressed: () => widget.onEdit!(widget.rowId!, widget.rowData),
-          tooltip: 'Edit',
-        ),
-      );
-    }
-
-    // Add spacing between buttons
-    if (buttons.isNotEmpty && widget.onDelete != null) {
-      buttons.add(SizedBox(width: theme.spacing));
-    }
-
-    // Add delete button if onDelete callback is provided
-    if (widget.onDelete != null) {
-      buttons.add(
-        IconButton(
-          icon: Icon(
-            theme.getEffectiveIconData('delete'),
-            size: theme.iconSize,
-            color: theme.getEffectiveIconColor('delete', context),
-          ),
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
-          onPressed: () => widget.onDelete!(widget.rowId!, widget.rowData),
-          tooltip: 'Delete',
-        ),
-      );
-    }
-
-    if (buttons.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    // Create container with theme styling
-    Widget container = Container(
-      padding: theme.padding,
-      decoration: BoxDecoration(
-        color: theme.backgroundColor.withOpacity(theme.opacity),
-        borderRadius: theme.borderRadius,
-        border: theme.borderColor != null
-            ? Border.all(color: theme.borderColor!)
-            : null,
-        boxShadow: theme.boxShadow,
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: buttons,
-      ),
-    );
-
-    // Apply elevation if specified
-    if (theme.elevation > 0) {
-      container = Material(
-        elevation: theme.elevation,
-        borderRadius: theme.borderRadius,
-        color: Colors.transparent,
-        child: container,
-      );
-    }
-
-    // Apply animation if specified
-    if (theme.showOnHover && theme.animationDuration.inMilliseconds > 0) {
-      container = AnimatedOpacity(
-        opacity: _isHovered ? 1.0 : 0.0,
-        duration: theme.animationDuration,
-        child: container,
-      );
-    }
-
-    return container;
-  }
 }

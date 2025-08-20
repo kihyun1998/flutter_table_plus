@@ -119,6 +119,83 @@ class _HoverButtonDemoState extends State<HoverButtonDemo> {
     );
   }
 
+  Widget _buildThemeBasedButtons(String rowId, Map<String, dynamic> rowData) {
+    final theme = _currentHoverButtonTheme;
+    final List<Widget> buttons = [];
+
+    // Add edit button if show edit is enabled
+    if (_showEditButton) {
+      buttons.add(
+        IconButton(
+          icon: Icon(
+            theme.getEffectiveIconData('edit'),
+            size: theme.iconSize,
+            color: theme.getEffectiveIconColor('edit', context),
+          ),
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
+          onPressed: () => _handleEdit(rowId, rowData),
+          tooltip: 'Edit',
+        ),
+      );
+    }
+
+    // Add spacing between buttons
+    if (buttons.isNotEmpty && _showDeleteButton) {
+      buttons.add(SizedBox(width: theme.spacing));
+    }
+
+    // Add delete button if show delete is enabled
+    if (_showDeleteButton) {
+      buttons.add(
+        IconButton(
+          icon: Icon(
+            theme.getEffectiveIconData('delete'),
+            size: theme.iconSize,
+            color: theme.getEffectiveIconColor('delete', context),
+          ),
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
+          onPressed: () => _handleDelete(rowId, rowData),
+          tooltip: 'Delete',
+        ),
+      );
+    }
+
+    if (buttons.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    // Create container with theme styling
+    Widget container = Container(
+      padding: theme.padding,
+      decoration: BoxDecoration(
+        color: theme.backgroundColor.withOpacity(theme.opacity),
+        borderRadius: theme.borderRadius,
+        border: theme.borderColor != null
+            ? Border.all(color: theme.borderColor!)
+            : null,
+        boxShadow: theme.boxShadow,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: buttons,
+      ),
+    );
+
+    // Apply elevation if specified
+    if (theme.elevation > 0) {
+      container = Material(
+        elevation: theme.elevation,
+        borderRadius: theme.borderRadius,
+        color: Colors.transparent,
+        child: container,
+      );
+    }
+
+    return container;
+  }
+
   String _getPositionDescription(HoverButtonPosition position) {
     switch (position) {
       case HoverButtonPosition.left:
@@ -486,7 +563,7 @@ class _HoverButtonDemoState extends State<HoverButtonDemo> {
                           hoverButtonPosition: _currentPosition,
                           // Use either theme-based buttons or custom builder
                           hoverButtonBuilder: _useThemeButtons
-                              ? null
+                              ? _buildThemeBasedButtons
                               : (rowId, rowData) => Container(
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 4),
@@ -525,12 +602,6 @@ class _HoverButtonDemoState extends State<HoverButtonDemo> {
                                       ],
                                     ),
                                   ),
-                          onEdit: (_useThemeButtons && _showEditButton)
-                              ? _handleEdit
-                              : null,
-                          onDelete: (_useThemeButtons && _showDeleteButton)
-                              ? _handleDelete
-                              : null,
                         ),
                       ),
                     ),

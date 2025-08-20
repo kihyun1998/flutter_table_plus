@@ -46,8 +46,6 @@ class TablePlusBody extends StatelessWidget {
     this.needsVerticalScroll = false,
     this.hoverButtonBuilder,
     this.hoverButtonPosition = HoverButtonPosition.right,
-    this.onEdit,
-    this.onDelete,
     this.hoverButtonTheme,
   });
 
@@ -140,11 +138,6 @@ class TablePlusBody extends StatelessWidget {
   /// The position where hover buttons should be displayed.
   final HoverButtonPosition hoverButtonPosition;
 
-  /// Callback function for edit button in default hover buttons.
-  final void Function(String rowId, Map<String, dynamic> rowData)? onEdit;
-
-  /// Callback function for delete button in default hover buttons.
-  final void Function(String rowId, Map<String, dynamic> rowData)? onDelete;
 
   /// Theme configuration for hover buttons.
   final TablePlusHoverButtonTheme? hoverButtonTheme;
@@ -435,8 +428,6 @@ class TablePlusBody extends StatelessWidget {
       needsVerticalScroll: needsVerticalScroll,
       hoverButtonBuilder: hoverButtonBuilder,
       hoverButtonPosition: hoverButtonPosition,
-      onEdit: onEdit,
-      onDelete: onDelete,
       hoverButtonTheme: hoverButtonTheme,
     );
   }
