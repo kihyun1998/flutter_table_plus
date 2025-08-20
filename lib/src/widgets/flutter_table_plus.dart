@@ -45,6 +45,7 @@ class FlutterTablePlus extends StatefulWidget {
     this.onMergedRowExpandToggle,
     this.noDataWidget,
     this.calculateRowHeight,
+    this.hoverButtonBuilder,
   });
 
   /// The map of columns to display in the table.
@@ -159,6 +160,30 @@ class FlutterTablePlus extends StatefulWidget {
   /// The calculation should be efficient as it may be called frequently.
   final double? Function(int rowIndex, Map<String, dynamic> rowData)?
       calculateRowHeight;
+
+  /// Builder function to create custom hover buttons for each row.
+  /// 
+  /// Called when a row is hovered, providing the row ID and row data.
+  /// Should return a Widget to display as an overlay on the right side of the row.
+  /// If null, no hover buttons will be displayed.
+  /// 
+  /// Example:
+  /// ```dart
+  /// hoverButtonBuilder: (rowId, rowData) => Row(
+  ///   mainAxisSize: MainAxisSize.min,
+  ///   children: [
+  ///     IconButton(
+  ///       icon: Icon(Icons.edit),
+  ///       onPressed: () => _editRow(rowId),
+  ///     ),
+  ///     IconButton(
+  ///       icon: Icon(Icons.delete),
+  ///       onPressed: () => _deleteRow(rowId),
+  ///     ),
+  ///   ],
+  /// )
+  /// ```
+  final Widget Function(String rowId, Map<String, dynamic> rowData)? hoverButtonBuilder;
 
   @override
   State<FlutterTablePlus> createState() => _FlutterTablePlusState();
@@ -729,6 +754,8 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                                     .onMergedRowExpandToggle,
                                                 calculateRowHeight:
                                                     widget.calculateRowHeight,
+                                                hoverButtonBuilder:
+                                                    widget.hoverButtonBuilder,
                                               ),
                                             );
                                           },
@@ -875,6 +902,8 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                                                   .onMergedRowExpandToggle,
                                                           calculateRowHeight: widget
                                                               .calculateRowHeight,
+                                                          hoverButtonBuilder: widget
+                                                              .hoverButtonBuilder,
                                                         ),
                                                       );
                                                     },

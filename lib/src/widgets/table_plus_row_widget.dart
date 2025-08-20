@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 ///
 /// This allows for different types of row implementations (normal rows, merged rows, etc.)
 /// while maintaining a consistent interface for the ListView builder.
-abstract class TablePlusRowWidget extends StatelessWidget {
+abstract class TablePlusRowWidget extends StatefulWidget {
   const TablePlusRowWidget({super.key});
 
   /// The number of rows this widget effectively represents in the UI.

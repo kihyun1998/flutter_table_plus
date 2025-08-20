@@ -44,6 +44,7 @@ class TablePlusBody extends StatelessWidget {
     this.onMergedRowExpandToggle,
     this.calculateRowHeight,
     this.needsVerticalScroll = false,
+    this.hoverButtonBuilder,
   });
 
   /// The list of columns for the table.
@@ -123,6 +124,13 @@ class TablePlusBody extends StatelessWidget {
   /// If null, uses the fixed row height from the theme.
   final double? Function(int rowIndex, Map<String, dynamic> rowData)?
       calculateRowHeight;
+
+  /// Builder function to create custom hover buttons for each row.
+  /// 
+  /// Called when a row is hovered, providing the row ID and row data.
+  /// Should return a Widget to display as an overlay on the right side of the row.
+  /// If null, no hover buttons will be displayed.
+  final Widget Function(String rowId, Map<String, dynamic> rowData)? hoverButtonBuilder;
 
   /// Whether the table needs vertical scrolling.
   /// Used to determine if the last row should have a bottom border based on
@@ -408,6 +416,7 @@ class TablePlusBody extends StatelessWidget {
       onStopEditing: onStopEditing,
       calculatedHeight: calculatedHeight,
       needsVerticalScroll: needsVerticalScroll,
+      hoverButtonBuilder: hoverButtonBuilder,
     );
   }
 }
@@ -415,6 +424,7 @@ class TablePlusBody extends StatelessWidget {
 /// A single table row widget.
 class _TablePlusRow extends TablePlusRowWidget {
   const _TablePlusRow({
+    super.key,
     required this.rowIndex,
     required this.rowData,
     required this.rowId,
@@ -439,6 +449,7 @@ class _TablePlusRow extends TablePlusRowWidget {
     this.onRowSecondaryTap,
     this.calculatedHeight,
     this.needsVerticalScroll = false,
+    this.hoverButtonBuilder,
   });
 
   final int rowIndex;
@@ -470,12 +481,22 @@ class _TablePlusRow extends TablePlusRowWidget {
   final double? calculatedHeight;
   final bool needsVerticalScroll;
 
+  /// Builder function to create custom hover buttons for this row.
+  final Widget Function(String rowId, Map<String, dynamic> rowData)? hoverButtonBuilder;
+
   // Implementation of TablePlusRowWidget abstract methods
   @override
   int get effectiveRowCount => 1;
 
   @override
   List<int> get originalDataIndices => [rowIndex];
+
+  @override
+  State<_TablePlusRow> createState() => _TablePlusRowState();
+}
+
+class _TablePlusRowState extends State<_TablePlusRow> {
+  bool _isHovered = false;
 
   /// Determines whether to show a bottom border for this row.
   ///
@@ -496,106 +517,139 @@ class _TablePlusRow extends TablePlusRowWidget {
         return true;
       case LastRowBorderBehavior.smart:
         // Show border only when there's no vertical scroll
-        return !needsVerticalScroll;
+        return !widget.needsVerticalScroll;
     }
   }
 
   /// Handle row tap for selection.
   /// Only works when not in editable mode.
   void _handleRowTap() {
-    if (isEditable) return; // No row selection in editable mode
-    if (!isSelectable || rowId == null) return;
+    if (widget.isEditable) return; // No row selection in editable mode
+    if (!widget.isSelectable || widget.rowId == null) return;
 
-    if (selectionMode == SelectionMode.single) {
+    if (widget.selectionMode == SelectionMode.single) {
       // For single selection mode, toggle the selection
       // If already selected, deselect it; if not selected, select it
-      onRowSelectionChanged(rowId!);
+      widget.onRowSelectionChanged(widget.rowId!);
     } else {
       // For multiple selection mode, toggle the selection
-      onRowSelectionChanged(rowId!);
+      widget.onRowSelectionChanged(widget.rowId!);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     Widget rowContent = Container(
-      height: calculatedHeight ?? theme.rowHeight,
+      height: widget.calculatedHeight ?? widget.theme.rowHeight,
       decoration: BoxDecoration(
-        color: backgroundColor,
-        border: _shouldShowBottomBorder(isLastRow, theme)
+        color: widget.backgroundColor,
+        border: _shouldShowBottomBorder(widget.isLastRow, widget.theme)
             ? Border(
                 bottom: BorderSide(
-                  color: theme.dividerColor,
-                  width: theme.dividerThickness,
+                  color: widget.theme.dividerColor,
+                  width: widget.theme.dividerThickness,
                 ),
               )
             : null,
       ),
       child: Row(
-        children: List.generate(columns.length, (index) {
-          final column = columns[index];
-          final width =
-              columnWidths.isNotEmpty ? columnWidths[index] : column.width;
+        children: List.generate(widget.columns.length, (index) {
+          final column = widget.columns[index];
+          final width = widget.columnWidths.isNotEmpty
+              ? widget.columnWidths[index]
+              : column.width;
 
           // Special handling for selection column
-          if (isSelectable && column.key == '__selection__') {
+          if (widget.isSelectable && column.key == '__selection__') {
             return _SelectionCell(
               width: width,
-              rowId: rowId,
-              isSelected: isSelected,
-              theme: theme,
-              selectionTheme: selectionTheme,
-              onSelectionChanged: onRowSelectionChanged,
-              calculatedHeight: calculatedHeight,
+              rowId: widget.rowId,
+              isSelected: widget.isSelected,
+              theme: widget.theme,
+              selectionTheme: widget.selectionTheme,
+              onSelectionChanged: widget.onRowSelectionChanged,
+              calculatedHeight: widget.calculatedHeight,
             );
           }
 
           return _TablePlusCell(
-            rowIndex: rowIndex,
+            rowIndex: widget.rowIndex,
             column: column,
-            rowData: rowData,
+            rowData: widget.rowData,
             width: width,
-            theme: theme,
-            isEditable: isEditable,
-            editableTheme: editableTheme,
-            tooltipTheme: tooltipTheme,
-            isCellEditing: isCellEditing?.call(rowIndex, column.key) ?? false,
-            isSelected: isSelected,
-            selectionTheme: selectionTheme,
-            cellController: getCellController?.call(rowIndex, column.key),
-            onCellTap: onCellTap != null
-                ? () => onCellTap!(rowIndex, column.key)
+            theme: widget.theme,
+            isEditable: widget.isEditable,
+            editableTheme: widget.editableTheme,
+            tooltipTheme: widget.tooltipTheme,
+            isCellEditing:
+                widget.isCellEditing?.call(widget.rowIndex, column.key) ??
+                    false,
+            isSelected: widget.isSelected,
+            selectionTheme: widget.selectionTheme,
+            cellController:
+                widget.getCellController?.call(widget.rowIndex, column.key),
+            onCellTap: widget.onCellTap != null
+                ? () => widget.onCellTap!(widget.rowIndex, column.key)
                 : null,
-            onStopEditing: onStopEditing,
-            calculatedHeight: calculatedHeight,
+            onStopEditing: widget.onStopEditing,
+            calculatedHeight: widget.calculatedHeight,
           );
         }),
       ),
     );
 
-    // Wrap with CustomInkWell for row selection if selectable and not editable
-    if (isSelectable && !isEditable && rowId != null) {
-      return CustomInkWell(
-        key: ValueKey(rowId),
-        onTap: _handleRowTap,
-        onDoubleTap: () {
-          onRowDoubleTap?.call(rowId!); // Pass rowId to the callback
-        },
-        onSecondaryTap: () {
-          onRowSecondaryTap?.call(rowId!); // Pass rowId to the callback
-        },
-        backgroundColor: backgroundColor,
-        hoverColor:
-            selectionTheme.getEffectiveHoverColor(isSelected, backgroundColor),
-        splashColor:
-            selectionTheme.getEffectiveSplashColor(isSelected, backgroundColor),
-        highlightColor: selectionTheme.getEffectiveHighlightColor(
-            isSelected, backgroundColor),
-        child: rowContent,
+    // Create hover buttons using builder
+    Widget? hoverButtons;
+    if (_isHovered && widget.rowId != null && widget.hoverButtonBuilder != null) {
+      final buttonWidget = widget.hoverButtonBuilder!(widget.rowId!, widget.rowData);
+      hoverButtons = Positioned(
+        right: 8,
+        top: 0,
+        bottom: 0,
+        child: Center(
+          child: buttonWidget,
+        ),
       );
     }
 
-    return rowContent;
+    // Wrap with Stack for hover buttons
+    Widget stackedContent = Stack(
+      children: [
+        rowContent,
+        if (hoverButtons != null) hoverButtons,
+      ],
+    );
+
+    // Wrap with MouseRegion for hover detection
+    Widget hoveredContent = MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: stackedContent,
+    );
+
+    // Wrap with CustomInkWell for row selection if selectable and not editable
+    if (widget.isSelectable && !widget.isEditable && widget.rowId != null) {
+      return CustomInkWell(
+        key: ValueKey(widget.rowId),
+        onTap: _handleRowTap,
+        onDoubleTap: () {
+          widget.onRowDoubleTap?.call(widget.rowId!);
+        },
+        onSecondaryTap: () {
+          widget.onRowSecondaryTap?.call(widget.rowId!);
+        },
+        backgroundColor: widget.backgroundColor,
+        hoverColor: widget.selectionTheme
+            .getEffectiveHoverColor(widget.isSelected, widget.backgroundColor),
+        splashColor: widget.selectionTheme
+            .getEffectiveSplashColor(widget.isSelected, widget.backgroundColor),
+        highlightColor: widget.selectionTheme.getEffectiveHighlightColor(
+            widget.isSelected, widget.backgroundColor),
+        child: hoveredContent,
+      );
+    }
+
+    return hoveredContent;
   }
 }
 

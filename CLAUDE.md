@@ -93,6 +93,7 @@ dart doc .                      # Generate API documentation
 5. **Frozen Columns**: Left-pinned columns with optional divider theming for improved data visibility
 6. **Theme Composition**: Nested theme classes (TablePlusTheme, TablePlusHeaderTheme, etc.) for granular styling control
 7. **State Management Ready**: Designed to work with state management solutions like Riverpod (see documentation/RIVERPOD_GENERATOR_GUIDE.md)
+8. **Row Widget Polymorphism**: TablePlusRowWidget abstract class enables different row types (_TablePlusRow for normal rows, TablePlusMergedRow for grouped rows) with consistent ListView.builder interface
 
 ### Widget Lifecycle
 
@@ -121,6 +122,7 @@ FlutterTablePlus follows a composition pattern where:
 - **Sort Cycle Configuration**: Sort cycle order is configurable between ascending-first and descending-first patterns
 - **Tooltip Control**: Fine-grained tooltip behavior control for both cells and headers via `tooltipBehavior` and `headerTooltipBehavior` properties
 - **Merged Rows**: MergedRowGroup functionality allows grouping consecutive rows with configurable merge behavior per column. Supports custom content, selection, and editing within merged cells
+- **Row Hover Implementation**: Currently supports basic hover effects via CustomInkWell.hoverColor. Row widgets extend TablePlusRowWidget (StatelessWidget) making advanced hover features (like button overlays) require architectural changes to support state management
 
 ## Code Patterns & Conventions
 

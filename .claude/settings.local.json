@@ -7,5 +7,6 @@
     "deny": [],
     "ask": [],
     "defaultMode": "acceptEdits"
-  }
+  },
+  "outputStyle": "Explanatory"
 }

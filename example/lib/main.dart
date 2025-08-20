@@ -6,6 +6,7 @@ import 'pages/sortable_example.dart';
 import 'pages/dynamic_height_example.dart';
 import 'pages/frozen_columns_demo.dart';
 import 'pages/expandable_summary_example.dart';
+import 'pages/hover_button_demo.dart';
 
 void main() {
   runApp(const MyApp());
@@ -144,6 +145,23 @@ class ExampleHomePage extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                       builder: (context) => const ExpandableSummaryExample(),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 8),
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.touch_app, color: Colors.orange),
+                title: const Text('Hover Button Demo'),
+                subtitle: const Text('Row hover with action buttons - NEW!'),
+                trailing: const Icon(Icons.arrow_forward_ios),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const HoverButtonDemo(),
                     ),
                   );
                 },
