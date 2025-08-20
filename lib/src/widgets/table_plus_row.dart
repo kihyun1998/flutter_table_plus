@@ -217,7 +217,7 @@ class _TablePlusRowState extends State<TablePlusRow> {
         switch (widget.hoverButtonPosition) {
           case HoverButtonPosition.left:
             hoverButtons = Positioned(
-              left: 8,
+              left: widget.hoverButtonTheme?.horizontalOffset ?? 8.0,
               top: 0,
               bottom: 0,
               child: Center(
@@ -234,7 +234,7 @@ class _TablePlusRowState extends State<TablePlusRow> {
             break;
           case HoverButtonPosition.right:
             hoverButtons = Positioned(
-              right: 8,
+              right: widget.hoverButtonTheme?.horizontalOffset ?? 8.0,
               top: 0,
               bottom: 0,
               child: Center(

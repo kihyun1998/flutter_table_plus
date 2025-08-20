@@ -18,6 +18,7 @@ class TablePlusHoverButtonTheme {
     this.iconSize = 16.0,
     this.iconColor,
     this.spacing = 4.0,
+    this.horizontalOffset = 8.0,
     this.showOnHover = true,
     this.animationDuration = const Duration(milliseconds: 200),
     this.elevation = 0.0,
@@ -54,6 +55,10 @@ class TablePlusHoverButtonTheme {
 
   /// The spacing between hover buttons.
   final double spacing;
+
+  /// The horizontal offset from the row edge for left/right positioned buttons.
+  /// This controls how far the buttons are positioned from the left or right edge of the row.
+  final double horizontalOffset;
 
   /// Whether to show hover buttons only on row hover.
   /// If false, buttons are always visible.
@@ -93,6 +98,7 @@ class TablePlusHoverButtonTheme {
     double? iconSize,
     Color? iconColor,
     double? spacing,
+    double? horizontalOffset,
     bool? showOnHover,
     Duration? animationDuration,
     double? elevation,
@@ -111,6 +117,7 @@ class TablePlusHoverButtonTheme {
       iconSize: iconSize ?? this.iconSize,
       iconColor: iconColor ?? this.iconColor,
       spacing: spacing ?? this.spacing,
+      horizontalOffset: horizontalOffset ?? this.horizontalOffset,
       showOnHover: showOnHover ?? this.showOnHover,
       animationDuration: animationDuration ?? this.animationDuration,
       elevation: elevation ?? this.elevation,

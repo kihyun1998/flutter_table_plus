@@ -13,13 +13,14 @@ class _HoverButtonDemoState extends State<HoverButtonDemo> {
   bool _useThemeButtons = true;
   bool _showEditButton = true;
   bool _showDeleteButton = true;
-  Color _buttonBackgroundColor = Colors.white;
+  final Color _buttonBackgroundColor = Colors.white;
   double _buttonOpacity = 0.9;
   double _iconSize = 16.0;
+  double _horizontalOffset = 8.0;
   Color _editIconColor = Colors.blue;
   Color _deleteIconColor = Colors.red;
 
-  List<Map<String, dynamic>> _data = [
+  final List<Map<String, dynamic>> _data = [
     {
       'id': '1',
       'name': 'John Doe',
@@ -134,6 +135,7 @@ class _HoverButtonDemoState extends State<HoverButtonDemo> {
       backgroundColor: _buttonBackgroundColor,
       opacity: _buttonOpacity,
       iconSize: _iconSize,
+      horizontalOffset: _horizontalOffset,
       editIconColor: _editIconColor,
       deleteIconColor: _deleteIconColor,
       borderRadius: BorderRadius.circular(4),
@@ -278,6 +280,20 @@ class _HoverButtonDemoState extends State<HoverButtonDemo> {
                             onChanged: (value) {
                               setState(() {
                                 _buttonOpacity = value;
+                              });
+                            },
+                          ),
+
+                          // Button Distance
+                          Text('Button Distance: ${_horizontalOffset.round()}px'),
+                          Slider(
+                            value: _horizontalOffset,
+                            min: 0,
+                            max: 32,
+                            divisions: 32,
+                            onChanged: (value) {
+                              setState(() {
+                                _horizontalOffset = value;
                               });
                             },
                           ),
