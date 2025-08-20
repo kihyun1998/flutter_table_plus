@@ -10,6 +10,7 @@ import '../models/theme/editable_theme.dart' show TablePlusEditableTheme;
 import '../models/theme/tooltip_theme.dart' show TablePlusTooltipTheme;
 import '../models/tooltip_behavior.dart';
 import '../utils/text_overflow_detector.dart';
+import 'cells/editable_text_field.dart';
 import 'custom_ink_well.dart';
 import 'table_plus_row_widget.dart';
 
@@ -319,88 +320,35 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
       width: double.infinity,
       height: mergedHeight,
       padding: theme.cellContainerPadding,
-      child: Align(
-        alignment: column.alignment,
-        child: Focus(
-          onFocusChange: (hasFocus) {
-            if (!hasFocus) {
-              _handleMergedCellValueChange(
-                  column.key, dataIndex, controller?.text);
-              widget.onStopEditing?.call(save: true);
-            }
-          },
-          child: KeyboardListener(
-            focusNode: FocusNode(),
-            onKeyEvent: (event) {
-              if (event is KeyDownEvent) {
-                if (event.logicalKey == LogicalKeyboardKey.enter) {
-                  _handleMergedCellValueChange(
-                      column.key, dataIndex, controller?.text);
-                  widget.onStopEditing?.call(save: true);
-                } else if (event.logicalKey == LogicalKeyboardKey.escape) {
-                  widget.onStopEditing?.call(save: false);
-                }
-              }
-            },
-            child: TextField(
-              autofocus: true,
-              controller: controller,
-              style: theme.editingTextStyle,
-              textAlign: column.textAlign,
-              textAlignVertical: theme.textAlignVertical,
-              cursorColor: theme.cursorColor,
-              decoration: InputDecoration(
-                hintText: column.hintText,
-                hintStyle: theme.hintStyle,
-                contentPadding: theme.textFieldPadding,
-                isDense: theme.isDense,
-                filled: theme.filled,
-                fillColor: theme.fillColor ?? theme.editingCellColor,
-                border: OutlineInputBorder(
-                  borderRadius: theme.borderRadius ?? theme.editingBorderRadius,
-                  borderSide: BorderSide(
-                    color: theme.enabledBorderColor ??
-                        theme.editingBorderColor.withValues(alpha: 0.5),
-                    width: 1.0,
-                  ),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: theme.borderRadius ?? theme.editingBorderRadius,
-                  borderSide: BorderSide(
-                    color: theme.enabledBorderColor ??
-                        theme.editingBorderColor.withValues(alpha: 0.5),
-                    width: 1.0,
-                  ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: theme.borderRadius ?? theme.editingBorderRadius,
-                  borderSide: BorderSide(
-                    color: theme.focusedBorderColor ?? theme.editingBorderColor,
-                    width: theme.editingBorderWidth,
-                  ),
-                ),
-                errorBorder: OutlineInputBorder(
-                  borderRadius: theme.borderRadius ?? theme.editingBorderRadius,
-                  borderSide: BorderSide(
-                    color: Colors.red.shade400,
-                    width: 1.0,
-                  ),
-                ),
-                focusedErrorBorder: OutlineInputBorder(
-                  borderRadius: theme.borderRadius ?? theme.editingBorderRadius,
-                  borderSide: BorderSide(
-                    color: Colors.red.shade600,
-                    width: theme.editingBorderWidth,
-                  ),
-                ),
-              ),
-              onSubmitted: (_) {
+      child: Focus(
+        onFocusChange: (hasFocus) {
+          if (!hasFocus) {
+            _handleMergedCellValueChange(
+                column.key, dataIndex, controller?.text);
+            widget.onStopEditing?.call(save: true);
+          }
+        },
+        child: EditableTextField(
+          column: column,
+          theme: theme,
+          controller: controller,
+          autofocus: true,
+          alignment: column.alignment,
+          onKeyEvent: (event) {
+            if (event is KeyDownEvent) {
+              if (event.logicalKey == LogicalKeyboardKey.enter) {
                 _handleMergedCellValueChange(
                     column.key, dataIndex, controller?.text);
                 widget.onStopEditing?.call(save: true);
-              },
-            ),
-          ),
+                return true;
+              } else if (event.logicalKey == LogicalKeyboardKey.escape) {
+                widget.onStopEditing?.call(save: false);
+                return true;
+              }
+            }
+            return false;
+          },
+          onStopEditing: null, // Handled by Focus onFocusChange and onKeyEvent
         ),
       ),
     );
@@ -667,82 +615,31 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
       width: double.infinity,
       height: cellHeight,
       padding: theme.cellContainerPadding,
-      child: Align(
-        alignment: column.alignment,
-        child: Focus(
-          onFocusChange: (hasFocus) {
-            if (!hasFocus) {
-              widget.onStopEditing?.call(save: true);
-            }
-          },
-          child: KeyboardListener(
-            focusNode: FocusNode(),
-            onKeyEvent: (event) {
-              if (event is KeyDownEvent) {
-                if (event.logicalKey == LogicalKeyboardKey.enter) {
-                  widget.onStopEditing?.call(save: true);
-                } else if (event.logicalKey == LogicalKeyboardKey.escape) {
-                  widget.onStopEditing?.call(save: false);
-                }
-              }
-            },
-            child: TextField(
-              autofocus: true,
-              controller: controller,
-              style: theme.editingTextStyle,
-              textAlign: column.textAlign,
-              textAlignVertical: theme.textAlignVertical,
-              cursorColor: theme.cursorColor,
-              decoration: InputDecoration(
-                hintText: column.hintText,
-                hintStyle: theme.hintStyle,
-                contentPadding: theme.textFieldPadding,
-                isDense: theme.isDense,
-                filled: theme.filled,
-                fillColor: theme.fillColor ?? theme.editingCellColor,
-                border: OutlineInputBorder(
-                  borderRadius: theme.borderRadius ?? theme.editingBorderRadius,
-                  borderSide: BorderSide(
-                    color: theme.enabledBorderColor ??
-                        theme.editingBorderColor.withValues(alpha: 0.5),
-                    width: 1.0,
-                  ),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: theme.borderRadius ?? theme.editingBorderRadius,
-                  borderSide: BorderSide(
-                    color: theme.enabledBorderColor ??
-                        theme.editingBorderColor.withValues(alpha: 0.5),
-                    width: 1.0,
-                  ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: theme.borderRadius ?? theme.editingBorderRadius,
-                  borderSide: BorderSide(
-                    color: theme.focusedBorderColor ?? theme.editingBorderColor,
-                    width: theme.editingBorderWidth,
-                  ),
-                ),
-                errorBorder: OutlineInputBorder(
-                  borderRadius: theme.borderRadius ?? theme.editingBorderRadius,
-                  borderSide: BorderSide(
-                    color: Colors.red.shade400,
-                    width: 1.0,
-                  ),
-                ),
-                focusedErrorBorder: OutlineInputBorder(
-                  borderRadius: theme.borderRadius ?? theme.editingBorderRadius,
-                  borderSide: BorderSide(
-                    color: Colors.red.shade600,
-                    width: theme.editingBorderWidth,
-                  ),
-                ),
-              ),
-              onSubmitted: (_) {
+      child: Focus(
+        onFocusChange: (hasFocus) {
+          if (!hasFocus) {
+            widget.onStopEditing?.call(save: true);
+          }
+        },
+        child: EditableTextField(
+          column: column,
+          theme: theme,
+          controller: controller,
+          autofocus: true,
+          alignment: column.alignment,
+          onKeyEvent: (event) {
+            if (event is KeyDownEvent) {
+              if (event.logicalKey == LogicalKeyboardKey.enter) {
                 widget.onStopEditing?.call(save: true);
-              },
-            ),
-          ),
+                return true;
+              } else if (event.logicalKey == LogicalKeyboardKey.escape) {
+                widget.onStopEditing?.call(save: false);
+                return true;
+              }
+            }
+            return false;
+          },
+          onStopEditing: null, // Handled by Focus onFocusChange and onKeyEvent
         ),
       ),
     );

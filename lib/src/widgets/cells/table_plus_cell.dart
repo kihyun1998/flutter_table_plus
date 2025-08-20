@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
 import 'package:flutter_table_plus/src/utils/text_overflow_detector.dart';
+import 'package:flutter_table_plus/src/widgets/cells/editable_text_field.dart';
 
 /// A single table cell widget.
 class TablePlusCell extends StatefulWidget {
@@ -105,69 +106,15 @@ class _TablePlusCellState extends State<TablePlusCell> {
 
   /// Build the editing text field
   Widget _buildEditingTextField() {
-    final theme = widget.editableTheme;
-
-    return Align(
-      alignment: widget.column.alignment, // 컬럼 정렬 설정에 맞춰 TextField 정렬
-      child: KeyboardListener(
-        focusNode: FocusNode(), // Separate focus node for keyboard listener
-        onKeyEvent: _handleKeyPress,
-        child: TextField(
-          controller: widget.cellController,
-          focusNode: _focusNode,
-          style: theme.editingTextStyle,
-          textAlign: widget.column.textAlign,
-          textAlignVertical: theme.textAlignVertical,
-          cursorColor: theme.cursorColor,
-          decoration: InputDecoration(
-            hintText: widget.column.hintText,
-            hintStyle: theme.hintStyle,
-            contentPadding: theme.textFieldPadding,
-            isDense: theme.isDense,
-            filled: theme.filled,
-            fillColor: theme.fillColor ?? theme.editingCellColor,
-            // Border configuration
-            border: OutlineInputBorder(
-              borderRadius: theme.borderRadius ?? theme.editingBorderRadius,
-              borderSide: BorderSide(
-                color: theme.enabledBorderColor ??
-                    theme.editingBorderColor.withValues(alpha: 0.5),
-                width: 1.0,
-              ),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: theme.borderRadius ?? theme.editingBorderRadius,
-              borderSide: BorderSide(
-                color: theme.enabledBorderColor ??
-                    theme.editingBorderColor.withValues(alpha: 0.5),
-                width: 1.0,
-              ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: theme.borderRadius ?? theme.editingBorderRadius,
-              borderSide: BorderSide(
-                color: theme.focusedBorderColor ?? theme.editingBorderColor,
-                width: theme.editingBorderWidth,
-              ),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: theme.borderRadius ?? theme.editingBorderRadius,
-              borderSide: BorderSide(
-                color: Colors.red.shade400,
-                width: 1.0,
-              ),
-            ),
-            focusedErrorBorder: OutlineInputBorder(
-              borderRadius: theme.borderRadius ?? theme.editingBorderRadius,
-              borderSide: BorderSide(
-                color: Colors.red.shade600,
-                width: theme.editingBorderWidth,
-              ),
-            ),
-          ),
-          onSubmitted: (_) => widget.onStopEditing?.call(save: true),
-        ),
-      ),
+    return EditableTextField(
+      column: widget.column,
+      theme: widget.editableTheme,
+      controller: widget.cellController,
+      focusNode: _focusNode,
+      autofocus: false, // We handle focus manually in didUpdateWidget
+      alignment: widget.column.alignment,
+      onStopEditing: widget.onStopEditing,
+      onKeyEvent: _handleKeyPress,
     );
   }
 
