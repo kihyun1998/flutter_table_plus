@@ -9,6 +9,8 @@ class HoverButtonDemo extends StatefulWidget {
 }
 
 class _HoverButtonDemoState extends State<HoverButtonDemo> {
+  HoverButtonPosition _currentPosition = HoverButtonPosition.right;
+  
   final List<Map<String, dynamic>> _data = [
     {
       'id': '1',
@@ -108,6 +110,130 @@ class _HoverButtonDemoState extends State<HoverButtonDemo> {
     );
   }
 
+  String _getPositionDescription(HoverButtonPosition position) {
+    switch (position) {
+      case HoverButtonPosition.left:
+        return 'Left - Buttons appear on the left side of the row';
+      case HoverButtonPosition.center:
+        return 'Center - Buttons appear in the middle of the row';
+      case HoverButtonPosition.right:
+        return 'Right - Buttons appear on the right side of the row (default)';
+    }
+  }
+
+  Widget _buildPositionGuide() {
+    return Column(
+      children: [
+        _buildPositionGuideItem(
+          HoverButtonPosition.left,
+          Icons.align_horizontal_left,
+          'Left Position',
+          'Buttons appear on the left side, useful when you want them visible first',
+          Colors.purple,
+        ),
+        const SizedBox(height: 8),
+        _buildPositionGuideItem(
+          HoverButtonPosition.center,
+          Icons.align_horizontal_center,
+          'Center Position',
+          'Buttons appear in the center, great for highlighting actions',
+          Colors.orange,
+        ),
+        const SizedBox(height: 8),
+        _buildPositionGuideItem(
+          HoverButtonPosition.right,
+          Icons.align_horizontal_right,
+          'Right Position',
+          'Buttons appear on the right side, traditional placement (default)',
+          Colors.teal,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPositionGuideItem(
+    HoverButtonPosition position,
+    IconData icon,
+    String title,
+    String description,
+    Color color,
+  ) {
+    final bool isSelected = _currentPosition == position;
+    
+    return Container(
+      padding: const EdgeInsets.all(12.0),
+      decoration: BoxDecoration(
+        color: isSelected ? color.withOpacity(0.1) : Colors.transparent,
+        border: Border.all(
+          color: isSelected ? color : Colors.grey.shade300,
+          width: isSelected ? 2 : 1,
+        ),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Icon(
+              icon,
+              color: color,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: isSelected ? color : Colors.black87,
+                      ),
+                    ),
+                    if (isSelected) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: color,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Text(
+                          'ACTIVE',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  description,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -141,9 +267,41 @@ class _HoverButtonDemoState extends State<HoverButtonDemo> {
                     ),
                     const SizedBox(height: 8),
                     const Text(
-                      'Hover over any row to see Edit and Delete buttons appear on the right side. '
-                      'This is the new hover button feature!',
+                      'Hover over any row to see Edit and Delete buttons appear. '
+                      'Use the position selector below to change button placement!',
                       style: TextStyle(color: Colors.grey),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        const Text('Button Position: ', style: TextStyle(fontWeight: FontWeight.w600)),
+                        const SizedBox(width: 8),
+                        SegmentedButton<HoverButtonPosition>(
+                          segments: const [
+                            ButtonSegment(
+                              value: HoverButtonPosition.left,
+                              label: Text('Left'),
+                              icon: Icon(Icons.align_horizontal_left),
+                            ),
+                            ButtonSegment(
+                              value: HoverButtonPosition.center,
+                              label: Text('Center'),
+                              icon: Icon(Icons.align_horizontal_center),
+                            ),
+                            ButtonSegment(
+                              value: HoverButtonPosition.right,
+                              label: Text('Right'),
+                              icon: Icon(Icons.align_horizontal_right),
+                            ),
+                          ],
+                          selected: {_currentPosition},
+                          onSelectionChanged: (Set<HoverButtonPosition> selected) {
+                            setState(() {
+                              _currentPosition = selected.first;
+                            });
+                          },
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -169,6 +327,7 @@ class _HoverButtonDemoState extends State<HoverButtonDemo> {
                         alternateRowColor: Colors.grey.shade50,
                       ),
                     ),
+                    hoverButtonPosition: _currentPosition,
                     hoverButtonBuilder: (rowId, rowData) => Container(
                       padding: const EdgeInsets.symmetric(horizontal: 4),
                       decoration: BoxDecoration(
@@ -207,18 +366,61 @@ class _HoverButtonDemoState extends State<HoverButtonDemo> {
             const SizedBox(height: 16),
             Card(
               color: Colors.blue.shade50,
-              child: const Padding(
-                padding: EdgeInsets.all(12.0),
-                child: Row(
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.info, color: Colors.blue),
-                    SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'Try hovering over the rows above to see the new hover button feature in action!',
-                        style: TextStyle(color: Colors.blue),
-                      ),
+                    const Row(
+                      children: [
+                        Icon(Icons.info, color: Colors.blue),
+                        SizedBox(width: 8),
+                        Text(
+                          'Hover Button Position Testing',
+                          style: TextStyle(
+                            color: Colors.blue,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Current position: ${_getPositionDescription(_currentPosition)}',
+                      style: const TextStyle(color: Colors.blue),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      'Hover over any row above to see the Edit and Delete buttons appear in the selected position!',
+                      style: TextStyle(color: Colors.blue),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Card(
+              color: Colors.green.shade50,
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.tips_and_updates, color: Colors.green.shade700),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Position Guide',
+                          style: TextStyle(
+                            color: Colors.green.shade700,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    _buildPositionGuide(),
                   ],
                 ),
               ),

@@ -3,6 +3,7 @@ import 'package:flutter_table_plus/flutter_table_plus.dart';
 import 'package:flutter_table_plus/src/widgets/cells/table_plus_cell.dart';
 import 'package:flutter_table_plus/src/widgets/cells/table_plus_selection_cell.dart';
 import 'package:flutter_table_plus/src/widgets/table_plus_row_widget.dart';
+import 'custom_ink_well.dart';
 
 /// A single table row widget.
 class TablePlusRow extends TablePlusRowWidget {
@@ -33,6 +34,7 @@ class TablePlusRow extends TablePlusRowWidget {
     this.calculatedHeight,
     this.needsVerticalScroll = false,
     this.hoverButtonBuilder,
+    this.hoverButtonPosition = HoverButtonPosition.right,
   });
 
   final int rowIndex;
@@ -67,6 +69,9 @@ class TablePlusRow extends TablePlusRowWidget {
   /// Builder function to create custom hover buttons for this row.
   final Widget Function(String rowId, Map<String, dynamic> rowData)?
       hoverButtonBuilder;
+
+  /// The position where hover buttons should be displayed.
+  final HoverButtonPosition hoverButtonPosition;
 
   // Implementation of TablePlusRowWidget abstract methods
   @override
@@ -189,14 +194,37 @@ class _TablePlusRowState extends State<TablePlusRow> {
         widget.hoverButtonBuilder != null) {
       final buttonWidget =
           widget.hoverButtonBuilder!(widget.rowId!, widget.rowData);
-      hoverButtons = Positioned(
-        right: 8,
-        top: 0,
-        bottom: 0,
-        child: Center(
-          child: buttonWidget,
-        ),
-      );
+      
+      // Position the buttons based on hoverButtonPosition
+      switch (widget.hoverButtonPosition) {
+        case HoverButtonPosition.left:
+          hoverButtons = Positioned(
+            left: 8,
+            top: 0,
+            bottom: 0,
+            child: Center(
+              child: buttonWidget,
+            ),
+          );
+          break;
+        case HoverButtonPosition.center:
+          hoverButtons = Positioned.fill(
+            child: Center(
+              child: buttonWidget,
+            ),
+          );
+          break;
+        case HoverButtonPosition.right:
+          hoverButtons = Positioned(
+            right: 8,
+            top: 0,
+            bottom: 0,
+            child: Center(
+              child: buttonWidget,
+            ),
+          );
+          break;
+      }
     }
 
     // Wrap with Stack for hover buttons

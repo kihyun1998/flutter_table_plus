@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import '../../flutter_table_plus.dart' show TablePlusTheme;
+import '../../flutter_table_plus.dart' show TablePlusTheme, HoverButtonPosition;
 import '../models/merged_row_group.dart';
 import '../models/table_column.dart';
 import 'synced_scroll_controllers.dart';
@@ -46,6 +46,7 @@ class FlutterTablePlus extends StatefulWidget {
     this.noDataWidget,
     this.calculateRowHeight,
     this.hoverButtonBuilder,
+    this.hoverButtonPosition = HoverButtonPosition.right,
   });
 
   /// The map of columns to display in the table.
@@ -164,8 +165,10 @@ class FlutterTablePlus extends StatefulWidget {
   /// Builder function to create custom hover buttons for each row.
   /// 
   /// Called when a row is hovered, providing the row ID and row data.
-  /// Should return a Widget to display as an overlay on the right side of the row.
+  /// Should return a Widget to display as an overlay on the row.
   /// If null, no hover buttons will be displayed.
+  /// 
+  /// The position of the buttons can be controlled via [hoverButtonPosition].
   /// 
   /// Example:
   /// ```dart
@@ -184,6 +187,15 @@ class FlutterTablePlus extends StatefulWidget {
   /// )
   /// ```
   final Widget Function(String rowId, Map<String, dynamic> rowData)? hoverButtonBuilder;
+
+  /// The position where hover buttons should be displayed.
+  /// 
+  /// Defaults to [HoverButtonPosition.right].
+  /// 
+  /// - [HoverButtonPosition.left]: Buttons appear on the left side
+  /// - [HoverButtonPosition.center]: Buttons appear in the center 
+  /// - [HoverButtonPosition.right]: Buttons appear on the right side (default)
+  final HoverButtonPosition hoverButtonPosition;
 
   @override
   State<FlutterTablePlus> createState() => _FlutterTablePlusState();
@@ -756,6 +768,8 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                                     widget.calculateRowHeight,
                                                 hoverButtonBuilder:
                                                     widget.hoverButtonBuilder,
+                                                hoverButtonPosition:
+                                                    widget.hoverButtonPosition,
                                               ),
                                             );
                                           },
@@ -904,6 +918,8 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                                               .calculateRowHeight,
                                                           hoverButtonBuilder: widget
                                                               .hoverButtonBuilder,
+                                                          hoverButtonPosition: widget
+                                                              .hoverButtonPosition,
                                                         ),
                                                       );
                                                     },

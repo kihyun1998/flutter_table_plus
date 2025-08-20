@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_table_plus/src/widgets/table_plus_row.dart';
 
-import '../../flutter_table_plus.dart' show TablePlusSelectionTheme;
+import '../../flutter_table_plus.dart' show TablePlusSelectionTheme, HoverButtonPosition;
 import '../models/merged_row_group.dart';
 import '../models/table_column.dart';
 import '../models/theme/body_theme.dart' show TablePlusBodyTheme;
@@ -41,6 +41,7 @@ class TablePlusBody extends StatelessWidget {
     this.calculateRowHeight,
     this.needsVerticalScroll = false,
     this.hoverButtonBuilder,
+    this.hoverButtonPosition = HoverButtonPosition.right,
   });
 
   /// The list of columns for the table.
@@ -124,10 +125,13 @@ class TablePlusBody extends StatelessWidget {
   /// Builder function to create custom hover buttons for each row.
   ///
   /// Called when a row is hovered, providing the row ID and row data.
-  /// Should return a Widget to display as an overlay on the right side of the row.
+  /// Should return a Widget to display as an overlay on the row.
   /// If null, no hover buttons will be displayed.
   final Widget Function(String rowId, Map<String, dynamic> rowData)?
       hoverButtonBuilder;
+
+  /// The position where hover buttons should be displayed.
+  final HoverButtonPosition hoverButtonPosition;
 
   /// Whether the table needs vertical scrolling.
   /// Used to determine if the last row should have a bottom border based on
@@ -414,6 +418,7 @@ class TablePlusBody extends StatelessWidget {
       calculatedHeight: calculatedHeight,
       needsVerticalScroll: needsVerticalScroll,
       hoverButtonBuilder: hoverButtonBuilder,
+      hoverButtonPosition: hoverButtonPosition,
     );
   }
 }
