@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../flutter_table_plus.dart'
-    show TablePlusSelectionTheme, LastRowBorderBehavior;
+    show TablePlusSelectionTheme, LastRowBorderBehavior, HoverButtonPosition;
 import '../models/merged_row_group.dart';
 import '../models/table_column.dart';
 import '../models/theme/body_theme.dart' show TablePlusBodyTheme;
 import '../models/theme/editable_theme.dart' show TablePlusEditableTheme;
 import '../models/theme/tooltip_theme.dart' show TablePlusTooltipTheme;
+import '../models/theme/hover_button_theme.dart' show TablePlusHoverButtonTheme;
 import '../models/tooltip_behavior.dart';
 import '../utils/text_overflow_detector.dart';
 import 'cells/editable_text_field.dart';
@@ -45,6 +46,9 @@ class TablePlusMergedRow extends TablePlusRowWidget {
     this.calculatedHeight,
     this.individualHeights,
     this.needsVerticalScroll = false,
+    this.hoverButtonBuilder,
+    this.hoverButtonPosition = HoverButtonPosition.right,
+    this.hoverButtonTheme,
   });
 
   @override
@@ -90,6 +94,17 @@ class TablePlusMergedRow extends TablePlusRowWidget {
   /// Used to determine if the last row should have a bottom border.
   final bool needsVerticalScroll;
 
+  /// Builder function for creating custom hover buttons.
+  /// Called when the row is hovered with the group ID and representative row data.
+  final Widget Function(String rowId, Map<String, dynamic> rowData)?
+      hoverButtonBuilder;
+
+  /// The position where hover buttons should be displayed.
+  final HoverButtonPosition hoverButtonPosition;
+
+  /// Theme configuration for hover buttons.
+  final TablePlusHoverButtonTheme? hoverButtonTheme;
+
   // Implementation of TablePlusRowWidget abstract methods
   @override
   int get effectiveRowCount => 1; // Visually appears as one row
@@ -106,6 +121,8 @@ class TablePlusMergedRow extends TablePlusRowWidget {
 }
 
 class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
+  bool _isHovered = false;
+
   /// Handle row tap for selection.
   void _handleRowTap() {
     if (widget.isEditable) return;
@@ -763,6 +780,50 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
     );
   }
 
+  /// Build hover buttons for the merged row.
+  Widget? _buildHoverButtons(double mergedHeight) {
+    if (!_isHovered || widget.hoverButtonBuilder == null) {
+      return null;
+    }
+
+    // Get representative row data (first row in the merge group)
+    final representativeData = _getRowData(widget.mergeGroup.rowKeys.first) ?? {};
+    
+    // Create button widget using builder
+    final buttonWidget = widget.hoverButtonBuilder!(
+      widget.mergeGroup.groupId,
+      representativeData,
+    );
+
+    // Position the buttons based on hoverButtonPosition
+    switch (widget.hoverButtonPosition) {
+      case HoverButtonPosition.left:
+        return Positioned(
+          left: widget.hoverButtonTheme?.horizontalOffset ?? 8.0,
+          top: 0,
+          bottom: 0,
+          child: Center(
+            child: buttonWidget,
+          ),
+        );
+      case HoverButtonPosition.center:
+        return Positioned.fill(
+          child: Center(
+            child: buttonWidget,
+          ),
+        );
+      case HoverButtonPosition.right:
+        return Positioned(
+          right: widget.hoverButtonTheme?.horizontalOffset ?? 8.0,
+          top: 0,
+          bottom: 0,
+          child: Center(
+            child: buttonWidget,
+          ),
+        );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final mergedHeight = widget.calculatedHeight ??
@@ -801,6 +862,24 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
       ),
     );
 
+    // Create hover buttons
+    final hoverButtons = _buildHoverButtons(mergedHeight);
+
+    // Stack rowContent with hover buttons
+    Widget stackedContent = Stack(
+      children: [
+        rowContent,
+        if (hoverButtons != null) hoverButtons,
+      ],
+    );
+
+    // Wrap with MouseRegion for hover detection
+    Widget hoveredContent = MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: stackedContent,
+    );
+
     // Wrap with CustomInkWell for row selection if selectable and not editable
     if (widget.isSelectable && !widget.isEditable) {
       return CustomInkWell(
@@ -817,10 +896,10 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
             .getEffectiveSplashColor(widget.isSelected, widget.backgroundColor),
         highlightColor: widget.selectionTheme.getEffectiveHighlightColor(
             widget.isSelected, widget.backgroundColor),
-        child: rowContent,
+        child: hoveredContent,
       );
     }
 
-    return rowContent;
+    return hoveredContent;
   }
 }

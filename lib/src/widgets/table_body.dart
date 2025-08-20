@@ -391,6 +391,9 @@ class TablePlusBody extends StatelessWidget {
           calculatedHeight: mergedHeight,
           individualHeights: individualHeights,
           needsVerticalScroll: needsVerticalScroll,
+          hoverButtonBuilder: hoverButtonBuilder,
+          hoverButtonPosition: hoverButtonPosition,
+          hoverButtonTheme: hoverButtonTheme,
         );
       }
     }

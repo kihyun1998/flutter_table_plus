@@ -885,6 +885,33 @@ class _ComprehensiveMergedExampleState
                   onCellChanged: _handleCellChanged,
                   onMergedCellChanged: _handleMergedCellChanged,
 
+                  // Hover buttons
+                  hoverButtonBuilder: (rowId, rowData) {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.withOpacity(0.9),
+                        borderRadius: BorderRadius.circular(4),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: IconButton(
+                        icon: const Icon(Icons.info_outline, 
+                                      size: 18, 
+                                      color: Colors.white),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                        onPressed: () => _handleHoverButtonPress(rowId, rowData),
+                        tooltip: 'Show Info',
+                      ),
+                    );
+                  },
+
                   // Theme with custom border behavior
                   theme: TablePlusTheme(
                     bodyTheme: TablePlusBodyTheme(
@@ -1361,5 +1388,22 @@ class _ComprehensiveMergedExampleState
         duration: const Duration(seconds: 2),
       ),
     );
+  }
+
+  void _handleHoverButtonPress(String rowId, Map<String, dynamic> rowData) {
+    // Check if this is a merged row (group ID) or regular row
+    final isMergedRow = _mergedGroups.any((group) => group.groupId == rowId);
+    
+    if (isMergedRow) {
+      // Find the merged group
+      final group = _mergedGroups.firstWhere((g) => g.groupId == rowId);
+      print('Hover button pressed on merged group: $rowId');
+      print('Group contains ${group.rowKeys.length} rows: ${group.rowKeys}');
+      print('Representative data: $rowData');
+    } else {
+      // Regular row
+      print('Hover button pressed on regular row: $rowId');
+      print('Row data: $rowData');
+    }
   }
 }
