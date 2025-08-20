@@ -76,10 +76,6 @@ class DemoColumnDefinitions {
     };
   }
 
-  /// Get frozen column keys (for Phase 4)
-  static List<String> getFrozenColumnKeys() {
-    return ['name']; // Freeze the name column
-  }
 
   /// Helper method to format column titles with icons (for later phases)
   static String formatColumnTitle(String title, {IconData? icon}) {

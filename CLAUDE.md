@@ -90,10 +90,9 @@ dart doc .                      # Generate API documentation
 2. **Builder Pattern**: TableColumnsBuilder prevents order conflicts and manages column ordering automatically
 3. **Synchronized Scrolling**: Custom scroll controller synchronization between header and body
 4. **Merged Row Groups**: MergedRowGroup system for visually combining multiple data rows with configurable merge behavior per column
-5. **Frozen Columns**: Left-pinned columns with optional divider theming for improved data visibility
-6. **Theme Composition**: Nested theme classes (TablePlusTheme, TablePlusHeaderTheme, etc.) for granular styling control
-7. **State Management Ready**: Designed to work with state management solutions like Riverpod (see documentation/RIVERPOD_GENERATOR_GUIDE.md)
-8. **Row Widget Polymorphism**: TablePlusRowWidget abstract class enables different row types (_TablePlusRow for normal rows, TablePlusMergedRow for grouped rows) with consistent ListView.builder interface
+5. **Theme Composition**: Nested theme classes (TablePlusTheme, TablePlusHeaderTheme, etc.) for granular styling control
+6. **State Management Ready**: Designed to work with state management solutions like Riverpod (see documentation/RIVERPOD_GENERATOR_GUIDE.md)
+7. **Row Widget Polymorphism**: TablePlusRowWidget abstract class enables different row types (_TablePlusRow for normal rows, TablePlusMergedRow for grouped rows) with consistent ListView.builder interface
 
 ### Widget Lifecycle
 

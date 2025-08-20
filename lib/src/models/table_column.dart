@@ -95,7 +95,6 @@ class TablePlusColumn {
     this.sortable = false,
     this.editable = false,
     this.visible = true,
-    this.frozen = false,
     this.cellBuilder,
     this.hintText,
     this.textOverflow = TextOverflow.ellipsis,
@@ -141,10 +140,6 @@ class TablePlusColumn {
   /// Whether this column is visible in the table.
   final bool visible;
 
-  /// Whether this column should be frozen (fixed) on the left side of the table.
-  /// When true, the column will remain visible during horizontal scrolling.
-  /// Frozen columns are displayed in order before non-frozen columns.
-  final bool frozen;
 
   /// Optional custom cell builder for this column.
   /// If provided, this will be used instead of the default cell rendering.
@@ -188,7 +183,6 @@ class TablePlusColumn {
     bool? sortable,
     bool? editable,
     bool? visible,
-    bool? frozen,
     Widget Function(BuildContext context, Map<String, dynamic> rowData)?
         cellBuilder,
     String? hintText,
@@ -208,7 +202,6 @@ class TablePlusColumn {
       sortable: sortable ?? this.sortable,
       editable: editable ?? this.editable,
       visible: visible ?? this.visible,
-      frozen: frozen ?? this.frozen,
       cellBuilder: cellBuilder ?? this.cellBuilder,
       hintText: hintText ?? this.hintText,
       textOverflow: textOverflow ?? this.textOverflow,

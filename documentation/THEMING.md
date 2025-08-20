@@ -167,35 +167,11 @@ This theme controls the appearance and behavior of the synchronized scrollbars.
 
 Controls the appearance of cells in editing mode. See `EDITING.md` for more details.
 
-## 7. Frozen Column Divider Styling (`TablePlusDividerTheme`)
-
-Controls the appearance of the vertical divider between frozen and scrollable columns.
-
-- `color`: The color of the divider line. If null, defaults to `Colors.grey.shade300`.
-- `thickness`: The thickness of the divider line in pixels (default: 1.0).
-- `indent`: The amount of empty space at the top of the divider (default: 0.0).
-- `endIndent`: The amount of empty space at the bottom of the divider (default: 0.0).
-
-The divider automatically appears when both frozen and scrollable columns are present. It consists of two parts:
-- **Header divider**: Fixed height matching the header theme height
-- **Body divider**: Dynamic height matching the actual data content
-
-```dart
-theme: const TablePlusTheme(
-  dividerTheme: TablePlusDividerTheme(
-    color: Colors.blue.shade200,
-    thickness: 2.0,
-    indent: 4.0,
-    endIndent: 4.0,
-  ),
-),
-```
-
-## 8. Tooltip Styling (`TablePlusTooltipTheme`)
+## 7. Tooltip Styling (`TablePlusTooltipTheme`)
 
 Controls the appearance of tooltips that appear when cell content overflows. See `ADVANCED_COLUMNS.md` for more details.
 
-## 9. Last Row Border Behavior (`lastRowBorderBehavior`)
+## 8. Last Row Border Behavior (`lastRowBorderBehavior`)
 
 The `lastRowBorderBehavior` property in `TablePlusBodyTheme` gives you fine-grained control over when the bottom border of the very last row in the table is displayed. This is useful for achieving a clean, polished look in different scenarios.
 

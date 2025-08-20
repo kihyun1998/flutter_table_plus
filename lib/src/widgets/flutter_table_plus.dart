@@ -198,7 +198,6 @@ class FlutterTablePlus extends StatefulWidget {
   /// - [HoverButtonPosition.right]: Buttons appear on the right side (default)
   final HoverButtonPosition hoverButtonPosition;
 
-
   @override
   State<FlutterTablePlus> createState() => _FlutterTablePlusState();
 }
@@ -396,26 +395,12 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
         maxWidth: _currentTheme.selectionTheme.checkboxColumnWidth,
         alignment: Alignment.center,
         textAlign: TextAlign.center,
-        frozen: true, // Selection column is always frozen
       );
 
       return [selectionColumn, ...visibleColumns];
     }
 
     return visibleColumns;
-  }
-
-  /// Get frozen columns from visible columns.
-  /// Frozen columns are displayed on the left side and don't scroll horizontally.
-  /// Selection column (if present) is automatically frozen.
-  List<TablePlusColumn> get _frozenColumns {
-    return _visibleColumns.where((col) => col.frozen).toList();
-  }
-
-  /// Get scrollable columns from visible columns.
-  /// Scrollable columns can be scrolled horizontally.
-  List<TablePlusColumn> get _scrollableColumns {
-    return _visibleColumns.where((col) => !col.frozen).toList();
   }
 
   /// Get the height for an individual row.
@@ -478,39 +463,23 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
     return totalHeight;
   }
 
-  /// Calculate the actual width for frozen columns.
-  List<double> _calculateFrozenColumnWidths() {
-    final frozenColumns = _frozenColumns;
-    if (frozenColumns.isEmpty) return [];
-
-    // For frozen columns, ensure they meet minimum width requirements
-    return frozenColumns.map((col) => max(col.width, col.minWidth)).toList();
-  }
-
-  /// Calculate the actual width for scrollable columns based on available space.
-  List<double> _calculateScrollableColumnWidths(double availableWidth) {
-    final scrollableColumns = _scrollableColumns;
-    if (scrollableColumns.isEmpty) return [];
+  /// Calculate the actual width for columns based on available space.
+  List<double> _calculateColumnWidths(double availableWidth) {
+    final columns = _visibleColumns;
+    if (columns.isEmpty) return [];
 
     // Ensure available width is at least the minimum required
     final minRequiredWidth =
-        scrollableColumns.fold(0.0, (sum, col) => sum + col.minWidth);
+        columns.fold(0.0, (sum, col) => sum + col.minWidth);
     final actualAvailableWidth = max(availableWidth, minRequiredWidth);
 
-    // Calculate widths for scrollable columns using existing logic
-    return _calculateRegularColumnWidths(
-        scrollableColumns, actualAvailableWidth);
+    // Calculate widths for columns using existing logic
+    return _calculateRegularColumnWidths(columns, actualAvailableWidth);
   }
 
-  /// Get total width needed for frozen columns.
-  double get _frozenColumnsWidth {
-    return _frozenColumns.fold(
-        0.0, (sum, col) => sum + max(col.width, col.minWidth));
-  }
-
-  /// Get minimum width needed for scrollable columns.
-  double get _scrollableColumnsMinWidth {
-    return _scrollableColumns.fold(0.0, (sum, col) => sum + col.minWidth);
+  /// Get minimum width needed for all columns.
+  double get _columnsMinWidth {
+    return _visibleColumns.fold(0.0, (sum, col) => sum + col.minWidth);
   }
 
   /// Get the total number of displayed rows considering merged groups.
@@ -627,30 +596,20 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
         final double availableWidth = constraints.maxWidth;
 
         // Calculate minimum required widths
-        final double scrollableMinWidth = _scrollableColumnsMinWidth;
+        final double columnsMinWidth = _columnsMinWidth;
 
-        // Calculate actual frozen width (preferred or minimum)
-        final double frozenWidth = _frozenColumnsWidth;
+        // Calculate preferred width for all columns
+        final double columnsPreferredWidth =
+            _visibleColumns.fold(0.0, (sum, col) => sum + col.width);
 
-        // Calculate scrollable area width (ensure it's not negative)
-        final double scrollableAreaWidth = max(0, availableWidth - frozenWidth);
-
-        // Calculate column widths for each area
-        final List<double> frozenColumnWidths = _calculateFrozenColumnWidths();
-
-        // Calculate preferred width for scrollable columns
-        final double scrollablePreferredWidth =
-            _scrollableColumns.fold(0.0, (sum, col) => sum + col.width);
-
-        // Actual scrollable content width (can be wider than available space for horizontal scroll)
-        final double scrollableContentWidth = max(
-          max(scrollableMinWidth, scrollablePreferredWidth),
-          scrollableAreaWidth,
+        // Actual content width (can be wider than available space for horizontal scroll)
+        final double contentWidth = max(
+          max(columnsMinWidth, columnsPreferredWidth),
+          availableWidth,
         );
 
-        // Calculate scrollable column widths based on content width (not area width!)
-        final List<double> scrollableColumnWidths =
-            _calculateScrollableColumnWidths(scrollableContentWidth);
+        // Calculate column widths based on content width
+        final List<double> columnWidths = _calculateColumnWidths(contentWidth);
 
         // Calculate table data height
         final double tableDataHeight = _calculateTotalDataHeight();
@@ -664,15 +623,13 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
             context,
             verticalScrollController,
             verticalScrollbarController,
-            verticalFrozenController,
             horizontalScrollController,
             horizontalScrollbarController,
           ) {
             // Determine if scrolling is needed
             final bool needsVerticalScroll =
                 totalContentHeight > availableHeight;
-            final bool needsHorizontalScroll =
-                scrollableContentWidth > scrollableAreaWidth;
+            final bool needsHorizontalScroll = contentWidth > availableWidth;
 
             return MouseRegion(
               onEnter: (_) => setState(() => _isHovered = true),
@@ -684,270 +641,94 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                 ),
                 child: Stack(
                   children: [
-                    // Main table area with Row layout (frozen + scrollable)
-                    Row(
-                      children: [
-                        // Frozen Area (left side)
-                        if (_frozenColumns.isNotEmpty)
-                          SizedBox(
-                            width: frozenWidth,
-                            child: Column(
-                              children: [
-                                // Frozen Header
-                                TablePlusHeader(
-                                  columns: _frozenColumns,
-                                  totalWidth: frozenWidth,
-                                  theme: theme.headerTheme,
-                                  isSelectable: widget.isSelectable,
-                                  selectionMode: widget.selectionMode,
-                                  selectedRows: widget.selectedRows,
-                                  sortCycleOrder: widget.sortCycleOrder,
-                                  totalRowCount: _getTotalRowCount(),
-                                  selectionTheme: theme.selectionTheme,
-                                  tooltipTheme: theme.tooltipTheme,
-                                  onSelectAll: widget.onSelectAll,
-                                  onColumnReorder:
-                                      null, // Disable reordering for frozen area
-                                  sortColumnKey: widget.sortColumnKey,
-                                  sortDirection: widget.sortDirection,
-                                  onSort: widget.onSort,
-                                ),
-
-                                // Frozen Body
-                                Expanded(
-                                  child: widget.data.isEmpty &&
-                                          widget.noDataWidget != null
-                                      ? widget.noDataWidget!
-                                      : LayoutBuilder(
-                                          builder: (context, constraints) {
-                                            // Ensure both areas have the same vertical scroll extent
-                                            return SizedBox(
-                                              height: max(constraints.maxHeight,
-                                                  tableDataHeight),
-                                              child: TablePlusBody(
-                                                columns: _frozenColumns,
-                                                data: widget.data,
-                                                mergedGroups:
-                                                    widget.mergedGroups,
-                                                columnWidths:
-                                                    frozenColumnWidths,
-                                                theme: theme.bodyTheme,
-                                                verticalController:
-                                                    verticalFrozenController,
-                                                rowIdKey: widget.rowIdKey,
-                                                needsVerticalScroll:
-                                                    needsVerticalScroll,
-                                                isSelectable:
-                                                    widget.isSelectable,
-                                                selectionMode:
-                                                    widget.selectionMode,
-                                                selectedRows:
-                                                    widget.selectedRows,
-                                                selectionTheme:
-                                                    theme.selectionTheme,
-                                                onRowSelectionChanged: widget
-                                                    .onRowSelectionChanged,
-                                                onRowDoubleTap:
-                                                    widget.onRowDoubleTap,
-                                                onRowSecondaryTap:
-                                                    widget.onRowSecondaryTap,
-                                                isEditable: widget.isEditable,
-                                                editableTheme:
-                                                    theme.editableTheme,
-                                                tooltipTheme:
-                                                    theme.tooltipTheme,
-                                                isCellEditing: _isCellEditing,
-                                                getCellController:
-                                                    _getCellController,
-                                                onCellTap: _handleCellTap,
-                                                onStopEditing:
-                                                    _stopCurrentEditing,
-                                                onMergedCellChanged:
-                                                    widget.onMergedCellChanged,
-                                                onMergedRowExpandToggle: widget
-                                                    .onMergedRowExpandToggle,
-                                                calculateRowHeight:
-                                                    widget.calculateRowHeight,
-                                                hoverButtonBuilder:
-                                                    widget.hoverButtonBuilder,
-                                                hoverButtonPosition:
-                                                    widget.hoverButtonPosition,
-                                                hoverButtonTheme:
-                                                    theme.hoverButtonTheme,
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                ),
-                              ],
+                    SingleChildScrollView(
+                      controller: horizontalScrollController,
+                      scrollDirection: Axis.horizontal,
+                      physics: const ClampingScrollPhysics(),
+                      child: SizedBox(
+                        width: contentWidth,
+                        child: Column(
+                          children: [
+                            // Scrollable Header
+                            TablePlusHeader(
+                              columns: _visibleColumns,
+                              totalWidth: contentWidth,
+                              theme: theme.headerTheme,
+                              isSelectable: widget.isSelectable,
+                              selectionMode: widget.selectionMode,
+                              selectedRows: widget.selectedRows,
+                              sortCycleOrder: widget.sortCycleOrder,
+                              totalRowCount: _getTotalRowCount(),
+                              selectionTheme: theme.selectionTheme,
+                              tooltipTheme: theme.tooltipTheme,
+                              onSelectAll: widget.onSelectAll,
+                              onColumnReorder: widget.onColumnReorder,
+                              sortColumnKey: widget.sortColumnKey,
+                              sortDirection: widget.sortDirection,
+                              onSort: widget.onSort,
                             ),
-                          ),
 
-                        // Frozen Column Divider
-                        if (_frozenColumns.isNotEmpty &&
-                            _scrollableColumns.isNotEmpty)
-                          SizedBox(
-                            width: theme.dividerTheme.thickness,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Header Divider
-                                Container(
-                                  width: theme.dividerTheme.thickness,
-                                  height: theme.headerTheme.height,
-                                  margin: EdgeInsets.only(
-                                    top: theme.dividerTheme.indent,
-                                    bottom: theme.dividerTheme.endIndent,
-                                  ),
-                                  color: theme.dividerTheme.getEffectiveColor(),
-                                ),
-                                // Body Divider (flexible height)
-                                if (widget.data.isNotEmpty)
-                                  Expanded(
-                                    child: Container(
-                                      width: theme.dividerTheme.thickness,
-                                      margin: EdgeInsets.only(
-                                        top: theme.dividerTheme.indent,
-                                        bottom: theme.dividerTheme.endIndent,
-                                      ),
-                                      color: theme.dividerTheme
-                                          .getEffectiveColor(),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-
-                        // Scrollable Area (right side)
-                        if (_scrollableColumns.isNotEmpty)
-                          Expanded(
-                            child: scrollableAreaWidth > 0
-                                ? SingleChildScrollView(
-                                    controller: horizontalScrollController,
-                                    scrollDirection: Axis.horizontal,
-                                    physics: const ClampingScrollPhysics(),
-                                    child: SizedBox(
-                                      width: scrollableContentWidth,
-                                      child: Column(
-                                        children: [
-                                          // Scrollable Header
-                                          TablePlusHeader(
-                                            columns: _scrollableColumns,
-                                            totalWidth: scrollableContentWidth,
-                                            theme: theme.headerTheme,
-                                            isSelectable:
-                                                false, // Selection handled in frozen area
+                            // Scrollable Body
+                            Expanded(
+                              child: widget.data.isEmpty &&
+                                      widget.noDataWidget != null
+                                  ? widget.noDataWidget!
+                                  : LayoutBuilder(
+                                      builder: (context, constraints) {
+                                        // Ensure table has proper height for scrolling
+                                        return SizedBox(
+                                          height: max(constraints.maxHeight,
+                                              tableDataHeight),
+                                          child: TablePlusBody(
+                                            columns: _visibleColumns,
+                                            data: widget.data,
+                                            mergedGroups: widget.mergedGroups,
+                                            columnWidths: columnWidths,
+                                            theme: theme.bodyTheme,
+                                            needsVerticalScroll:
+                                                needsVerticalScroll,
+                                            verticalController:
+                                                verticalScrollController,
+                                            rowIdKey: widget.rowIdKey,
+                                            isSelectable: widget.isSelectable,
                                             selectionMode: widget.selectionMode,
                                             selectedRows: widget.selectedRows,
-                                            sortCycleOrder:
-                                                widget.sortCycleOrder,
-                                            totalRowCount: _getTotalRowCount(),
                                             selectionTheme:
                                                 theme.selectionTheme,
+                                            onRowSelectionChanged:
+                                                widget.onRowSelectionChanged,
+                                            onRowDoubleTap:
+                                                widget.onRowDoubleTap,
+                                            onRowSecondaryTap:
+                                                widget.onRowSecondaryTap,
+                                            isEditable: widget.isEditable,
+                                            editableTheme: theme.editableTheme,
                                             tooltipTheme: theme.tooltipTheme,
-                                            onSelectAll:
-                                                null, // Handled in frozen area
-                                            onColumnReorder:
-                                                widget.onColumnReorder,
-                                            sortColumnKey: widget.sortColumnKey,
-                                            sortDirection: widget.sortDirection,
-                                            onSort: widget.onSort,
+                                            isCellEditing: _isCellEditing,
+                                            getCellController:
+                                                _getCellController,
+                                            onCellTap: _handleCellTap,
+                                            onStopEditing: _stopCurrentEditing,
+                                            onMergedCellChanged:
+                                                widget.onMergedCellChanged,
+                                            onMergedRowExpandToggle:
+                                                widget.onMergedRowExpandToggle,
+                                            calculateRowHeight:
+                                                widget.calculateRowHeight,
+                                            hoverButtonBuilder:
+                                                widget.hoverButtonBuilder,
+                                            hoverButtonPosition:
+                                                widget.hoverButtonPosition,
+                                            hoverButtonTheme:
+                                                theme.hoverButtonTheme,
                                           ),
-
-                                          // Scrollable Body
-                                          Expanded(
-                                            child: widget.data.isEmpty &&
-                                                    widget.noDataWidget != null
-                                                ? Container() // No data widget only shown in frozen area
-                                                : LayoutBuilder(
-                                                    builder:
-                                                        (context, constraints) {
-                                                      // Ensure both areas have the same vertical scroll extent
-                                                      return SizedBox(
-                                                        height: max(
-                                                            constraints
-                                                                .maxHeight,
-                                                            tableDataHeight),
-                                                        child: TablePlusBody(
-                                                          columns:
-                                                              _scrollableColumns,
-                                                          data: widget.data,
-                                                          mergedGroups: widget
-                                                              .mergedGroups,
-                                                          columnWidths:
-                                                              scrollableColumnWidths,
-                                                          theme:
-                                                              theme.bodyTheme,
-                                                          needsVerticalScroll:
-                                                              needsVerticalScroll,
-                                                          verticalController:
-                                                              verticalScrollController,
-                                                          rowIdKey:
-                                                              widget.rowIdKey,
-                                                          isSelectable:
-                                                              false, // Selection handled in frozen area
-                                                          selectionMode: widget
-                                                              .selectionMode,
-                                                          selectedRows: widget
-                                                              .selectedRows,
-                                                          selectionTheme: theme
-                                                              .selectionTheme,
-                                                          onRowSelectionChanged:
-                                                              null, // Handled in frozen area
-                                                          onRowDoubleTap:
-                                                              null, // Handed in frozen area
-                                                          onRowSecondaryTap:
-                                                              null, // Handled in frozen area
-                                                          isEditable:
-                                                              widget.isEditable,
-                                                          editableTheme: theme
-                                                              .editableTheme,
-                                                          tooltipTheme: theme
-                                                              .tooltipTheme,
-                                                          isCellEditing:
-                                                              _isCellEditing,
-                                                          getCellController:
-                                                              _getCellController,
-                                                          onCellTap:
-                                                              _handleCellTap,
-                                                          onStopEditing:
-                                                              _stopCurrentEditing,
-                                                          onMergedCellChanged:
-                                                              widget
-                                                                  .onMergedCellChanged,
-                                                          onMergedRowExpandToggle:
-                                                              widget
-                                                                  .onMergedRowExpandToggle,
-                                                          calculateRowHeight: widget
-                                                              .calculateRowHeight,
-                                                          hoverButtonBuilder: widget
-                                                              .hoverButtonBuilder,
-                                                          hoverButtonPosition:
-                                                              widget
-                                                                  .hoverButtonPosition,
-                                                          hoverButtonTheme: theme
-                                                              .hoverButtonTheme,
-                                                        ),
-                                                      );
-                                                    },
-                                                  ),
-                                          ),
-                                        ],
-                                      ),
+                                        );
+                                      },
                                     ),
-                                  )
-                                : SizedBox(
-                                    width: 1, // Minimal width when no space
-                                    child: Column(
-                                      children: [
-                                        Container(
-                                            height: theme.headerTheme.height),
-                                        Expanded(child: Container()),
-                                      ],
-                                    ),
-                                  ),
-                          ),
-                      ],
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
 
                     // Vertical Scrollbar (right overlay) - starts below header
@@ -1014,10 +795,9 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
 
                     // Horizontal Scrollbar (bottom overlay) - only for scrollable area
                     if (theme.scrollbarTheme.showHorizontal &&
-                        needsHorizontalScroll &&
-                        _scrollableColumns.isNotEmpty)
+                        needsHorizontalScroll)
                       Positioned(
-                        left: frozenWidth, // Start after frozen area
+                        left: 0,
                         right: 0,
                         bottom: 0,
                         child: AnimatedOpacity(
@@ -1059,7 +839,7 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                   controller: horizontalScrollbarController,
                                   scrollDirection: Axis.horizontal,
                                   child: SizedBox(
-                                    width: scrollableContentWidth,
+                                    width: contentWidth,
                                     height: theme.scrollbarTheme.width,
                                   ),
                                 ),

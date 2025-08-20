@@ -5,7 +5,6 @@ import 'pages/table_example_page.dart';
 import 'pages/comprehensive_merged_example.dart';
 import 'pages/sortable_example.dart';
 import 'pages/dynamic_height_example.dart';
-import 'pages/frozen_columns_demo.dart';
 import 'pages/expandable_summary_example.dart';
 import 'pages/hover_button_demo.dart';
 
@@ -140,24 +139,6 @@ class ExampleHomePage extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                       builder: (context) => const DynamicHeightExample(),
-                    ),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 8),
-            Card(
-              child: ListTile(
-                leading: const Icon(Icons.lock),
-                title: const Text('Frozen Columns Demo'),
-                subtitle: const Text(
-                    'Fixed columns with horizontal scroll, sorting, selection, editing'),
-                trailing: const Icon(Icons.arrow_forward_ios),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const FrozenColumnsDemo(),
                     ),
                   );
                 },
