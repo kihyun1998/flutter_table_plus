@@ -102,10 +102,22 @@ class TablePlusMergedRow extends TablePlusRowWidget {
         .where((index) => index != -1)
         .toList();
   }
+}
+
+class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
+  /// Handle row tap for selection.
+  void _handleRowTap() {
+    if (widget.isEditable) return;
+    if (!widget.isSelectable) return;
+
+    // For both single and multiple selection modes, toggle the selection
+    widget.onRowSelectionChanged(widget.mergeGroup.groupId);
+  }
 
   /// Get the data for a specific row key within the merge group.
   Map<String, dynamic>? _getRowData(String rowKey) {
-    return mergeGroup.getRowData(allData, rowKey, rowIdKey);
+    return widget.mergeGroup
+        .getRowData(widget.allData, rowKey, widget.rowIdKey);
   }
 
   /// Determines whether to show a bottom border for the merged row.
@@ -127,27 +139,29 @@ class TablePlusMergedRow extends TablePlusRowWidget {
         return true;
       case LastRowBorderBehavior.smart:
         // Show border only when there's no vertical scroll
-        return !needsVerticalScroll;
+        return !widget.needsVerticalScroll;
     }
   }
 
   /// Handle merged cell value change.
   void _handleMergedCellValueChange(
       String columnKey, int dataIndex, String? newValue) {
-    if (onMergedCellChanged != null &&
-        mergeGroup.shouldMergeColumn(columnKey)) {
-      onMergedCellChanged!(mergeGroup.groupId, columnKey, newValue);
+    if (widget.onMergedCellChanged != null &&
+        widget.mergeGroup.shouldMergeColumn(columnKey)) {
+      widget.onMergedCellChanged!(
+          widget.mergeGroup.groupId, columnKey, newValue);
     }
   }
 
   /// Build a cell for the merged row.
   Widget _buildCell(
       BuildContext context, int columnIndex, TablePlusColumn column) {
-    final width =
-        columnWidths.isNotEmpty ? columnWidths[columnIndex] : column.width;
+    final width = widget.columnWidths.isNotEmpty
+        ? widget.columnWidths[columnIndex]
+        : column.width;
 
     // Check if this column should be merged
-    if (mergeGroup.shouldMergeColumn(column.key)) {
+    if (widget.mergeGroup.shouldMergeColumn(column.key)) {
       return _buildMergedCell(context, column, width, columnIndex);
     } else {
       return _buildStackedCells(context, column, width, columnIndex);
@@ -157,24 +171,23 @@ class TablePlusMergedRow extends TablePlusRowWidget {
   /// Build a merged cell that spans multiple rows.
   Widget _buildMergedCell(BuildContext context, TablePlusColumn column,
       double? width, int columnIndex) {
-    final mergedContent = mergeGroup.getMergedContent(column.key);
-    final spanningRowKey = mergeGroup.getSpanningRowKey(column.key);
+    final mergedContent = widget.mergeGroup.getMergedContent(column.key);
+    final spanningRowKey = widget.mergeGroup.getSpanningRowKey(column.key);
     final rowData = _getRowData(spanningRowKey);
 
     // Calculate height for merged cell
-    // calculatedHeight already considers merged group heights, so we use it directly for the total group height
-    final mergedHeight =
-        calculatedHeight ?? (theme.rowHeight * mergeGroup.effectiveRowCount);
+    final mergedHeight = widget.calculatedHeight ??
+        (widget.theme.rowHeight * widget.mergeGroup.effectiveRowCount);
 
     // Check if this merged cell is editable
-    final isCellEditable = isEditable &&
+    final isCellEditable = widget.isEditable &&
         column.editable &&
-        mergeGroup.isMergedCellEditable(column.key);
-    final spanningDataIndex = allData
-        .indexWhere((row) => row[rowIdKey]?.toString() == spanningRowKey);
+        widget.mergeGroup.isMergedCellEditable(column.key);
+    final spanningDataIndex = widget.allData.indexWhere(
+        (row) => row[widget.rowIdKey]?.toString() == spanningRowKey);
     final isCurrentlyEditing = isCellEditable &&
         spanningDataIndex != -1 &&
-        isCellEditing?.call(spanningDataIndex, column.key) == true;
+        widget.isCellEditing?.call(spanningDataIndex, column.key) == true;
 
     Widget content;
 
@@ -189,7 +202,7 @@ class TablePlusMergedRow extends TablePlusRowWidget {
       // Custom cell builder
       content = Container(
         alignment: column.alignment,
-        padding: theme.padding,
+        padding: widget.theme.padding,
         child: Align(
           alignment: column.alignment,
           child: column.cellBuilder!(context, rowData ?? {}),
@@ -200,9 +213,9 @@ class TablePlusMergedRow extends TablePlusRowWidget {
       final displayValue = (rowData ?? {})[column.key]?.toString() ?? '';
       Widget textWidget = Text(
         displayValue,
-        style: selectionTheme.getEffectiveTextStyle(
-          isSelected,
-          theme.textStyle,
+        style: widget.selectionTheme.getEffectiveTextStyle(
+          widget.isSelected,
+          widget.theme.textStyle,
         ),
         textAlign: column.textAlign,
         overflow: column.textOverflow,
@@ -214,21 +227,22 @@ class TablePlusMergedRow extends TablePlusRowWidget {
 
       // Add expand/collapse icon if this is the first merged column and expandable
       Widget cellContent = textWidget;
-      if (mergeGroup.isExpandable && columnIndex == 0) {
+      if (widget.mergeGroup.isExpandable && columnIndex == 0) {
         cellContent = Row(
           children: [
             GestureDetector(
-              onTap: () => onMergedRowExpandToggle?.call(mergeGroup.groupId),
+              onTap: () => widget.onMergedRowExpandToggle
+                  ?.call(widget.mergeGroup.groupId),
               child: MouseRegion(
                 cursor: SystemMouseCursors.click,
                 child: Padding(
                   padding: const EdgeInsets.only(right: 8.0),
                   child: Icon(
-                    mergeGroup.isExpanded
+                    widget.mergeGroup.isExpanded
                         ? Icons.expand_less
                         : Icons.expand_more,
                     size: 16,
-                    color: theme.textStyle.color?.withValues(alpha: 0.7),
+                    color: widget.theme.textStyle.color?.withValues(alpha: 0.7),
                   ),
                 ),
               ),
@@ -240,25 +254,25 @@ class TablePlusMergedRow extends TablePlusRowWidget {
 
       content = Container(
         alignment: column.alignment,
-        padding: theme.padding,
+        padding: widget.theme.padding,
         child: cellContent,
       );
     }
 
     // Wrap with gesture detector for editing if applicable
-    if (isCellEditable && !isCurrentlyEditing && onCellTap != null) {
+    if (isCellEditable && !isCurrentlyEditing && widget.onCellTap != null) {
       content = GestureDetector(
-        onTap: () => onCellTap!(spanningDataIndex, column.key),
+        onTap: () => widget.onCellTap!(spanningDataIndex, column.key),
         child: MouseRegion(
           cursor: SystemMouseCursors.click,
           child: Container(
             width: width,
             height: mergedHeight,
             decoration: BoxDecoration(
-              border: theme.showVerticalDividers
+              border: widget.theme.showVerticalDividers
                   ? Border(
                       right: BorderSide(
-                        color: theme.dividerColor.withValues(alpha: 0.5),
+                        color: widget.theme.dividerColor.withValues(alpha: 0.5),
                         width: 0.5,
                       ),
                     )
@@ -274,10 +288,10 @@ class TablePlusMergedRow extends TablePlusRowWidget {
         width: width,
         height: mergedHeight,
         decoration: BoxDecoration(
-          border: theme.showVerticalDividers
+          border: widget.theme.showVerticalDividers
               ? Border(
                   right: BorderSide(
-                    color: theme.dividerColor.withValues(alpha: 0.5),
+                    color: widget.theme.dividerColor.withValues(alpha: 0.5),
                     width: 0.5,
                   ),
                 )
@@ -298,24 +312,21 @@ class TablePlusMergedRow extends TablePlusRowWidget {
     Map<String, dynamic> rowData,
     double mergedHeight,
   ) {
-    final controller = getCellController?.call(dataIndex, column.key);
-    final theme = editableTheme;
+    final controller = widget.getCellController?.call(dataIndex, column.key);
+    final theme = widget.editableTheme;
 
     return Container(
       width: double.infinity,
       height: mergedHeight,
-      padding:
-          theme.cellContainerPadding, // Use editable theme's container padding
+      padding: theme.cellContainerPadding,
       child: Align(
-        alignment:
-            column.alignment, // Follow column alignment like regular cells
+        alignment: column.alignment,
         child: Focus(
           onFocusChange: (hasFocus) {
-            // Auto-save when focus is lost (like regular cells)
             if (!hasFocus) {
               _handleMergedCellValueChange(
                   column.key, dataIndex, controller?.text);
-              onStopEditing?.call(save: true);
+              widget.onStopEditing?.call(save: true);
             }
           },
           child: KeyboardListener(
@@ -325,9 +336,9 @@ class TablePlusMergedRow extends TablePlusRowWidget {
                 if (event.logicalKey == LogicalKeyboardKey.enter) {
                   _handleMergedCellValueChange(
                       column.key, dataIndex, controller?.text);
-                  onStopEditing?.call(save: true);
+                  widget.onStopEditing?.call(save: true);
                 } else if (event.logicalKey == LogicalKeyboardKey.escape) {
-                  onStopEditing?.call(save: false);
+                  widget.onStopEditing?.call(save: false);
                 }
               }
             },
@@ -336,7 +347,7 @@ class TablePlusMergedRow extends TablePlusRowWidget {
               controller: controller,
               style: theme.editingTextStyle,
               textAlign: column.textAlign,
-              textAlignVertical: theme.textAlignVertical, // Use theme alignment
+              textAlignVertical: theme.textAlignVertical,
               cursorColor: theme.cursorColor,
               decoration: InputDecoration(
                 hintText: column.hintText,
@@ -345,7 +356,6 @@ class TablePlusMergedRow extends TablePlusRowWidget {
                 isDense: theme.isDense,
                 filled: theme.filled,
                 fillColor: theme.fillColor ?? theme.editingCellColor,
-                // Use the same border configuration as regular cells
                 border: OutlineInputBorder(
                   borderRadius: theme.borderRadius ?? theme.editingBorderRadius,
                   borderSide: BorderSide(
@@ -387,7 +397,7 @@ class TablePlusMergedRow extends TablePlusRowWidget {
               onSubmitted: (_) {
                 _handleMergedCellValueChange(
                     column.key, dataIndex, controller?.text);
-                onStopEditing?.call(save: true);
+                widget.onStopEditing?.call(save: true);
               },
             ),
           ),
@@ -399,18 +409,18 @@ class TablePlusMergedRow extends TablePlusRowWidget {
   /// Build stacked cells for non-merged columns.
   Widget _buildStackedCells(BuildContext context, TablePlusColumn column,
       double? width, int columnIndex) {
-    final totalHeight =
-        calculatedHeight ?? (theme.rowHeight * mergeGroup.effectiveRowCount);
+    final totalHeight = widget.calculatedHeight ??
+        (widget.theme.rowHeight * widget.mergeGroup.effectiveRowCount);
 
-    // Build all cells including summary row
     final List<Widget> cells = [];
 
     // Use maximum height for all rows (uniform height)
     final maxHeight =
-        individualHeights?.reduce((a, b) => a > b ? a : b) ?? theme.rowHeight;
+        widget.individualHeights?.reduce((a, b) => a > b ? a : b) ??
+            widget.theme.rowHeight;
 
     // Regular row cells
-    for (final entry in mergeGroup.rowKeys.asMap().entries) {
+    for (final entry in widget.mergeGroup.rowKeys.asMap().entries) {
       final rowIndex = entry.key;
       final rowKey = entry.value;
       final rowData = _getRowData(rowKey);
@@ -419,7 +429,7 @@ class TablePlusMergedRow extends TablePlusRowWidget {
     }
 
     // Add summary row if expandable and expanded
-    if (mergeGroup.isExpandable && mergeGroup.isExpanded) {
+    if (widget.mergeGroup.isExpandable && widget.mergeGroup.isExpanded) {
       cells.add(_buildSummaryRowCell(context, column, maxHeight));
     }
 
@@ -442,12 +452,12 @@ class TablePlusMergedRow extends TablePlusRowWidget {
       int rowIndex,
       int columnIndex) {
     // Check if this individual cell is editable
-    final isCellEditable = isEditable && column.editable;
-    final originalIndex =
-        allData.indexWhere((row) => row[rowIdKey]?.toString() == rowKey);
+    final isCellEditable = widget.isEditable && column.editable;
+    final originalIndex = widget.allData
+        .indexWhere((row) => row[widget.rowIdKey]?.toString() == rowKey);
     final isCurrentlyEditing = isCellEditable &&
         originalIndex != -1 &&
-        isCellEditing?.call(originalIndex, column.key) == true;
+        widget.isCellEditing?.call(originalIndex, column.key) == true;
 
     Widget content;
 
@@ -458,7 +468,7 @@ class TablePlusMergedRow extends TablePlusRowWidget {
     } else if (column.cellBuilder != null) {
       content = Container(
         alignment: column.alignment,
-        padding: theme.padding,
+        padding: widget.theme.padding,
         child: Align(
           alignment: column.alignment,
           child: column.cellBuilder!(context, rowData ?? {}),
@@ -468,9 +478,9 @@ class TablePlusMergedRow extends TablePlusRowWidget {
       final displayValue = (rowData ?? {})[column.key]?.toString() ?? '';
       Widget textWidget = Text(
         displayValue,
-        style: selectionTheme.getEffectiveTextStyle(
-          isSelected,
-          theme.textStyle,
+        style: widget.selectionTheme.getEffectiveTextStyle(
+          widget.isSelected,
+          widget.theme.textStyle,
         ),
         textAlign: column.textAlign,
         overflow: column.textOverflow,
@@ -482,21 +492,22 @@ class TablePlusMergedRow extends TablePlusRowWidget {
 
       // Add expand/collapse icon if this is the first row and first column and expandable
       Widget cellContent = textWidget;
-      if (mergeGroup.isExpandable && rowIndex == 0 && columnIndex == 0) {
+      if (widget.mergeGroup.isExpandable && rowIndex == 0 && columnIndex == 0) {
         cellContent = Row(
           children: [
             GestureDetector(
-              onTap: () => onMergedRowExpandToggle?.call(mergeGroup.groupId),
+              onTap: () => widget.onMergedRowExpandToggle
+                  ?.call(widget.mergeGroup.groupId),
               child: MouseRegion(
                 cursor: SystemMouseCursors.click,
                 child: Padding(
                   padding: const EdgeInsets.only(right: 8.0),
                   child: Icon(
-                    mergeGroup.isExpanded
+                    widget.mergeGroup.isExpanded
                         ? Icons.expand_less
                         : Icons.expand_more,
                     size: 16,
-                    color: theme.textStyle.color?.withValues(alpha: 0.7),
+                    color: widget.theme.textStyle.color?.withValues(alpha: 0.7),
                   ),
                 ),
               ),
@@ -508,7 +519,7 @@ class TablePlusMergedRow extends TablePlusRowWidget {
 
       content = Container(
         alignment: column.alignment,
-        padding: theme.padding,
+        padding: widget.theme.padding,
         child: cellContent,
       );
     }
@@ -517,15 +528,15 @@ class TablePlusMergedRow extends TablePlusRowWidget {
       child: Container(
         decoration: BoxDecoration(
           border: Border(
-            right: theme.showVerticalDividers
+            right: widget.theme.showVerticalDividers
                 ? BorderSide(
-                    color: theme.dividerColor.withValues(alpha: 0.5),
+                    color: widget.theme.dividerColor.withValues(alpha: 0.5),
                     width: 1,
                   )
                 : BorderSide.none,
-            bottom: _shouldShowBottomBorder(isLastRow, theme)
+            bottom: _shouldShowBottomBorder(widget.isLastRow, widget.theme)
                 ? BorderSide(
-                    color: theme.dividerColor.withValues(alpha: 0.3),
+                    color: widget.theme.dividerColor.withValues(alpha: 0.3),
                     width: 1,
                   )
                 : BorderSide.none,
@@ -536,27 +547,30 @@ class TablePlusMergedRow extends TablePlusRowWidget {
     );
 
     // Wrap with gesture detector for editing if applicable
-    if (isCellEditable && !isCurrentlyEditing && onCellTap != null) {
+    if (isCellEditable && !isCurrentlyEditing && widget.onCellTap != null) {
       cellContainer = Expanded(
         child: GestureDetector(
-          onTap: () => onCellTap!(originalIndex, column.key),
+          onTap: () => widget.onCellTap!(originalIndex, column.key),
           child: MouseRegion(
             cursor: SystemMouseCursors.click,
             child: Container(
               decoration: BoxDecoration(
                 border: Border(
-                  right: theme.showVerticalDividers
+                  right: widget.theme.showVerticalDividers
                       ? BorderSide(
-                          color: theme.dividerColor.withValues(alpha: 0.5),
+                          color:
+                              widget.theme.dividerColor.withValues(alpha: 0.5),
                           width: 1,
                         )
                       : BorderSide.none,
-                  bottom: _shouldShowBottomBorder(isLastRow, theme)
-                      ? BorderSide(
-                          color: theme.dividerColor.withValues(alpha: 0.3),
-                          width: 1,
-                        )
-                      : BorderSide.none,
+                  bottom:
+                      _shouldShowBottomBorder(widget.isLastRow, widget.theme)
+                          ? BorderSide(
+                              color: widget.theme.dividerColor
+                                  .withValues(alpha: 0.3),
+                              width: 1,
+                            )
+                          : BorderSide.none,
                 ),
               ),
               child: content,
@@ -574,17 +588,17 @@ class TablePlusMergedRow extends TablePlusRowWidget {
       BuildContext context, TablePlusColumn column, double groupHeight) {
     Widget content;
 
-    if (mergeGroup.hasSummaryData(column.key)) {
-      final summaryData = mergeGroup.getSummaryData(column.key);
+    if (widget.mergeGroup.hasSummaryData(column.key)) {
+      final summaryData = widget.mergeGroup.getSummaryData(column.key);
       final displayValue = summaryData?.toString() ?? '';
 
       Widget textWidget = Text(
         displayValue,
-        style: selectionTheme.getEffectiveTextStyle(
-          isSelected,
-          theme.textStyle.copyWith(
+        style: widget.selectionTheme.getEffectiveTextStyle(
+          widget.isSelected,
+          widget.theme.textStyle.copyWith(
             fontWeight: FontWeight.w600, // Make summary text slightly bolder
-            color: theme.textStyle.color?.withValues(alpha: 0.8),
+            color: widget.theme.textStyle.color?.withValues(alpha: 0.8),
           ),
         ),
         textAlign: column.textAlign,
@@ -597,37 +611,37 @@ class TablePlusMergedRow extends TablePlusRowWidget {
 
       content = Container(
         alignment: column.alignment,
-        padding: theme.padding,
+        padding: widget.theme.padding,
         child: textWidget,
       );
     } else {
       // Empty cell for columns without summary data
       content = Container(
         alignment: column.alignment,
-        padding: theme.padding,
+        padding: widget.theme.padding,
       );
     }
 
     return Expanded(
       child: Container(
         decoration: BoxDecoration(
-          color: theme.summaryRowBackgroundColor ??
-              theme.backgroundColor
+          color: widget.theme.summaryRowBackgroundColor ??
+              widget.theme.backgroundColor
                   .withValues(alpha: 0.2), // Summary row background color
           border: Border(
-            right: theme.showVerticalDividers
+            right: widget.theme.showVerticalDividers
                 ? BorderSide(
-                    color: theme.dividerColor.withValues(alpha: 0.5),
+                    color: widget.theme.dividerColor.withValues(alpha: 0.5),
                     width: 1,
                   )
                 : BorderSide.none,
             top: BorderSide(
-              color: theme.dividerColor.withValues(alpha: 0.3),
+              color: widget.theme.dividerColor.withValues(alpha: 0.3),
               width: 0.5,
             ),
-            bottom: _shouldShowBottomBorder(isLastRow, theme)
+            bottom: _shouldShowBottomBorder(widget.isLastRow, widget.theme)
                 ? BorderSide(
-                    color: theme.dividerColor.withValues(alpha: 0.3),
+                    color: widget.theme.dividerColor.withValues(alpha: 0.3),
                     width: 1,
                   )
                 : BorderSide.none,
@@ -646,22 +660,19 @@ class TablePlusMergedRow extends TablePlusRowWidget {
     Map<String, dynamic> rowData,
     double cellHeight,
   ) {
-    final controller = getCellController?.call(dataIndex, column.key);
-    final theme = editableTheme;
+    final controller = widget.getCellController?.call(dataIndex, column.key);
+    final theme = widget.editableTheme;
 
     return Container(
       width: double.infinity,
       height: cellHeight,
-      padding:
-          theme.cellContainerPadding, // Use editable theme's container padding
+      padding: theme.cellContainerPadding,
       child: Align(
-        alignment:
-            column.alignment, // Follow column alignment like regular cells
+        alignment: column.alignment,
         child: Focus(
           onFocusChange: (hasFocus) {
-            // Auto-save when focus is lost (like regular cells)
             if (!hasFocus) {
-              onStopEditing?.call(save: true);
+              widget.onStopEditing?.call(save: true);
             }
           },
           child: KeyboardListener(
@@ -669,9 +680,9 @@ class TablePlusMergedRow extends TablePlusRowWidget {
             onKeyEvent: (event) {
               if (event is KeyDownEvent) {
                 if (event.logicalKey == LogicalKeyboardKey.enter) {
-                  onStopEditing?.call(save: true);
+                  widget.onStopEditing?.call(save: true);
                 } else if (event.logicalKey == LogicalKeyboardKey.escape) {
-                  onStopEditing?.call(save: false);
+                  widget.onStopEditing?.call(save: false);
                 }
               }
             },
@@ -680,7 +691,7 @@ class TablePlusMergedRow extends TablePlusRowWidget {
               controller: controller,
               style: theme.editingTextStyle,
               textAlign: column.textAlign,
-              textAlignVertical: theme.textAlignVertical, // Use theme alignment
+              textAlignVertical: theme.textAlignVertical,
               cursorColor: theme.cursorColor,
               decoration: InputDecoration(
                 hintText: column.hintText,
@@ -689,7 +700,6 @@ class TablePlusMergedRow extends TablePlusRowWidget {
                 isDense: theme.isDense,
                 filled: theme.filled,
                 fillColor: theme.fillColor ?? theme.editingCellColor,
-                // Use the same border configuration as regular cells
                 border: OutlineInputBorder(
                   borderRadius: theme.borderRadius ?? theme.editingBorderRadius,
                   borderSide: BorderSide(
@@ -729,8 +739,7 @@ class TablePlusMergedRow extends TablePlusRowWidget {
                 ),
               ),
               onSubmitted: (_) {
-                // For stacked cells, this is a regular cell change, not a merged cell change
-                onStopEditing?.call(save: true);
+                widget.onStopEditing?.call(save: true);
               },
             ),
           ),
@@ -743,7 +752,7 @@ class TablePlusMergedRow extends TablePlusRowWidget {
   bool _shouldShowTooltip(
       String displayValue, TablePlusColumn column, double maxWidth) {
     // Basic checks - tooltip must be enabled and text must not be empty
-    if (!tooltipTheme.enabled || displayValue.isEmpty) {
+    if (!widget.tooltipTheme.enabled || displayValue.isEmpty) {
       return false;
     }
 
@@ -761,7 +770,7 @@ class TablePlusMergedRow extends TablePlusRowWidget {
         }
 
         // Account for padding that might be applied to the cell content
-        final cellPadding = theme.padding;
+        final cellPadding = widget.theme.padding;
         final paddingWidth = cellPadding.horizontal;
         final maxTextWidth = maxWidth - paddingWidth;
 
@@ -770,9 +779,9 @@ class TablePlusMergedRow extends TablePlusRowWidget {
         }
 
         // Use effective text style that considers selection state
-        final effectiveTextStyle = selectionTheme.getEffectiveTextStyle(
-          isSelected,
-          theme.textStyle,
+        final effectiveTextStyle = widget.selectionTheme.getEffectiveTextStyle(
+          widget.isSelected,
+          widget.theme.textStyle,
         );
 
         return TextOverflowDetector.willTextOverflow(
@@ -790,13 +799,13 @@ class TablePlusMergedRow extends TablePlusRowWidget {
     if (_shouldShowTooltip(displayValue, column, maxWidth)) {
       return Tooltip(
         message: displayValue,
-        textStyle: tooltipTheme.textStyle,
-        decoration: tooltipTheme.decoration,
-        padding: tooltipTheme.padding,
-        margin: tooltipTheme.margin,
-        waitDuration: tooltipTheme.waitDuration,
-        showDuration: tooltipTheme.showDuration,
-        preferBelow: tooltipTheme.preferBelow,
+        textStyle: widget.tooltipTheme.textStyle,
+        decoration: widget.tooltipTheme.decoration,
+        padding: widget.tooltipTheme.padding,
+        margin: widget.tooltipTheme.margin,
+        waitDuration: widget.tooltipTheme.waitDuration,
+        showDuration: widget.tooltipTheme.showDuration,
+        preferBelow: widget.tooltipTheme.preferBelow,
         child: textWidget,
       );
     }
@@ -805,20 +814,21 @@ class TablePlusMergedRow extends TablePlusRowWidget {
 
   /// Build selection cell for merged row.
   Widget? _buildSelectionCell() {
-    if (!isSelectable) return null;
+    if (!widget.isSelectable) return null;
 
-    final width = columnWidths.isNotEmpty ? columnWidths[0] : 50.0;
-    final mergedHeight =
-        calculatedHeight ?? (theme.rowHeight * mergeGroup.effectiveRowCount);
+    final width =
+        widget.columnWidths.isNotEmpty ? widget.columnWidths[0] : 50.0;
+    final mergedHeight = widget.calculatedHeight ??
+        (widget.theme.rowHeight * widget.mergeGroup.effectiveRowCount);
 
     return Container(
       width: width,
       height: mergedHeight,
       decoration: BoxDecoration(
-        border: theme.showVerticalDividers
+        border: widget.theme.showVerticalDividers
             ? Border(
                 right: BorderSide(
-                  color: theme.dividerColor.withValues(alpha: 0.5),
+                  color: widget.theme.dividerColor.withValues(alpha: 0.5),
                   width: 0.5,
                 ),
               )
@@ -829,20 +839,21 @@ class TablePlusMergedRow extends TablePlusRowWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             SizedBox(
-              width: selectionTheme.checkboxSize,
-              height: selectionTheme.checkboxSize,
+              width: widget.selectionTheme.checkboxSize,
+              height: widget.selectionTheme.checkboxSize,
               child: Checkbox(
-                value: isSelected,
-                onChanged: (value) => onRowSelectionChanged(mergeGroup.groupId),
-                activeColor: selectionTheme.checkboxColor,
+                value: widget.isSelected,
+                onChanged: (value) =>
+                    widget.onRowSelectionChanged(widget.mergeGroup.groupId),
+                activeColor: widget.selectionTheme.checkboxColor,
                 materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 visualDensity: VisualDensity.compact,
               ),
             ),
-            if (mergeGroup.rowCount > 1) ...[
+            if (widget.mergeGroup.rowCount > 1) ...[
               const SizedBox(height: 4),
               Text(
-                '${mergeGroup.rowCount} rows',
+                '${widget.mergeGroup.rowCount} rows',
                 style: TextStyle(
                   fontSize: 10,
                   color: Colors.grey.shade600,
@@ -853,48 +864,6 @@ class TablePlusMergedRow extends TablePlusRowWidget {
         ),
       ),
     );
-  }
-}
-
-class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
-  /// Handle row tap for selection.
-  void _handleRowTap() {
-    if (widget.isEditable) return;
-    if (!widget.isSelectable) return;
-
-    // For both single and multiple selection modes, toggle the selection
-    widget.onRowSelectionChanged(widget.mergeGroup.groupId);
-  }
-
-  /// Get the data for a specific row key within the merge group.
-  Map<String, dynamic>? _getRowData(String rowKey) {
-    return widget.mergeGroup
-        .getRowData(widget.allData, rowKey, widget.rowIdKey);
-  }
-
-  /// Determines whether to show a bottom border for the merged row.
-  bool _shouldShowBottomBorder(bool isLastRow, TablePlusBodyTheme theme) {
-    if (!theme.showHorizontalDividers) return false;
-    if (!isLastRow) return true;
-
-    switch (theme.lastRowBorderBehavior) {
-      case LastRowBorderBehavior.never:
-        return false;
-      case LastRowBorderBehavior.always:
-        return true;
-      case LastRowBorderBehavior.smart:
-        return !widget.needsVerticalScroll;
-    }
-  }
-
-  /// Handle merged cell value change.
-  void _handleMergedCellValueChange(
-      String columnKey, int dataIndex, String? newValue) {
-    if (widget.onMergedCellChanged != null &&
-        widget.mergeGroup.shouldMergeColumn(columnKey)) {
-      widget.onMergedCellChanged!(
-          widget.mergeGroup.groupId, columnKey, newValue);
-    }
   }
 
   @override
@@ -918,7 +887,7 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
       child: Row(
         children: [
           // Selection cell (if selectable)
-          if (widget.isSelectable) widget._buildSelectionCell()!,
+          if (widget.isSelectable) _buildSelectionCell()!,
           // Regular cells
           ...List.generate(
             widget.columns.where((col) => col.key != '__selection__').length,
@@ -928,7 +897,7 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
                   .toList();
               final column = nonSelectionColumns[index];
               final columnIndex = widget.isSelectable ? index + 1 : index;
-              return widget._buildCell(context, columnIndex, column);
+              return _buildCell(context, columnIndex, column);
             },
           ),
         ],
