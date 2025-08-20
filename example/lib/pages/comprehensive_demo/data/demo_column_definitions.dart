@@ -13,7 +13,7 @@ class DemoColumnDefinitions {
         order: 0,
         alignment: Alignment.centerLeft,
         sortable: true,
-        editable: false, // Will be enabled in Phase 3
+        editable: false, // Name should not be editable
       ),
       'position': TablePlusColumn(
         key: 'position',
@@ -22,7 +22,7 @@ class DemoColumnDefinitions {
         order: 1,
         alignment: Alignment.centerLeft,
         sortable: true,
-        editable: false,
+        editable: true, // Phase 3: Enable editing
       ),
       'department': TablePlusColumn(
         key: 'department',
@@ -31,7 +31,7 @@ class DemoColumnDefinitions {
         order: 2,
         alignment: Alignment.centerLeft,
         sortable: true,
-        editable: false,
+        editable: true, // Phase 3: Enable editing
       ),
       'salary': TablePlusColumn(
         key: 'salary',

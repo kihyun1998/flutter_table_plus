@@ -17,8 +17,8 @@ import 'data/demo_data_source.dart';
 /// - Custom cells and themes
 ///
 /// Phase 1: Basic structure and data models ✅
-/// Phase 2: Basic table and sorting (pending)
-/// Phase 3: Selection and editing (pending)
+/// Phase 2: Basic table and sorting ✅
+/// Phase 3: Selection and editing ✅
 /// Phase 4: Frozen columns (pending)
 /// Phase 5: Merged rows (pending)
 /// Phase 6: Expandable rows (pending)
@@ -41,9 +41,13 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
   String? _currentSortColumn;
   SortDirection _currentSortDirection = SortDirection.none;
 
+  // Phase 3: Selection and editing state
+  final bool _isSelectable = true;
+  SelectionMode _selectionMode = SelectionMode.multiple;
+  final Set<String> _selectedRows = <String>{};
+  final bool _isEditable = true;
+
   // Future phases will add more state variables here:
-  // - Selection state
-  // - Editing state
   // - Theme configuration
   // - Feature toggles
 
@@ -188,6 +192,58 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
     return double.tryParse(numericString) ?? 0.0;
   }
 
+  /// Phase 3: Handle row selection
+  void _handleRowSelection(String rowId, bool isSelected) {
+    setState(() {
+      if (isSelected) {
+        if (_selectionMode == SelectionMode.single) {
+          // Single selection: clear previous and select new
+          _selectedRows.clear();
+        }
+        _selectedRows.add(rowId);
+      } else {
+        _selectedRows.remove(rowId);
+      }
+    });
+
+    debugPrint('🔘 Selected rows: $_selectedRows');
+  }
+
+  /// Phase 3: Handle cell editing
+  void _handleCellChanged(
+      String columnKey, int rowIndex, dynamic oldValue, dynamic newValue) {
+    setState(() {
+      // Update the display data
+      _data[rowIndex][columnKey] = newValue;
+
+      // Also update the original data source for consistency
+      final rowId = _data[rowIndex]['id'];
+      final employeeIndex =
+          DemoDataSource.employees.indexWhere((e) => e.id == rowId);
+      if (employeeIndex != -1) {
+        final originalEmployee = DemoDataSource.employees[employeeIndex];
+        DemoDataSource.employees[employeeIndex] = originalEmployee.copyWith(
+          position:
+              columnKey == 'position' ? newValue : originalEmployee.position,
+          department: columnKey == 'department'
+              ? newValue
+              : originalEmployee.department,
+        );
+      }
+    });
+
+    debugPrint(
+        '✏️ Cell edited: Row $rowIndex, Column $columnKey: $oldValue -> $newValue');
+  }
+
+  /// Phase 3: Clear all selections
+  void _clearSelections() {
+    setState(() {
+      _selectedRows.clear();
+    });
+    debugPrint('🗑️ Cleared all selections');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -214,33 +270,131 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
     );
   }
 
-  /// Phase 1: Placeholder control panel
+  /// Phase 3: Control panel with selection controls
   Widget _buildPlaceholderControlPanel() {
     return Container(
       padding: const EdgeInsets.all(16),
       color: Colors.grey.shade100,
-      child: Row(
+      child: Column(
         children: [
-          Icon(Icons.settings, color: Colors.grey.shade600),
-          const SizedBox(width: 8),
-          Text(
-            'Control Panel (Phase 9)',
-            style: TextStyle(
-              color: Colors.grey.shade600,
-              fontWeight: FontWeight.w500,
-            ),
+          // Status Row
+          Row(
+            children: [
+              Icon(Icons.settings, color: Colors.grey.shade600),
+              const SizedBox(width: 8),
+              Text(
+                'Control Panel (Phase 9)',
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const Spacer(),
+              Chip(
+                label: const Text('Phase 1 ✅'),
+                backgroundColor: Colors.green.shade100,
+                labelStyle: TextStyle(color: Colors.green.shade800),
+              ),
+              const SizedBox(width: 8),
+              Chip(
+                label: const Text('Phase 2 ✅'),
+                backgroundColor: Colors.green.shade100,
+                labelStyle: TextStyle(color: Colors.green.shade800),
+              ),
+              const SizedBox(width: 8),
+              Chip(
+                label: const Text('Phase 3 ✅'),
+                backgroundColor: Colors.green.shade100,
+                labelStyle: TextStyle(color: Colors.green.shade800),
+              ),
+            ],
           ),
-          const Spacer(),
-          Chip(
-            label: const Text('Phase 1 ✅'),
-            backgroundColor: Colors.green.shade100,
-            labelStyle: TextStyle(color: Colors.green.shade800),
-          ),
-          const SizedBox(width: 8),
-          Chip(
-            label: const Text('Phase 2 ✅'),
-            backgroundColor: Colors.green.shade100,
-            labelStyle: TextStyle(color: Colors.green.shade800),
+
+          // Phase 3: Selection and editing controls
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              // Selection controls
+              Icon(Icons.check_box, color: Colors.blue.shade600),
+              const SizedBox(width: 8),
+              Text(
+                'Selection:',
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: Colors.blue.shade700,
+                ),
+              ),
+              const SizedBox(width: 8),
+              DropdownButton<SelectionMode>(
+                value: _selectionMode,
+                onChanged: (SelectionMode? newValue) {
+                  if (newValue != null) {
+                    setState(() {
+                      _selectionMode = newValue;
+                      _selectedRows.clear();
+                    });
+                  }
+                },
+                items: SelectionMode.values.map((mode) {
+                  return DropdownMenuItem(
+                    value: mode,
+                    child: Text(mode.name.toUpperCase()),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(width: 16),
+
+              // Selected count
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: _selectedRows.isNotEmpty
+                      ? Colors.blue.shade100
+                      : Colors.grey.shade200,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  'Selected: ${_selectedRows.length}',
+                  style: TextStyle(
+                    color: _selectedRows.isNotEmpty
+                        ? Colors.blue.shade700
+                        : Colors.grey.shade600,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+
+              // Clear selection button
+              if (_selectedRows.isNotEmpty) ...[
+                const SizedBox(width: 8),
+                ElevatedButton.icon(
+                  onPressed: _clearSelections,
+                  icon: const Icon(Icons.clear, size: 16),
+                  label: const Text('Clear'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red.shade100,
+                    foregroundColor: Colors.red.shade700,
+                    minimumSize: const Size(0, 32),
+                  ),
+                ),
+              ],
+
+              const Spacer(),
+
+              // Editing toggle
+              Icon(Icons.edit, color: Colors.orange.shade600),
+              const SizedBox(width: 8),
+              Text(
+                'Editing: ${_isEditable ? "ON" : "OFF"}',
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: _isEditable
+                      ? Colors.orange.shade700
+                      : Colors.grey.shade600,
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -281,7 +435,7 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
                       Icon(Icons.table_chart, color: Colors.green.shade700),
                       const SizedBox(width: 8),
                       Text(
-                        'Phase 2 Complete: Basic Table with Sorting & Column Reordering',
+                        'Phase 3 Complete: Selection, Editing & Advanced Interactions',
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
                           color: Colors.green.shade900,
@@ -318,8 +472,18 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
                     // Phase 2: Column reordering functionality
                     onColumnReorder: _handleColumnReorder,
 
-                    // Phase 2: Basic theme
-                    theme: _buildPhase2Theme(),
+                    // Phase 3: Selection functionality
+                    isSelectable: _isSelectable,
+                    selectionMode: _selectionMode,
+                    selectedRows: _selectedRows,
+                    onRowSelectionChanged: _handleRowSelection,
+
+                    // Phase 3: Editing functionality
+                    isEditable: _isEditable,
+                    onCellChanged: _handleCellChanged,
+
+                    // Phase 3: Updated theme with selection
+                    theme: _buildPhase3Theme(),
                   ),
                 ),
               ),
@@ -369,8 +533,8 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
     );
   }
 
-  /// Phase 2: Build basic theme
-  TablePlusTheme _buildPhase2Theme() {
+  /// Phase 3: Build theme with selection and editing
+  TablePlusTheme _buildPhase3Theme() {
     return TablePlusTheme(
       headerTheme: TablePlusHeaderTheme(
         backgroundColor: Colors.blue.shade50,
@@ -390,6 +554,15 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
         dividerColor: Colors.grey.shade300,
         showHorizontalDividers: true,
         showVerticalDividers: true,
+      ),
+      selectionTheme: TablePlusSelectionTheme(
+        selectedRowColor: Colors.blue.shade100.withValues(alpha: 0.6),
+        checkboxColor: Colors.blue.shade600,
+      ),
+      editableTheme: TablePlusEditableTheme(
+        editingCellColor: Colors.yellow.shade100,
+        editingBorderColor: Colors.orange.shade400,
+        editingBorderWidth: 2.0,
       ),
     );
   }
@@ -434,9 +607,28 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
                 ),
               ),
             ),
+          // Phase 3: Show selection info
+          if (_selectedRows.isNotEmpty) ...[
+            const SizedBox(width: 16),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade100,
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                'Selected: ${_selectedRows.length} row${_selectedRows.length != 1 ? 's' : ''}',
+                style: TextStyle(
+                  color: Colors.blue.shade700,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+          ],
           const Spacer(),
           Text(
-            'Next: Phase 3 - Selection & Editing',
+            'Next: Phase 4 - Frozen Columns',
             style: TextStyle(
               color: Colors.orange.shade700,
               fontWeight: FontWeight.w600,
