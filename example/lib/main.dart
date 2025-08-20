@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'pages/comprehensive_demo/comprehensive_table_demo.dart';
 import 'pages/table_example_page.dart';
 import 'pages/comprehensive_merged_example.dart';
 import 'pages/sortable_example.dart';
@@ -44,6 +45,36 @@ class ExampleHomePage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            Card(
+              elevation: 3,
+              color: Colors.blue.shade50,
+              child: ListTile(
+                leading: const Icon(Icons.auto_awesome, color: Colors.blue, size: 28),
+                title: const Text(
+                  'Comprehensive Table Demo',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                subtitle: const Text('🚀 NEW! All features in one place - Progressive demo'),
+                trailing: const Icon(Icons.arrow_forward_ios),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ComprehensiveTableDemo(),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Individual Feature Demos',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: Colors.grey.shade700,
+              ),
+            ),
+            const SizedBox(height: 8),
             Card(
               child: ListTile(
                 leading: const Icon(Icons.table_chart),
