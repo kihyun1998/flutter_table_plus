@@ -2,6 +2,7 @@ import 'body_theme.dart' show TablePlusBodyTheme;
 import 'divider_theme.dart' show TablePlusDividerTheme;
 import 'editable_theme.dart' show TablePlusEditableTheme;
 import 'header_theme.dart' show TablePlusHeaderTheme;
+import 'hover_button_theme.dart' show TablePlusHoverButtonTheme;
 import 'scrollbar_theme.dart' show TablePlusScrollbarTheme;
 import 'selection_theme.dart' show TablePlusSelectionTheme;
 import 'tooltip_theme.dart' show TablePlusTooltipTheme;
@@ -17,6 +18,7 @@ class TablePlusTheme {
     this.editableTheme = const TablePlusEditableTheme(),
     this.tooltipTheme = const TablePlusTooltipTheme(),
     this.dividerTheme = const TablePlusDividerTheme(),
+    this.hoverButtonTheme = const TablePlusHoverButtonTheme(),
   });
 
   /// Theme configuration for the table header.
@@ -40,6 +42,9 @@ class TablePlusTheme {
   /// Theme configuration for the frozen column divider.
   final TablePlusDividerTheme dividerTheme;
 
+  /// Theme configuration for hover buttons.
+  final TablePlusHoverButtonTheme hoverButtonTheme;
+
   /// Creates a copy of this theme with the given fields replaced with new values.
   TablePlusTheme copyWith({
     TablePlusHeaderTheme? headerTheme,
@@ -49,6 +54,7 @@ class TablePlusTheme {
     TablePlusEditableTheme? editableTheme,
     TablePlusTooltipTheme? tooltipTheme,
     TablePlusDividerTheme? dividerTheme,
+    TablePlusHoverButtonTheme? hoverButtonTheme,
   }) {
     return TablePlusTheme(
       headerTheme: headerTheme ?? this.headerTheme,
@@ -58,6 +64,7 @@ class TablePlusTheme {
       editableTheme: editableTheme ?? this.editableTheme,
       tooltipTheme: tooltipTheme ?? this.tooltipTheme,
       dividerTheme: dividerTheme ?? this.dividerTheme,
+      hoverButtonTheme: hoverButtonTheme ?? this.hoverButtonTheme,
     );
   }
 

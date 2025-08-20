@@ -47,6 +47,8 @@ class FlutterTablePlus extends StatefulWidget {
     this.calculateRowHeight,
     this.hoverButtonBuilder,
     this.hoverButtonPosition = HoverButtonPosition.right,
+    this.onEdit,
+    this.onDelete,
   });
 
   /// The map of columns to display in the table.
@@ -163,13 +165,13 @@ class FlutterTablePlus extends StatefulWidget {
       calculateRowHeight;
 
   /// Builder function to create custom hover buttons for each row.
-  /// 
+  ///
   /// Called when a row is hovered, providing the row ID and row data.
   /// Should return a Widget to display as an overlay on the row.
   /// If null, no hover buttons will be displayed.
-  /// 
+  ///
   /// The position of the buttons can be controlled via [hoverButtonPosition].
-  /// 
+  ///
   /// Example:
   /// ```dart
   /// hoverButtonBuilder: (rowId, rowData) => Row(
@@ -186,16 +188,35 @@ class FlutterTablePlus extends StatefulWidget {
   ///   ],
   /// )
   /// ```
-  final Widget Function(String rowId, Map<String, dynamic> rowData)? hoverButtonBuilder;
+  final Widget Function(String rowId, Map<String, dynamic> rowData)?
+      hoverButtonBuilder;
 
   /// The position where hover buttons should be displayed.
-  /// 
+  ///
   /// Defaults to [HoverButtonPosition.right].
-  /// 
+  ///
   /// - [HoverButtonPosition.left]: Buttons appear on the left side
-  /// - [HoverButtonPosition.center]: Buttons appear in the center 
+  /// - [HoverButtonPosition.center]: Buttons appear in the center
   /// - [HoverButtonPosition.right]: Buttons appear on the right side (default)
   final HoverButtonPosition hoverButtonPosition;
+
+  /// Callback function for edit button in default hover buttons.
+  ///
+  /// This is used when [hoverButtonBuilder] is null and the table uses
+  /// theme-based default hover buttons. Provides the row ID and row data.
+  ///
+  /// If both [onEdit] and [hoverButtonBuilder] are provided,
+  /// [hoverButtonBuilder] takes precedence.
+  final void Function(String rowId, Map<String, dynamic> rowData)? onEdit;
+
+  /// Callback function for delete button in default hover buttons.
+  ///
+  /// This is used when [hoverButtonBuilder] is null and the table uses
+  /// theme-based default hover buttons. Provides the row ID and row data.
+  ///
+  /// If both [onDelete] and [hoverButtonBuilder] are provided,
+  /// [hoverButtonBuilder] takes precedence.
+  final void Function(String rowId, Map<String, dynamic> rowData)? onDelete;
 
   @override
   State<FlutterTablePlus> createState() => _FlutterTablePlusState();
@@ -770,6 +791,10 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                                     widget.hoverButtonBuilder,
                                                 hoverButtonPosition:
                                                     widget.hoverButtonPosition,
+                                                onEdit: widget.onEdit,
+                                                onDelete: widget.onDelete,
+                                                hoverButtonTheme:
+                                                    theme.hoverButtonTheme,
                                               ),
                                             );
                                           },
@@ -918,8 +943,14 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                                               .calculateRowHeight,
                                                           hoverButtonBuilder: widget
                                                               .hoverButtonBuilder,
-                                                          hoverButtonPosition: widget
-                                                              .hoverButtonPosition,
+                                                          hoverButtonPosition:
+                                                              widget
+                                                                  .hoverButtonPosition,
+                                                          onEdit: widget.onEdit,
+                                                          onDelete:
+                                                              widget.onDelete,
+                                                          hoverButtonTheme: theme
+                                                              .hoverButtonTheme,
                                                         ),
                                                       );
                                                     },

@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_table_plus/src/widgets/table_plus_row.dart';
 
-import '../../flutter_table_plus.dart' show TablePlusSelectionTheme, HoverButtonPosition;
+import '../../flutter_table_plus.dart'
+    show
+        TablePlusSelectionTheme,
+        HoverButtonPosition,
+        TablePlusHoverButtonTheme;
 import '../models/merged_row_group.dart';
 import '../models/table_column.dart';
 import '../models/theme/body_theme.dart' show TablePlusBodyTheme;
@@ -42,6 +46,9 @@ class TablePlusBody extends StatelessWidget {
     this.needsVerticalScroll = false,
     this.hoverButtonBuilder,
     this.hoverButtonPosition = HoverButtonPosition.right,
+    this.onEdit,
+    this.onDelete,
+    this.hoverButtonTheme,
   });
 
   /// The list of columns for the table.
@@ -132,6 +139,15 @@ class TablePlusBody extends StatelessWidget {
 
   /// The position where hover buttons should be displayed.
   final HoverButtonPosition hoverButtonPosition;
+
+  /// Callback function for edit button in default hover buttons.
+  final void Function(String rowId, Map<String, dynamic> rowData)? onEdit;
+
+  /// Callback function for delete button in default hover buttons.
+  final void Function(String rowId, Map<String, dynamic> rowData)? onDelete;
+
+  /// Theme configuration for hover buttons.
+  final TablePlusHoverButtonTheme? hoverButtonTheme;
 
   /// Whether the table needs vertical scrolling.
   /// Used to determine if the last row should have a bottom border based on
@@ -419,6 +435,9 @@ class TablePlusBody extends StatelessWidget {
       needsVerticalScroll: needsVerticalScroll,
       hoverButtonBuilder: hoverButtonBuilder,
       hoverButtonPosition: hoverButtonPosition,
+      onEdit: onEdit,
+      onDelete: onDelete,
+      hoverButtonTheme: hoverButtonTheme,
     );
   }
 }

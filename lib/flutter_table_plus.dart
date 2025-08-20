@@ -27,6 +27,7 @@ export 'src/models/hover_button_position.dart';
 export 'src/models/theme/body_theme.dart';
 export 'src/models/theme/editable_theme.dart';
 export 'src/models/theme/header_theme.dart';
+export 'src/models/theme/hover_button_theme.dart';
 export 'src/models/theme/scrollbar_theme.dart';
 export 'src/models/theme/selection_theme.dart';
 export 'src/models/theme/theme.dart';

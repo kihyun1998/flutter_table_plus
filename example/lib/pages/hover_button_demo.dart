@@ -10,8 +10,16 @@ class HoverButtonDemo extends StatefulWidget {
 
 class _HoverButtonDemoState extends State<HoverButtonDemo> {
   HoverButtonPosition _currentPosition = HoverButtonPosition.right;
-  
-  final List<Map<String, dynamic>> _data = [
+  bool _useThemeButtons = true;
+  bool _showEditButton = true;
+  bool _showDeleteButton = true;
+  Color _buttonBackgroundColor = Colors.white;
+  double _buttonOpacity = 0.9;
+  double _iconSize = 16.0;
+  Color _editIconColor = Colors.blue;
+  Color _deleteIconColor = Colors.red;
+
+  List<Map<String, dynamic>> _data = [
     {
       'id': '1',
       'name': 'John Doe',
@@ -68,23 +76,22 @@ class _HoverButtonDemoState extends State<HoverButtonDemo> {
     ),
   };
 
-  void _handleEdit(String rowId) {
-    final row = _data.firstWhere((row) => row['id'] == rowId);
+  void _handleEdit(String rowId, Map<String, dynamic> rowData) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Edit clicked for: ${row['name']}'),
+        content: Text('Edit clicked for: ${rowData['name']}'),
         backgroundColor: Colors.blue,
+        duration: const Duration(seconds: 2),
       ),
     );
   }
 
-  void _handleDelete(String rowId) {
-    final row = _data.firstWhere((row) => row['id'] == rowId);
+  void _handleDelete(String rowId, Map<String, dynamic> rowData) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Delete Employee'),
-        content: Text('Are you sure you want to delete ${row['name']}?'),
+        content: Text('Are you sure you want to delete ${rowData['name']}?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -98,8 +105,9 @@ class _HoverButtonDemoState extends State<HoverButtonDemo> {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('${row['name']} deleted'),
+                  content: Text('${rowData['name']} has been deleted'),
                   backgroundColor: Colors.red,
+                  duration: const Duration(seconds: 2),
                 ),
               );
             },
@@ -113,124 +121,29 @@ class _HoverButtonDemoState extends State<HoverButtonDemo> {
   String _getPositionDescription(HoverButtonPosition position) {
     switch (position) {
       case HoverButtonPosition.left:
-        return 'Left - Buttons appear on the left side of the row';
+        return 'Left side of the row';
       case HoverButtonPosition.center:
-        return 'Center - Buttons appear in the middle of the row';
+        return 'Center of the row';
       case HoverButtonPosition.right:
-        return 'Right - Buttons appear on the right side of the row (default)';
+        return 'Right side of the row (default)';
     }
   }
 
-  Widget _buildPositionGuide() {
-    return Column(
-      children: [
-        _buildPositionGuideItem(
-          HoverButtonPosition.left,
-          Icons.align_horizontal_left,
-          'Left Position',
-          'Buttons appear on the left side, useful when you want them visible first',
-          Colors.purple,
-        ),
-        const SizedBox(height: 8),
-        _buildPositionGuideItem(
-          HoverButtonPosition.center,
-          Icons.align_horizontal_center,
-          'Center Position',
-          'Buttons appear in the center, great for highlighting actions',
-          Colors.orange,
-        ),
-        const SizedBox(height: 8),
-        _buildPositionGuideItem(
-          HoverButtonPosition.right,
-          Icons.align_horizontal_right,
-          'Right Position',
-          'Buttons appear on the right side, traditional placement (default)',
-          Colors.teal,
+  TablePlusHoverButtonTheme get _currentHoverButtonTheme {
+    return TablePlusHoverButtonTheme(
+      backgroundColor: _buttonBackgroundColor,
+      opacity: _buttonOpacity,
+      iconSize: _iconSize,
+      editIconColor: _editIconColor,
+      deleteIconColor: _deleteIconColor,
+      borderRadius: BorderRadius.circular(4),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.1),
+          blurRadius: 4,
+          offset: const Offset(0, 2),
         ),
       ],
-    );
-  }
-
-  Widget _buildPositionGuideItem(
-    HoverButtonPosition position,
-    IconData icon,
-    String title,
-    String description,
-    Color color,
-  ) {
-    final bool isSelected = _currentPosition == position;
-    
-    return Container(
-      padding: const EdgeInsets.all(12.0),
-      decoration: BoxDecoration(
-        color: isSelected ? color.withOpacity(0.1) : Colors.transparent,
-        border: Border.all(
-          color: isSelected ? color : Colors.grey.shade300,
-          width: isSelected ? 2 : 1,
-        ),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Icon(
-              icon,
-              color: color,
-              size: 20,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: isSelected ? color : Colors.black87,
-                      ),
-                    ),
-                    if (isSelected) ...[
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: color,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Text(
-                          'ACTIVE',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  description,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -238,44 +151,221 @@ class _HoverButtonDemoState extends State<HoverButtonDemo> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Hover Button Demo'),
+        title: const Text('Hover Button Demo - NEW Theme System!'),
         backgroundColor: Colors.orange.shade100,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+      body: Row(
+        children: [
+          // Settings Panel
+          Container(
+            width: 320,
+            padding: const EdgeInsets.all(16.0),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              border: Border(right: BorderSide(color: Colors.grey.shade300)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Hover Button Settings',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.orange.shade700,
+                      ),
+                ),
+                const SizedBox(height: 16),
+
+                // Button Type Toggle
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.touch_app, color: Colors.orange.shade700),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Row Hover Actions',
-                          style:
-                              Theme.of(context).textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                        const Text(
+                          'Button Type',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 8),
+                        SwitchListTile(
+                          title: const Text('Use Theme Buttons'),
+                          subtitle: Text(_useThemeButtons
+                              ? 'Using built-in theme system'
+                              : 'Using custom builder'),
+                          value: _useThemeButtons,
+                          onChanged: (value) {
+                            setState(() {
+                              _useThemeButtons = value;
+                            });
+                          },
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Hover over any row to see Edit and Delete buttons appear. '
-                      'Use the position selector below to change button placement!',
-                      style: TextStyle(color: Colors.grey),
+                  ),
+                ),
+
+                if (_useThemeButtons) ...[
+                  // Button Visibility
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Button Visibility',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          CheckboxListTile(
+                            title: const Text('Show Edit Button'),
+                            value: _showEditButton,
+                            onChanged: (value) {
+                              setState(() {
+                                _showEditButton = value ?? false;
+                              });
+                            },
+                          ),
+                          CheckboxListTile(
+                            title: const Text('Show Delete Button'),
+                            value: _showDeleteButton,
+                            onChanged: (value) {
+                              setState(() {
+                                _showDeleteButton = value ?? false;
+                              });
+                            },
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 12),
-                    Row(
+                  ),
+
+                  // Theme Customization
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Theme Customization',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 12),
+
+                          // Icon Size
+                          Text('Icon Size: ${_iconSize.round()}px'),
+                          Slider(
+                            value: _iconSize,
+                            min: 12,
+                            max: 24,
+                            divisions: 12,
+                            onChanged: (value) {
+                              setState(() {
+                                _iconSize = value;
+                              });
+                            },
+                          ),
+
+                          // Opacity
+                          Text(
+                              'Background Opacity: ${(_buttonOpacity * 100).round()}%'),
+                          Slider(
+                            value: _buttonOpacity,
+                            min: 0.5,
+                            max: 1.0,
+                            divisions: 10,
+                            onChanged: (value) {
+                              setState(() {
+                                _buttonOpacity = value;
+                              });
+                            },
+                          ),
+
+                          const SizedBox(height: 8),
+
+                          // Color Pickers
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text('Edit Color'),
+                                    const SizedBox(height: 4),
+                                    Container(
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                        color: _editIconColor,
+                                        borderRadius: BorderRadius.circular(4),
+                                        border: Border.all(color: Colors.grey),
+                                      ),
+                                      child: InkWell(
+                                        onTap: () => _showColorPicker(
+                                            _editIconColor, (color) {
+                                          setState(() {
+                                            _editIconColor = color;
+                                          });
+                                        }),
+                                        child: const Center(
+                                          child: Icon(Icons.edit,
+                                              color: Colors.white),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text('Delete Color'),
+                                    const SizedBox(height: 4),
+                                    Container(
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                        color: _deleteIconColor,
+                                        borderRadius: BorderRadius.circular(4),
+                                        border: Border.all(color: Colors.grey),
+                                      ),
+                                      child: InkWell(
+                                        onTap: () => _showColorPicker(
+                                            _deleteIconColor, (color) {
+                                          setState(() {
+                                            _deleteIconColor = color;
+                                          });
+                                        }),
+                                        child: const Center(
+                                          child: Icon(Icons.delete,
+                                              color: Colors.white),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+
+                // Position Settings
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Button Position: ', style: TextStyle(fontWeight: FontWeight.w600)),
-                        const SizedBox(width: 8),
+                        const Text(
+                          'Button Position',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 8),
                         SegmentedButton<HoverButtonPosition>(
                           segments: const [
                             ButtonSegment(
@@ -295,139 +385,215 @@ class _HoverButtonDemoState extends State<HoverButtonDemo> {
                             ),
                           ],
                           selected: {_currentPosition},
-                          onSelectionChanged: (Set<HoverButtonPosition> selected) {
+                          onSelectionChanged:
+                              (Set<HoverButtonPosition> selected) {
                             setState(() {
                               _currentPosition = selected.first;
                             });
                           },
                         ),
+                        const SizedBox(height: 8),
+                        Text(
+                          _getPositionDescription(_currentPosition),
+                          style: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontSize: 12,
+                          ),
+                        ),
                       ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
+              ],
             ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: FlutterTablePlus(
-                    columns: _columns,
-                    data: _data,
-                    theme: TablePlusTheme(
-                      headerTheme: TablePlusHeaderTheme(
-                        backgroundColor: Colors.orange.shade50,
-                        textStyle: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      bodyTheme: TablePlusBodyTheme(
-                        alternateRowColor: Colors.grey.shade50,
-                      ),
-                    ),
-                    hoverButtonPosition: _currentPosition,
-                    hoverButtonBuilder: (rowId, rowData) => Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.9),
-                        borderRadius: BorderRadius.circular(4),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
+          ),
+
+          // Table Area
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Card(
+                    color: Colors.blue.shade50,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
                       child: Row(
-                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          IconButton(
-                            icon: const Icon(Icons.edit, size: 16),
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                            onPressed: () => _handleEdit(rowId),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.delete, size: 16),
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                            onPressed: () => _handleDelete(rowId),
+                          Icon(Icons.info_outline, color: Colors.blue.shade700),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'New Theme System Demo',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.blue.shade700,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Hover over any row to see the buttons appear. Use the settings panel to customize the appearance and behavior.',
+                                  style: TextStyle(color: Colors.blue.shade600),
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
                     ),
                   ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Card(
-              color: Colors.blue.shade50,
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Row(
-                      children: [
-                        Icon(Icons.info, color: Colors.blue),
-                        SizedBox(width: 8),
-                        Text(
-                          'Hover Button Position Testing',
-                          style: TextStyle(
-                            color: Colors.blue,
-                            fontWeight: FontWeight.bold,
+                  const SizedBox(height: 16),
+                  Expanded(
+                    child: Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: FlutterTablePlus(
+                          columns: _columns,
+                          data: _data,
+                          theme: TablePlusTheme(
+                            headerTheme: TablePlusHeaderTheme(
+                              backgroundColor: Colors.orange.shade50,
+                              textStyle: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            bodyTheme: TablePlusBodyTheme(
+                              alternateRowColor: Colors.grey.shade50,
+                            ),
+                            hoverButtonTheme: _currentHoverButtonTheme,
                           ),
+                          hoverButtonPosition: _currentPosition,
+                          // Use either theme-based buttons or custom builder
+                          hoverButtonBuilder: _useThemeButtons
+                              ? null
+                              : (rowId, rowData) => Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.purple.withOpacity(0.9),
+                                      borderRadius: BorderRadius.circular(8),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.2),
+                                          blurRadius: 6,
+                                          offset: const Offset(0, 3),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        IconButton(
+                                          icon: const Icon(Icons.edit,
+                                              size: 18, color: Colors.white),
+                                          padding: EdgeInsets.zero,
+                                          constraints: const BoxConstraints(
+                                              minWidth: 32, minHeight: 32),
+                                          onPressed: () =>
+                                              _handleEdit(rowId, rowData),
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(Icons.delete,
+                                              size: 18, color: Colors.white),
+                                          padding: EdgeInsets.zero,
+                                          constraints: const BoxConstraints(
+                                              minWidth: 32, minHeight: 32),
+                                          onPressed: () =>
+                                              _handleDelete(rowId, rowData),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                          onEdit: (_useThemeButtons && _showEditButton)
+                              ? _handleEdit
+                              : null,
+                          onDelete: (_useThemeButtons && _showDeleteButton)
+                              ? _handleDelete
+                              : null,
                         ),
-                      ],
+                      ),
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Current position: ${_getPositionDescription(_currentPosition)}',
-                      style: const TextStyle(color: Colors.blue),
-                    ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      'Hover over any row above to see the Edit and Delete buttons appear in the selected position!',
-                      style: TextStyle(color: Colors.blue),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 16),
-            Card(
-              color: Colors.green.shade50,
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(Icons.tips_and_updates, color: Colors.green.shade700),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Position Guide',
-                          style: TextStyle(
-                            color: Colors.green.shade700,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    _buildPositionGuide(),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
+
+  void _showColorPicker(Color currentColor, Function(Color) onColorChanged) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Pick a Color'),
+        content: SizedBox(
+          width: 300,
+          height: 200,
+          child: GridView.builder(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 6,
+              crossAxisSpacing: 8,
+              mainAxisSpacing: 8,
+            ),
+            itemCount: _colorOptions.length,
+            itemBuilder: (context, index) {
+              final color = _colorOptions[index];
+              return InkWell(
+                onTap: () {
+                  onColorChanged(color);
+                  Navigator.pop(context);
+                },
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: color == currentColor ? Colors.black : Colors.grey,
+                      width: color == currentColor ? 3 : 1,
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static const List<Color> _colorOptions = [
+    Colors.red,
+    Colors.pink,
+    Colors.purple,
+    Colors.deepPurple,
+    Colors.indigo,
+    Colors.blue,
+    Colors.lightBlue,
+    Colors.cyan,
+    Colors.teal,
+    Colors.green,
+    Colors.lightGreen,
+    Colors.lime,
+    Colors.yellow,
+    Colors.amber,
+    Colors.orange,
+    Colors.deepOrange,
+    Colors.brown,
+    Colors.grey,
+    Colors.blueGrey,
+    Colors.black,
+  ];
 }
