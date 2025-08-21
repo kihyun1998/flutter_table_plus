@@ -39,6 +39,7 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
   // Phase 2: Sorting state
   String? _currentSortColumn;
   SortDirection _currentSortDirection = SortDirection.none;
+  late List<Map<String, dynamic>> _originalData; // Store original data order
 
   // Phase 3: Selection and editing state
   final bool _isSelectable = true;
@@ -82,6 +83,9 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
       };
     }).toList();
 
+    // Store original data order for reset functionality
+    _originalData = List<Map<String, dynamic>>.from(_data);
+
     // Phase 2: Set default sort
     final defaultSort = DemoColumnDefinitions.getDefaultSortConfig();
     _currentSortColumn = defaultSort['column'];
@@ -100,9 +104,21 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
   /// Phase 2: Handle column sorting
   void _handleSort(String columnKey, SortDirection direction) {
     setState(() {
-      _currentSortColumn = columnKey;
-      _currentSortDirection = direction;
+      // Reset sort column when direction is none
+      if (direction == SortDirection.none) {
+        _currentSortColumn = null;
+        _currentSortDirection = SortDirection.none;
+      } else {
+        _currentSortColumn = columnKey;
+        _currentSortDirection = direction;
+      }
+      
       _sortData(columnKey, direction);
+      
+      // Phase 4: Update merged groups after sorting to maintain correct grouping
+      if (_showMergedRows) {
+        _updateMergedGroups();
+      }
     });
 
     debugPrint('🔄 Sorted by $columnKey: $direction');
@@ -136,7 +152,12 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
 
   /// Phase 2: Sort data by column (considering formatted data)
   void _sortData(String columnKey, SortDirection direction) {
-    if (direction == SortDirection.none) return;
+    if (direction == SortDirection.none) {
+      // Restore original data order
+      _data = List<Map<String, dynamic>>.from(_originalData);
+      debugPrint('🔄 Restored original data order');
+      return;
+    }
 
     _data.sort((a, b) {
       final aValue = a[columnKey];
@@ -253,6 +274,12 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
         } else if (columnKey == 'performance') {
           _data[rowIndex][columnKey] = DemoDataFormatters.formatPercentage(updatedValue);
         }
+        
+        // Update original data to reflect the edit (maintain sort reset functionality)
+        final originalRowIndex = _originalData.indexWhere((row) => row['id'] == rowId);
+        if (originalRowIndex != -1) {
+          _originalData[originalRowIndex] = Map<String, dynamic>.from(_data[rowIndex]);
+        }
       }
     });
 
@@ -294,6 +321,11 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
     setState(() {
       _showMergedRows = !_showMergedRows;
       _updateMergedGroups();
+      
+      // Maintain current sort when toggling merged rows
+      if (_currentSortColumn != null && _currentSortDirection != SortDirection.none) {
+        _sortData(_currentSortColumn!, _currentSortDirection);
+      }
     });
     debugPrint('🔄 Toggled merged rows: $_showMergedRows');
   }
@@ -791,23 +823,27 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
           ),
           const SizedBox(width: 16),
           // Phase 2: Show current sort info
-          if (_currentSortColumn != null &&
-              _currentSortDirection != SortDirection.none)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.blue.shade100,
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                'Sort: $_currentSortColumn ${_currentSortDirection == SortDirection.ascending ? '↑' : '↓'}',
-                style: TextStyle(
-                  color: Colors.blue.shade700,
-                  fontWeight: FontWeight.w500,
-                  fontSize: 12,
-                ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: (_currentSortColumn != null && _currentSortDirection != SortDirection.none)
+                  ? Colors.blue.shade100
+                  : Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              (_currentSortColumn != null && _currentSortDirection != SortDirection.none)
+                  ? 'Sort: $_currentSortColumn ${_currentSortDirection == SortDirection.ascending ? '↑' : '↓'}'
+                  : 'Sort: Original order',
+              style: TextStyle(
+                color: (_currentSortColumn != null && _currentSortDirection != SortDirection.none)
+                    ? Colors.blue.shade700
+                    : Colors.grey.shade600,
+                fontWeight: FontWeight.w500,
+                fontSize: 12,
               ),
             ),
+          ),
           // Phase 3: Show selection info
           if (_selectedRows.isNotEmpty) ...[
             const SizedBox(width: 16),
