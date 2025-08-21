@@ -96,7 +96,7 @@ class TablePlusMergedRow extends TablePlusRowWidget {
 
   /// Builder function for creating custom hover buttons.
   /// Called when the row is hovered with the group ID and representative row data.
-  final Widget Function(String rowId, Map<String, dynamic> rowData)?
+  final Widget? Function(String rowId, Map<String, dynamic> rowData)?
       hoverButtonBuilder;
 
   /// The position where hover buttons should be displayed.
@@ -259,32 +259,7 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
       textWidget = _wrapWithTooltip(
           textWidget, displayValue, column, width ?? column.width);
 
-      // Add expand/collapse icon if this is the first merged column and expandable
       Widget cellContent = textWidget;
-      if (widget.mergeGroup.isExpandable && columnIndex == 0) {
-        cellContent = Row(
-          children: [
-            GestureDetector(
-              onTap: () => widget.onMergedRowExpandToggle
-                  ?.call(widget.mergeGroup.groupId),
-              child: MouseRegion(
-                cursor: SystemMouseCursors.click,
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 8.0),
-                  child: Icon(
-                    widget.mergeGroup.isExpanded
-                        ? Icons.expand_less
-                        : Icons.expand_more,
-                    size: 16,
-                    color: widget.theme.textStyle.color?.withValues(alpha: 0.7),
-                  ),
-                ),
-              ),
-            ),
-            Expanded(child: textWidget),
-          ],
-        );
-      }
 
       content = Container(
         alignment: column.alignment,
@@ -471,32 +446,7 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
       textWidget =
           _wrapWithTooltip(textWidget, displayValue, column, groupHeight);
 
-      // Add expand/collapse icon if this is the first row and first column and expandable
       Widget cellContent = textWidget;
-      if (widget.mergeGroup.isExpandable && rowIndex == 0 && columnIndex == 0) {
-        cellContent = Row(
-          children: [
-            GestureDetector(
-              onTap: () => widget.onMergedRowExpandToggle
-                  ?.call(widget.mergeGroup.groupId),
-              child: MouseRegion(
-                cursor: SystemMouseCursors.click,
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 8.0),
-                  child: Icon(
-                    widget.mergeGroup.isExpanded
-                        ? Icons.expand_less
-                        : Icons.expand_more,
-                    size: 16,
-                    color: widget.theme.textStyle.color?.withValues(alpha: 0.7),
-                  ),
-                ),
-              ),
-            ),
-            Expanded(child: textWidget),
-          ],
-        );
-      }
 
       content = Container(
         alignment: column.alignment,
@@ -811,6 +761,11 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
       widget.mergeGroup.groupId,
       representativeData,
     );
+
+    // Return null if builder returned null
+    if (buttonWidget == null) {
+      return null;
+    }
 
     // Position the buttons based on hoverButtonPosition
     switch (widget.hoverButtonPosition) {

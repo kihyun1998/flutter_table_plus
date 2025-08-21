@@ -67,12 +67,11 @@ class TablePlusRow extends TablePlusRowWidget {
   final bool needsVerticalScroll;
 
   /// Builder function to create custom hover buttons for this row.
-  final Widget Function(String rowId, Map<String, dynamic> rowData)?
+  final Widget? Function(String rowId, Map<String, dynamic> rowData)?
       hoverButtonBuilder;
 
   /// The position where hover buttons should be displayed.
   final HoverButtonPosition hoverButtonPosition;
-
 
   /// Theme configuration for hover buttons.
   final TablePlusHoverButtonTheme? hoverButtonTheme;
@@ -275,5 +274,4 @@ class _TablePlusRowState extends State<TablePlusRow> {
 
     return hoveredContent;
   }
-
 }

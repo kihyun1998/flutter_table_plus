@@ -479,7 +479,7 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
                       '🔄 REORDERING: Drag column headers to reorder\n'
                       '📏 DYNAMIC HEIGHT: Long product names auto-expand row height\n'
                       '📋 MERGED ROWS: Package ID and Quantity columns are merged\n'
-                      '🎯 EXPANDABLE: Click expand icon (▶/▼) to show/hide package totals\n'
+                      '🎯 EXPANDABLE: Hover over package rows to see expand/collapse button\n'
                       '✅ SELECTION: Select entire packages with checkboxes\n'
                       '📊 SUMMARY: Green background summary rows show calculated totals',
                       style: TextStyle(fontSize: 14, height: 1.5),
@@ -591,6 +591,41 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
                         expandedStates[groupId] =
                             !(expandedStates[groupId] ?? false);
                       });
+                    },
+                    // Add hover button builder for expand/collapse functionality
+                    hoverButtonBuilder: (rowId, rowData) {
+                      // Check if this is a merged row (groupId exists in expandedStates)
+                      if (expandedStates.containsKey(rowId)) {
+                        final isExpanded = expandedStates[rowId] ?? false;
+                        return Container(
+                          decoration: BoxDecoration(
+                            color: Colors.purple.shade50,
+                            borderRadius: BorderRadius.circular(4),
+                            border: Border.all(color: Colors.purple.shade300),
+                          ),
+                          child: IconButton(
+                            icon: Icon(
+                              isExpanded
+                                  ? Icons.expand_less
+                                  : Icons.expand_more,
+                              color: Colors.purple.shade700,
+                              size: 18,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                expandedStates[rowId] = !isExpanded;
+                              });
+                            },
+                            padding: const EdgeInsets.all(4),
+                            constraints: const BoxConstraints(
+                              minWidth: 28,
+                              minHeight: 28,
+                            ),
+                            tooltip: isExpanded ? 'Collapse' : 'Expand',
+                          ),
+                        );
+                      }
+                      return null; // No button for regular rows
                     },
                     theme: theme,
                   ),

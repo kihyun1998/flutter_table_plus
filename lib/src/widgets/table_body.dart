@@ -132,7 +132,7 @@ class TablePlusBody extends StatelessWidget {
   /// Called when a row is hovered, providing the row ID and row data.
   /// Should return a Widget to display as an overlay on the row.
   /// If null, no hover buttons will be displayed.
-  final Widget Function(String rowId, Map<String, dynamic> rowData)?
+  final Widget? Function(String rowId, Map<String, dynamic> rowData)?
       hoverButtonBuilder;
 
   /// The position where hover buttons should be displayed.

@@ -186,7 +186,7 @@ class FlutterTablePlus extends StatefulWidget {
   ///   ],
   /// )
   /// ```
-  final Widget Function(String rowId, Map<String, dynamic> rowData)?
+  final Widget? Function(String rowId, Map<String, dynamic> rowData)?
       hoverButtonBuilder;
 
   /// The position where hover buttons should be displayed.
