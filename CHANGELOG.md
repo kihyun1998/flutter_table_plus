@@ -1,3 +1,6 @@
+## 1.15.1
+*   **FIX** flutter analyze
+
 ## 1.15.0
 
 *   **BREAKING CHANGE**: Removed frozen column functionality.
