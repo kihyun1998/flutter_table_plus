@@ -27,6 +27,11 @@ class DemoTableArea extends StatelessWidget {
   final bool showMergedRows;
   final bool expandedGroups;
 
+  // Phase 6: Hover buttons and row expansion
+  final bool showHoverButtons;
+
+  final Widget Function(String, Map<String, dynamic>)? hoverButtonBuilder;
+
   const DemoTableArea({
     super.key,
     required this.columns,
@@ -47,6 +52,8 @@ class DemoTableArea extends StatelessWidget {
     required this.theme,
     required this.showMergedRows,
     required this.expandedGroups,
+    required this.showHoverButtons,
+    this.hoverButtonBuilder,
   });
 
   @override
@@ -95,14 +102,18 @@ class DemoTableArea extends StatelessWidget {
               Icon(Icons.table_chart, color: Colors.green.shade700),
               const SizedBox(width: 8),
               Text(
-                showMergedRows
-                    ? 'Phase 4 Active: Department Groups with Merged Rows'
-                    : 'Phase 3 Complete: Selection, Editing & Advanced Interactions',
+                showHoverButtons
+                    ? 'Phase 6 Active: Hover Buttons & Individual Row Expansion'
+                    : showMergedRows
+                        ? 'Phase 4 Active: Department Groups with Merged Rows'
+                        : 'Phase 3 Complete: Selection, Editing & Advanced Interactions',
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
-                  color: showMergedRows
-                      ? Colors.purple.shade900
-                      : Colors.green.shade900,
+                  color: showHoverButtons
+                      ? Colors.teal.shade900
+                      : showMergedRows
+                          ? Colors.purple.shade900
+                          : Colors.green.shade900,
                 ),
               ),
             ],
@@ -160,6 +171,10 @@ class DemoTableArea extends StatelessWidget {
 
             // Phase 4: Theme configuration
             theme: theme,
+
+            // Phase 6: Hover buttons
+            hoverButtonBuilder: hoverButtonBuilder,
+            hoverButtonPosition: HoverButtonPosition.left,
           ),
         ),
       ),

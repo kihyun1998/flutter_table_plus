@@ -54,10 +54,13 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
   bool _showMergedRows = false;
   bool _expandedGroups = false;
   List<MergedRowGroup> _mergedGroups = [];
-  
+
+  // Phase 6: Individual row expansion and hover buttons state
+  bool _showHoverButtons = false;
+
   // Future phases will add more state variables here:
   // - Theme configuration
-  // - Feature toggles
+  // - Advanced feature toggles
 
   @override
   void initState() {
@@ -115,9 +118,9 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
         _currentSortColumn = columnKey;
         _currentSortDirection = direction;
       }
-      
+
       _sortData(columnKey, direction);
-      
+
       // Phase 4: Update merged groups after sorting to maintain correct grouping
       if (_showMergedRows) {
         _updateMergedGroups();
@@ -253,7 +256,7 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
           DemoDataSource.employees.indexWhere((e) => e.id == rowId);
       if (employeeIndex != -1) {
         final originalEmployee = DemoDataSource.employees[employeeIndex];
-        
+
         // Handle different column types
         dynamic updatedValue = newValue;
         if (columnKey == 'salary') {
@@ -263,25 +266,35 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
           // Parse percentage value (remove % if present)
           updatedValue = _parsePerformanceValue(newValue.toString());
         }
-        
+
         DemoDataSource.employees[employeeIndex] = originalEmployee.copyWith(
-          position: columnKey == 'position' ? newValue : originalEmployee.position,
-          department: columnKey == 'department' ? newValue : originalEmployee.department,
-          salary: columnKey == 'salary' ? updatedValue : originalEmployee.salary,
-          performance: columnKey == 'performance' ? updatedValue : originalEmployee.performance,
+          position:
+              columnKey == 'position' ? newValue : originalEmployee.position,
+          department: columnKey == 'department'
+              ? newValue
+              : originalEmployee.department,
+          salary:
+              columnKey == 'salary' ? updatedValue : originalEmployee.salary,
+          performance: columnKey == 'performance'
+              ? updatedValue
+              : originalEmployee.performance,
         );
-        
+
         // Re-format the display data after updating the source
         if (columnKey == 'salary') {
-          _data[rowIndex][columnKey] = DemoDataFormatters.formatCurrency(updatedValue);
+          _data[rowIndex][columnKey] =
+              DemoDataFormatters.formatCurrency(updatedValue);
         } else if (columnKey == 'performance') {
-          _data[rowIndex][columnKey] = DemoDataFormatters.formatPercentage(updatedValue);
+          _data[rowIndex][columnKey] =
+              DemoDataFormatters.formatPercentage(updatedValue);
         }
-        
+
         // Update original data to reflect the edit (maintain sort reset functionality)
-        final originalRowIndex = _originalData.indexWhere((row) => row['id'] == rowId);
+        final originalRowIndex =
+            _originalData.indexWhere((row) => row['id'] == rowId);
         if (originalRowIndex != -1) {
-          _originalData[originalRowIndex] = Map<String, dynamic>.from(_data[rowIndex]);
+          _originalData[originalRowIndex] =
+              Map<String, dynamic>.from(_data[rowIndex]);
         }
       }
     });
@@ -313,13 +326,14 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
 
   /// Phase 4: Update merged groups based on current settings and data order
   void _updateMergedGroups() {
-    _mergedGroups = _showMergedRows 
+    _mergedGroups = _showMergedRows
         ? DemoMergedGroups.createDepartmentGroups(
             expanded: _expandedGroups,
             currentData: _data, // Pass current data order
           )
         : [];
-    debugPrint('📊 Updated merged groups: ${_mergedGroups.length} groups, expanded: $_expandedGroups');
+    debugPrint(
+        '📊 Updated merged groups: ${_mergedGroups.length} groups, expanded: $_expandedGroups');
   }
 
   /// Phase 4: Toggle merged rows display
@@ -327,9 +341,10 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
     setState(() {
       _showMergedRows = !_showMergedRows;
       _updateMergedGroups();
-      
+
       // Maintain current sort when toggling merged rows
-      if (_currentSortColumn != null && _currentSortDirection != SortDirection.none) {
+      if (_currentSortColumn != null &&
+          _currentSortDirection != SortDirection.none) {
         _sortData(_currentSortColumn!, _currentSortDirection);
       }
     });
@@ -345,27 +360,43 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
     debugPrint('🔄 Toggled group expansion: $_expandedGroups');
   }
 
+  /// Phase 6: Toggle hover buttons display
+  void _printButton() {
+    setState(() {
+      _showHoverButtons = !_showHoverButtons;
+    });
+    debugPrint('🔄 Toggled hover buttons: $_showHoverButtons');
+  }
+
+  /// Phase 6: Handle individual row expansion
+  void _handleRowExpansion(String rowId) {
+    debugPrint('🔄 Row $rowId expansion toggled. Expanded row');
+  }
+
   /// Phase 4: Handle merged row group expansion change
   void _handleGroupExpansionChanged(String groupId) {
     setState(() {
       // Find the group and toggle its expansion state
-      final groupIndex = _mergedGroups.indexWhere((group) => group.groupId == groupId);
+      final groupIndex =
+          _mergedGroups.indexWhere((group) => group.groupId == groupId);
       if (groupIndex != -1) {
         final currentGroup = _mergedGroups[groupIndex];
         final newExpansionState = !currentGroup.isExpanded;
-        
+
         // Recreate merged groups with individual expansion state
         _mergedGroups = DemoMergedGroups.createDepartmentGroups(
           expanded: _expandedGroups, // Keep global setting
           currentData: _data,
         );
-        
+
         // Find the same group again and update its expansion state
-        final updatedGroupIndex = _mergedGroups.indexWhere((group) => 
-          group.groupId == groupId || 
-          group.rowKeys.join(',') == currentGroup.rowKeys.join(',') // Fallback: match by row keys
-        );
-        
+        final updatedGroupIndex = _mergedGroups.indexWhere((group) =>
+                group.groupId == groupId ||
+                group.rowKeys.join(',') ==
+                    currentGroup.rowKeys
+                        .join(',') // Fallback: match by row keys
+            );
+
         if (updatedGroupIndex != -1) {
           final updatedGroup = _mergedGroups[updatedGroupIndex];
           _mergedGroups[updatedGroupIndex] = MergedRowGroup(
@@ -385,19 +416,109 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
   /// Phase 4: Calculate dynamic row height based on department
   double _calculateRowHeight(int rowIndex, Map<String, dynamic> rowData) {
     final department = rowData['department']?.toString() ?? '';
-    
+
     // HR department gets taller rows for better readability
     if (department == 'HR') {
       return 80.0; // Taller rows for HR
     }
-    
+
     // Engineering department gets slightly taller rows due to technical content
     if (department == 'Engineering') {
       return 60.0;
     }
-    
+
     // Default height for other departments
     return 50.0;
+  }
+
+  /// Phase 6: Build hover buttons for individual rows
+  Widget _buildHoverButtons(String rowId, Map<String, dynamic> rowData) {
+    final employeeName = rowData['name']?.toString() ?? 'Unknown';
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // View Details button
+          Tooltip(
+            message: 'View $employeeName details',
+            child: IconButton(
+              icon: Icon(
+                Icons.visibility,
+                size: 18,
+                color: Colors.blue.shade700,
+              ),
+              onPressed: () {
+                debugPrint(
+                    '👁️ View details clicked for Employee ID: $rowId (Name: $employeeName)');
+                _handleRowExpansion(rowId); // Keep for visual feedback
+              },
+              padding: const EdgeInsets.all(4),
+              constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+              style: IconButton.styleFrom(
+                backgroundColor: Colors.blue.shade100,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 4),
+
+          // Edit button
+          Tooltip(
+            message: 'Edit $employeeName',
+            child: IconButton(
+              icon: Icon(
+                Icons.edit,
+                size: 18,
+                color: Colors.orange.shade600,
+              ),
+              onPressed: () {
+                debugPrint(
+                    '✏️ Edit clicked for Employee ID: $rowId (Name: $employeeName)');
+                // Could trigger edit mode for this specific row
+              },
+              padding: const EdgeInsets.all(4),
+              constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+              style: IconButton.styleFrom(
+                backgroundColor: Colors.orange.shade100,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 4),
+
+          // Delete button
+          Tooltip(
+            message: 'Delete $employeeName',
+            child: IconButton(
+              icon: Icon(
+                Icons.delete_outline,
+                size: 18,
+                color: Colors.red.shade600,
+              ),
+              onPressed: () {
+                debugPrint(
+                    '🗑️ Delete clicked for Employee ID: $rowId (Name: $employeeName)');
+                // Could show confirmation dialog
+              },
+              padding: const EdgeInsets.all(4),
+              constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+              style: IconButton.styleFrom(
+                backgroundColor: Colors.red.shade100,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -417,7 +538,8 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
 
             // Main table area with increased height
             SizedBox(
-              height: MediaQuery.of(context).size.height * 0.7, // 70% of screen height
+              height: MediaQuery.of(context).size.height *
+                  0.7, // 70% of screen height
               child: _buildTableArea(),
             ),
 
@@ -447,6 +569,8 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
       expandedGroups: _expandedGroups,
       onToggleGroupExpansion: _toggleGroupExpansion,
       mergedGroups: _mergedGroups,
+      showHoverButtons: _showHoverButtons,
+      onToggleHoverButtons: _printButton,
     );
   }
 
@@ -468,15 +592,16 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
       mergedGroups: _mergedGroups,
       onMergedRowExpandToggle: _handleGroupExpansionChanged,
       calculateRowHeight: _calculateRowHeight,
-      theme: _buildPhase4Theme(),
+      theme: _buildPhase6Theme(),
       showMergedRows: _showMergedRows,
       expandedGroups: _expandedGroups,
+      showHoverButtons: _showHoverButtons,
+      hoverButtonBuilder: _showHoverButtons ? _buildHoverButtons : null,
     );
   }
 
-
-  /// Phase 4: Build theme with selection, editing, and merged rows
-  TablePlusTheme _buildPhase4Theme() {
+  /// Phase 6: Build theme with all features including hover buttons
+  TablePlusTheme _buildPhase6Theme() {
     return TablePlusTheme(
       headerTheme: TablePlusHeaderTheme(
         backgroundColor: Colors.blue.shade50,
@@ -506,6 +631,24 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
         editingBorderColor: Colors.orange.shade400,
         editingBorderWidth: 2.0,
       ),
+      // Phase 6: Hover button theme
+      hoverButtonTheme: TablePlusHoverButtonTheme(
+        backgroundColor: Colors.white,
+        opacity: 0.95,
+        iconSize: 18.0,
+        horizontalOffset: 8.0,
+        spacing: 4.0,
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+        borderRadius: BorderRadius.circular(6),
+        elevation: 2.0,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
     );
   }
 
@@ -518,6 +661,7 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
       showMergedRows: _showMergedRows,
       expandedGroups: _expandedGroups,
       mergedGroups: _mergedGroups,
+      showHoverButtons: _showHoverButtons,
     );
   }
 }

@@ -17,6 +17,10 @@ class DemoControlPanel extends StatelessWidget {
   final VoidCallback onToggleGroupExpansion;
   final List<dynamic> mergedGroups;
 
+  // Phase 6: Hover buttons and row expansion
+  final bool showHoverButtons;
+  final VoidCallback onToggleHoverButtons;
+
   const DemoControlPanel({
     super.key,
     required this.selectionMode,
@@ -29,6 +33,8 @@ class DemoControlPanel extends StatelessWidget {
     required this.expandedGroups,
     required this.onToggleGroupExpansion,
     required this.mergedGroups,
+    required this.showHoverButtons,
+    required this.onToggleHoverButtons,
   });
 
   @override
@@ -48,6 +54,28 @@ class DemoControlPanel extends StatelessWidget {
           // Merged rows controls
           const SizedBox(height: 12),
           _buildMergedRowsControls(),
+
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Icon(Icons.handshake, color: Colors.amber.shade600),
+              SizedBox(width: 8),
+              Text(
+                'Hovered Button: ',
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: Colors.amber.shade700,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Switch(
+                value: showHoverButtons,
+                onChanged: (value) => onToggleHoverButtons(),
+                activeColor: Colors.amber.shade600,
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+            ],
+          )
         ],
       ),
     );
@@ -181,12 +209,7 @@ class DemoControlPanel extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 8),
-        Switch(
-          value: showMergedRows,
-          onChanged: (value) => onToggleMergedRows(),
-          activeColor: Colors.purple.shade600,
-          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        ),
+
         const SizedBox(width: 16),
 
         // Group expansion toggle (only show when merged rows are enabled)
