@@ -5,6 +5,9 @@ import 'data/demo_column_definitions.dart';
 import 'data/demo_data_formatters.dart';
 import 'data/demo_data_source.dart';
 import 'data/demo_merged_groups.dart';
+import 'widgets/demo_control_panel.dart';
+import 'widgets/demo_stats_panel.dart';
+import 'widgets/demo_table_area.dart';
 
 /// Comprehensive Flutter Table Plus Demo
 ///
@@ -409,8 +412,8 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Phase 9: Control panel will be added here
-            _buildPlaceholderControlPanel(),
+            // Control panel
+            _buildControlPanel(),
 
             // Main table area with increased height
             SizedBox(
@@ -418,374 +421,59 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
               child: _buildTableArea(),
             ),
 
-            // Phase 9: Stats panel will be added here
-            _buildPlaceholderStatsPanel(),
+            // Stats panel
+            _buildStatsPanel(),
           ],
         ),
       ),
     );
   }
 
-  /// Phase 3: Control panel with selection controls
-  Widget _buildPlaceholderControlPanel() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      color: Colors.grey.shade100,
-      child: Column(
-        children: [
-          // Status Row
-          Row(
-            children: [
-              Icon(Icons.settings, color: Colors.grey.shade600),
-              const SizedBox(width: 8),
-              Text(
-                'Control Panel (Phase 9)',
-                style: TextStyle(
-                  color: Colors.grey.shade600,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const Spacer(),
-              Chip(
-                label: const Text('Phase 1 ✅'),
-                backgroundColor: Colors.green.shade100,
-                labelStyle: TextStyle(color: Colors.green.shade800),
-              ),
-              const SizedBox(width: 8),
-              Chip(
-                label: const Text('Phase 2 ✅'),
-                backgroundColor: Colors.green.shade100,
-                labelStyle: TextStyle(color: Colors.green.shade800),
-              ),
-              const SizedBox(width: 8),
-              Chip(
-                label: const Text('Phase 3 ✅'),
-                backgroundColor: Colors.green.shade100,
-                labelStyle: TextStyle(color: Colors.green.shade800),
-              ),
-              const SizedBox(width: 8),
-              Chip(
-                label: const Text('Phase 4 🔄'),
-                backgroundColor: Colors.orange.shade100,
-                labelStyle: TextStyle(color: Colors.orange.shade800),
-              ),
-            ],
-          ),
-
-          // Phase 3: Selection and editing controls
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              // Selection controls
-              Icon(Icons.check_box, color: Colors.blue.shade600),
-              const SizedBox(width: 8),
-              Text(
-                'Selection:',
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: Colors.blue.shade700,
-                ),
-              ),
-              const SizedBox(width: 8),
-              DropdownButton<SelectionMode>(
-                value: _selectionMode,
-                onChanged: (SelectionMode? newValue) {
-                  if (newValue != null) {
-                    setState(() {
-                      _selectionMode = newValue;
-                      _selectedRows.clear();
-                    });
-                  }
-                },
-                items: SelectionMode.values.map((mode) {
-                  return DropdownMenuItem(
-                    value: mode,
-                    child: Text(mode.name.toUpperCase()),
-                  );
-                }).toList(),
-              ),
-              const SizedBox(width: 16),
-
-              // Selected count
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: _selectedRows.isNotEmpty
-                      ? Colors.blue.shade100
-                      : Colors.grey.shade200,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  'Selected: ${_selectedRows.length}',
-                  style: TextStyle(
-                    color: _selectedRows.isNotEmpty
-                        ? Colors.blue.shade700
-                        : Colors.grey.shade600,
-                    fontWeight: FontWeight.w500,
-                    fontSize: 12,
-                  ),
-                ),
-              ),
-
-              // Clear selection button
-              if (_selectedRows.isNotEmpty) ...[
-                const SizedBox(width: 8),
-                ElevatedButton.icon(
-                  onPressed: _clearSelections,
-                  icon: const Icon(Icons.clear, size: 16),
-                  label: const Text('Clear'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red.shade100,
-                    foregroundColor: Colors.red.shade700,
-                    minimumSize: const Size(0, 32),
-                  ),
-                ),
-              ],
-
-              const Spacer(),
-
-              // Editing toggle
-              Icon(Icons.edit, color: Colors.orange.shade600),
-              const SizedBox(width: 8),
-              Text(
-                'Editing: ${_isEditable ? "ON" : "OFF"} (Position, Dept, Salary, Performance)',
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: _isEditable
-                      ? Colors.orange.shade700
-                      : Colors.grey.shade600,
-                ),
-              ),
-            ],
-          ),
-
-          // Phase 4: Merged rows controls
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              // Merged rows toggle
-              Icon(Icons.merge_type, color: Colors.purple.shade600),
-              const SizedBox(width: 8),
-              Text(
-                'Merged Rows:',
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: Colors.purple.shade700,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Switch(
-                value: _showMergedRows,
-                onChanged: (value) => _toggleMergedRows(),
-                activeColor: Colors.purple.shade600,
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-              const SizedBox(width: 16),
-
-              // Group expansion toggle (only show when merged rows are enabled)
-              if (_showMergedRows) ...[
-                Icon(Icons.expand_more, color: Colors.indigo.shade600),
-                const SizedBox(width: 8),
-                Text(
-                  'Expand Groups:',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    color: Colors.indigo.shade700,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Switch(
-                  value: _expandedGroups,
-                  onChanged: (value) => _toggleGroupExpansion(),
-                  activeColor: Colors.indigo.shade600,
-                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-                const SizedBox(width: 16),
-              ],
-
-              // Merged groups count
-              if (_showMergedRows)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.purple.shade100,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    'Groups: ${_mergedGroups.length}',
-                    style: TextStyle(
-                      color: Colors.purple.shade700,
-                      fontWeight: FontWeight.w500,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-
-              const Spacer(),
-
-              // Phase 4 status
-              Text(
-                'Phase 4: ${_showMergedRows ? "Active" : "Disabled"}',
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: _showMergedRows 
-                      ? Colors.purple.shade700
-                      : Colors.grey.shade600,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+  /// Control panel with selection controls and feature toggles
+  Widget _buildControlPanel() {
+    return DemoControlPanel(
+      selectionMode: _selectionMode,
+      onSelectionModeChanged: (SelectionMode newValue) {
+        setState(() {
+          _selectionMode = newValue;
+          _selectedRows.clear();
+        });
+      },
+      selectedRows: _selectedRows,
+      onClearSelections: _clearSelections,
+      isEditable: _isEditable,
+      showMergedRows: _showMergedRows,
+      onToggleMergedRows: _toggleMergedRows,
+      expandedGroups: _expandedGroups,
+      onToggleGroupExpansion: _toggleGroupExpansion,
+      mergedGroups: _mergedGroups,
     );
   }
 
-  /// Phase 1: Basic table area (empty for now)
+  /// Main table area with FlutterTablePlus widget
   Widget _buildTableArea() {
-    return Card(
-      margin: const EdgeInsets.all(16),
-      elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Table Area',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-            ),
-            const SizedBox(height: 16),
-
-            // Phase 1: Show basic info
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.green.shade50,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.green.shade200),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.table_chart, color: Colors.green.shade700),
-                      const SizedBox(width: 8),
-                      Text(
-                        _showMergedRows 
-                            ? 'Phase 4 Active: Department Groups with Merged Rows'
-                            : 'Phase 3 Complete: Selection, Editing & Advanced Interactions',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          color: _showMergedRows 
-                              ? Colors.purple.shade900
-                              : Colors.green.shade900,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  _buildDataSummary(),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Phase 2: Actual FlutterTablePlus implementation
-            Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.grey.shade300),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: FlutterTablePlus(
-                    columns: _columns,
-                    data: _data,
-
-                    // Phase 2: Sorting functionality
-                    onSort: _handleSort,
-                    sortColumnKey: _currentSortColumn,
-                    sortDirection: _currentSortDirection,
-
-                    // Phase 2: Column reordering functionality
-                    onColumnReorder: _handleColumnReorder,
-
-                    // Phase 3: Selection functionality
-                    isSelectable: _isSelectable,
-                    selectionMode: _selectionMode,
-                    selectedRows: _selectedRows,
-                    onRowSelectionChanged: _handleRowSelection,
-
-                    // Phase 3: Editing functionality
-                    isEditable: _isEditable,
-                    onCellChanged: _handleCellChanged,
-
-                    // Phase 4: Merged rows functionality
-                    mergedGroups: _mergedGroups,
-                    onMergedRowExpandToggle: _handleGroupExpansionChanged,
-
-                    // Phase 4: Dynamic row height calculation
-                    calculateRowHeight: _calculateRowHeight,
-
-                    // Phase 4: Updated theme with merged rows
-                    theme: _buildPhase4Theme(),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+    return DemoTableArea(
+      columns: _columns,
+      data: _data,
+      currentSortColumn: _currentSortColumn,
+      currentSortDirection: _currentSortDirection,
+      onSort: _handleSort,
+      onColumnReorder: _handleColumnReorder,
+      isSelectable: _isSelectable,
+      selectionMode: _selectionMode,
+      selectedRows: _selectedRows,
+      onRowSelectionChanged: _handleRowSelection,
+      isEditable: _isEditable,
+      onCellChanged: _handleCellChanged,
+      mergedGroups: _mergedGroups,
+      onMergedRowExpandToggle: _handleGroupExpansionChanged,
+      calculateRowHeight: _calculateRowHeight,
+      theme: _buildPhase4Theme(),
+      showMergedRows: _showMergedRows,
+      expandedGroups: _expandedGroups,
     );
   }
 
-  /// Build data summary for Phase 1-4
-  Widget _buildDataSummary() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSummaryItem('Employees', '${_data.length}', Icons.people),
-        _buildSummaryItem('Departments', '${DemoDataSource.departments.length}',
-            Icons.business),
-        _buildSummaryItem(
-            'Projects', '${DemoDataSource.projects.length}', Icons.folder),
-        _buildSummaryItem('Columns', '${_columns.length}', Icons.view_column),
-        if (_showMergedRows) ...[
-          _buildSummaryItem('Merged Groups', '${_mergedGroups.length}', Icons.merge_type),
-          _buildSummaryItem('Group Mode', _expandedGroups ? 'Expanded' : 'Collapsed', Icons.expand_more),
-        ],
-      ],
-    );
-  }
-
-  /// Build individual summary item
-  Widget _buildSummaryItem(String label, String value, IconData icon) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          Icon(icon, size: 16, color: Colors.blue.shade600),
-          const SizedBox(width: 8),
-          Text(
-            '$label: ',
-            style: const TextStyle(fontWeight: FontWeight.w500),
-          ),
-          Text(
-            value,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Colors.blue.shade700,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   /// Phase 4: Build theme with selection, editing, and merged rows
   TablePlusTheme _buildPhase4Theme() {
@@ -821,102 +509,15 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
     );
   }
 
-  /// Phase 2: Updated stats panel with sorting info
-  Widget _buildPlaceholderStatsPanel() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        border: Border(
-          top: BorderSide(color: Colors.grey.shade300),
-        ),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.analytics, color: Colors.grey.shade600),
-          const SizedBox(width: 8),
-          Text(
-            'Stats Panel (Phase 9)',
-            style: TextStyle(
-              color: Colors.grey.shade600,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(width: 16),
-          // Phase 2: Show current sort info
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: (_currentSortColumn != null && _currentSortDirection != SortDirection.none)
-                  ? Colors.blue.shade100
-                  : Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Text(
-              (_currentSortColumn != null && _currentSortDirection != SortDirection.none)
-                  ? 'Sort: $_currentSortColumn ${_currentSortDirection == SortDirection.ascending ? '↑' : '↓'}'
-                  : 'Sort: Original order',
-              style: TextStyle(
-                color: (_currentSortColumn != null && _currentSortDirection != SortDirection.none)
-                    ? Colors.blue.shade700
-                    : Colors.grey.shade600,
-                fontWeight: FontWeight.w500,
-                fontSize: 12,
-              ),
-            ),
-          ),
-          // Phase 3: Show selection info
-          if (_selectedRows.isNotEmpty) ...[
-            const SizedBox(width: 16),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.blue.shade100,
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                'Selected: ${_selectedRows.length} row${_selectedRows.length != 1 ? 's' : ''}',
-                style: TextStyle(
-                  color: Colors.blue.shade700,
-                  fontWeight: FontWeight.w500,
-                  fontSize: 12,
-                ),
-              ),
-            ),
-          ],
-          // Phase 4: Show merged rows info
-          if (_showMergedRows) ...[
-            const SizedBox(width: 16),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.purple.shade100,
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                'Merged: ${_mergedGroups.length} groups (${_expandedGroups ? "expanded" : "collapsed"})',
-                style: TextStyle(
-                  color: Colors.purple.shade700,
-                  fontWeight: FontWeight.w500,
-                  fontSize: 12,
-                ),
-              ),
-            ),
-          ],
-          const Spacer(),
-          Text(
-            _showMergedRows 
-                ? 'Phase 4: Merged Rows Active ✨'
-                : 'Next: Phase 5 - Expandable Rows',
-            style: TextStyle(
-              color: _showMergedRows 
-                  ? Colors.purple.shade700
-                  : Colors.orange.shade700,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
+  /// Stats panel with current table information
+  Widget _buildStatsPanel() {
+    return DemoStatsPanel(
+      currentSortColumn: _currentSortColumn,
+      currentSortDirection: _currentSortDirection,
+      selectedRows: _selectedRows,
+      showMergedRows: _showMergedRows,
+      expandedGroups: _expandedGroups,
+      mergedGroups: _mergedGroups,
     );
   }
 }
