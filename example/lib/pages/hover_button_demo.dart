@@ -170,7 +170,7 @@ class _HoverButtonDemoState extends State<HoverButtonDemo> {
     Widget container = Container(
       padding: theme.padding,
       decoration: BoxDecoration(
-        color: theme.backgroundColor.withOpacity(theme.opacity),
+        color: theme.backgroundColor.withValues(alpha: theme.opacity),
         borderRadius: theme.borderRadius,
         border: theme.borderColor != null
             ? Border.all(color: theme.borderColor!)
@@ -218,7 +218,7 @@ class _HoverButtonDemoState extends State<HoverButtonDemo> {
       borderRadius: BorderRadius.circular(4),
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withOpacity(0.1),
+          color: Colors.black.withValues(alpha: 0.1),
           blurRadius: 4,
           offset: const Offset(0, 2),
         ),
@@ -569,11 +569,13 @@ class _HoverButtonDemoState extends State<HoverButtonDemo> {
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 4),
                                     decoration: BoxDecoration(
-                                      color: Colors.purple.withOpacity(0.9),
+                                      color:
+                                          Colors.purple.withValues(alpha: 0.9),
                                       borderRadius: BorderRadius.circular(8),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.black.withOpacity(0.2),
+                                          color: Colors.black
+                                              .withValues(alpha: 0.2),
                                           blurRadius: 6,
                                           offset: const Offset(0, 3),
                                         ),

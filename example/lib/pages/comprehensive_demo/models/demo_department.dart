@@ -33,7 +33,7 @@ class DemoDepartment {
       'memberCount': memberCount,
       'budget': budget,
       'projects': projects,
-      'color': color.value,
+      'color': color,
       'description': description,
       'location': location,
     };
@@ -48,7 +48,7 @@ class DemoDepartment {
       memberCount: map['memberCount'] ?? 0,
       budget: (map['budget'] ?? 0).toDouble(),
       projects: List<String>.from(map['projects'] ?? []),
-      color: Color(map['color'] ?? Colors.blue.value),
+      color: Color(map['color'] ?? Colors.blue),
       description: map['description'] ?? '',
       location: map['location'] ?? '',
     );

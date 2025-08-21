@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
-import 'demo_data_source.dart';
-import '../models/demo_employee.dart';
+
 import '../models/demo_department.dart';
+import '../models/demo_employee.dart';
+import 'demo_data_source.dart';
 
 /// Merged row group configurations for comprehensive demo
 class DemoMergedGroups {
@@ -186,17 +187,6 @@ class DemoMergedGroups {
       return '\$${(amount / 1000).toStringAsFixed(0)}K';
     } else {
       return '\$${amount.toStringAsFixed(0)}';
-    }
-  }
-
-  /// Get color based on performance level
-  static Color _getPerformanceColor(double performance) {
-    if (performance >= 0.9) {
-      return Colors.green.shade600;
-    } else if (performance >= 0.8) {
-      return Colors.orange.shade600;
-    } else {
-      return Colors.red.shade600;
     }
   }
 

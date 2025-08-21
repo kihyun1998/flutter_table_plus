@@ -891,11 +891,11 @@ class _ComprehensiveMergedExampleState
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: Colors.blue.withOpacity(0.9),
+                        color: Colors.blue.withValues(alpha: 0.9),
                         borderRadius: BorderRadius.circular(4),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
+                            color: Colors.black.withValues(alpha: 0.2),
                             blurRadius: 4,
                             offset: const Offset(0, 2),
                           ),
@@ -1395,17 +1395,11 @@ class _ComprehensiveMergedExampleState
   void _handleHoverButtonPress(String rowId, Map<String, dynamic> rowData) {
     // Check if this is a merged row (group ID) or regular row
     final isMergedRow = _mergedGroups.any((group) => group.groupId == rowId);
-
-    if (isMergedRow) {
-      // Find the merged group
-      final group = _mergedGroups.firstWhere((g) => g.groupId == rowId);
-      print('Hover button pressed on merged group: $rowId');
-      print('Group contains ${group.rowKeys.length} rows: ${group.rowKeys}');
-      print('Representative data: $rowData');
-    } else {
-      // Regular row
-      print('Hover button pressed on regular row: $rowId');
-      print('Row data: $rowData');
-    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('isMergedRow : $isMergedRow'),
+        duration: const Duration(seconds: 2),
+      ),
+    );
   }
 }
