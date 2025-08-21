@@ -69,24 +69,25 @@ A single integrated demo that showcases key Flutter Table Plus features in a pro
 - Selection and editing can coexist
 - Proper callback handling for user interactions
 
-### 🔄 Phase 4: Merged Rows
-**Status**: Pending  
+### ✅ Phase 4: Merged Rows
+**Status**: Complete  
 **Goal**: Implement grouped row display with merged cells
 
-**Planned Features:**
-- Department-based row grouping
-- Merged cells for department information
-- Expandable/collapsible merged groups
-- Custom merged row content with department stats
-- Group-level selection and editing
-- Themed merged row styling
+**Completed Features:**
+- Department-based row grouping (5 departments)
+- Custom merged cells with rich department summaries
+- Toggle merge/unmerge functionality with switch controls
+- Group expansion/collapse state management
+- Department statistics (member count, salary totals, performance averages)
+- Themed merged row styling with purple accents
+- Individual cell preservation for joinDate and skills columns
 
-**Implementation Plan:**
-- Create MergedRowGroup configurations
-- Group employees by department
-- Add merge/unmerge toggle controls
-- Implement group expansion state management
-- Add department summary information display
+**Implementation Highlights:**
+- Created `DemoMergedGroups` utility class for group configuration
+- Added department color-coding and visual indicators
+- Implemented salary and performance aggregation displays
+- Added merge controls to control panel with real-time feedback
+- Enhanced theme with `TablePlusMergedRowTheme` configuration
 
 ### 🔄 Phase 5: Expandable Rows  
 **Status**: Pending

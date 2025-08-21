@@ -40,8 +40,7 @@ class DemoColumnDefinitions {
         order: 3,
         alignment: Alignment.centerRight,
         sortable: true,
-        editable: false,
-        // Will add custom cell builder in Phase 8 for currency formatting
+        editable: true, // Phase 4: Enable editing
       ),
       'performance': TablePlusColumn(
         key: 'performance',
@@ -50,8 +49,7 @@ class DemoColumnDefinitions {
         order: 4,
         alignment: Alignment.center,
         sortable: true,
-        editable: false,
-        // Will add progress bar cell builder in Phase 8
+        editable: true, // Phase 4: Enable editing
       ),
       'joinDate': TablePlusColumn(
         key: 'joinDate',

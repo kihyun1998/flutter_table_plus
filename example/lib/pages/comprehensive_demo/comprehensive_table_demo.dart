@@ -4,6 +4,7 @@ import 'package:flutter_table_plus/flutter_table_plus.dart';
 import 'data/demo_column_definitions.dart';
 import 'data/demo_data_formatters.dart';
 import 'data/demo_data_source.dart';
+import 'data/demo_merged_groups.dart';
 
 /// Comprehensive Flutter Table Plus Demo
 ///
@@ -18,7 +19,7 @@ import 'data/demo_data_source.dart';
 /// Phase 1: Basic structure and data models ✅
 /// Phase 2: Basic table and sorting ✅
 /// Phase 3: Selection and editing ✅
-/// Phase 4: Merged rows (pending)
+/// Phase 4: Merged rows ✅
 /// Phase 5: Expandable rows (pending)
 /// Phase 6: Hover buttons (pending)
 /// Phase 7: Custom cells and themes (pending)
@@ -46,8 +47,9 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
   final bool _isEditable = true;
 
   // Phase 4: Merged rows state
-  // bool _showMergedRows = false;
-  // List<MergedRowGroup> _mergedGroups = [];
+  bool _showMergedRows = false;
+  bool _expandedGroups = false;
+  List<MergedRowGroup> _mergedGroups = [];
   
   // Future phases will add more state variables here:
   // - Theme configuration
@@ -87,6 +89,9 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
 
     // Apply initial sort
     _sortData(_currentSortColumn!, _currentSortDirection);
+
+    // Phase 4: Initialize merged groups
+    _updateMergedGroups();
 
     debugPrint(
         '✅ Phase 2: Initialized with ${_data.length} employees, ${_columns.length} columns, default sort: $_currentSortColumn');
@@ -211,7 +216,7 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
     debugPrint('🔘 Selected rows: $_selectedRows');
   }
 
-  /// Phase 3: Handle cell editing
+  /// Phase 4: Handle cell editing (expanded to include salary and performance)
   void _handleCellChanged(
       String columnKey, int rowIndex, dynamic oldValue, dynamic newValue) {
     setState(() {
@@ -224,18 +229,48 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
           DemoDataSource.employees.indexWhere((e) => e.id == rowId);
       if (employeeIndex != -1) {
         final originalEmployee = DemoDataSource.employees[employeeIndex];
+        
+        // Handle different column types
+        dynamic updatedValue = newValue;
+        if (columnKey == 'salary') {
+          // Parse salary value (remove currency formatting if present)
+          updatedValue = _parseCurrencyValue(newValue.toString());
+        } else if (columnKey == 'performance') {
+          // Parse percentage value (remove % if present)
+          updatedValue = _parsePerformanceValue(newValue.toString());
+        }
+        
         DemoDataSource.employees[employeeIndex] = originalEmployee.copyWith(
-          position:
-              columnKey == 'position' ? newValue : originalEmployee.position,
-          department: columnKey == 'department'
-              ? newValue
-              : originalEmployee.department,
+          position: columnKey == 'position' ? newValue : originalEmployee.position,
+          department: columnKey == 'department' ? newValue : originalEmployee.department,
+          salary: columnKey == 'salary' ? updatedValue : originalEmployee.salary,
+          performance: columnKey == 'performance' ? updatedValue : originalEmployee.performance,
         );
+        
+        // Re-format the display data after updating the source
+        if (columnKey == 'salary') {
+          _data[rowIndex][columnKey] = DemoDataFormatters.formatCurrency(updatedValue);
+        } else if (columnKey == 'performance') {
+          _data[rowIndex][columnKey] = DemoDataFormatters.formatPercentage(updatedValue);
+        }
       }
     });
 
     debugPrint(
         '✏️ Cell edited: Row $rowIndex, Column $columnKey: $oldValue -> $newValue');
+  }
+
+  /// Parse currency value from string (removes $ and commas)
+  double _parseCurrencyValue(String value) {
+    final numericString = value.replaceAll(RegExp(r'[^\d.]'), '');
+    return double.tryParse(numericString) ?? 0.0;
+  }
+
+  /// Parse performance value from string (removes % and converts to decimal)
+  double _parsePerformanceValue(String value) {
+    final numericString = value.replaceAll('%', '');
+    final percentage = double.tryParse(numericString) ?? 0.0;
+    return percentage / 100.0; // Convert percentage to decimal
   }
 
   /// Phase 3: Clear all selections
@@ -244,6 +279,69 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
       _selectedRows.clear();
     });
     debugPrint('🗑️ Cleared all selections');
+  }
+
+  /// Phase 4: Update merged groups based on current settings
+  void _updateMergedGroups() {
+    _mergedGroups = _showMergedRows 
+        ? DemoMergedGroups.createDepartmentGroups(expanded: _expandedGroups)
+        : [];
+    debugPrint('📊 Updated merged groups: ${_mergedGroups.length} groups, expanded: $_expandedGroups');
+  }
+
+  /// Phase 4: Toggle merged rows display
+  void _toggleMergedRows() {
+    setState(() {
+      _showMergedRows = !_showMergedRows;
+      _updateMergedGroups();
+    });
+    debugPrint('🔄 Toggled merged rows: $_showMergedRows');
+  }
+
+  /// Phase 4: Toggle group expansion
+  void _toggleGroupExpansion() {
+    setState(() {
+      _expandedGroups = !_expandedGroups;
+      _updateMergedGroups();
+    });
+    debugPrint('🔄 Toggled group expansion: $_expandedGroups');
+  }
+
+  /// Phase 4: Handle merged row group expansion change
+  void _handleGroupExpansionChanged(String groupId) {
+    setState(() {
+      final groupIndex = _mergedGroups.indexWhere((group) => group.groupId == groupId);
+      if (groupIndex != -1) {
+        final currentGroup = _mergedGroups[groupIndex];
+        _mergedGroups[groupIndex] = MergedRowGroup(
+          groupId: currentGroup.groupId,
+          rowKeys: currentGroup.rowKeys,
+          mergeConfig: currentGroup.mergeConfig,
+          isExpandable: currentGroup.isExpandable,
+          isExpanded: !currentGroup.isExpanded,
+          summaryRowData: currentGroup.summaryRowData,
+        );
+      }
+    });
+    debugPrint('🔄 Group $groupId expansion toggled');
+  }
+
+  /// Phase 4: Calculate dynamic row height based on department
+  double _calculateRowHeight(int rowIndex, Map<String, dynamic> rowData) {
+    final department = rowData['department']?.toString() ?? '';
+    
+    // HR department gets taller rows for better readability
+    if (department == 'HR') {
+      return 80.0; // Taller rows for HR
+    }
+    
+    // Engineering department gets slightly taller rows due to technical content
+    if (department == 'Engineering') {
+      return 60.0;
+    }
+    
+    // Default height for other departments
+    return 50.0;
   }
 
   @override
@@ -255,19 +353,22 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
         foregroundColor: Colors.white,
         elevation: 2,
       ),
-      body: Column(
-        children: [
-          // Phase 9: Control panel will be added here
-          _buildPlaceholderControlPanel(),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            // Phase 9: Control panel will be added here
+            _buildPlaceholderControlPanel(),
 
-          // Main table area
-          Expanded(
-            child: _buildTableArea(),
-          ),
+            // Main table area with increased height
+            SizedBox(
+              height: MediaQuery.of(context).size.height * 0.7, // 70% of screen height
+              child: _buildTableArea(),
+            ),
 
-          // Phase 9: Stats panel will be added here
-          _buildPlaceholderStatsPanel(),
-        ],
+            // Phase 9: Stats panel will be added here
+            _buildPlaceholderStatsPanel(),
+          ],
+        ),
       ),
     );
   }
@@ -308,6 +409,12 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
                 label: const Text('Phase 3 ✅'),
                 backgroundColor: Colors.green.shade100,
                 labelStyle: TextStyle(color: Colors.green.shade800),
+              ),
+              const SizedBox(width: 8),
+              Chip(
+                label: const Text('Phase 4 🔄'),
+                backgroundColor: Colors.orange.shade100,
+                labelStyle: TextStyle(color: Colors.orange.shade800),
               ),
             ],
           ),
@@ -388,11 +495,88 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
               Icon(Icons.edit, color: Colors.orange.shade600),
               const SizedBox(width: 8),
               Text(
-                'Editing: ${_isEditable ? "ON" : "OFF"}',
+                'Editing: ${_isEditable ? "ON" : "OFF"} (Position, Dept, Salary, Performance)',
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
                   color: _isEditable
                       ? Colors.orange.shade700
+                      : Colors.grey.shade600,
+                ),
+              ),
+            ],
+          ),
+
+          // Phase 4: Merged rows controls
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              // Merged rows toggle
+              Icon(Icons.merge_type, color: Colors.purple.shade600),
+              const SizedBox(width: 8),
+              Text(
+                'Merged Rows:',
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: Colors.purple.shade700,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Switch(
+                value: _showMergedRows,
+                onChanged: (value) => _toggleMergedRows(),
+                activeColor: Colors.purple.shade600,
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              const SizedBox(width: 16),
+
+              // Group expansion toggle (only show when merged rows are enabled)
+              if (_showMergedRows) ...[
+                Icon(Icons.expand_more, color: Colors.indigo.shade600),
+                const SizedBox(width: 8),
+                Text(
+                  'Expand Groups:',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.indigo.shade700,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Switch(
+                  value: _expandedGroups,
+                  onChanged: (value) => _toggleGroupExpansion(),
+                  activeColor: Colors.indigo.shade600,
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                const SizedBox(width: 16),
+              ],
+
+              // Merged groups count
+              if (_showMergedRows)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.purple.shade100,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    'Groups: ${_mergedGroups.length}',
+                    style: TextStyle(
+                      color: Colors.purple.shade700,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+
+              const Spacer(),
+
+              // Phase 4 status
+              Text(
+                'Phase 4: ${_showMergedRows ? "Active" : "Disabled"}',
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: _showMergedRows 
+                      ? Colors.purple.shade700
                       : Colors.grey.shade600,
                 ),
               ),
@@ -437,10 +621,14 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
                       Icon(Icons.table_chart, color: Colors.green.shade700),
                       const SizedBox(width: 8),
                       Text(
-                        'Phase 3 Complete: Selection, Editing & Advanced Interactions',
+                        _showMergedRows 
+                            ? 'Phase 4 Active: Department Groups with Merged Rows'
+                            : 'Phase 3 Complete: Selection, Editing & Advanced Interactions',
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
-                          color: Colors.green.shade900,
+                          color: _showMergedRows 
+                              ? Colors.purple.shade900
+                              : Colors.green.shade900,
                         ),
                       ),
                     ],
@@ -484,8 +672,15 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
                     isEditable: _isEditable,
                     onCellChanged: _handleCellChanged,
 
-                    // Phase 3: Updated theme with selection
-                    theme: _buildPhase3Theme(),
+                    // Phase 4: Merged rows functionality
+                    mergedGroups: _mergedGroups,
+                    onMergedRowExpandToggle: _handleGroupExpansionChanged,
+
+                    // Phase 4: Dynamic row height calculation
+                    calculateRowHeight: _calculateRowHeight,
+
+                    // Phase 4: Updated theme with merged rows
+                    theme: _buildPhase4Theme(),
                   ),
                 ),
               ),
@@ -496,7 +691,7 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
     );
   }
 
-  /// Build data summary for Phase 1
+  /// Build data summary for Phase 1-4
   Widget _buildDataSummary() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -507,6 +702,10 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
         _buildSummaryItem(
             'Projects', '${DemoDataSource.projects.length}', Icons.folder),
         _buildSummaryItem('Columns', '${_columns.length}', Icons.view_column),
+        if (_showMergedRows) ...[
+          _buildSummaryItem('Merged Groups', '${_mergedGroups.length}', Icons.merge_type),
+          _buildSummaryItem('Group Mode', _expandedGroups ? 'Expanded' : 'Collapsed', Icons.expand_more),
+        ],
       ],
     );
   }
@@ -535,8 +734,8 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
     );
   }
 
-  /// Phase 3: Build theme with selection and editing
-  TablePlusTheme _buildPhase3Theme() {
+  /// Phase 4: Build theme with selection, editing, and merged rows
+  TablePlusTheme _buildPhase4Theme() {
     return TablePlusTheme(
       headerTheme: TablePlusHeaderTheme(
         backgroundColor: Colors.blue.shade50,
@@ -628,11 +827,34 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
               ),
             ),
           ],
+          // Phase 4: Show merged rows info
+          if (_showMergedRows) ...[
+            const SizedBox(width: 16),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.purple.shade100,
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                'Merged: ${_mergedGroups.length} groups (${_expandedGroups ? "expanded" : "collapsed"})',
+                style: TextStyle(
+                  color: Colors.purple.shade700,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+          ],
           const Spacer(),
           Text(
-            'Next: Phase 4 - Merged Rows',
+            _showMergedRows 
+                ? 'Phase 4: Merged Rows Active ✨'
+                : 'Next: Phase 5 - Expandable Rows',
             style: TextStyle(
-              color: Colors.orange.shade700,
+              color: _showMergedRows 
+                  ? Colors.purple.shade700
+                  : Colors.orange.shade700,
               fontWeight: FontWeight.w600,
             ),
           ),
