@@ -209,7 +209,12 @@ class DemoControlPanel extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 8),
-
+        Switch(
+          value: showMergedRows,
+          onChanged: (value) => onToggleMergedRows(),
+          activeColor: Colors.purple.shade600,
+          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        ),
         const SizedBox(width: 16),
 
         // Group expansion toggle (only show when merged rows are enabled)
