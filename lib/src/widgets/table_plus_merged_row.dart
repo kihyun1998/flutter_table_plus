@@ -7,8 +7,8 @@ import '../models/merged_row_group.dart';
 import '../models/table_column.dart';
 import '../models/theme/body_theme.dart' show TablePlusBodyTheme;
 import '../models/theme/editable_theme.dart' show TablePlusEditableTheme;
-import '../models/theme/tooltip_theme.dart' show TablePlusTooltipTheme;
 import '../models/theme/hover_button_theme.dart' show TablePlusHoverButtonTheme;
+import '../models/theme/tooltip_theme.dart' show TablePlusTooltipTheme;
 import '../models/tooltip_behavior.dart';
 import '../utils/text_overflow_detector.dart';
 import 'cells/editable_text_field.dart';
@@ -138,6 +138,24 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
         .getRowData(widget.allData, rowKey, widget.rowIdKey);
   }
 
+  /// Get the correct width for a column based on its key.
+  /// This ensures proper alignment with header and regular rows.
+  double _getColumnWidth(TablePlusColumn column) {
+    // Find the actual index of this column in the widget.columns list
+    final actualIndex =
+        widget.columns.indexWhere((col) => col.key == column.key);
+
+    // Return the corresponding width from columnWidths array if found
+    if (actualIndex != -1 &&
+        actualIndex < widget.columnWidths.length &&
+        widget.columnWidths.isNotEmpty) {
+      return widget.columnWidths[actualIndex];
+    }
+
+    // Fallback to column's default width
+    return column.width;
+  }
+
   /// Determines whether to show a bottom border for the merged row.
   ///
   /// Takes into account the row position (last vs non-last) and the theme's
@@ -174,9 +192,7 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
   /// Build a cell for the merged row.
   Widget _buildCell(
       BuildContext context, int columnIndex, TablePlusColumn column) {
-    final width = widget.columnWidths.isNotEmpty
-        ? widget.columnWidths[columnIndex]
-        : column.width;
+    final width = _getColumnWidth(column);
 
     // Check if this column should be merged
     if (widget.mergeGroup.shouldMergeColumn(column.key)) {
@@ -787,8 +803,9 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
     }
 
     // Get representative row data (first row in the merge group)
-    final representativeData = _getRowData(widget.mergeGroup.rowKeys.first) ?? {};
-    
+    final representativeData =
+        _getRowData(widget.mergeGroup.rowKeys.first) ?? {};
+
     // Create button widget using builder
     final buttonWidget = widget.hoverButtonBuilder!(
       widget.mergeGroup.groupId,
@@ -854,8 +871,7 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
                   .where((col) => col.key != '__selection__')
                   .toList();
               final column = nonSelectionColumns[index];
-              final columnIndex = widget.isSelectable ? index + 1 : index;
-              return _buildCell(context, columnIndex, column);
+              return _buildCell(context, index, column);
             },
           ),
         ],

@@ -138,7 +138,6 @@ class TablePlusBody extends StatelessWidget {
   /// The position where hover buttons should be displayed.
   final HoverButtonPosition hoverButtonPosition;
 
-
   /// Theme configuration for hover buttons.
   final TablePlusHoverButtonTheme? hoverButtonTheme;
 

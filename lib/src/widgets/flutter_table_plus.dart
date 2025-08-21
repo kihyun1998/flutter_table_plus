@@ -468,13 +468,41 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
     final columns = _visibleColumns;
     if (columns.isEmpty) return [];
 
-    // Ensure available width is at least the minimum required
-    final minRequiredWidth =
-        columns.fold(0.0, (sum, col) => sum + col.minWidth);
-    final actualAvailableWidth = max(availableWidth, minRequiredWidth);
+    // Separate selection column from regular columns
+    List<TablePlusColumn> regularColumns = [];
+    TablePlusColumn? selectionColumn;
 
-    // Calculate widths for columns using existing logic
-    return _calculateRegularColumnWidths(columns, actualAvailableWidth);
+    for (final column in columns) {
+      if (column.key == '__selection__') {
+        selectionColumn = column;
+      } else {
+        regularColumns.add(column);
+      }
+    }
+
+    if (selectionColumn != null) {
+      availableWidth -=
+          selectionColumn.width; // Subtract fixed selection column width
+    }
+
+    // Calculate widths for regular columns only
+    List<double> regularWidths =
+        _calculateRegularColumnWidths(regularColumns, availableWidth);
+
+    // Combine selection column width with regular column widths
+    List<double> allWidths = [];
+    int regularIndex = 0;
+
+    for (final column in columns) {
+      if (column.key == '__selection__') {
+        allWidths.add(column.width); // Fixed width for selection
+      } else {
+        allWidths.add(regularWidths[regularIndex]);
+        regularIndex++;
+      }
+    }
+
+    return allWidths;
   }
 
   /// Get minimum width needed for all columns.
@@ -652,6 +680,7 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                             // Scrollable Header
                             TablePlusHeader(
                               columns: _visibleColumns,
+                              columnWidths: columnWidths,
                               totalWidth: contentWidth,
                               theme: theme.headerTheme,
                               isSelectable: widget.isSelectable,

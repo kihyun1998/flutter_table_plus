@@ -13,6 +13,7 @@ class TablePlusHeader extends StatefulWidget {
   const TablePlusHeader({
     super.key,
     required this.columns,
+    required this.columnWidths,
     required this.totalWidth,
     required this.theme,
     this.isSelectable = false,
@@ -31,6 +32,9 @@ class TablePlusHeader extends StatefulWidget {
 
   /// The list of columns to display in the header.
   final List<TablePlusColumn> columns;
+
+  /// The calculated width for each column.
+  final List<double> columnWidths;
 
   /// The total width available for the table.
   final double totalWidth;
@@ -79,104 +83,6 @@ class TablePlusHeader extends StatefulWidget {
 }
 
 class _TablePlusHeaderState extends State<TablePlusHeader> {
-  /// Calculate the actual width for each column based on available space.
-  List<double> _calculateColumnWidths() {
-    if (widget.columns.isEmpty) return [];
-
-    // Separate selection column from regular columns
-    List<TablePlusColumn> regularColumns = [];
-    TablePlusColumn? selectionColumn;
-
-    for (final column in widget.columns) {
-      if (column.key == '__selection__') {
-        selectionColumn = column;
-      } else {
-        regularColumns.add(column);
-      }
-    }
-
-    // Calculate available width for regular columns (excluding selection column)
-    double availableWidth = widget.totalWidth;
-    if (selectionColumn != null) {
-      availableWidth -=
-          selectionColumn.width; // Subtract fixed selection column width
-    }
-
-    // Calculate widths for regular columns only
-    List<double> regularWidths =
-        _calculateRegularColumnWidths(regularColumns, availableWidth);
-
-    // Combine selection column width with regular column widths
-    List<double> allWidths = [];
-    int regularIndex = 0;
-
-    for (final column in widget.columns) {
-      if (column.key == '__selection__') {
-        allWidths.add(column.width); // Fixed width for selection
-      } else {
-        allWidths.add(regularWidths[regularIndex]);
-        regularIndex++;
-      }
-    }
-
-    return allWidths;
-  }
-
-  /// Calculate widths for regular columns (excluding selection column)
-  List<double> _calculateRegularColumnWidths(
-      List<TablePlusColumn> columns, double totalWidth) {
-    if (columns.isEmpty) return [];
-
-    // Calculate total preferred width
-    final double totalPreferredWidth = columns.fold(
-      0.0,
-      (sum, col) => sum + col.width,
-    );
-
-    // Calculate total minimum width
-    final double totalMinWidth = columns.fold(
-      0.0,
-      (sum, col) => sum + col.minWidth,
-    );
-
-    List<double> widths = [];
-
-    if (totalPreferredWidth <= totalWidth) {
-      // If preferred widths fit, distribute extra space proportionally
-      final double extraSpace = totalWidth - totalPreferredWidth;
-      final double totalWeight = columns.length.toDouble();
-
-      for (int i = 0; i < columns.length; i++) {
-        final column = columns[i];
-        final double extraWidth = extraSpace / totalWeight;
-        double finalWidth = column.width + extraWidth;
-
-        // Respect maximum width if specified
-        if (column.maxWidth != null && finalWidth > column.maxWidth!) {
-          finalWidth = column.maxWidth!;
-        }
-
-        widths.add(finalWidth);
-      }
-    } else if (totalMinWidth <= totalWidth) {
-      // Scale down proportionally but respect minimum widths
-      final double scale = totalWidth / totalPreferredWidth;
-
-      for (int i = 0; i < columns.length; i++) {
-        final column = columns[i];
-        final double scaledWidth = column.width * scale;
-        final double finalWidth = scaledWidth.clamp(
-            column.minWidth, column.maxWidth ?? double.infinity);
-        widths.add(finalWidth);
-      }
-    } else {
-      // Use minimum widths (table will be wider than available space)
-      widths = columns.map((col) => col.minWidth).toList();
-    }
-
-    return widths;
-  }
-
   /// Determine the state of the select-all checkbox.
   bool? _getSelectAllState() {
     if (widget.totalRowCount == 0) return false;
@@ -285,9 +191,8 @@ class _TablePlusHeaderState extends State<TablePlusHeader> {
 
   @override
   Widget build(BuildContext context) {
-    final columnWidths = _calculateColumnWidths();
     final reorderableColumns = _getReorderableColumns();
-    final reorderableWidths = _getReorderableColumnWidths(columnWidths);
+    final reorderableWidths = _getReorderableColumnWidths(widget.columnWidths);
 
     return Container(
       height: widget.theme.height,
