@@ -12,6 +12,9 @@
 /// - **Row Selection:** Single or multiple row selection with checkboxes
 /// - **Column Reordering:** Drag-and-drop column reordering
 /// - **Cell Editing:** Inline text field editing for specific columns
+/// - **Hover Buttons:** Interactive action buttons that appear on row hover
+/// - **Expandable Rows:** Collapsible summary rows for merged row groups
+/// - **Merged Rows:** Visual grouping of multiple data rows with custom content
 /// - **Custom Cell Builders:** Custom widget rendering in cells
 /// - **Type-Safe Column Builder:** Use `TableColumnsBuilder` for safe column management
 library;

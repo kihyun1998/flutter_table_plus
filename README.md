@@ -32,6 +32,7 @@ A highly customizable and efficient table widget for Flutter. It provides a rich
 - **Column Sorting**: Supports multi-state sorting (ascending, descending, none) with a configurable sort cycle.
 - **Merged Rows**: Visually group and merge multiple data rows into a single unit for specific columns, supporting custom content, selection, and editing within merged cells.
 - **Expandable Summary Rows**: Add collapsible summary rows to merged groups that can display calculated totals, counts, or any custom aggregated data.
+- **Hover Buttons**: Interactive action buttons that appear on row hover, with customizable positioning, styling, and behavior through comprehensive theme system.
 - **Row Selection & Editing**: Enable row selection and cell editing simultaneously, now fully compatible with merged rows. Supports double-tap and secondary-tap events on rows.
 - **Column Reordering**: Easily reorder columns with drag-and-drop.
 - **Column Visibility**: Dynamically show or hide individual columns.
@@ -46,7 +47,7 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  flutter_table_plus: ^1.14.2
+  flutter_table_plus: ^1.15.0
 ```
 
 Then, run `flutter pub get` in your terminal.
@@ -239,3 +240,5 @@ For more advanced use cases and detailed guides, please refer to our documentati
   - [Theming and Styling](documentation/THEMING.md)
   - [Advanced Column Settings](documentation/ADVANCED_COLUMNS.md)
   - [Merged Rows](documentation/MERGED_ROWS.md)
+  - [Hover Buttons](documentation/HOVER_BUTTONS.md)
+  - [Expandable Rows](documentation/EXPANDABLE_ROWS.md)

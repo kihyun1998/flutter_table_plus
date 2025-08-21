@@ -1,3 +1,39 @@
+## 1.15.0
+
+*   **BREAKING CHANGE**: Removed frozen column functionality.
+    *   Eliminated `frozenColumns` parameter and related frozen column features for code simplification and better maintainability.
+    *   Removed `TablePlusFrozenTheme` and `TablePlusDividerTheme` classes.
+    *   Applications using frozen columns should migrate to alternative layout approaches.
+*   **FEAT**: Added comprehensive hover button system for table rows.
+    *   New `hoverButtonBuilder` callback parameter for creating custom action buttons on row hover.
+    *   Added `HoverButtonPosition` enum for positioning buttons (left, center, right).
+    *   Introduced `TablePlusHoverButtonTheme` with extensive customization options.
+    *   Supports custom styling, animations, and button behavior configuration.
+    *   Integrated seamlessly with existing selection and editing features.
+*   **FEAT**: Enhanced expandable row functionality for merged row groups.
+    *   Improved expand/collapse state management with better performance.
+    *   Added support for custom summary content in collapsed state.
+    *   Enhanced integration with sorting, selection, and editing operations.
+    *   Better visual indicators and animations for expand/collapse actions.
+*   **FEAT**: Added comprehensive demo page showcasing all table features.
+    *   New `ComprehensiveTableDemo` demonstrating progressive feature adoption.
+    *   Interactive control panels for testing different configurations.
+    *   Real-world scenarios with employee data management examples.
+    *   Improved developer experience with better feature discovery.
+*   **IMPROVEMENT**: Major codebase refactoring and optimization.
+    *   Enhanced performance through optimized widget rebuilding strategies.
+    *   Improved code organization and maintainability.
+    *   Better separation of concerns across widget components.
+    *   Reduced complexity by removing unused and deprecated code paths.
+*   **IMPROVEMENT**: Updated example applications with new features.
+    *   Added `HoverButtonDemo` page demonstrating hover button capabilities.
+    *   Enhanced existing examples with better feature integration.
+    *   Improved documentation and code comments throughout examples.
+*   **DOCS**: Added comprehensive documentation for new features.
+    *   New `HOVER_BUTTONS.md` guide with usage patterns and customization examples.
+    *   New `EXPANDABLE_ROWS.md` guide covering advanced expandable row scenarios.
+    *   Updated existing documentation to reflect architectural improvements.
+
 ## 1.14.2
 
 *   **FEAT**: Added expandable summary row functionality for merged row groups.

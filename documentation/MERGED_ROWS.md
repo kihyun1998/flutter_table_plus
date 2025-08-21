@@ -368,6 +368,8 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
 }
 ```
 
+> 💡 **For Advanced Expandable Functionality**: See [EXPANDABLE_ROWS.md](EXPANDABLE_ROWS.md) for comprehensive guides on state management, performance optimization, lazy loading, and complex expandable scenarios.
+
 ## 7. Selection with Merged Rows
 
 When `isSelectable` is `true` in `FlutterTablePlus`, merged groups are treated as single selectable units.
