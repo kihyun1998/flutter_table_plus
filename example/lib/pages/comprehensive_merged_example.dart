@@ -888,7 +888,8 @@ class _ComprehensiveMergedExampleState
                   // Hover buttons
                   hoverButtonBuilder: (rowId, rowData) {
                     return Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: Colors.blue.withOpacity(0.9),
                         borderRadius: BorderRadius.circular(4),
@@ -901,12 +902,13 @@ class _ComprehensiveMergedExampleState
                         ],
                       ),
                       child: IconButton(
-                        icon: const Icon(Icons.info_outline, 
-                                      size: 18, 
-                                      color: Colors.white),
+                        icon: const Icon(Icons.info_outline,
+                            size: 18, color: Colors.white),
                         padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                        onPressed: () => _handleHoverButtonPress(rowId, rowData),
+                        constraints:
+                            const BoxConstraints(minWidth: 32, minHeight: 32),
+                        onPressed: () =>
+                            _handleHoverButtonPress(rowId, rowData),
                         tooltip: 'Show Info',
                       ),
                     );
@@ -1393,7 +1395,7 @@ class _ComprehensiveMergedExampleState
   void _handleHoverButtonPress(String rowId, Map<String, dynamic> rowData) {
     // Check if this is a merged row (group ID) or regular row
     final isMergedRow = _mergedGroups.any((group) => group.groupId == rowId);
-    
+
     if (isMergedRow) {
       // Find the merged group
       final group = _mergedGroups.firstWhere((g) => g.groupId == rowId);

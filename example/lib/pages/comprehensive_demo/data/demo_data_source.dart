@@ -188,7 +188,12 @@ class DemoDataSource {
         salary: 65000,
         avatar: '👩‍💼',
         performance: 0.85,
-        skills: ['Onboarding', 'Benefits Administration', 'Compliance', 'Documentation'],
+        skills: [
+          'Onboarding',
+          'Benefits Administration',
+          'Compliance',
+          'Documentation'
+        ],
         joinDate: DateTime(2021, 7, 15),
         email: 'sarah.wilson@company.com',
         phone: '+1-555-0111',
@@ -244,7 +249,12 @@ class DemoDataSource {
         salary: 78000,
         avatar: '👩‍💼',
         performance: 0.88,
-        skills: ['Account Management', 'Customer Relations', 'Upselling', 'CRM'],
+        skills: [
+          'Account Management',
+          'Customer Relations',
+          'Upselling',
+          'CRM'
+        ],
         joinDate: DateTime(2021, 5, 12),
         email: 'emma.thompson@company.com',
         phone: '+1-555-0115',
@@ -257,7 +267,11 @@ class DemoDataSource {
         salary: 85000,
         avatar: '👨‍💼',
         performance: 0.83,
-        skills: ['Partnership Development', 'Market Analysis', 'Strategic Planning'],
+        skills: [
+          'Partnership Development',
+          'Market Analysis',
+          'Strategic Planning'
+        ],
         joinDate: DateTime(2022, 8, 3),
         email: 'james.foster@company.com',
         phone: '+1-555-0116',
@@ -272,7 +286,12 @@ class DemoDataSource {
         salary: 62000,
         avatar: '👩‍💻',
         performance: 0.86,
-        skills: ['Social Media', 'Content Creation', 'Analytics', 'Community Management'],
+        skills: [
+          'Social Media',
+          'Content Creation',
+          'Analytics',
+          'Community Management'
+        ],
         joinDate: DateTime(2022, 2, 14),
         email: 'rachel.kim@company.com',
         phone: '+1-555-0117',
@@ -285,7 +304,12 @@ class DemoDataSource {
         salary: 68000,
         avatar: '👨‍💻',
         performance: 0.84,
-        skills: ['PPC Advertising', 'Google Ads', 'Email Marketing', 'Conversion Optimization'],
+        skills: [
+          'PPC Advertising',
+          'Google Ads',
+          'Email Marketing',
+          'Conversion Optimization'
+        ],
         joinDate: DateTime(2021, 10, 25),
         email: 'kevin.lee@company.com',
         phone: '+1-555-0118',
@@ -300,7 +324,12 @@ class DemoDataSource {
         salary: 88000,
         avatar: '👩‍🎨',
         performance: 0.92,
-        skills: ['Product Design', 'User Research', 'Wireframing', 'Design Systems'],
+        skills: [
+          'Product Design',
+          'User Research',
+          'Wireframing',
+          'Design Systems'
+        ],
         joinDate: DateTime(2020, 6, 10),
         email: 'sophie.miller@company.com',
         phone: '+1-555-0119',
@@ -363,7 +392,11 @@ class DemoDataSource {
         manager: 'Hannah White',
         memberCount: 4,
         budget: 400000,
-        projects: ['Q1 Sales Drive', 'Client Expansion', 'Partnership Development'],
+        projects: [
+          'Q1 Sales Drive',
+          'Client Expansion',
+          'Partnership Development'
+        ],
         color: Colors.green,
         description: 'Sales and client relationships',
         location: 'Building B, Floor 2',
@@ -374,7 +407,11 @@ class DemoDataSource {
         manager: 'Julia Martinez',
         memberCount: 2,
         budget: 200000,
-        projects: ['Recruitment Drive', 'Training Program', 'Employee Wellness'],
+        projects: [
+          'Recruitment Drive',
+          'Training Program',
+          'Employee Wellness'
+        ],
         color: Colors.teal,
         description: 'Human resources and employee management',
         location: 'Building A, Floor 1',

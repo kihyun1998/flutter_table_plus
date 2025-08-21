@@ -140,7 +140,6 @@ class TablePlusColumn {
   /// Whether this column is visible in the table.
   final bool visible;
 
-
   /// Optional custom cell builder for this column.
   /// If provided, this will be used instead of the default cell rendering.
   /// The function receives the row data and should return a Widget.

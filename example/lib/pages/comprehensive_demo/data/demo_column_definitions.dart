@@ -74,7 +74,6 @@ class DemoColumnDefinitions {
     };
   }
 
-
   /// Helper method to format column titles with icons (for later phases)
   static String formatColumnTitle(String title, {IconData? icon}) {
     if (icon != null) {

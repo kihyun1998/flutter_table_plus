@@ -362,7 +362,8 @@ class _HoverButtonDemoState extends State<HoverButtonDemo> {
                           ),
 
                           // Button Distance
-                          Text('Button Distance: ${_horizontalOffset.round()}px'),
+                          Text(
+                              'Button Distance: ${_horizontalOffset.round()}px'),
                           Slider(
                             value: _horizontalOffset,
                             min: 0,

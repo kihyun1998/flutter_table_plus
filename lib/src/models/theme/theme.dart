@@ -37,7 +37,6 @@ class TablePlusTheme {
   /// Theme configuration for cell tooltips.
   final TablePlusTooltipTheme tooltipTheme;
 
-
   /// Theme configuration for hover buttons.
   final TablePlusHoverButtonTheme hoverButtonTheme;
 

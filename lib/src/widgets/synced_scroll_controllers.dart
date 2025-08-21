@@ -104,7 +104,6 @@ class _SyncedScrollControllersState extends State<SyncedScrollControllers> {
               : 0.0,
         );
 
-
     // 수평 스크롤바 컨트롤러
     _sc22 = widget.horizontalScrollbarController ??
         ScrollController(

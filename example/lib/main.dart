@@ -48,12 +48,14 @@ class ExampleHomePage extends StatelessWidget {
               elevation: 3,
               color: Colors.blue.shade50,
               child: ListTile(
-                leading: const Icon(Icons.auto_awesome, color: Colors.blue, size: 28),
+                leading: const Icon(Icons.auto_awesome,
+                    color: Colors.blue, size: 28),
                 title: const Text(
                   'Comprehensive Table Demo',
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
-                subtitle: const Text('🚀 NEW! All features in one place - Progressive demo'),
+                subtitle: const Text(
+                    '🚀 NEW! All features in one place - Progressive demo'),
                 trailing: const Icon(Icons.arrow_forward_ios),
                 onTap: () {
                   Navigator.push(
@@ -69,9 +71,9 @@ class ExampleHomePage extends StatelessWidget {
             Text(
               'Individual Feature Demos',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: Colors.grey.shade700,
-              ),
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey.shade700,
+                  ),
             ),
             const SizedBox(height: 8),
             Card(

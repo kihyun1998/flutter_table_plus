@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../data/demo_data_source.dart';
 
 /// Data summary widget for the comprehensive table demo
-/// 
+///
 /// Displays key statistics about the current table state including
 /// employee count, departments, projects, columns, and merged groups information.
 class DemoDataSummary extends StatelessWidget {
@@ -33,8 +33,10 @@ class DemoDataSummary extends StatelessWidget {
             'Projects', '${DemoDataSource.projects.length}', Icons.folder),
         _buildSummaryItem('Columns', '${columns.length}', Icons.view_column),
         if (showMergedRows) ...[
-          _buildSummaryItem('Merged Groups', '${mergedGroups.length}', Icons.merge_type),
-          _buildSummaryItem('Group Mode', expandedGroups ? 'Expanded' : 'Collapsed', Icons.expand_more),
+          _buildSummaryItem(
+              'Merged Groups', '${mergedGroups.length}', Icons.merge_type),
+          _buildSummaryItem('Group Mode',
+              expandedGroups ? 'Expanded' : 'Collapsed', Icons.expand_more),
         ],
       ],
     );

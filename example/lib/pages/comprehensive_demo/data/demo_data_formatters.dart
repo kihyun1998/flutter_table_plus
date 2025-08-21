@@ -4,9 +4,9 @@ class DemoDataFormatters {
   static String formatCurrency(double value) {
     // Simple currency formatting without intl
     final formatted = value.toInt().toString().replaceAllMapped(
-      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-      (Match m) => '${m[1]},',
-    );
+          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+          (Match m) => '${m[1]},',
+        );
     return '\$${formatted}';
   }
 
@@ -20,8 +20,18 @@ class DemoDataFormatters {
   static String formatDate(DateTime date) {
     // Simple date formatting without intl
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
     ];
     final month = months[date.month - 1];
     final day = date.day.toString().padLeft(2, '0');
