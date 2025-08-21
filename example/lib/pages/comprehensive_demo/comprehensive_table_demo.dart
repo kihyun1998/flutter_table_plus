@@ -308,10 +308,13 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
     debugPrint('🗑️ Cleared all selections');
   }
 
-  /// Phase 4: Update merged groups based on current settings
+  /// Phase 4: Update merged groups based on current settings and data order
   void _updateMergedGroups() {
     _mergedGroups = _showMergedRows 
-        ? DemoMergedGroups.createDepartmentGroups(expanded: _expandedGroups)
+        ? DemoMergedGroups.createDepartmentGroups(
+            expanded: _expandedGroups,
+            currentData: _data, // Pass current data order
+          )
         : [];
     debugPrint('📊 Updated merged groups: ${_mergedGroups.length} groups, expanded: $_expandedGroups');
   }
@@ -342,17 +345,35 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
   /// Phase 4: Handle merged row group expansion change
   void _handleGroupExpansionChanged(String groupId) {
     setState(() {
+      // Find the group and toggle its expansion state
       final groupIndex = _mergedGroups.indexWhere((group) => group.groupId == groupId);
       if (groupIndex != -1) {
         final currentGroup = _mergedGroups[groupIndex];
-        _mergedGroups[groupIndex] = MergedRowGroup(
-          groupId: currentGroup.groupId,
-          rowKeys: currentGroup.rowKeys,
-          mergeConfig: currentGroup.mergeConfig,
-          isExpandable: currentGroup.isExpandable,
-          isExpanded: !currentGroup.isExpanded,
-          summaryRowData: currentGroup.summaryRowData,
+        final newExpansionState = !currentGroup.isExpanded;
+        
+        // Recreate merged groups with individual expansion state
+        _mergedGroups = DemoMergedGroups.createDepartmentGroups(
+          expanded: _expandedGroups, // Keep global setting
+          currentData: _data,
         );
+        
+        // Find the same group again and update its expansion state
+        final updatedGroupIndex = _mergedGroups.indexWhere((group) => 
+          group.groupId == groupId || 
+          group.rowKeys.join(',') == currentGroup.rowKeys.join(',') // Fallback: match by row keys
+        );
+        
+        if (updatedGroupIndex != -1) {
+          final updatedGroup = _mergedGroups[updatedGroupIndex];
+          _mergedGroups[updatedGroupIndex] = MergedRowGroup(
+            groupId: updatedGroup.groupId,
+            rowKeys: updatedGroup.rowKeys,
+            mergeConfig: updatedGroup.mergeConfig,
+            isExpandable: updatedGroup.isExpandable,
+            isExpanded: newExpansionState,
+            summaryRowData: updatedGroup.summaryRowData,
+          );
+        }
       }
     });
     debugPrint('🔄 Group $groupId expansion toggled');

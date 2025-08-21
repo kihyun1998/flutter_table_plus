@@ -6,69 +6,92 @@ import '../models/demo_department.dart';
 
 /// Merged row group configurations for comprehensive demo
 class DemoMergedGroups {
-  /// Create department-based merged row groups
+  /// Create department-based merged row groups based on current data order
   static List<MergedRowGroup> createDepartmentGroups({
     bool expanded = false,
+    required List<Map<String, dynamic>> currentData,
   }) {
     final groups = <MergedRowGroup>[];
-    final departments = DemoDataSource.departments;
     
-    for (final department in departments) {
-      // Get employees for this department
-      final departmentEmployees = DemoDataSource.employees
-          .where((emp) => emp.department == department.name)
+    // Group ALL rows by department (not just consecutive ones)
+    final Map<String, List<String>> departmentGroups = {};
+    
+    // Collect all rows by department
+    for (int i = 0; i < currentData.length; i++) {
+      final row = currentData[i];
+      final department = row['department'] as String;
+      final rowId = row['id'] as String;
+      
+      departmentGroups.putIfAbsent(department, () => []).add(rowId);
+    }
+    
+    // Create groups for departments with more than 1 employee
+    final List<Map<String, dynamic>> departmentGroupsList = [];
+    departmentGroups.forEach((department, rowIds) {
+      if (rowIds.length > 1) {
+        departmentGroupsList.add({
+          'department': department,
+          'rowIds': rowIds,
+        });
+      }
+    });
+    
+    // Create merged groups for each department group
+    for (int groupIndex = 0; groupIndex < departmentGroupsList.length; groupIndex++) {
+      final groupData = departmentGroupsList[groupIndex];
+      final departmentName = groupData['department'] as String;
+      final rowIds = groupData['rowIds'] as List<String>;
+      
+      // Find the department info
+      final department = DemoDataSource.departments
+          .firstWhere((dept) => dept.name == departmentName);
+      
+      // Get employees for this group
+      final departmentEmployees = rowIds
+          .map((id) => DemoDataSource.employees.firstWhere((emp) => emp.id == id))
           .toList();
-      
-      if (departmentEmployees.isEmpty) continue;
-      
-      // Create row keys from employee IDs
-      final rowKeys = departmentEmployees.map((emp) => emp.id).toList();
-      
-      // Create merge configuration for each column
-      final mergeConfig = <String, MergeCellConfig>{
-        'name': MergeCellConfig(
-          shouldMerge: true,
-          spanningRowIndex: 0,
-          mergedContent: _buildDepartmentSummaryCell(department, departmentEmployees),
-        ),
-        'position': MergeCellConfig(
-          shouldMerge: true,
-          spanningRowIndex: 0,
-          mergedContent: _buildPositionSummaryCell(departmentEmployees),
-        ),
-        'department': MergeCellConfig(
-          shouldMerge: true,
-          spanningRowIndex: 0,
-          mergedContent: _buildDepartmentBadge(department),
-        ),
-        'salary': MergeCellConfig(
-          shouldMerge: false, // Keep individual cells, show average in summary
-        ),
-        'performance': MergeCellConfig(
-          shouldMerge: false, // Keep individual cells, show average in summary
-        ),
-        'joinDate': MergeCellConfig(
-          shouldMerge: false,
-        ),
-        'skills': MergeCellConfig(
-          shouldMerge: false,
-        ),
-      };
-      
-      // Create summary row data for expanded groups
-      final summaryRowData = <String, dynamic>{
-        'name': '📊 Department Summary',
-        'position': '${departmentEmployees.length} employees',
-        'department': department.name,
-        'salary': _formatCurrency(_calculateAverageSalary(departmentEmployees)),
-        'performance': '${(_calculateAveragePerformance(departmentEmployees) * 100).toStringAsFixed(0)}%',
-        'joinDate': 'Various dates',
-        'skills': 'Mixed skills',
-      };
-      
+        
+        // Create merge configuration for each column - only merge department
+        final mergeConfig = <String, MergeCellConfig>{
+          'name': MergeCellConfig(
+            shouldMerge: false, // Keep individual names visible
+          ),
+          'position': MergeCellConfig(
+            shouldMerge: false, // Keep individual positions visible
+          ),
+          'department': MergeCellConfig(
+            shouldMerge: true,
+            spanningRowIndex: 0,
+            mergedContent: _buildDepartmentBadge(department),
+          ),
+          'salary': MergeCellConfig(
+            shouldMerge: false, // Keep individual cells, show average in summary
+          ),
+          'performance': MergeCellConfig(
+            shouldMerge: false, // Keep individual cells, show average in summary
+          ),
+          'joinDate': MergeCellConfig(
+            shouldMerge: false,
+          ),
+          'skills': MergeCellConfig(
+            shouldMerge: false,
+          ),
+        };
+        
+        // Create summary row data for expanded groups
+        final summaryRowData = <String, dynamic>{
+          'name': '📊 ${department.name} Summary',
+          'position': '${departmentEmployees.length} employees total',
+          'department': department.name,
+          'salary': 'Avg: ${_formatCurrency(_calculateAverageSalary(departmentEmployees))}',
+          'performance': 'Avg: ${(_calculateAveragePerformance(departmentEmployees) * 100).toStringAsFixed(0)}%',
+          'joinDate': 'Various',
+          'skills': 'Mixed',
+        };
+        
       groups.add(MergedRowGroup(
-        groupId: 'dept_${department.id}',
-        rowKeys: rowKeys,
+        groupId: '${departmentName.toLowerCase()}_group', // Unique ID for each department group
+        rowKeys: rowIds,
         mergeConfig: mergeConfig,
         isExpandable: true,
         isExpanded: expanded,
@@ -79,216 +102,60 @@ class DemoMergedGroups {
     return groups;
   }
   
-  /// Build department summary cell with expand/collapse functionality
-  static Widget _buildDepartmentSummaryCell(
-    DemoDepartment department, 
-    List<DemoEmployee> employees
-  ) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      child: Row(
-        children: [
-          // Department icon/color indicator
-          Container(
-            width: 4,
-            height: 24,
-            decoration: BoxDecoration(
-              color: department.color,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          const SizedBox(width: 12),
-          
-          // Department info
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  department.name,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                ),
-                Text(
-                  '${employees.length} employees • ${department.manager}',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          
-          // Employee count badge
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: department.color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: department.color.withValues(alpha: 0.3),
-              ),
-            ),
-            child: Text(
-              '${employees.length}',
-              style: TextStyle(
-                color: department.color,
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-  
-  /// Build position summary for the department
-  static Widget _buildPositionSummaryCell(List<DemoEmployee> employees) {
-    final positions = employees.map((e) => e.position).toSet().toList();
-    
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            '${positions.length} role${positions.length != 1 ? 's' : ''}',
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 13,
-            ),
-          ),
-          if (positions.length <= 3) ...[
-            const SizedBox(height: 2),
-            Text(
-              positions.join(', '),
-              style: TextStyle(
-                fontSize: 11,
-                color: Colors.grey.shade600,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ] else ...[
-            const SizedBox(height: 2),
-            Text(
-              '${positions.take(2).join(', ')} +${positions.length - 2} more',
-              style: TextStyle(
-                fontSize: 11,
-                color: Colors.grey.shade600,
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-  
   /// Build department badge (centered)
   static Widget _buildDepartmentBadge(DemoDepartment department) {
     return Center(
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: department.color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(16),
+          color: department.color.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: department.color.withValues(alpha: 0.3),
+            color: department.color.withValues(alpha: 0.4),
+            width: 1.5,
           ),
         ),
-        child: Text(
-          department.name,
-          style: TextStyle(
-            color: department.color,
-            fontWeight: FontWeight.bold,
-            fontSize: 12,
-          ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              _getDepartmentIcon(department.name),
+              color: department.color,
+              size: 16,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              department.name,
+              style: TextStyle(
+                color: department.color,
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
   
-  /// Build salary summary for the department
-  static Widget _buildSalarySummaryCell(List<DemoEmployee> employees) {
-    final totalSalary = employees.fold<double>(0, (sum, emp) => sum + emp.salary);
-    final avgSalary = totalSalary / employees.length;
-    
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            _formatCurrency(totalSalary),
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 13,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            'Avg: ${_formatCurrency(avgSalary)}',
-            style: TextStyle(
-              fontSize: 11,
-              color: Colors.grey.shade600,
-            ),
-          ),
-        ],
-      ),
-    );
+  /// Get icon for department
+  static IconData _getDepartmentIcon(String departmentName) {
+    switch (departmentName) {
+      case 'Engineering':
+        return Icons.computer;
+      case 'Design':
+        return Icons.palette;
+      case 'Marketing':
+        return Icons.campaign;
+      case 'Sales':
+        return Icons.trending_up;
+      case 'HR':
+        return Icons.people;
+      default:
+        return Icons.business;
+    }
   }
   
-  /// Build performance summary for the department
-  static Widget _buildPerformanceSummaryCell(List<DemoEmployee> employees) {
-    final avgPerformance = employees.fold<double>(0, (sum, emp) => sum + emp.performance) / employees.length;
-    final highPerformers = employees.where((emp) => emp.performance >= 0.9).length;
-    
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Average performance percentage
-          Text(
-            '${(avgPerformance * 100).toStringAsFixed(0)}%',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 13,
-              color: _getPerformanceColor(avgPerformance),
-            ),
-          ),
-          const SizedBox(height: 2),
-          
-          // High performers count
-          if (highPerformers > 0) 
-            Text(
-              '$highPerformers top performer${highPerformers != 1 ? 's' : ''}',
-              style: TextStyle(
-                fontSize: 10,
-                color: Colors.green.shade600,
-                fontWeight: FontWeight.w500,
-              ),
-            )
-          else
-            Text(
-              'Avg performance',
-              style: TextStyle(
-                fontSize: 10,
-                color: Colors.grey.shade600,
-              ),
-            ),
-        ],
-      ),
-    );
-  }
   
   /// Calculate average salary for employees
   static double _calculateAverageSalary(List<DemoEmployee> employees) {
