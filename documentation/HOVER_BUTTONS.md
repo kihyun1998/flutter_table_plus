@@ -87,16 +87,7 @@ TablePlusHoverButtonTheme(
   iconSize: 16.0,
   iconColor: Colors.grey.shade600,
   spacing: 4.0,
-  horizontalOffset: 8.0,
-  showOnHover: true,
-  animationDuration: Duration(milliseconds: 200),
-  elevation: 0.0,
-  opacity: 0.9,
-  // Specific icon styling
-  editIconData: Icons.edit,
-  deleteIconData: Icons.delete,
-  editIconColor: Colors.blue,
-  deleteIconColor: Colors.red,
+  horizontalOffset: 8.0,  // Only property that affects package behavior
 )
 ```
 
@@ -104,23 +95,7 @@ TablePlusHoverButtonTheme(
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
-| `backgroundColor` | `Color` | `Color(0xFFFFFFFF)` | Background color of button container |
-| `borderColor` | `Color?` | `null` | Border color (null = no border) |
-| `borderRadius` | `BorderRadius` | `BorderRadius.circular(4)` | Corner radius of container |
-| `boxShadow` | `List<BoxShadow>` | Default shadow | Drop shadow configuration |
-| `padding` | `EdgeInsetsGeometry` | `EdgeInsets.symmetric(horizontal: 4)` | Internal padding |
-| `iconSize` | `double` | `16.0` | Size of button icons |
-| `iconColor` | `Color?` | `null` | Default icon color |
-| `spacing` | `double` | `4.0` | Space between buttons |
-| `horizontalOffset` | `double` | `8.0` | Distance from row edge |
-| `showOnHover` | `bool` | `true` | Whether to show only on hover |
-| `animationDuration` | `Duration` | `Duration(milliseconds: 200)` | Fade animation duration |
-| `elevation` | `double` | `0.0` | Material elevation |
-| `opacity` | `double` | `0.9` | Container opacity |
-| `editIconData` | `IconData` | `Icons.edit` | Default edit icon |
-| `deleteIconData` | `IconData` | `Icons.delete` | Default delete icon |
-| `editIconColor` | `Color?` | `null` | Edit icon color override |
-| `deleteIconColor` | `Color?` | `null` | Delete icon color override |
+| `horizontalOffset` | `double` | `8.0` | Distance from row edge (left/right positioning) |
 
 ## Advanced Examples
 
