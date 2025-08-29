@@ -59,7 +59,8 @@ The table delegates selection state management to the parent widget. You need to
 
 ### Callbacks
 
-- `onRowSelectionChanged`: Called when a single row's checkbox is toggled or a row is tapped. It provides the `rowId` (which can be an individual row's ID or a `MergedRowGroup`'s `groupId`) and its new `isSelected` state.
+- `onRowSelectionChanged`: Called when a row is tapped (not checkbox). It provides the `rowId` and its new `isSelected` state.
+- `onCheckboxChanged`: Called when a checkbox is clicked specifically. If not provided, falls back to `onRowSelectionChanged`. This allows you to distinguish between row clicks and checkbox clicks for different behaviors.
 - `onSelectAll`: Called when the header checkbox is clicked. This callback needs to handle selecting/deselecting both individual rows and merged groups. **Note:** This is only relevant for `SelectionMode.multiple`.
 - `onRowDoubleTap`: Called when a row is double-tapped. Provides the `rowId`. Active only when `isSelectable` is `true`.
 - `onRowSecondaryTap`: Called when a row is right-clicked or long-pressed. Provides the `rowId`. Active only when `isSelectable` is `true`.
@@ -114,8 +115,22 @@ class _SelectableTablePageState extends State<SelectableTablePage> {
       selectedRows: _selectedRowIds,
       mergedGroups: widget.mergedGroups, // New: Pass merged groups to the table
       
-      // 2. Handle row selection
+      // 2. Handle row selection (row taps)
       onRowSelectionChanged: (rowId, isSelected) {
+        print('Row tapped: $rowId');
+        setState(() {
+          if (isSelected) {
+            _selectedRowIds.add(rowId);
+          } else {
+            _selectedRowIds.remove(rowId);
+          }
+        });
+      },
+      
+      // 2b. Handle checkbox selection (optional - different behavior for checkbox clicks)
+      onCheckboxChanged: (rowId, isSelected) {
+        print('Checkbox clicked: $rowId');
+        // Same logic as row selection, or implement different behavior
         setState(() {
           if (isSelected) {
             _selectedRowIds.add(rowId);

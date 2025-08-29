@@ -161,7 +161,8 @@ class _TablePlusRowState extends State<TablePlusRow> {
               isSelected: widget.isSelected,
               theme: widget.theme,
               selectionTheme: widget.selectionTheme,
-              onSelectionChanged: widget.onCheckboxChanged ?? widget.onRowSelectionChanged,
+              onSelectionChanged:
+                  widget.onCheckboxChanged ?? widget.onRowSelectionChanged,
               calculatedHeight: widget.calculatedHeight,
             );
           }

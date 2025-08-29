@@ -125,7 +125,6 @@ class _TableExamplePageState extends State<TableExamplePage> {
 
   /// Handle row selection change via row click
   void _onRowSelectionChanged(String rowId, bool isSelected) {
-    print('🖱️ Row clicked: $rowId, selected: $isSelected');
     setState(() {
       if (_selectionMode == SelectionMode.single) {
         // Single selection mode: clear all other selections first
@@ -148,7 +147,6 @@ class _TableExamplePageState extends State<TableExamplePage> {
 
   /// Handle checkbox selection change
   void _onCheckboxChanged(String rowId, bool isSelected) {
-    print('☑️ Checkbox clicked: $rowId, selected: $isSelected');
     setState(() {
       if (_selectionMode == SelectionMode.single) {
         // Single selection mode: clear all other selections first

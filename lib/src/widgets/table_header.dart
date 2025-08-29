@@ -366,13 +366,20 @@ class _HeaderCell extends StatelessWidget {
         }
 
         // Use TextOverflowDetector to check if text overflows
-        return TextOverflowDetector.willTextOverflowInContext(
-          context: context,
-          text: label,
-          maxWidth: availableWidth,
-          style: _getTextStyle(),
-          textAlign: column.textAlign,
-        );
+        // Wrap in try-catch to handle layout calculation errors during widget rebuilds
+        try {
+          return TextOverflowDetector.willTextOverflowInContext(
+            context: context,
+            text: label,
+            maxWidth: availableWidth,
+            style: _getTextStyle(),
+            textAlign: column.textAlign,
+          );
+        } catch (e) {
+          // If overflow detection fails during rebuild, default to no tooltip
+          // This prevents null check errors during column reordering
+          return false;
+        }
     }
   }
 
@@ -538,6 +545,13 @@ class _SelectionHeaderCell extends StatelessWidget {
                         }
                       : null,
                   activeColor: selectionTheme.checkboxColor,
+                  hoverColor: selectionTheme.checkboxHoverColor,
+                  focusColor: selectionTheme.checkboxFocusColor,
+                  fillColor: selectionTheme.checkboxFillColor != null
+                      ? WidgetStateProperty.all(
+                          selectionTheme.checkboxFillColor!)
+                      : null,
+                  side: selectionTheme.checkboxSide,
                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   visualDensity: VisualDensity.compact,
                 ),

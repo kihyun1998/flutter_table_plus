@@ -47,6 +47,12 @@ class TablePlusSelectionCell extends StatelessWidget {
             onChanged:
                 rowId != null ? (value) => onSelectionChanged(rowId!) : null,
             activeColor: selectionTheme.checkboxColor,
+            hoverColor: selectionTheme.checkboxHoverColor,
+            focusColor: selectionTheme.checkboxFocusColor,
+            fillColor: selectionTheme.checkboxFillColor != null
+                ? WidgetStateProperty.all(selectionTheme.checkboxFillColor!)
+                : null,
+            side: selectionTheme.checkboxSide,
             materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
             visualDensity: VisualDensity.compact,
           ),

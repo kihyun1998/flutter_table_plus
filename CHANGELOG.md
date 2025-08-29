@@ -1,3 +1,13 @@
+## 1.15.3
+
+*   **FEAT**: Added onCheckboxChanged callback to distinguish checkbox clicks from row clicks
+*   **FEAT**: Enhanced checkbox customization with new color options
+    *   Added checkboxHoverColor for mouse hover states
+    *   Added checkboxFocusColor for focus states
+    *   Added checkboxFillColor for background fill
+    *   Added checkboxSide for border color and width control
+*   **FIX**: Fixed tooltip null check error during column reordering
+
 ## 1.15.2
 
 *   **FEAT**: Added tooltipFormatter to TablePlusColumn for custom tooltip content based on rowData

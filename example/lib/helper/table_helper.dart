@@ -274,9 +274,16 @@ ${isActive ? '✅ Active' : '❌ Inactive'}
         hoverOnly: true,
         opacity: 0.8,
       ),
-      selectionTheme: const TablePlusSelectionTheme(
+      selectionTheme: TablePlusSelectionTheme(
         selectedRowColor: Color(0xFFE3F2FD),
         checkboxColor: Color(0xFF2196F3),
+        checkboxHoverColor: Colors.blue.shade100,
+        checkboxFocusColor: Colors.blue.shade200,
+        checkboxFillColor: Colors.blue.shade600,
+        checkboxSide: BorderSide(
+          color: Colors.purple.shade400,
+          width: 2.0,
+        ),
         checkboxSize: 18.0,
         rowHoverColor: Colors.red,
         rowSplashColor: Colors.green,

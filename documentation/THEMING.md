@@ -111,7 +111,11 @@ This theme controls the appearance of selection-related elements and row interac
 
 - `selectedRowColor`: The background color applied to a row when it is selected.
 - `selectedTextStyle`: The `TextStyle` for cell content in a selected row. If `null`, it defaults to `bodyTheme.textStyle`.
-- `checkboxColor`: The color of the selection checkboxes.
+- `checkboxColor`: The color of the selection checkboxes when active (checked).
+- `checkboxHoverColor`: The color of the checkbox when hovered over. If `null`, uses default Material hover color.
+- `checkboxFocusColor`: The color of the checkbox when focused. If `null`, uses default Material focus color.
+- `checkboxFillColor`: The fill color of the checkbox background. If `null`, uses default Material fill behavior.
+- `checkboxSide`: The border side of the checkbox for controlling border color and width. If `null`, uses default Material border.
 - `checkboxSize`: The size of the checkbox icon.
 - `checkboxColumnWidth`: The width of the dedicated selection column.
 - `showCheckboxColumn`: Whether to display the checkbox column.
@@ -134,10 +138,19 @@ The following properties are available for both normal and selected rows:
 ### Example
 
 ```dart
-theme: const TablePlusTheme(
+theme: TablePlusTheme(
   selectionTheme: TablePlusSelectionTheme(
     selectedRowColor: Colors.blue.shade100,
-    checkboxColor: Colors.blue.shade700,
+    
+    // Checkbox colors
+    checkboxColor: Colors.blue.shade700,           // Active (checked) color
+    checkboxHoverColor: Colors.blue.shade200,      // Hover color
+    checkboxFocusColor: Colors.blue.shade300,      // Focus color
+    checkboxFillColor: Colors.blue.shade600,       // Background fill
+    checkboxSide: BorderSide(                      // Border color & width
+      color: Colors.blue.shade800,
+      width: 1.5,
+    ),
     
     // Use default hover for normal rows
     rowHoverColor: null, 

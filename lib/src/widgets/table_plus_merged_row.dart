@@ -725,9 +725,16 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
               height: widget.selectionTheme.checkboxSize,
               child: Checkbox(
                 value: widget.isSelected,
-                onChanged: (value) => (widget.onCheckboxChanged ?? 
+                onChanged: (value) => (widget.onCheckboxChanged ??
                     widget.onRowSelectionChanged)(widget.mergeGroup.groupId),
                 activeColor: widget.selectionTheme.checkboxColor,
+                hoverColor: widget.selectionTheme.checkboxHoverColor,
+                focusColor: widget.selectionTheme.checkboxFocusColor,
+                fillColor: widget.selectionTheme.checkboxFillColor != null
+                    ? WidgetStateProperty.all(
+                        widget.selectionTheme.checkboxFillColor!)
+                    : null,
+                side: widget.selectionTheme.checkboxSide,
                 materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 visualDensity: VisualDensity.compact,
               ),

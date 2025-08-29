@@ -7,6 +7,10 @@ class TablePlusSelectionTheme {
     this.selectedRowColor = const Color(0xFFE3F2FD),
     this.selectedRowTextStyle,
     this.checkboxColor = const Color(0xFF2196F3),
+    this.checkboxHoverColor,
+    this.checkboxFocusColor,
+    this.checkboxFillColor,
+    this.checkboxSide,
     this.checkboxSize = 18.0,
     this.showCheckboxColumn = true,
     this.showSelectAllCheckbox = true,
@@ -26,8 +30,25 @@ class TablePlusSelectionTheme {
   /// If null, the default body text style will be used.
   final TextStyle? selectedRowTextStyle;
 
-  /// The color of the selection checkboxes.
+  /// The color of the selection checkboxes when active (checked).
   final Color checkboxColor;
+
+  /// The color of the checkbox when it's hovered over.
+  /// If null, uses the default Material hover color.
+  final Color? checkboxHoverColor;
+
+  /// The color of the checkbox when it's focused.
+  /// If null, uses the default Material focus color.
+  final Color? checkboxFocusColor;
+
+  /// The fill color of the checkbox.
+  /// If null, uses the default Material fill color behavior.
+  final Color? checkboxFillColor;
+
+  /// The border side of the checkbox.
+  /// If null, uses the default Material border.
+  /// Use this to control border color and width.
+  final BorderSide? checkboxSide;
 
   /// The size of the selection checkboxes.
   final double checkboxSize;
@@ -79,6 +100,10 @@ class TablePlusSelectionTheme {
     Color? selectedRowColor,
     TextStyle? selectedRowTextStyle,
     Color? checkboxColor,
+    Color? checkboxHoverColor,
+    Color? checkboxFocusColor,
+    Color? checkboxFillColor,
+    BorderSide? checkboxSide,
     double? checkboxSize,
     bool? showCheckboxColumn,
     bool? showSelectAllCheckbox,
@@ -94,6 +119,10 @@ class TablePlusSelectionTheme {
       selectedRowColor: selectedRowColor ?? this.selectedRowColor,
       selectedRowTextStyle: selectedRowTextStyle ?? this.selectedRowTextStyle,
       checkboxColor: checkboxColor ?? this.checkboxColor,
+      checkboxHoverColor: checkboxHoverColor ?? this.checkboxHoverColor,
+      checkboxFocusColor: checkboxFocusColor ?? this.checkboxFocusColor,
+      checkboxFillColor: checkboxFillColor ?? this.checkboxFillColor,
+      checkboxSide: checkboxSide ?? this.checkboxSide,
       checkboxSize: checkboxSize ?? this.checkboxSize,
       showCheckboxColumn: showCheckboxColumn ?? this.showCheckboxColumn,
       showSelectAllCheckbox:
