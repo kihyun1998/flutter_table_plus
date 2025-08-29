@@ -377,7 +377,7 @@ class _ComprehensiveMergedExampleState
         minWidth: 120,
         sortable: true,
         editable: true,
-        tooltipBehavior: TooltipBehavior.onOverflowOnly),
+        tooltipBehavior: TooltipBehavior.always),
     'department': TablePlusColumn(
       key: 'department',
       label: 'Department',

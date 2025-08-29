@@ -10,7 +10,6 @@ import '../models/theme/editable_theme.dart' show TablePlusEditableTheme;
 import '../models/theme/hover_button_theme.dart' show TablePlusHoverButtonTheme;
 import '../models/theme/tooltip_theme.dart' show TablePlusTooltipTheme;
 import '../models/tooltip_behavior.dart';
-import '../utils/text_overflow_detector.dart';
 import 'cells/editable_text_field.dart';
 import 'custom_ink_well.dart';
 import 'table_plus_row_widget.dart';
@@ -644,34 +643,6 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
 
       case TooltipBehavior.always:
         return column.textOverflow == TextOverflow.ellipsis;
-
-      case TooltipBehavior.onOverflowOnly:
-        // Only show tooltip if text overflow is ellipsis AND text actually overflows
-        if (column.textOverflow != TextOverflow.ellipsis) {
-          return false;
-        }
-
-        // Account for padding that might be applied to the cell content
-        final cellPadding = widget.theme.padding;
-        final paddingWidth = cellPadding.horizontal;
-        final maxTextWidth = maxWidth - paddingWidth;
-
-        if (maxTextWidth <= 0) {
-          return true; // If no space available, consider it overflow
-        }
-
-        // Use effective text style that considers selection state
-        final effectiveTextStyle = widget.selectionTheme.getEffectiveTextStyle(
-          widget.isSelected,
-          widget.theme.textStyle,
-        );
-
-        return TextOverflowDetector.willTextOverflow(
-          text: displayValue,
-          style: effectiveTextStyle,
-          maxWidth: maxTextWidth,
-          textAlign: column.textAlign,
-        );
     }
   }
 

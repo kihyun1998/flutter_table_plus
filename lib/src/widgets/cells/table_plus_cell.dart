@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
-import 'package:flutter_table_plus/src/utils/text_overflow_detector.dart';
 import 'package:flutter_table_plus/src/widgets/cells/editable_text_field.dart';
 
 /// A single table cell widget.
@@ -230,52 +229,6 @@ class _TablePlusCellState extends State<TablePlusCell> {
 
       case TooltipBehavior.always:
         return widget.column.textOverflow == TextOverflow.ellipsis;
-
-      case TooltipBehavior.onOverflowOnly:
-        // Only show tooltip if text overflow is ellipsis AND text actually overflows
-        if (widget.column.textOverflow != TextOverflow.ellipsis) {
-          return false;
-        }
-
-        // Use LayoutBuilder to get available width and check for overflow
-        return _willTextOverflowInAvailableWidth(displayValue);
     }
-  }
-
-  /// Checks if text will overflow in the available width using LayoutBuilder context.
-  /// This method is called within the build context where LayoutBuilder provides constraints.
-  bool _willTextOverflowInAvailableWidth(String displayValue) {
-    // We need to get the available width from the current context
-    // Since we're in a table cell, we need to account for padding and margins
-
-    // Get the render box to determine available width
-    final RenderObject? renderObject = context.findRenderObject();
-    if (renderObject is! RenderBox || !renderObject.hasSize) {
-      // If we can't determine the size, fall back to always showing tooltip
-      return true;
-    }
-
-    final availableWidth = renderObject.size.width;
-
-    // Account for padding that might be applied to the cell content
-    const double padding = 16.0; // Default padding used in table cells
-    final maxTextWidth = availableWidth - padding;
-
-    if (maxTextWidth <= 0) {
-      return true; // If no space available, consider it overflow
-    }
-
-    // Get the text style applied to the text
-    final textStyle = widget.selectionTheme.getEffectiveTextStyle(
-      widget.isSelected,
-      widget.theme.textStyle,
-    );
-
-    return TextOverflowDetector.willTextOverflow(
-      text: displayValue,
-      style: textStyle,
-      maxWidth: maxTextWidth,
-      textAlign: widget.column.textAlign,
-    );
   }
 }

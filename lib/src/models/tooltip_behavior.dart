@@ -4,10 +4,6 @@ enum TooltipBehavior {
   /// This is the current default behavior for backward compatibility.
   always,
 
-  /// Only show tooltip when text actually overflows the available space.
-  /// Uses TextPainter to measure text and determine if overflow occurs.
-  onOverflowOnly,
-
   /// Never show tooltip, even if textOverflow is TextOverflow.ellipsis.
   never,
 }

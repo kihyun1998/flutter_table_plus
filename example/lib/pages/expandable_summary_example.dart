@@ -52,7 +52,7 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
         order: 0,
         width: 120,
         textOverflow: TextOverflow.ellipsis,
-        tooltipBehavior: TooltipBehavior.onOverflowOnly,
+        tooltipBehavior: TooltipBehavior.always,
         editable: true,
         hintText: 'Enter package ID',
       ),

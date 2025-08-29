@@ -20,8 +20,8 @@ TablePlusColumn(
   key: 'name',
   label: 'Name',
   tooltipBehavior: TooltipBehavior.always,        // Always show (default)
-  // tooltipBehavior: TooltipBehavior.onOverflowOnly, // Only when text overflows  
   // tooltipBehavior: TooltipBehavior.never,          // Never show
+  // For overflow-based tooltips, use cellBuilder to implement custom tooltip logic
 )
 ```
 

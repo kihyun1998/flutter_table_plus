@@ -73,9 +73,9 @@ When cell content is too long to fit, you can control its appearance and behavio
 - `textOverflow`: A `TextOverflow` enum (`clip`, `fade`, `ellipsis`, `visible`). Defaults to `ellipsis`. Controls how text overflow is handled when content exceeds the available cell space.
 - `tooltipBehavior`: A `TooltipBehavior` enum that gives you precise control over when tooltips appear for **cell content**.
   - `TooltipBehavior.always`: The tooltip is always available on hover if `textOverflow` is `ellipsis`.
-  - `TooltipBehavior.onOverflowOnly`: The tooltip only appears if the text is actually truncated. This is useful for avoiding redundant tooltips.
   - `TooltipBehavior.never`: The tooltip is disabled for the column.
-- `headerTooltipBehavior`: A `TooltipBehavior` enum that controls when tooltips appear for the **column header**. Defaults to `onOverflowOnly`.
+  - For overflow-based tooltips, use `cellBuilder` to implement custom tooltip logic.
+- `headerTooltipBehavior`: A `TooltipBehavior` enum that controls when tooltips appear for the **column header**. Defaults to `always`.
 - **(Deprecated)** `showTooltipOnOverflow`: A `bool` that was previously used to control tooltips. Use `tooltipBehavior` instead.
 
 ### Example: Precise Tooltip Control
@@ -91,8 +91,8 @@ When cell content is too long to fit, you can control its appearance and behavio
     // Truncate long text with an ellipsis (...)
     textOverflow: TextOverflow.ellipsis, 
     
-    // Only show the tooltip if the description text actually overflows.
-    tooltipBehavior: TooltipBehavior.onOverflowOnly,
+    // Always show the tooltip when text is ellipsis
+    tooltipBehavior: TooltipBehavior.always,
   ),
 )
 ```

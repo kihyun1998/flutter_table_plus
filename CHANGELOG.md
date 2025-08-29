@@ -1,3 +1,7 @@
+## 1.15.4
+
+*   **BREAKING CHANGE**: Removed TooltipBehavior.onOverflowOnly (use cellBuilder for overflow tooltips)
+
 ## 1.15.3
 
 *   **FEAT**: Added onCheckboxChanged callback to distinguish checkbox clicks from row clicks

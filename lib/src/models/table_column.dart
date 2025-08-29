@@ -100,7 +100,7 @@ class TablePlusColumn {
     this.hintText,
     this.textOverflow = TextOverflow.ellipsis,
     this.tooltipBehavior = TooltipBehavior.always,
-    this.headerTooltipBehavior = TooltipBehavior.onOverflowOnly,
+    this.headerTooltipBehavior = TooltipBehavior.always,
   });
 
   /// The unique identifier for this column.
@@ -164,16 +164,18 @@ class TablePlusColumn {
 
   /// Controls when tooltips should be displayed for this column's cells.
   ///
-  /// - [TooltipBehavior.always]: Show tooltip when textOverflow is ellipsis (default, backward compatible)
-  /// - [TooltipBehavior.onOverflowOnly]: Only show tooltip when text actually overflows
+  /// - [TooltipBehavior.always]: Show tooltip when textOverflow is ellipsis (default)
   /// - [TooltipBehavior.never]: Never show tooltip
+  ///
+  /// Note: For overflow-based tooltips, use cellBuilder to implement custom tooltip logic.
   final TooltipBehavior tooltipBehavior;
 
   /// Controls when tooltips should be displayed for this column's header.
   ///
-  /// - [TooltipBehavior.onOverflowOnly]: Only show tooltip when header text actually overflows (default)
-  /// - [TooltipBehavior.always]: Show tooltip when textOverflow is ellipsis
+  /// - [TooltipBehavior.always]: Show tooltip when textOverflow is ellipsis (default)
   /// - [TooltipBehavior.never]: Never show tooltip
+  ///
+  /// Note: For overflow-based tooltips, use custom header widgets with cellBuilder.
   final TooltipBehavior headerTooltipBehavior;
 
   /// Creates a copy of this column with the given fields replaced with new values.

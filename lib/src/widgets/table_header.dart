@@ -5,7 +5,6 @@ import '../models/table_column.dart';
 import '../models/theme/header_theme.dart' show TablePlusHeaderTheme;
 import '../models/theme/tooltip_theme.dart' show TablePlusTooltipTheme;
 import '../models/tooltip_behavior.dart';
-import '../utils/text_overflow_detector.dart';
 
 /// A widget that renders the header row of the table.
 class TablePlusHeader extends StatefulWidget {
@@ -353,33 +352,6 @@ class _HeaderCell extends StatelessWidget {
 
       case TooltipBehavior.always:
         return true;
-
-      case TooltipBehavior.onOverflowOnly:
-        // Calculate available width for text (excluding padding and sort icon)
-        double availableWidth = width - theme.padding.horizontal;
-
-        // Reserve space for sort icon if present
-        final sortIcon = _getSortIcon();
-        if (sortIcon != null) {
-          availableWidth -=
-              theme.sortIconSpacing + 16; // Approximate icon width
-        }
-
-        // Use TextOverflowDetector to check if text overflows
-        // Wrap in try-catch to handle layout calculation errors during widget rebuilds
-        try {
-          return TextOverflowDetector.willTextOverflowInContext(
-            context: context,
-            text: label,
-            maxWidth: availableWidth,
-            style: _getTextStyle(),
-            textAlign: column.textAlign,
-          );
-        } catch (e) {
-          // If overflow detection fails during rebuild, default to no tooltip
-          // This prevents null check errors during column reordering
-          return false;
-        }
     }
   }
 
