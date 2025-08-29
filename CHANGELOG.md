@@ -1,3 +1,9 @@
+## 1.15.2
+
+*   **REFACTOR**: Removed unused properties from TablePlusHoverButtonTheme (only horizontalOffset remains)
+*   **UPDATE**: Minimum Flutter version requirement changed from >=1.17.0 to >=3.10.0
+*   **CLEANUP**: Removed unnecessary imports and code
+
 ## 1.15.1
 *   **FIX** flutter analyze
 
