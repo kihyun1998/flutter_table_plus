@@ -98,7 +98,7 @@ class TableHelper {
               final yearlyTotal = salary * 12;
               final taxEstimate = (yearlyTotal * 0.25).round();
               final netAnnual = yearlyTotal - taxEstimate;
-              
+
               return '''💰 Compensation Details:
 Monthly: \$${salary.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (match) => '${match[1]},')}
 Yearly Gross: \$${yearlyTotal.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (match) => '${match[1]},')}
@@ -125,7 +125,7 @@ Net Annual: \$${netAnnual.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3
               final isActive = rowData['active'] as bool? ?? false;
               final name = rowData['name'] as String? ?? 'Unknown';
               final department = rowData['department'] as String? ?? 'Unknown';
-              
+
               return '''Employee Status:
 ${isActive ? '✅ Active' : '❌ Inactive'}
 👤 Employee: $name

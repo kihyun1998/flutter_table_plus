@@ -191,8 +191,6 @@ class _TableExamplePageState extends State<TableExamplePage> {
       final targetOrder = newIndex + 1; // Convert to 1-based order
       builder.reorderColumn(movingColumn.key, targetOrder);
 
-      print("m:: ${movingColumn.order}");
-
       _columns = builder.build();
     });
 

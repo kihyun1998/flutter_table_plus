@@ -54,7 +54,7 @@ class DemoColumnDefinitions {
           final performance = rowData['rawPerformance'] ?? 0.0;
           final bonus = (rawSalary * performance * 0.1).round();
           final total = rawSalary + bonus;
-          
+
           return '''Compensation Details:
 💰 Base Salary: \$${rawSalary.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (match) => '${match[1]},')}
 🎯 Performance: ${(performance * 100).toStringAsFixed(1)}%
@@ -93,8 +93,9 @@ class DemoColumnDefinitions {
           final skills = rowData['rawSkills'] as List<String>? ?? [];
           final skillCount = skills.length;
           final primarySkills = skills.take(3).join(', ');
-          final additionalSkills = skillCount > 3 ? skills.skip(3).join(', ') : '';
-          
+          final additionalSkills =
+              skillCount > 3 ? skills.skip(3).join(', ') : '';
+
           return '''Skills Profile:
 🎯 Total Skills: $skillCount
 ⭐ Primary: $primarySkills${additionalSkills.isNotEmpty ? '\n🔧 Additional: $additionalSkills' : ''}

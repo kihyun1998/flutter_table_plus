@@ -36,7 +36,7 @@ A highly customizable and efficient table widget for Flutter. It provides a rich
 - **Row Selection & Editing**: Enable row selection and cell editing simultaneously, now fully compatible with merged rows. Supports double-tap and secondary-tap events on rows.
 - **Column Reordering**: Easily reorder columns with drag-and-drop.
 - **Column Visibility**: Dynamically show or hide individual columns.
-- **Smart Text Handling**: Control text overflow (`ellipsis`, `clip`, `visible`). Tooltips for both **cells and headers** can be configured to appear always, only when text overflows, or never, giving you precise control over user feedback.
+- **Smart Text Handling**: Control text overflow (`ellipsis`, `clip`, `visible`). Tooltips for both **cells and headers** can be configured to appear always, only when text overflows, or never, giving you precise control over user feedback. Use `tooltipFormatter` to generate custom tooltip content based on complete row data.
 - **Custom Cell Widgets**: Render any widget inside a cell using `cellBuilder` for maximum flexibility.
 - **Conditional Feature Control**: Dynamically enable/disable features like sorting and column reordering based on user permissions or application state.
 - **Code Refinements**: Removed deprecated code and updated to the latest syntax for improved maintainability and performance.
@@ -47,7 +47,7 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  flutter_table_plus: ^1.15.1
+  flutter_table_plus: ^1.15.2
 ```
 
 Then, run `flutter pub get` in your terminal.
@@ -202,6 +202,41 @@ FlutterTablePlus(
 )
 ```
 
+### 💬 Custom Tooltip Content
+
+Create rich, contextual tooltips using complete row data with `tooltipFormatter`:
+
+```dart
+TablePlusColumn(
+  key: 'employee_name',
+  label: 'Employee',
+  width: 150,
+  tooltipFormatter: (rowData) {
+    return '''Employee Details:
+👤 Name: ${rowData['name']}
+🏢 Department: ${rowData['department']}
+💼 Position: ${rowData['position']}
+📧 Email: ${rowData['email']}''';
+  },
+),
+```
+
+You can also create conditional tooltips based on data values:
+
+```dart
+TablePlusColumn(
+  key: 'status',
+  label: 'Status',
+  tooltipFormatter: (rowData) {
+    final isActive = rowData['active'] as bool;
+    final lastLogin = rowData['last_login'] as DateTime?;
+    
+    return '''Status: ${isActive ? '✅ Active' : '❌ Inactive'}
+Last Login: ${lastLogin?.toString() ?? 'Never'}
+Access: ${isActive ? 'Full Access' : 'Restricted'}''';
+  },
+)
+```
 
 ## Conditional Feature Control
 
@@ -238,6 +273,7 @@ For more advanced use cases and detailed guides, please refer to our documentati
   - [Sorting](documentation/SORTING.md)
   - [Row Selection](documentation/SELECTION.md)
   - [Theming and Styling](documentation/THEMING.md)
+  - [Tooltip Customization](documentation/TOOLTIP_CUSTOMIZATION.md)
   - [Advanced Column Settings](documentation/ADVANCED_COLUMNS.md)
   - [Merged Rows](documentation/MERGED_ROWS.md)
   - [Hover Buttons](documentation/HOVER_BUTTONS.md)

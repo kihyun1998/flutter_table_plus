@@ -146,7 +146,7 @@ class _TablePlusCellState extends State<TablePlusCell> {
       final tooltipMessage = widget.column.tooltipFormatter != null
           ? widget.column.tooltipFormatter!(widget.rowData)
           : displayValue;
-      
+
       textWidget = Tooltip(
         message: tooltipMessage,
         textStyle: widget.tooltipTheme.textStyle,
