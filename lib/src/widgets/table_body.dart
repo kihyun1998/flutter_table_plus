@@ -31,6 +31,7 @@ class TablePlusBody extends StatelessWidget {
     this.selectedRows = const <String>{},
     this.selectionTheme = const TablePlusSelectionTheme(),
     this.onRowSelectionChanged,
+    this.onCheckboxChanged,
     this.onRowDoubleTap,
     this.onRowSecondaryTap,
     this.isEditable = false,
@@ -83,8 +84,12 @@ class TablePlusBody extends StatelessWidget {
   /// The theme configuration for selection.
   final TablePlusSelectionTheme selectionTheme;
 
-  /// Callback when a row's selection state changes.
+  /// Callback when a row's selection state changes via row click.
   final void Function(String rowId, bool isSelected)? onRowSelectionChanged;
+
+  /// Callback when a row's selection state changes via checkbox click.
+  /// If not provided, falls back to [onRowSelectionChanged].
+  final void Function(String rowId, bool isSelected)? onCheckboxChanged;
 
   /// Callback when a row is double-tapped.
   final void Function(String rowId)? onRowDoubleTap;
@@ -217,7 +222,7 @@ class TablePlusBody extends StatelessWidget {
     return renderableIndices;
   }
 
-  /// Handle row selection toggle.
+  /// Handle row selection toggle via row click.
   /// For merged groups, this handles both group IDs and individual row IDs.
   void _handleRowSelectionToggle(String rowId) {
     if (onRowSelectionChanged == null) return;
@@ -233,6 +238,27 @@ class TablePlusBody extends StatelessWidget {
     } else {
       // This is a regular row selection
       _handleRegularRowSelectionToggle(rowId, isCurrentlySelected);
+    }
+  }
+
+  /// Handle checkbox selection toggle.
+  /// For merged groups, this handles both group IDs and individual row IDs.
+  void _handleCheckboxToggle(String rowId) {
+    // Use onCheckboxChanged if available, otherwise fall back to onRowSelectionChanged
+    final callback = onCheckboxChanged ?? onRowSelectionChanged;
+    if (callback == null) return;
+
+    final isCurrentlySelected = selectedRows.contains(rowId);
+
+    // Check if this rowId represents a merged group
+    final mergeGroup = _getMergedGroupById(rowId);
+
+    if (mergeGroup != null) {
+      // This is a merged group selection
+      callback(mergeGroup.groupId, !isCurrentlySelected);
+    } else {
+      // This is a regular row selection
+      callback(rowId, !isCurrentlySelected);
     }
   }
 
@@ -375,6 +401,7 @@ class TablePlusBody extends StatelessWidget {
           isSelected: isSelected,
           selectionTheme: selectionTheme,
           onRowSelectionChanged: _handleRowSelectionToggle,
+          onCheckboxChanged: _handleCheckboxToggle,
           isEditable: isEditable,
           editableTheme: editableTheme,
           tooltipTheme: tooltipTheme,
@@ -417,6 +444,7 @@ class TablePlusBody extends StatelessWidget {
       isSelected: isSelected,
       selectionTheme: selectionTheme,
       onRowSelectionChanged: _handleRowSelectionToggle,
+      onCheckboxChanged: _handleCheckboxToggle,
       onRowDoubleTap: onRowDoubleTap,
       onRowSecondaryTap: onRowSecondaryTap,
       isEditable: isEditable,

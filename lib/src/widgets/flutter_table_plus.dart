@@ -32,6 +32,7 @@ class FlutterTablePlus extends StatefulWidget {
     this.selectedRows = const <String>{},
     this.sortCycleOrder = SortCycleOrder.ascendingFirst,
     this.onRowSelectionChanged,
+    this.onCheckboxChanged,
     this.onSelectAll,
     this.onColumnReorder,
     this.sortColumnKey,
@@ -89,9 +90,14 @@ class FlutterTablePlus extends StatefulWidget {
   /// Defaults to [SortCycleOrder.ascendingFirst].
   final SortCycleOrder sortCycleOrder;
 
-  /// Callback when a row's selection state changes.
+  /// Callback when a row's selection state changes via row click.
   /// Provides the row ID and the new selection state.
   final void Function(String rowId, bool isSelected)? onRowSelectionChanged;
+
+  /// Callback when a row's selection state changes via checkbox click.
+  /// Provides the row ID and the new selection state.
+  /// If not provided, falls back to [onRowSelectionChanged].
+  final void Function(String rowId, bool isSelected)? onCheckboxChanged;
 
   /// Callback when the select-all state changes.
   /// Called when the header checkbox is toggled.
@@ -726,6 +732,8 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                                 theme.selectionTheme,
                                             onRowSelectionChanged:
                                                 widget.onRowSelectionChanged,
+                                            onCheckboxChanged:
+                                                widget.onCheckboxChanged,
                                             onRowDoubleTap:
                                                 widget.onRowDoubleTap,
                                             onRowSecondaryTap:

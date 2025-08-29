@@ -123,8 +123,32 @@ class _TableExamplePageState extends State<TableExamplePage> {
     );
   }
 
-  /// Handle row selection change
+  /// Handle row selection change via row click
   void _onRowSelectionChanged(String rowId, bool isSelected) {
+    print('🖱️ Row clicked: $rowId, selected: $isSelected');
+    setState(() {
+      if (_selectionMode == SelectionMode.single) {
+        // Single selection mode: clear all other selections first
+        if (isSelected) {
+          _selectedRows.clear();
+          _selectedRows.add(rowId);
+        } else {
+          _selectedRows.remove(rowId);
+        }
+      } else {
+        // Multiple selection mode: normal toggle behavior
+        if (isSelected) {
+          _selectedRows.add(rowId);
+        } else {
+          _selectedRows.remove(rowId);
+        }
+      }
+    });
+  }
+
+  /// Handle checkbox selection change
+  void _onCheckboxChanged(String rowId, bool isSelected) {
+    print('☑️ Checkbox clicked: $rowId, selected: $isSelected');
     setState(() {
       if (_selectionMode == SelectionMode.single) {
         // Single selection mode: clear all other selections first
@@ -471,6 +495,7 @@ class _TableExamplePageState extends State<TableExamplePage> {
                     selectedRows: _selectedRows,
                     sortCycleOrder: _sortCycleOrder,
                     onRowSelectionChanged: _onRowSelectionChanged,
+                    onCheckboxChanged: _onCheckboxChanged,
                     onSelectAll: _onSelectAll,
                     onColumnReorder: _isReorderable ? _onColumnReorder : null,
                     theme: _currentTheme,

@@ -31,6 +31,7 @@ class TablePlusMergedRow extends TablePlusRowWidget {
     required this.isSelected,
     required this.selectionTheme,
     required this.onRowSelectionChanged,
+    this.onCheckboxChanged,
     required this.isEditable,
     required this.editableTheme,
     required this.tooltipTheme,
@@ -69,6 +70,7 @@ class TablePlusMergedRow extends TablePlusRowWidget {
   final bool isSelected;
   final TablePlusSelectionTheme selectionTheme;
   final void Function(String rowId) onRowSelectionChanged;
+  final void Function(String rowId)? onCheckboxChanged;
   final bool isEditable;
   final TablePlusEditableTheme editableTheme;
   final TablePlusTooltipTheme tooltipTheme;
@@ -723,8 +725,8 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
               height: widget.selectionTheme.checkboxSize,
               child: Checkbox(
                 value: widget.isSelected,
-                onChanged: (value) =>
-                    widget.onRowSelectionChanged(widget.mergeGroup.groupId),
+                onChanged: (value) => (widget.onCheckboxChanged ?? 
+                    widget.onRowSelectionChanged)(widget.mergeGroup.groupId),
                 activeColor: widget.selectionTheme.checkboxColor,
                 materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 visualDensity: VisualDensity.compact,
