@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 /// Theme configuration for hover buttons in table rows.
 class TablePlusHoverButtonTheme {
   /// Creates a [TablePlusHoverButtonTheme] with the specified styling properties.
@@ -19,7 +17,6 @@ class TablePlusHoverButtonTheme {
       horizontalOffset: horizontalOffset ?? this.horizontalOffset,
     );
   }
-
 
   /// Default hover button theme.
   static const TablePlusHoverButtonTheme defaultTheme =

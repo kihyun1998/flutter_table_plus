@@ -633,21 +633,7 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
       ),
       // Phase 6: Hover button theme
       hoverButtonTheme: TablePlusHoverButtonTheme(
-        backgroundColor: Colors.white,
-        opacity: 0.95,
-        iconSize: 18.0,
         horizontalOffset: 8.0,
-        spacing: 4.0,
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-        borderRadius: BorderRadius.circular(6),
-        elevation: 2.0,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
       ),
     );
   }
