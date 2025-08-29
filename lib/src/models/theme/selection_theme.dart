@@ -1,20 +1,42 @@
 import 'package:flutter/material.dart';
 
+import 'checkbox_theme.dart';
+
 /// Theme configuration for row selection.
 class TablePlusSelectionTheme {
   /// Creates a [TablePlusSelectionTheme] with the specified styling properties.
   const TablePlusSelectionTheme({
     this.selectedRowColor = const Color(0xFFE3F2FD),
     this.selectedRowTextStyle,
-    this.checkboxColor = const Color(0xFF2196F3),
+    // Deprecated checkbox properties (nullable for backward compatibility)
+    @Deprecated(
+        'Use TablePlusCheckboxTheme instead. Will be removed in v1.16.0')
+    this.checkboxColor,
+    @Deprecated(
+        'Use TablePlusCheckboxTheme instead. Will be removed in v1.16.0')
     this.checkboxHoverColor,
+    @Deprecated(
+        'Use TablePlusCheckboxTheme instead. Will be removed in v1.16.0')
     this.checkboxFocusColor,
+    @Deprecated(
+        'Use TablePlusCheckboxTheme instead. Will be removed in v1.16.0')
     this.checkboxFillColor,
+    @Deprecated(
+        'Use TablePlusCheckboxTheme instead. Will be removed in v1.16.0')
     this.checkboxSide,
-    this.checkboxSize = 18.0,
-    this.showCheckboxColumn = true,
-    this.showSelectAllCheckbox = true,
-    this.checkboxColumnWidth = 60.0,
+    @Deprecated(
+        'Use TablePlusCheckboxTheme instead. Will be removed in v1.16.0')
+    this.checkboxSize,
+    @Deprecated(
+        'Use TablePlusCheckboxTheme instead. Will be removed in v1.16.0')
+    this.showCheckboxColumn,
+    @Deprecated(
+        'Use TablePlusCheckboxTheme instead. Will be removed in v1.16.0')
+    this.showSelectAllCheckbox,
+    @Deprecated(
+        'Use TablePlusCheckboxTheme instead. Will be removed in v1.16.0')
+    this.checkboxColumnWidth,
+    // Row styling
     this.rowHoverColor,
     this.rowSplashColor,
     this.rowHighlightColor,
@@ -30,40 +52,74 @@ class TablePlusSelectionTheme {
   /// If null, the default body text style will be used.
   final TextStyle? selectedRowTextStyle;
 
+  // Deprecated checkbox properties - Use TablePlusCheckboxTheme instead
   /// The color of the selection checkboxes when active (checked).
-  final Color checkboxColor;
+  ///
+  /// **DEPRECATED**: Use [TablePlusCheckboxTheme.fillColor] instead.
+  /// This property will be removed in v1.16.0.
+  /// If null, falls back to TablePlusCheckboxTheme.
+  @Deprecated('Use TablePlusCheckboxTheme instead. Will be removed in v1.16.0')
+  final Color? checkboxColor;
 
   /// The color of the checkbox when it's hovered over.
-  /// If null, uses the default Material hover color.
+  ///
+  /// **DEPRECATED**: Use [TablePlusCheckboxTheme.hoverColor] instead.
+  /// This property will be removed in v1.16.0.
+  @Deprecated('Use TablePlusCheckboxTheme instead. Will be removed in v1.16.0')
   final Color? checkboxHoverColor;
 
   /// The color of the checkbox when it's focused.
-  /// If null, uses the default Material focus color.
+  ///
+  /// **DEPRECATED**: Use [TablePlusCheckboxTheme.focusColor] instead.
+  /// This property will be removed in v1.16.0.
+  @Deprecated('Use TablePlusCheckboxTheme instead. Will be removed in v1.16.0')
   final Color? checkboxFocusColor;
 
   /// The fill color of the checkbox.
-  /// If null, uses the default Material fill color behavior.
+  ///
+  /// **DEPRECATED**: Use [TablePlusCheckboxTheme.fillColor] instead.
+  /// This property will be removed in v1.16.0.
+  @Deprecated('Use TablePlusCheckboxTheme instead. Will be removed in v1.16.0')
   final Color? checkboxFillColor;
 
   /// The border side of the checkbox.
-  /// If null, uses the default Material border.
-  /// Use this to control border color and width.
+  ///
+  /// **DEPRECATED**: Use [TablePlusCheckboxTheme.side] instead.
+  /// This property will be removed in v1.16.0.
+  @Deprecated('Use TablePlusCheckboxTheme instead. Will be removed in v1.16.0')
   final BorderSide? checkboxSide;
 
   /// The size of the selection checkboxes.
-  final double checkboxSize;
+  ///
+  /// **DEPRECATED**: Use [TablePlusCheckboxTheme.size] instead.
+  /// This property will be removed in v1.16.0.
+  /// If null, falls back to TablePlusCheckboxTheme.
+  @Deprecated('Use TablePlusCheckboxTheme instead. Will be removed in v1.16.0')
+  final double? checkboxSize;
 
   /// Whether to show the checkbox column.
-  /// If false, rows can only be selected by tapping.
-  final bool showCheckboxColumn;
+  ///
+  /// **DEPRECATED**: Use [TablePlusCheckboxTheme.showCheckboxColumn] instead.
+  /// This property will be removed in v1.16.0.
+  /// If null, falls back to TablePlusCheckboxTheme.
+  @Deprecated('Use TablePlusCheckboxTheme instead. Will be removed in v1.16.0')
+  final bool? showCheckboxColumn;
 
   /// Whether to show the select-all checkbox in the header.
-  /// If false, only individual row selection is available.
-  /// Automatically set to false for single selection mode.
-  final bool showSelectAllCheckbox;
+  ///
+  /// **DEPRECATED**: Use [TablePlusCheckboxTheme.showSelectAllCheckbox] instead.
+  /// This property will be removed in v1.16.0.
+  /// If null, falls back to TablePlusCheckboxTheme.
+  @Deprecated('Use TablePlusCheckboxTheme instead. Will be removed in v1.16.0')
+  final bool? showSelectAllCheckbox;
 
   /// The width of the checkbox column.
-  final double checkboxColumnWidth;
+  ///
+  /// **DEPRECATED**: Use [TablePlusCheckboxTheme.checkboxColumnWidth] instead.
+  /// This property will be removed in v1.16.0.
+  /// If null, falls back to TablePlusCheckboxTheme.
+  @Deprecated('Use TablePlusCheckboxTheme instead. Will be removed in v1.16.0')
+  final double? checkboxColumnWidth;
 
   /// The hover color for unselected rows.
   /// If null, the default framework hover effect is used.
@@ -179,5 +235,60 @@ class TablePlusSelectionTheme {
     } else {
       return defaultTextStyle;
     }
+  }
+
+  // Fallback methods for backward compatibility
+  /// Gets the effective checkbox size, falling back to checkboxTheme if deprecated property is null.
+  double getEffectiveCheckboxSize(TablePlusCheckboxTheme checkboxTheme) {
+    return checkboxSize ?? checkboxTheme.size;
+  }
+
+  /// Gets the effective checkbox column visibility, falling back to checkboxTheme if deprecated property is null.
+  bool getEffectiveShowCheckboxColumn(TablePlusCheckboxTheme checkboxTheme) {
+    return showCheckboxColumn ?? checkboxTheme.showCheckboxColumn;
+  }
+
+  /// Gets the effective select-all checkbox visibility, falling back to checkboxTheme if deprecated property is null.
+  bool getEffectiveShowSelectAllCheckbox(TablePlusCheckboxTheme checkboxTheme) {
+    return showSelectAllCheckbox ?? checkboxTheme.showSelectAllCheckbox;
+  }
+
+  /// Gets the effective checkbox column width, falling back to checkboxTheme if deprecated property is null.
+  double getEffectiveCheckboxColumnWidth(TablePlusCheckboxTheme checkboxTheme) {
+    return checkboxColumnWidth ?? checkboxTheme.checkboxColumnWidth;
+  }
+
+  /// Gets the effective checkbox active color, falling back to checkboxTheme if deprecated property is null.
+  Color? getEffectiveCheckboxActiveColor(TablePlusCheckboxTheme checkboxTheme) {
+    if (checkboxColor != null) return checkboxColor;
+    // Try to extract from fillColor WidgetStateProperty if available
+    if (checkboxTheme.fillColor != null) {
+      return checkboxTheme.fillColor!.resolve({WidgetState.selected});
+    }
+    return null;
+  }
+
+  /// Gets the effective checkbox hover color, falling back to checkboxTheme if deprecated property is null.
+  Color? getEffectiveCheckboxHoverColor(TablePlusCheckboxTheme checkboxTheme) {
+    return checkboxHoverColor ?? checkboxTheme.hoverColor;
+  }
+
+  /// Gets the effective checkbox focus color, falling back to checkboxTheme if deprecated property is null.
+  Color? getEffectiveCheckboxFocusColor(TablePlusCheckboxTheme checkboxTheme) {
+    return checkboxFocusColor ?? checkboxTheme.focusColor;
+  }
+
+  /// Gets the effective checkbox fill color, falling back to checkboxTheme if deprecated property is null.
+  WidgetStateProperty<Color?>? getEffectiveCheckboxFillColor(
+      TablePlusCheckboxTheme checkboxTheme) {
+    if (checkboxFillColor != null) {
+      return WidgetStateProperty.all(checkboxFillColor);
+    }
+    return checkboxTheme.fillColor;
+  }
+
+  /// Gets the effective checkbox side, falling back to checkboxTheme if deprecated property is null.
+  BorderSide? getEffectiveCheckboxSide(TablePlusCheckboxTheme checkboxTheme) {
+    return checkboxSide ?? checkboxTheme.side;
   }
 }

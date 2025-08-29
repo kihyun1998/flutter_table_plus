@@ -19,15 +19,16 @@
 /// - **Type-Safe Column Builder:** Use `TableColumnsBuilder` for safe column management
 library;
 
+export 'src/models/hover_button_position.dart';
+export 'src/models/merged_row_group.dart';
+
 /// Models
 export 'src/models/table_column.dart';
 export 'src/models/table_columns_builder.dart';
-export 'src/models/tooltip_behavior.dart';
-export 'src/models/merged_row_group.dart';
-export 'src/models/hover_button_position.dart';
 
 /// Theme
 export 'src/models/theme/body_theme.dart';
+export 'src/models/theme/checkbox_theme.dart';
 export 'src/models/theme/editable_theme.dart';
 export 'src/models/theme/header_theme.dart';
 export 'src/models/theme/hover_button_theme.dart';
@@ -35,10 +36,11 @@ export 'src/models/theme/scrollbar_theme.dart';
 export 'src/models/theme/selection_theme.dart';
 export 'src/models/theme/theme.dart';
 export 'src/models/theme/tooltip_theme.dart';
+export 'src/models/tooltip_behavior.dart';
+
+/// Utilities
+export 'src/utils/table_row_height_calculator.dart';
 
 /// Widgets
 export 'src/widgets/custom_ink_well.dart';
 export 'src/widgets/flutter_table_plus.dart';
-
-/// Utilities
-export 'src/utils/table_row_height_calculator.dart';

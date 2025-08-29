@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../flutter_table_plus.dart' show TablePlusSelectionTheme;
 import '../models/table_column.dart';
+import '../models/theme/checkbox_theme.dart';
 import '../models/theme/header_theme.dart' show TablePlusHeaderTheme;
 import '../models/theme/tooltip_theme.dart' show TablePlusTooltipTheme;
 import '../models/tooltip_behavior.dart';
@@ -22,6 +23,7 @@ class TablePlusHeader extends StatefulWidget {
     this.totalRowCount = 0,
     this.selectionTheme = const TablePlusSelectionTheme(),
     this.tooltipTheme = const TablePlusTooltipTheme(),
+    this.checkboxTheme = const TablePlusCheckboxTheme(),
     this.onSelectAll,
     this.onColumnReorder,
     this.sortColumnKey,
@@ -61,6 +63,9 @@ class TablePlusHeader extends StatefulWidget {
 
   /// The theme configuration for tooltips.
   final TablePlusTooltipTheme tooltipTheme;
+
+  /// The theme configuration for checkboxes.
+  final TablePlusCheckboxTheme checkboxTheme;
 
   /// Callback when the select-all state changes.
   final void Function(bool selectAll)? onSelectAll;
@@ -203,14 +208,16 @@ class _TablePlusHeaderState extends State<TablePlusHeader> {
           if (widget.isSelectable &&
               widget.columns.any((col) => col.key == '__selection__'))
             _SelectionHeaderCell(
-              width: widget.selectionTheme.checkboxColumnWidth,
+              width: widget.selectionTheme
+                  .getEffectiveCheckboxColumnWidth(widget.checkboxTheme),
               theme: widget.theme,
               selectionTheme: widget.selectionTheme,
               selectAllState: _getSelectAllState(),
               selectedRows: widget.selectedRows,
               onSelectAll: widget.onSelectAll,
-              showSelectAllCheckbox:
-                  widget.selectionTheme.showSelectAllCheckbox,
+              checkboxTheme: widget.checkboxTheme,
+              showSelectAllCheckbox: widget.selectionTheme
+                  .getEffectiveShowSelectAllCheckbox(widget.checkboxTheme),
             ),
 
           // Reorderable or non-reorderable columns
@@ -366,17 +373,21 @@ class _HeaderCell extends StatelessWidget {
 
     // Add tooltip based on tooltip behavior
     if (_shouldShowTooltip(context, column.label)) {
-      textWidget = Tooltip(
-        message: column.label,
-        textStyle: tooltipTheme.textStyle,
-        decoration: tooltipTheme.decoration,
-        padding: tooltipTheme.padding,
-        margin: tooltipTheme.margin,
-        waitDuration: tooltipTheme.waitDuration,
-        showDuration: tooltipTheme.showDuration,
-        preferBelow: tooltipTheme.preferBelow,
-        child: textWidget,
-      );
+      try {
+        textWidget = Tooltip(
+          message: column.label,
+          textStyle: tooltipTheme.textStyle,
+          decoration: tooltipTheme.decoration,
+          padding: tooltipTheme.padding,
+          margin: tooltipTheme.margin,
+          waitDuration: tooltipTheme.waitDuration,
+          showDuration: tooltipTheme.showDuration,
+          preferBelow: tooltipTheme.preferBelow,
+          child: textWidget,
+        );
+      } catch (e) {
+        // Ignore tooltip creation errors during reordering - tooltip will be restored on next rebuild
+      }
     }
 
     return textWidget;
@@ -459,6 +470,7 @@ class _SelectionHeaderCell extends StatelessWidget {
     required this.selectAllState,
     required this.onSelectAll,
     required this.selectedRows,
+    required this.checkboxTheme,
     this.showSelectAllCheckbox = true,
   });
 
@@ -468,6 +480,7 @@ class _SelectionHeaderCell extends StatelessWidget {
   final bool? selectAllState;
   final void Function(bool selectAll)? onSelectAll;
   final Set<String> selectedRows;
+  final TablePlusCheckboxTheme checkboxTheme;
   final bool showSelectAllCheckbox;
 
   /// Build decoration for selection header cell
@@ -503,8 +516,8 @@ class _SelectionHeaderCell extends StatelessWidget {
       child: showSelectAllCheckbox
           ? Center(
               child: SizedBox(
-                width: selectionTheme.checkboxSize,
-                height: selectionTheme.checkboxSize,
+                width: selectionTheme.getEffectiveCheckboxSize(checkboxTheme),
+                height: selectionTheme.getEffectiveCheckboxSize(checkboxTheme),
                 child: Checkbox(
                   value: selectAllState,
                   tristate: true, // Allows indeterminate state
@@ -516,16 +529,25 @@ class _SelectionHeaderCell extends StatelessWidget {
                           onSelectAll!(shouldSelectAll);
                         }
                       : null,
-                  activeColor: selectionTheme.checkboxColor,
-                  hoverColor: selectionTheme.checkboxHoverColor,
-                  focusColor: selectionTheme.checkboxFocusColor,
-                  fillColor: selectionTheme.checkboxFillColor != null
-                      ? WidgetStateProperty.all(
-                          selectionTheme.checkboxFillColor!)
-                      : null,
-                  side: selectionTheme.checkboxSide,
-                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  visualDensity: VisualDensity.compact,
+                  // Use deprecated properties if available, otherwise fall back to checkboxTheme
+                  activeColor: selectionTheme
+                      .getEffectiveCheckboxActiveColor(checkboxTheme),
+                  hoverColor: selectionTheme
+                      .getEffectiveCheckboxHoverColor(checkboxTheme),
+                  focusColor: selectionTheme
+                      .getEffectiveCheckboxFocusColor(checkboxTheme),
+                  fillColor: selectionTheme
+                      .getEffectiveCheckboxFillColor(checkboxTheme),
+                  checkColor: checkboxTheme.checkColor,
+                  side: selectionTheme.getEffectiveCheckboxSide(checkboxTheme),
+                  shape: checkboxTheme.shape,
+                  mouseCursor: checkboxTheme.mouseCursor,
+                  materialTapTargetSize: checkboxTheme.materialTapTargetSize ??
+                      MaterialTapTargetSize.shrinkWrap,
+                  visualDensity:
+                      checkboxTheme.visualDensity ?? VisualDensity.compact,
+                  splashRadius: checkboxTheme.splashRadius,
+                  overlayColor: checkboxTheme.overlayColor,
                 ),
               ),
             )

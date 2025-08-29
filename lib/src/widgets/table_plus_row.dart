@@ -36,6 +36,7 @@ class TablePlusRow extends TablePlusRowWidget {
     this.hoverButtonBuilder,
     this.hoverButtonPosition = HoverButtonPosition.right,
     this.hoverButtonTheme,
+    this.checkboxTheme = const TablePlusCheckboxTheme(),
   });
 
   final int rowIndex;
@@ -77,6 +78,7 @@ class TablePlusRow extends TablePlusRowWidget {
 
   /// Theme configuration for hover buttons.
   final TablePlusHoverButtonTheme? hoverButtonTheme;
+  final TablePlusCheckboxTheme checkboxTheme;
 
   // Implementation of TablePlusRowWidget abstract methods
   @override
@@ -161,6 +163,7 @@ class _TablePlusRowState extends State<TablePlusRow> {
               isSelected: widget.isSelected,
               theme: widget.theme,
               selectionTheme: widget.selectionTheme,
+              checkboxTheme: widget.checkboxTheme,
               onSelectionChanged:
                   widget.onCheckboxChanged ?? widget.onRowSelectionChanged,
               calculatedHeight: widget.calculatedHeight,

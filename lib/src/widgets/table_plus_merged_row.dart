@@ -6,6 +6,7 @@ import '../../flutter_table_plus.dart'
 import '../models/merged_row_group.dart';
 import '../models/table_column.dart';
 import '../models/theme/body_theme.dart' show TablePlusBodyTheme;
+import '../models/theme/checkbox_theme.dart';
 import '../models/theme/editable_theme.dart' show TablePlusEditableTheme;
 import '../models/theme/hover_button_theme.dart' show TablePlusHoverButtonTheme;
 import '../models/theme/tooltip_theme.dart' show TablePlusTooltipTheme;
@@ -49,6 +50,7 @@ class TablePlusMergedRow extends TablePlusRowWidget {
     this.hoverButtonBuilder,
     this.hoverButtonPosition = HoverButtonPosition.right,
     this.hoverButtonTheme,
+    this.checkboxTheme = const TablePlusCheckboxTheme(),
   });
 
   @override
@@ -105,6 +107,7 @@ class TablePlusMergedRow extends TablePlusRowWidget {
 
   /// Theme configuration for hover buttons.
   final TablePlusHoverButtonTheme? hoverButtonTheme;
+  final TablePlusCheckboxTheme checkboxTheme;
 
   // Implementation of TablePlusRowWidget abstract methods
   @override
@@ -692,22 +695,35 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             SizedBox(
-              width: widget.selectionTheme.checkboxSize,
-              height: widget.selectionTheme.checkboxSize,
+              width: widget.selectionTheme
+                  .getEffectiveCheckboxSize(widget.checkboxTheme),
+              height: widget.selectionTheme
+                  .getEffectiveCheckboxSize(widget.checkboxTheme),
               child: Checkbox(
                 value: widget.isSelected,
                 onChanged: (value) => (widget.onCheckboxChanged ??
                     widget.onRowSelectionChanged)(widget.mergeGroup.groupId),
-                activeColor: widget.selectionTheme.checkboxColor,
-                hoverColor: widget.selectionTheme.checkboxHoverColor,
-                focusColor: widget.selectionTheme.checkboxFocusColor,
-                fillColor: widget.selectionTheme.checkboxFillColor != null
-                    ? WidgetStateProperty.all(
-                        widget.selectionTheme.checkboxFillColor!)
-                    : null,
-                side: widget.selectionTheme.checkboxSide,
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                visualDensity: VisualDensity.compact,
+                // Use deprecated properties if available, otherwise fall back to checkboxTheme
+                activeColor: widget.selectionTheme
+                    .getEffectiveCheckboxActiveColor(widget.checkboxTheme),
+                hoverColor: widget.selectionTheme
+                    .getEffectiveCheckboxHoverColor(widget.checkboxTheme),
+                focusColor: widget.selectionTheme
+                    .getEffectiveCheckboxFocusColor(widget.checkboxTheme),
+                fillColor: widget.selectionTheme
+                    .getEffectiveCheckboxFillColor(widget.checkboxTheme),
+                checkColor: widget.checkboxTheme.checkColor,
+                side: widget.selectionTheme
+                    .getEffectiveCheckboxSide(widget.checkboxTheme),
+                shape: widget.checkboxTheme.shape,
+                mouseCursor: widget.checkboxTheme.mouseCursor,
+                materialTapTargetSize:
+                    widget.checkboxTheme.materialTapTargetSize ??
+                        MaterialTapTargetSize.shrinkWrap,
+                visualDensity:
+                    widget.checkboxTheme.visualDensity ?? VisualDensity.compact,
+                splashRadius: widget.checkboxTheme.splashRadius,
+                overlayColor: widget.checkboxTheme.overlayColor,
               ),
             ),
             if (widget.mergeGroup.rowCount > 1) ...[

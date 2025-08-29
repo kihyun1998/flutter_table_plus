@@ -9,6 +9,7 @@ import '../../flutter_table_plus.dart'
 import '../models/merged_row_group.dart';
 import '../models/table_column.dart';
 import '../models/theme/body_theme.dart' show TablePlusBodyTheme;
+import '../models/theme/checkbox_theme.dart';
 import '../models/theme/editable_theme.dart' show TablePlusEditableTheme;
 import '../models/theme/tooltip_theme.dart' show TablePlusTooltipTheme;
 import 'table_plus_merged_row.dart';
@@ -48,6 +49,7 @@ class TablePlusBody extends StatelessWidget {
     this.hoverButtonBuilder,
     this.hoverButtonPosition = HoverButtonPosition.right,
     this.hoverButtonTheme,
+    this.checkboxTheme = const TablePlusCheckboxTheme(),
   });
 
   /// The list of columns for the table.
@@ -145,6 +147,9 @@ class TablePlusBody extends StatelessWidget {
 
   /// Theme configuration for hover buttons.
   final TablePlusHoverButtonTheme? hoverButtonTheme;
+
+  /// Theme configuration for checkboxes.
+  final TablePlusCheckboxTheme checkboxTheme;
 
   /// Whether the table needs vertical scrolling.
   /// Used to determine if the last row should have a bottom border based on
@@ -400,6 +405,7 @@ class TablePlusBody extends StatelessWidget {
           selectionMode: selectionMode,
           isSelected: isSelected,
           selectionTheme: selectionTheme,
+          checkboxTheme: checkboxTheme,
           onRowSelectionChanged: _handleRowSelectionToggle,
           onCheckboxChanged: _handleCheckboxToggle,
           isEditable: isEditable,
@@ -443,6 +449,7 @@ class TablePlusBody extends StatelessWidget {
       selectionMode: selectionMode,
       isSelected: isSelected,
       selectionTheme: selectionTheme,
+      checkboxTheme: checkboxTheme,
       onRowSelectionChanged: _handleRowSelectionToggle,
       onCheckboxChanged: _handleCheckboxToggle,
       onRowDoubleTap: onRowDoubleTap,

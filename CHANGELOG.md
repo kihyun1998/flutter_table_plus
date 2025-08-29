@@ -1,3 +1,10 @@
+## 1.15.5
+
+*   **FEAT**: Added TablePlusCheckboxTheme for comprehensive checkbox styling with Material 3 support
+*   **DEPRECATED**: Checkbox properties in TablePlusSelectionTheme are deprecated (use TablePlusCheckboxTheme instead)
+*   **FEAT**: Added Material 3 compliant checkbox theme factory with WidgetStateProperty support
+*   **FIX**: Improved tooltip stability during column reordering operations
+
 ## 1.15.4
 
 *   **BREAKING CHANGE**: Removed TooltipBehavior.onOverflowOnly (use cellBuilder for overflow tooltips)

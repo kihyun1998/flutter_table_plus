@@ -1,4 +1,5 @@
 import 'body_theme.dart' show TablePlusBodyTheme;
+import 'checkbox_theme.dart' show TablePlusCheckboxTheme;
 import 'editable_theme.dart' show TablePlusEditableTheme;
 import 'header_theme.dart' show TablePlusHeaderTheme;
 import 'hover_button_theme.dart' show TablePlusHoverButtonTheme;
@@ -14,6 +15,7 @@ class TablePlusTheme {
     this.bodyTheme = const TablePlusBodyTheme(),
     this.scrollbarTheme = const TablePlusScrollbarTheme(),
     this.selectionTheme = const TablePlusSelectionTheme(),
+    this.checkboxTheme = const TablePlusCheckboxTheme(),
     this.editableTheme = const TablePlusEditableTheme(),
     this.tooltipTheme = const TablePlusTooltipTheme(),
     this.hoverButtonTheme = const TablePlusHoverButtonTheme(),
@@ -31,6 +33,9 @@ class TablePlusTheme {
   /// Theme configuration for row selection.
   final TablePlusSelectionTheme selectionTheme;
 
+  /// Theme configuration for checkboxes.
+  final TablePlusCheckboxTheme checkboxTheme;
+
   /// Theme configuration for cell editing.
   final TablePlusEditableTheme editableTheme;
 
@@ -46,6 +51,7 @@ class TablePlusTheme {
     TablePlusBodyTheme? bodyTheme,
     TablePlusScrollbarTheme? scrollbarTheme,
     TablePlusSelectionTheme? selectionTheme,
+    TablePlusCheckboxTheme? checkboxTheme,
     TablePlusEditableTheme? editableTheme,
     TablePlusTooltipTheme? tooltipTheme,
     TablePlusHoverButtonTheme? hoverButtonTheme,
@@ -55,6 +61,7 @@ class TablePlusTheme {
       bodyTheme: bodyTheme ?? this.bodyTheme,
       scrollbarTheme: scrollbarTheme ?? this.scrollbarTheme,
       selectionTheme: selectionTheme ?? this.selectionTheme,
+      checkboxTheme: checkboxTheme ?? this.checkboxTheme,
       editableTheme: editableTheme ?? this.editableTheme,
       tooltipTheme: tooltipTheme ?? this.tooltipTheme,
       hoverButtonTheme: hoverButtonTheme ?? this.hoverButtonTheme,

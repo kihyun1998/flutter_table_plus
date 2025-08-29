@@ -391,14 +391,17 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
 
     // Add selection column at the beginning if selectable
     if (widget.isSelectable &&
-        _currentTheme.selectionTheme.showCheckboxColumn) {
+        _currentTheme.selectionTheme
+            .getEffectiveShowCheckboxColumn(_currentTheme.checkboxTheme)) {
+      final checkboxColumnWidth = _currentTheme.selectionTheme
+          .getEffectiveCheckboxColumnWidth(_currentTheme.checkboxTheme);
       final selectionColumn = TablePlusColumn(
         key: '__selection__', // Special key for selection column
         label: '', // Empty label, will show select-all checkbox
         order: -1, // Always first
-        width: _currentTheme.selectionTheme.checkboxColumnWidth,
-        minWidth: _currentTheme.selectionTheme.checkboxColumnWidth,
-        maxWidth: _currentTheme.selectionTheme.checkboxColumnWidth,
+        width: checkboxColumnWidth,
+        minWidth: checkboxColumnWidth,
+        maxWidth: checkboxColumnWidth,
         alignment: Alignment.center,
         textAlign: TextAlign.center,
       );
@@ -696,6 +699,7 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                               totalRowCount: _getTotalRowCount(),
                               selectionTheme: theme.selectionTheme,
                               tooltipTheme: theme.tooltipTheme,
+                              checkboxTheme: theme.checkboxTheme,
                               onSelectAll: widget.onSelectAll,
                               onColumnReorder: widget.onColumnReorder,
                               sortColumnKey: widget.sortColumnKey,
@@ -730,6 +734,7 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                             selectedRows: widget.selectedRows,
                                             selectionTheme:
                                                 theme.selectionTheme,
+                                            checkboxTheme: theme.checkboxTheme,
                                             onRowSelectionChanged:
                                                 widget.onRowSelectionChanged,
                                             onCheckboxChanged:

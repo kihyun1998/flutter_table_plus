@@ -13,6 +13,7 @@ FlutterTablePlus(
     headerTheme: TablePlusHeaderTheme(/* ... */),
     bodyTheme: TablePlusBodyTheme(/* ... */),
     selectionTheme: TablePlusSelectionTheme(/* ... */),
+    checkboxTheme: TablePlusCheckboxTheme(/* ... */), // New!
     scrollbarTheme: TablePlusScrollbarTheme(/* ... */),
     editableTheme: TablePlusEditableTheme(/* ... */),
     tooltipTheme: TablePlusTooltipTheme(/* ... */),
@@ -111,15 +112,20 @@ This theme controls the appearance of selection-related elements and row interac
 
 - `selectedRowColor`: The background color applied to a row when it is selected.
 - `selectedTextStyle`: The `TextStyle` for cell content in a selected row. If `null`, it defaults to `bodyTheme.textStyle`.
-- `checkboxColor`: The color of the selection checkboxes when active (checked).
-- `checkboxHoverColor`: The color of the checkbox when hovered over. If `null`, uses default Material hover color.
-- `checkboxFocusColor`: The color of the checkbox when focused. If `null`, uses default Material focus color.
-- `checkboxFillColor`: The fill color of the checkbox background. If `null`, uses default Material fill behavior.
-- `checkboxSide`: The border side of the checkbox for controlling border color and width. If `null`, uses default Material border.
-- `checkboxSize`: The size of the checkbox icon.
-- `checkboxColumnWidth`: The width of the dedicated selection column.
-- `showCheckboxColumn`: Whether to display the checkbox column.
-- `showSelectAllCheckbox`: Whether to show the "Select All" checkbox in the header.
+
+### Deprecated Checkbox Properties
+
+**⚠️ DEPRECATED:** The following checkbox-related properties are deprecated and will be removed in v2.0.0. Use `TablePlusCheckboxTheme` instead.
+
+- ~~`checkboxColor`~~ → Use `TablePlusCheckboxTheme.fillColor`
+- ~~`checkboxHoverColor`~~ → Use `TablePlusCheckboxTheme.hoverColor`
+- ~~`checkboxFocusColor`~~ → Use `TablePlusCheckboxTheme.focusColor`
+- ~~`checkboxFillColor`~~ → Use `TablePlusCheckboxTheme.fillColor`
+- ~~`checkboxSide`~~ → Use `TablePlusCheckboxTheme.side`
+- ~~`checkboxSize`~~ → Use `TablePlusCheckboxTheme.size`
+- ~~`checkboxColumnWidth`~~ → Use `TablePlusCheckboxTheme.checkboxColumnWidth`
+- ~~`showCheckboxColumn`~~ → Use `TablePlusCheckboxTheme.showCheckboxColumn`
+- ~~`showSelectAllCheckbox`~~ → Use `TablePlusCheckboxTheme.showSelectAllCheckbox`
 
 ### Row Interaction Effects (Hover, Splash, Highlight)
 
@@ -142,16 +148,6 @@ theme: TablePlusTheme(
   selectionTheme: TablePlusSelectionTheme(
     selectedRowColor: Colors.blue.shade100,
     
-    // Checkbox colors
-    checkboxColor: Colors.blue.shade700,           // Active (checked) color
-    checkboxHoverColor: Colors.blue.shade200,      // Hover color
-    checkboxFocusColor: Colors.blue.shade300,      // Focus color
-    checkboxFillColor: Colors.blue.shade600,       // Background fill
-    checkboxSide: BorderSide(                      // Border color & width
-      color: Colors.blue.shade800,
-      width: 1.5,
-    ),
-    
     // Use default hover for normal rows
     rowHoverColor: null, 
     
@@ -165,7 +161,112 @@ theme: TablePlusTheme(
 ),
 ```
 
-## 5. Scrollbar Styling (`TablePlusScrollbarTheme`)
+## 5. Checkbox Styling (`TablePlusCheckboxTheme`)
+
+This theme provides comprehensive styling options for table checkboxes, supporting both the latest Flutter Material 3 design system with `WidgetStateProperty` and legacy single-color properties.
+
+### Material 3 Properties (Recommended)
+
+- `fillColor`: `WidgetStateProperty<Color?>?` - State-aware checkbox background/fill color
+- `overlayColor`: `WidgetStateProperty<Color?>?` - State-aware overlay (ripple) color for interactions
+
+### Traditional Single-Color Properties
+
+- `checkColor`: Color of the check mark/icon inside the checkbox
+- `focusColor`: Color when the checkbox receives keyboard focus
+- `hoverColor`: Color when hovering over the checkbox with a mouse
+
+### Shape and Behavior Properties
+
+- `side`: Border styling for the checkbox
+- `shape`: Custom shape for the checkbox (e.g., rounded corners)
+- `mouseCursor`: Cursor to display when hovering
+- `materialTapTargetSize`: Minimum size of the checkbox touch target
+- `visualDensity`: How compact the checkbox layout will be
+- `splashRadius`: Radius of the checkbox ripple effect
+
+### Table-Specific Properties
+
+- `size`: Size (width and height) of the checkbox in logical pixels
+- `showCheckboxColumn`: Whether to show the checkbox column
+- `showSelectAllCheckbox`: Whether to show the select-all checkbox in the header
+- `checkboxColumnWidth`: Width of the checkbox column
+
+### Examples
+
+#### Material 3 Style (Recommended)
+
+```dart
+theme: TablePlusTheme(
+  checkboxTheme: TablePlusCheckboxTheme.material3(
+    primaryColor: Colors.blue,
+    size: 18.0,
+  ),
+),
+```
+
+#### Advanced Custom Styling
+
+```dart
+theme: TablePlusTheme(
+  checkboxTheme: TablePlusCheckboxTheme(
+    // Modern WidgetStateProperty approach
+    fillColor: WidgetStateProperty.resolveWith((states) {
+      if (states.contains(WidgetState.selected)) {
+        if (states.contains(WidgetState.disabled)) {
+          return Colors.blue.withOpacity(0.38);
+        }
+        return Colors.blue;
+      }
+      if (states.contains(WidgetState.disabled)) {
+        return Colors.transparent;
+      }
+      return Colors.transparent;
+    }),
+    overlayColor: WidgetStateProperty.resolveWith((states) {
+      if (states.contains(WidgetState.pressed)) {
+        return Colors.blue.withOpacity(0.12);
+      }
+      if (states.contains(WidgetState.hovered)) {
+        return Colors.blue.withOpacity(0.08);
+      }
+      if (states.contains(WidgetState.focused)) {
+        return Colors.blue.withOpacity(0.12);
+      }
+      return Colors.transparent;
+    }),
+    
+    // Traditional properties
+    checkColor: Colors.white,
+    side: BorderSide(color: Colors.blue.shade800, width: 1.5),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+    
+    // Table-specific
+    size: 20.0,
+    checkboxColumnWidth: 65.0,
+    showCheckboxColumn: true,
+    showSelectAllCheckbox: true,
+  ),
+),
+```
+
+#### Legacy Style (For Backward Compatibility)
+
+```dart
+// This still works but shows deprecation warnings
+theme: TablePlusTheme(
+  selectionTheme: TablePlusSelectionTheme(
+    checkboxColor: Colors.blue.shade700,        // Deprecated
+    checkboxHoverColor: Colors.blue.shade200,   // Deprecated
+    checkboxSize: 18.0,                         // Deprecated
+    // ... other deprecated properties
+  ),
+),
+```
+
+**Note:** When both deprecated `selectionTheme` checkbox properties and new `checkboxTheme` properties are provided, the deprecated properties take precedence for backward compatibility. For new projects, use `TablePlusCheckboxTheme` exclusively.
+
+## 6. Scrollbar Styling (`TablePlusScrollbarTheme`)
 
 This theme controls the appearance and behavior of the synchronized scrollbars.
 
@@ -176,15 +277,15 @@ This theme controls the appearance and behavior of the synchronized scrollbars.
 - `animationDuration`: The fade-in/out duration for the scrollbar when `hoverOnly` is true.
 - **Dynamic Visibility**: Scrollbars are now dynamically shown or hidden based on content overflow, providing a cleaner UI when not needed.
 
-## 6. Editable Cell Styling (`TablePlusEditableTheme`)
+## 7. Editable Cell Styling (`TablePlusEditableTheme`)
 
 Controls the appearance of cells in editing mode. See `EDITING.md` for more details.
 
-## 7. Tooltip Styling (`TablePlusTooltipTheme`)
+## 8. Tooltip Styling (`TablePlusTooltipTheme`)
 
 Controls the appearance of tooltips that appear when cell content overflows. See `ADVANCED_COLUMNS.md` for more details.
 
-## 8. Last Row Border Behavior (`lastRowBorderBehavior`)
+## 9. Last Row Border Behavior (`lastRowBorderBehavior`)
 
 The `lastRowBorderBehavior` property in `TablePlusBodyTheme` gives you fine-grained control over when the bottom border of the very last row in the table is displayed. This is useful for achieving a clean, polished look in different scenarios.
 
