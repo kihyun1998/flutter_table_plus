@@ -24,7 +24,7 @@ class TableHelper {
         )
         .addColumn(
           'name',
-          const TablePlusColumn(
+          TablePlusColumn(
             key: 'name',
             label: 'Full Name',
             order: 0,
@@ -32,6 +32,13 @@ class TableHelper {
             minWidth: 120,
             sortable: true,
             editable: true,
+            tooltipFormatter: (rowData) {
+              return '''User Information:
+👤 Name: ${rowData['name']}
+📧 Email: ${rowData['email']}
+🎂 Age: ${rowData['age']}
+🏙️ City: ${rowData['city']}''';
+            },
           ),
         )
         .addColumn(
@@ -85,6 +92,20 @@ class TableHelper {
             sortable: true,
             editable: true,
             cellBuilder: TableHelper._buildSalaryCell,
+            tooltipFormatter: (rowData) {
+              final salary = rowData['salary'] as int? ?? 0;
+              final department = rowData['department'] as String? ?? 'Unknown';
+              final yearlyTotal = salary * 12;
+              final taxEstimate = (yearlyTotal * 0.25).round();
+              final netAnnual = yearlyTotal - taxEstimate;
+              
+              return '''💰 Compensation Details:
+Monthly: \$${salary.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (match) => '${match[1]},')}
+Yearly Gross: \$${yearlyTotal.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (match) => '${match[1]},')}
+Est. Tax (25%): \$${taxEstimate.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (match) => '${match[1]},')}
+Net Annual: \$${netAnnual.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (match) => '${match[1]},')}
+🏢 Department: $department''';
+            },
           ),
         )
         .addColumn(
@@ -100,6 +121,17 @@ class TableHelper {
             sortable: true,
             editable: true,
             cellBuilder: TableHelper._buildStatusCell,
+            tooltipFormatter: (rowData) {
+              final isActive = rowData['active'] as bool? ?? false;
+              final name = rowData['name'] as String? ?? 'Unknown';
+              final department = rowData['department'] as String? ?? 'Unknown';
+              
+              return '''Employee Status:
+${isActive ? '✅ Active' : '❌ Inactive'}
+👤 Employee: $name
+🏢 Department: $department
+📊 Status: ${isActive ? 'Currently working' : 'On leave or terminated'}''';
+            },
           ),
         )
         .addColumn(

@@ -96,6 +96,7 @@ class TablePlusColumn {
     this.editable = false,
     this.visible = true,
     this.cellBuilder,
+    this.tooltipFormatter,
     this.hintText,
     this.textOverflow = TextOverflow.ellipsis,
     this.tooltipBehavior = TooltipBehavior.always,
@@ -149,6 +150,12 @@ class TablePlusColumn {
   final Widget Function(BuildContext context, Map<String, dynamic> rowData)?
       cellBuilder;
 
+  /// Optional custom tooltip formatter for this column.
+  /// If provided, this will be used to generate custom tooltip text based on row data.
+  /// The function receives the row data and should return a String for the tooltip.
+  /// If null, the default behavior will use the cell's display value.
+  final String Function(Map<String, dynamic> rowData)? tooltipFormatter;
+
   /// Optional hint text to display in the TextField when editing a cell.
   final String? hintText;
 
@@ -184,6 +191,7 @@ class TablePlusColumn {
     bool? visible,
     Widget Function(BuildContext context, Map<String, dynamic> rowData)?
         cellBuilder,
+    String Function(Map<String, dynamic> rowData)? tooltipFormatter,
     String? hintText,
     TextOverflow? textOverflow,
     TooltipBehavior? tooltipBehavior,
@@ -202,6 +210,7 @@ class TablePlusColumn {
       editable: editable ?? this.editable,
       visible: visible ?? this.visible,
       cellBuilder: cellBuilder ?? this.cellBuilder,
+      tooltipFormatter: tooltipFormatter ?? this.tooltipFormatter,
       hintText: hintText ?? this.hintText,
       textOverflow: textOverflow ?? this.textOverflow,
       tooltipBehavior: tooltipBehavior ?? this.tooltipBehavior,

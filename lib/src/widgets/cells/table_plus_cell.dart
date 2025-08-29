@@ -143,8 +143,12 @@ class _TablePlusCellState extends State<TablePlusCell> {
 
     // Add tooltip based on tooltip behavior
     if (_shouldShowTooltip(displayValue, textWidget)) {
+      final tooltipMessage = widget.column.tooltipFormatter != null
+          ? widget.column.tooltipFormatter!(widget.rowData)
+          : displayValue;
+      
       textWidget = Tooltip(
-        message: displayValue,
+        message: tooltipMessage,
         textStyle: widget.tooltipTheme.textStyle,
         decoration: widget.tooltipTheme.decoration,
         padding: widget.tooltipTheme.padding,

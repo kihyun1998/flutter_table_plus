@@ -77,6 +77,10 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
     _data = DemoDataSource.employeeTableData.map((employee) {
       return {
         ...employee,
+        // Store raw data for tooltipFormatter
+        'rawSalary': employee['salary'],
+        'rawPerformance': employee['performance'],
+        'rawSkills': employee['skills'],
         // Phase 2: Format data for better display
         'salary': DemoDataFormatters.formatCurrency(
             employee['salary']?.toDouble() ?? 0.0),

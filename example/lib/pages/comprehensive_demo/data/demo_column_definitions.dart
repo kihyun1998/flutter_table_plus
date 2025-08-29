@@ -14,6 +14,14 @@ class DemoColumnDefinitions {
         alignment: Alignment.centerLeft,
         sortable: true,
         editable: false, // Name should not be editable
+        tooltipFormatter: (rowData) {
+          return '''Employee Details:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+👤 Name: ${rowData['name']}
+🏢 Department: ${rowData['department']}
+💼 Position: ${rowData['position']}
+📧 Contact: ${rowData['email'] ?? 'N/A'}''';
+        },
       ),
       'position': TablePlusColumn(
         key: 'position',
@@ -41,6 +49,18 @@ class DemoColumnDefinitions {
         alignment: Alignment.centerRight,
         sortable: true,
         editable: true, // Phase 4: Enable editing
+        tooltipFormatter: (rowData) {
+          final rawSalary = rowData['rawSalary'] ?? 0;
+          final performance = rowData['rawPerformance'] ?? 0.0;
+          final bonus = (rawSalary * performance * 0.1).round();
+          final total = rawSalary + bonus;
+          
+          return '''Compensation Details:
+💰 Base Salary: \$${rawSalary.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (match) => '${match[1]},')}
+🎯 Performance: ${(performance * 100).toStringAsFixed(1)}%
+🏆 Est. Bonus: \$${bonus.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (match) => '${match[1]},')}
+💸 Total Est.: \$${total.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (match) => '${match[1]},')}''';
+        },
       ),
       'performance': TablePlusColumn(
         key: 'performance',
@@ -69,6 +89,17 @@ class DemoColumnDefinitions {
         alignment: Alignment.centerLeft,
         sortable: false, // Lists are not sortable
         editable: false,
+        tooltipFormatter: (rowData) {
+          final skills = rowData['rawSkills'] as List<String>? ?? [];
+          final skillCount = skills.length;
+          final primarySkills = skills.take(3).join(', ');
+          final additionalSkills = skillCount > 3 ? skills.skip(3).join(', ') : '';
+          
+          return '''Skills Profile:
+🎯 Total Skills: $skillCount
+⭐ Primary: $primarySkills${additionalSkills.isNotEmpty ? '\n🔧 Additional: $additionalSkills' : ''}
+📊 Skill Level: ${skillCount >= 5 ? 'Expert' : skillCount >= 3 ? 'Advanced' : 'Intermediate'}''';
+        },
         // Will add tags cell builder in Phase 8
       ),
     };
