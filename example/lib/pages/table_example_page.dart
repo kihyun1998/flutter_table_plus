@@ -178,45 +178,20 @@ class _TableExamplePageState extends State<TableExamplePage> {
       // Get the column being moved
       final movingColumn = visibleColumns[oldIndex];
 
-      // Create new builder and rebuild with new order
+      // Create new builder with all existing columns
       final builder = TableColumnsBuilder();
 
-      int newOrder;
-      // Add all columns except the moving one, adjusting orders
-      for (int i = 0; i < visibleColumns.length; i++) {
-        final column = visibleColumns[i];
-
-        if (column.key == movingColumn.key) {
-          continue; // Skip the moving column for now
-        }
-
-        if (oldIndex < newIndex) {
-          // Moving down: shift columns up
-          if (i <= oldIndex) {
-            newOrder = i + 1;
-          } else if (i <= newIndex) {
-            newOrder = i;
-          } else {
-            newOrder = i + 1;
-          }
-        } else {
-          // Moving up: shift columns down
-          if (i < newIndex) {
-            newOrder = i + 1;
-          } else if (i < oldIndex) {
-            newOrder = i + 2;
-          } else {
-            newOrder = i + 1;
-          }
-        }
-
-        builder.addColumn(column.key, column.copyWith(order: 0));
+      // Add all columns in their current order
+      for (final column in _columns.values.toList()
+        ..sort((a, b) => a.order.compareTo(b.order))) {
+        builder.addColumn(column.key, column);
       }
 
-      // Insert the moved column at the new position
-      newOrder = newIndex + 1;
-      builder.insertColumn(
-          movingColumn.key, movingColumn.copyWith(order: 0), newOrder);
+      // Use builder's reorderColumn method to handle the complex logic
+      final targetOrder = newIndex + 1; // Convert to 1-based order
+      builder.reorderColumn(movingColumn.key, targetOrder);
+
+      print("m:: ${movingColumn.order}");
 
       _columns = builder.build();
     });
