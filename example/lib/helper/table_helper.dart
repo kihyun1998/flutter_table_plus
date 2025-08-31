@@ -259,7 +259,7 @@ ${isActive ? '✅ Active' : '❌ Inactive'}
       bodyTheme: TablePlusBodyTheme(
         rowHeight: 56,
         alternateRowColor: null,
-        backgroundColor: Colors.white,
+        backgroundColor: const Color.fromARGB(255, 200, 250, 255),
         textStyle: const TextStyle(
           fontSize: 14,
           color: Color(0xFF212529),

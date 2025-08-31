@@ -138,7 +138,10 @@ class _TablePlusRowState extends State<TablePlusRow> {
     Widget rowContent = Container(
       height: widget.calculatedHeight ?? widget.theme.rowHeight,
       decoration: BoxDecoration(
-        color: widget.backgroundColor,
+        // CustomInkWell이 적용될 때는 투명, 아니면 배경색 적용
+        color: (widget.isSelectable && !widget.isEditable && widget.rowId != null)
+            ? Colors.transparent
+            : widget.backgroundColor,
         border: _shouldShowBottomBorder(widget.isLastRow, widget.theme)
             ? Border(
                 bottom: BorderSide(
