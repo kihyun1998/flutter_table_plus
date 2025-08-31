@@ -1,3 +1,13 @@
+## 1.15.6 (Unreleased)
+
+*   **FEAT**: Added `TooltipBehavior.onlyTextOverflow` for smart tooltip display
+    *   Tooltips now only appear when text actually overflows the available space
+    *   Uses `TextOverflowDetector` utility for accurate overflow detection
+    *   Applies to both cell tooltips and header tooltips
+    *   Calculates available width considering padding, sort icons, and other UI elements
+*   **FIX**: Restored `onlyTextOverflow` tooltip behavior that was previously removed
+*   **FEAT**: Added tooltip overflow test page to example app for demonstrating smart tooltip behavior
+
 ## 1.15.5
 
 *   **FEAT**: Added TablePlusCheckboxTheme for comprehensive checkbox styling with Material 3 support
