@@ -87,6 +87,9 @@ class TablePlusHeader extends StatefulWidget {
 }
 
 class _TablePlusHeaderState extends State<TablePlusHeader> {
+  /// Track if column reordering is currently active to prevent tooltip positioning errors
+  bool _isReordering = false;
+
   /// Determine the state of the select-all checkbox.
   bool? _getSelectAllState() {
     if (widget.totalRowCount == 0) return false;
@@ -117,12 +120,26 @@ class _TablePlusHeaderState extends State<TablePlusHeader> {
   void _handleColumnReorder(int oldIndex, int newIndex) {
     if (widget.onColumnReorder == null) return;
 
+    // Set reordering state to prevent tooltip positioning errors
+    setState(() {
+      _isReordering = true;
+    });
+
     // Adjust newIndex if dragging down
     if (oldIndex < newIndex) {
       newIndex -= 1;
     }
 
     widget.onColumnReorder!(oldIndex, newIndex);
+
+    // Reset reordering state after a brief delay to allow layout to stabilize
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (mounted) {
+        setState(() {
+          _isReordering = false;
+        });
+      }
+    });
   }
 
   /// Build decoration for the main header container
@@ -250,6 +267,7 @@ class _TablePlusHeaderState extends State<TablePlusHeader> {
                               sortDirection: widget.sortColumnKey == column.key
                                   ? widget.sortDirection
                                   : SortDirection.none,
+                              isReordering: _isReordering,
                               onSortClick: column.sortable &&
                                       widget.onSort != null &&
                                       widget.totalRowCount > 0
@@ -279,6 +297,7 @@ class _TablePlusHeaderState extends State<TablePlusHeader> {
                               sortDirection: widget.sortColumnKey == column.key
                                   ? widget.sortDirection
                                   : SortDirection.none,
+                              isReordering: _isReordering,
                               onSortClick: column.sortable &&
                                       widget.onSort != null &&
                                       widget.totalRowCount > 0
@@ -305,6 +324,7 @@ class _HeaderCell extends StatelessWidget {
     required this.tooltipTheme,
     required this.isSorted,
     required this.sortDirection,
+    required this.isReordering,
     this.onSortClick,
   });
 
@@ -314,6 +334,7 @@ class _HeaderCell extends StatelessWidget {
   final TablePlusTooltipTheme tooltipTheme;
   final bool isSorted;
   final SortDirection sortDirection;
+  final bool isReordering;
   final VoidCallback? onSortClick;
 
   /// Get the sort icon widget for current state
@@ -350,6 +371,11 @@ class _HeaderCell extends StatelessWidget {
   bool _shouldShowTooltip(BuildContext context, String label) {
     // Basic checks - tooltip must be enabled and text must not be empty
     if (!tooltipTheme.enabled || label.isEmpty) {
+      return false;
+    }
+
+    // Disable tooltips during column reordering to prevent positioning errors
+    if (isReordering) {
       return false;
     }
 
