@@ -6,6 +6,9 @@
     *   Applies to both cell tooltips and header tooltips
     *   Calculates available width considering padding, sort icons, and other UI elements
 *   **FIX**: Restored `onlyTextOverflow` tooltip behavior that was previously removed
+*   **FIX**: Fixed row hover colors not appearing due to Stack widget blocking CustomInkWell effects
+    *   Container background color is now conditionally applied based on CustomInkWell availability
+    *   Hover effects from TablePlusSelectionTheme (rowHoverColor, selectedRowHoverColor) now work properly
 *   **FEAT**: Added tooltip overflow test page to example app for demonstrating smart tooltip behavior
 
 ## 1.15.5

@@ -32,6 +32,13 @@ class TablePlusBodyTheme {
     this.showVerticalDividers = true,
     this.showHorizontalDividers = true,
     this.lastRowBorderBehavior = LastRowBorderBehavior.never,
+    // Row interaction properties
+    this.hoverColor,
+    this.splashColor,
+    this.highlightColor,
+    this.selectedRowHoverColor,
+    this.selectedRowSplashColor,
+    this.selectedRowHighlightColor,
   });
 
   /// The height of each data row.
@@ -73,6 +80,36 @@ class TablePlusBodyTheme {
   /// - [LastRowBorderBehavior.smart]: Show border only when no vertical scroll
   final LastRowBorderBehavior lastRowBorderBehavior;
 
+  /// The hover color for unselected rows.
+  /// If null, the default framework hover effect is used.
+  /// Use Colors.transparent to disable the hover effect.
+  final Color? hoverColor;
+
+  /// The splash color for unselected rows.
+  /// If null, the default framework splash effect is used.
+  /// Use Colors.transparent to disable the splash effect.
+  final Color? splashColor;
+
+  /// The highlight color for unselected rows.
+  /// If null, the default framework highlight effect is used.
+  /// Use Colors.transparent to disable the highlight effect.
+  final Color? highlightColor;
+
+  /// The hover color for selected rows.
+  /// If null, the default framework hover effect is used.
+  /// Use Colors.transparent to disable the hover effect for selected rows.
+  final Color? selectedRowHoverColor;
+
+  /// The splash color for selected rows.
+  /// If null, the default framework splash effect is used.
+  /// Use Colors.transparent to disable the splash effect for selected rows.
+  final Color? selectedRowSplashColor;
+
+  /// The highlight color for selected rows.
+  /// If null, the default framework highlight effect is used.
+  /// Use Colors.transparent to disable the highlight effect for selected rows.
+  final Color? selectedRowHighlightColor;
+
   /// Creates a copy of this theme with the given fields replaced with new values.
   TablePlusBodyTheme copyWith({
     double? rowHeight,
@@ -86,6 +123,12 @@ class TablePlusBodyTheme {
     bool? showVerticalDividers,
     bool? showHorizontalDividers,
     LastRowBorderBehavior? lastRowBorderBehavior,
+    Color? hoverColor,
+    Color? splashColor,
+    Color? highlightColor,
+    Color? selectedRowHoverColor,
+    Color? selectedRowSplashColor,
+    Color? selectedRowHighlightColor,
   }) {
     return TablePlusBodyTheme(
       rowHeight: rowHeight ?? this.rowHeight,
@@ -102,6 +145,42 @@ class TablePlusBodyTheme {
           showHorizontalDividers ?? this.showHorizontalDividers,
       lastRowBorderBehavior:
           lastRowBorderBehavior ?? this.lastRowBorderBehavior,
+      hoverColor: hoverColor ?? this.hoverColor,
+      splashColor: splashColor ?? this.splashColor,
+      highlightColor: highlightColor ?? this.highlightColor,
+      selectedRowHoverColor: selectedRowHoverColor ?? this.selectedRowHoverColor,
+      selectedRowSplashColor: selectedRowSplashColor ?? this.selectedRowSplashColor,
+      selectedRowHighlightColor: selectedRowHighlightColor ?? this.selectedRowHighlightColor,
     );
+  }
+
+  /// Gets the effective hover color for rows based on selection state.
+  /// Returns null to use the default framework effect if no color is specified.
+  Color? getEffectiveHoverColor(bool isSelected) {
+    if (isSelected) {
+      return selectedRowHoverColor;
+    } else {
+      return hoverColor;
+    }
+  }
+
+  /// Gets the effective splash color for rows based on selection state.
+  /// Returns null to use the default framework effect if no color is specified.
+  Color? getEffectiveSplashColor(bool isSelected) {
+    if (isSelected) {
+      return selectedRowSplashColor;
+    } else {
+      return splashColor;
+    }
+  }
+
+  /// Gets the effective highlight color for rows based on selection state.
+  /// Returns null to use the default framework effect if no color is specified.
+  Color? getEffectiveHighlightColor(bool isSelected) {
+    if (isSelected) {
+      return selectedRowHighlightColor;
+    } else {
+      return highlightColor;
+    }
   }
 }

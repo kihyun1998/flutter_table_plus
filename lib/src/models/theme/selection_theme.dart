@@ -124,31 +124,55 @@ class TablePlusSelectionTheme {
   /// The hover color for unselected rows.
   /// If null, the default framework hover effect is used.
   /// Use Colors.transparent to disable the hover effect.
+  ///
+  /// **DEPRECATED**: Use [TablePlusBodyTheme.hoverColor] instead.
+  /// This property will be removed in v1.16.0.
+  @Deprecated('Use TablePlusBodyTheme.hoverColor instead. Will be removed in v1.16.0')
   final Color? rowHoverColor;
 
   /// The splash color for unselected rows.
   /// If null, the default framework splash effect is used.
   /// Use Colors.transparent to disable the splash effect.
+  ///
+  /// **DEPRECATED**: Use [TablePlusBodyTheme.splashColor] instead.
+  /// This property will be removed in v1.16.0.
+  @Deprecated('Use TablePlusBodyTheme.splashColor instead. Will be removed in v1.16.0')
   final Color? rowSplashColor;
 
   /// The highlight color for unselected rows.
   /// If null, the default framework highlight effect is used.
   /// Use Colors.transparent to disable the highlight effect.
+  ///
+  /// **DEPRECATED**: Use [TablePlusBodyTheme.highlightColor] instead.
+  /// This property will be removed in v1.16.0.
+  @Deprecated('Use TablePlusBodyTheme.highlightColor instead. Will be removed in v1.16.0')
   final Color? rowHighlightColor;
 
   /// The hover color for selected rows.
   /// If null, the default framework hover effect is used.
   /// Use Colors.transparent to disable the hover effect for selected rows.
+  ///
+  /// **DEPRECATED**: Use [TablePlusBodyTheme.selectedRowHoverColor] instead.
+  /// This property will be removed in v1.16.0.
+  @Deprecated('Use TablePlusBodyTheme.selectedRowHoverColor instead. Will be removed in v1.16.0')
   final Color? selectedRowHoverColor;
 
   /// The splash color for selected rows.
   /// If null, the default framework splash effect is used.
   /// Use Colors.transparent to disable the splash effect for selected rows.
+  ///
+  /// **DEPRECATED**: Use [TablePlusBodyTheme.selectedRowSplashColor] instead.
+  /// This property will be removed in v1.16.0.
+  @Deprecated('Use TablePlusBodyTheme.selectedRowSplashColor instead. Will be removed in v1.16.0')
   final Color? selectedRowSplashColor;
 
   /// The highlight color for selected rows.
   /// If null, the default framework highlight effect is used.
   /// Use Colors.transparent to disable the highlight effect for selected rows.
+  ///
+  /// **DEPRECATED**: Use [TablePlusBodyTheme.selectedRowHighlightColor] instead.
+  /// This property will be removed in v1.16.0.
+  @Deprecated('Use TablePlusBodyTheme.selectedRowHighlightColor instead. Will be removed in v1.16.0')
   final Color? selectedRowHighlightColor;
 
   /// Creates a copy of this theme with the given fields replaced with new values.
@@ -198,6 +222,10 @@ class TablePlusSelectionTheme {
 
   /// Gets the effective hover color for rows based on selection state.
   /// Returns null to use the default framework effect if no color is specified.
+  ///
+  /// **DEPRECATED**: Use [TablePlusBodyTheme.getEffectiveHoverColor] instead.
+  /// This method will be removed in v1.16.0.
+  @Deprecated('Use TablePlusBodyTheme.getEffectiveHoverColor instead. Will be removed in v1.16.0')
   Color? getEffectiveHoverColor(bool isSelected, Color backgroundColor) {
     if (isSelected) {
       return selectedRowHoverColor;
@@ -208,6 +236,10 @@ class TablePlusSelectionTheme {
 
   /// Gets the effective splash color for rows based on selection state.
   /// Returns null to use the default framework effect if no color is specified.
+  ///
+  /// **DEPRECATED**: Use [TablePlusBodyTheme.getEffectiveSplashColor] instead.
+  /// This method will be removed in v1.16.0.
+  @Deprecated('Use TablePlusBodyTheme.getEffectiveSplashColor instead. Will be removed in v1.16.0')
   Color? getEffectiveSplashColor(bool isSelected, Color backgroundColor) {
     if (isSelected) {
       return selectedRowSplashColor;
@@ -218,6 +250,10 @@ class TablePlusSelectionTheme {
 
   /// Gets the effective highlight color for rows based on selection state.
   /// Returns null to use the default framework effect if no color is specified.
+  ///
+  /// **DEPRECATED**: Use [TablePlusBodyTheme.getEffectiveHighlightColor] instead.
+  /// This method will be removed in v1.16.0.
+  @Deprecated('Use TablePlusBodyTheme.getEffectiveHighlightColor instead. Will be removed in v1.16.0')
   Color? getEffectiveHighlightColor(bool isSelected, Color backgroundColor) {
     if (isSelected) {
       return selectedRowHighlightColor;

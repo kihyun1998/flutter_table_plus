@@ -139,9 +139,10 @@ class _TablePlusRowState extends State<TablePlusRow> {
       height: widget.calculatedHeight ?? widget.theme.rowHeight,
       decoration: BoxDecoration(
         // CustomInkWell이 적용될 때는 투명, 아니면 배경색 적용
-        color: (widget.isSelectable && !widget.isEditable && widget.rowId != null)
-            ? Colors.transparent
-            : widget.backgroundColor,
+        color:
+            (widget.isSelectable && !widget.isEditable && widget.rowId != null)
+                ? Colors.transparent
+                : widget.backgroundColor,
         border: _shouldShowBottomBorder(widget.isLastRow, widget.theme)
             ? Border(
                 bottom: BorderSide(
@@ -271,12 +272,10 @@ class _TablePlusRowState extends State<TablePlusRow> {
           widget.onRowSecondaryTap?.call(widget.rowId!);
         },
         backgroundColor: widget.backgroundColor,
-        hoverColor: widget.selectionTheme
-            .getEffectiveHoverColor(widget.isSelected, widget.backgroundColor),
-        splashColor: widget.selectionTheme
-            .getEffectiveSplashColor(widget.isSelected, widget.backgroundColor),
-        highlightColor: widget.selectionTheme.getEffectiveHighlightColor(
-            widget.isSelected, widget.backgroundColor),
+        hoverColor: widget.theme.getEffectiveHoverColor(widget.isSelected),
+        splashColor: widget.theme.getEffectiveSplashColor(widget.isSelected),
+        highlightColor:
+            widget.theme.getEffectiveHighlightColor(widget.isSelected),
         child: hoveredContent,
       );
     }

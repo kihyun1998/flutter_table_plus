@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 
 import '../../flutter_table_plus.dart'
     show TablePlusSelectionTheme, LastRowBorderBehavior, HoverButtonPosition;
-import '../utils/text_overflow_detector.dart';
 import '../models/merged_row_group.dart';
 import '../models/table_column.dart';
 import '../models/theme/body_theme.dart' show TablePlusBodyTheme;
@@ -12,6 +11,7 @@ import '../models/theme/editable_theme.dart' show TablePlusEditableTheme;
 import '../models/theme/hover_button_theme.dart' show TablePlusHoverButtonTheme;
 import '../models/theme/tooltip_theme.dart' show TablePlusTooltipTheme;
 import '../models/tooltip_behavior.dart';
+import '../utils/text_overflow_detector.dart';
 import 'cells/editable_text_field.dart';
 import 'custom_ink_well.dart';
 import 'table_plus_row_widget.dart';
@@ -653,11 +653,11 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
         if (column.textOverflow != TextOverflow.ellipsis) {
           return false;
         }
-        
+
         // Calculate available width for the cell content
         final padding = widget.theme.padding;
         final availableWidth = maxWidth - padding.horizontal;
-        
+
         // Use TextOverflowDetector to check if text would overflow
         return TextOverflowDetector.willTextOverflowInContext(
           context: context,
@@ -819,7 +819,9 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
     Widget rowContent = Container(
       height: mergedHeight,
       decoration: BoxDecoration(
-        color: widget.backgroundColor,
+        color: (widget.isSelectable && !widget.isEditable)
+            ? Colors.transparent
+            : widget.backgroundColor,
         border: _shouldShowBottomBorder(widget.isLastRow, widget.theme)
             ? Border(
                 bottom: BorderSide(
@@ -876,12 +878,10 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
         onSecondaryTap: () =>
             widget.onRowSecondaryTap?.call(widget.mergeGroup.groupId),
         backgroundColor: widget.backgroundColor,
-        hoverColor: widget.selectionTheme
-            .getEffectiveHoverColor(widget.isSelected, widget.backgroundColor),
-        splashColor: widget.selectionTheme
-            .getEffectiveSplashColor(widget.isSelected, widget.backgroundColor),
-        highlightColor: widget.selectionTheme.getEffectiveHighlightColor(
-            widget.isSelected, widget.backgroundColor),
+        hoverColor: widget.theme.getEffectiveHoverColor(widget.isSelected),
+        splashColor: widget.theme.getEffectiveSplashColor(widget.isSelected),
+        highlightColor:
+            widget.theme.getEffectiveHighlightColor(widget.isSelected),
         child: hoveredContent,
       );
     }
