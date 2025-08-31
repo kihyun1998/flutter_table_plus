@@ -166,6 +166,7 @@ class TablePlusColumn {
   ///
   /// - [TooltipBehavior.always]: Show tooltip when textOverflow is ellipsis (default)
   /// - [TooltipBehavior.never]: Never show tooltip
+  /// - [TooltipBehavior.onlyTextOverflow]: Show tooltip only when text actually overflows
   ///
   /// Note: For overflow-based tooltips, use cellBuilder to implement custom tooltip logic.
   final TooltipBehavior tooltipBehavior;
@@ -174,6 +175,7 @@ class TablePlusColumn {
   ///
   /// - [TooltipBehavior.always]: Show tooltip when textOverflow is ellipsis (default)
   /// - [TooltipBehavior.never]: Never show tooltip
+  /// - [TooltipBehavior.onlyTextOverflow]: Show tooltip only when text actually overflows
   ///
   /// Note: For overflow-based tooltips, use custom header widgets with cellBuilder.
   final TooltipBehavior headerTooltipBehavior;

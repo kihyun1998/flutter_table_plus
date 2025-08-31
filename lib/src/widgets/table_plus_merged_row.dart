@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../../flutter_table_plus.dart'
     show TablePlusSelectionTheme, LastRowBorderBehavior, HoverButtonPosition;
+import '../utils/text_overflow_detector.dart';
 import '../models/merged_row_group.dart';
 import '../models/table_column.dart';
 import '../models/theme/body_theme.dart' show TablePlusBodyTheme;
@@ -646,6 +647,24 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
 
       case TooltipBehavior.always:
         return column.textOverflow == TextOverflow.ellipsis;
+
+      case TooltipBehavior.onlyTextOverflow:
+        // Only show tooltip if text actually overflows
+        if (column.textOverflow != TextOverflow.ellipsis) {
+          return false;
+        }
+        
+        // Calculate available width for the cell content
+        final padding = widget.theme.padding;
+        final availableWidth = maxWidth - padding.horizontal;
+        
+        // Use TextOverflowDetector to check if text would overflow
+        return TextOverflowDetector.willTextOverflowInContext(
+          context: context,
+          text: displayValue,
+          maxWidth: availableWidth,
+          style: widget.theme.textStyle,
+        );
     }
   }
 

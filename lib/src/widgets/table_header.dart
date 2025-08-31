@@ -6,6 +6,7 @@ import '../models/theme/checkbox_theme.dart';
 import '../models/theme/header_theme.dart' show TablePlusHeaderTheme;
 import '../models/theme/tooltip_theme.dart' show TablePlusTooltipTheme;
 import '../models/tooltip_behavior.dart';
+import '../utils/text_overflow_detector.dart';
 
 /// A widget that renders the header row of the table.
 class TablePlusHeader extends StatefulWidget {
@@ -385,6 +386,20 @@ class _HeaderCell extends StatelessWidget {
 
       case TooltipBehavior.always:
         return true;
+
+      case TooltipBehavior.onlyTextOverflow:
+        // Calculate available width for the header text
+        final padding = theme.padding;
+        final sortIconWidth = column.sortable && onSortClick != null ? 24.0 : 0.0; // Approximate sort icon width
+        final availableWidth = width - padding.horizontal - sortIconWidth;
+        
+        // Use TextOverflowDetector to check if text would overflow
+        return TextOverflowDetector.willTextOverflowInContext(
+          context: context,
+          text: label,
+          maxWidth: availableWidth,
+          style: theme.textStyle,
+        );
     }
   }
 

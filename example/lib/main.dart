@@ -7,6 +7,7 @@ import 'pages/sortable_example.dart';
 import 'pages/dynamic_height_example.dart';
 import 'pages/expandable_summary_example.dart';
 import 'pages/hover_button_demo.dart';
+import 'pages/tooltip_overflow_test.dart';
 
 void main() {
   runApp(const MyApp());
@@ -176,6 +177,23 @@ class ExampleHomePage extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                       builder: (context) => const HoverButtonDemo(),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 8),
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.info_outline, color: Colors.green),
+                title: const Text('Tooltip Overflow Test'),
+                subtitle: const Text('Smart tooltip behavior - onlyTextOverflow - NEW!'),
+                trailing: const Icon(Icons.arrow_forward_ios),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const TooltipOverflowTestPage(),
                     ),
                   );
                 },

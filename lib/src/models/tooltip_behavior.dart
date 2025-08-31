@@ -6,4 +6,8 @@ enum TooltipBehavior {
 
   /// Never show tooltip, even if textOverflow is TextOverflow.ellipsis.
   never,
+
+  /// Only show tooltip when text actually overflows (gets truncated).
+  /// Uses TextOverflowDetector to determine if the text would be cut off.
+  onlyTextOverflow,
 }

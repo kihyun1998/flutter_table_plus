@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
+import 'package:flutter_table_plus/src/utils/text_overflow_detector.dart';
 import 'package:flutter_table_plus/src/widgets/cells/editable_text_field.dart';
 
 /// A single table cell widget.
@@ -229,6 +230,24 @@ class _TablePlusCellState extends State<TablePlusCell> {
 
       case TooltipBehavior.always:
         return widget.column.textOverflow == TextOverflow.ellipsis;
+
+      case TooltipBehavior.onlyTextOverflow:
+        // Only show tooltip if text actually overflows
+        if (widget.column.textOverflow != TextOverflow.ellipsis) {
+          return false;
+        }
+        
+        // Calculate available width for the cell content
+        final padding = widget.theme.padding;
+        final availableWidth = widget.width - padding.horizontal;
+        
+        // Use TextOverflowDetector to check if text would overflow
+        return TextOverflowDetector.willTextOverflowInContext(
+          context: context,
+          text: displayValue,
+          maxWidth: availableWidth,
+          style: widget.theme.textStyle,
+        );
     }
   }
 }
