@@ -574,7 +574,7 @@ class _SortableExampleState extends State<SortableExample> {
           },
         ];
         return;
-      }
+      } 
 
       // Sort data by the specified column
       data.sort((a, b) {
