@@ -148,8 +148,8 @@ class FlutterTablePlus extends StatefulWidget {
 
   /// Callback when a row is right-clicked (or long-pressed on touch devices).
   /// Provides the row ID, TapDownDetails, RenderBox for position calculations, and selection state. Only active when [isSelectable] is true.
-  final void Function(String rowId, TapDownDetails details, RenderBox renderBox, bool isSelected)?
-      onRowSecondaryTapDown;
+  final void Function(String rowId, TapDownDetails details, RenderBox renderBox,
+      bool isSelected)? onRowSecondaryTapDown;
 
   /// Callback when a merged row group's expand/collapse state should be toggled.
   /// Provides the group ID for the group that was clicked.
@@ -777,7 +777,7 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                         right: 0,
                         bottom: (theme.scrollbarTheme.showHorizontal &&
                                 needsHorizontalScroll)
-                            ? theme.scrollbarTheme.width
+                            ? theme.scrollbarTheme.trackWidth
                             : 0,
                         child: AnimatedOpacity(
                           opacity: theme.scrollbarTheme.hoverOnly
@@ -787,26 +787,30 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                               : theme.scrollbarTheme.opacity,
                           duration: theme.scrollbarTheme.animationDuration,
                           child: Container(
-                            width: theme.scrollbarTheme.width,
+                            width: theme.scrollbarTheme.trackWidth,
                             decoration: BoxDecoration(
                               color: theme.scrollbarTheme.trackColor,
+                              border: theme.scrollbarTheme.trackBorder,
                               borderRadius: BorderRadius.circular(
-                                theme.scrollbarTheme.width / 2,
+                                theme.scrollbarTheme.radius ??
+                                    theme.scrollbarTheme.trackWidth / 2,
                               ),
                             ),
                             child: Theme(
                               data: Theme.of(context).copyWith(
                                 scrollbarTheme: ScrollbarThemeData(
                                   thumbColor: WidgetStateProperty.all(
-                                    theme.scrollbarTheme.color,
+                                    theme.scrollbarTheme.thumbColor,
                                   ),
                                   trackColor: WidgetStateProperty.all(
                                     Colors.transparent,
                                   ),
                                   radius: Radius.circular(
-                                      theme.scrollbarTheme.width / 2),
+                                      theme.scrollbarTheme.radius ??
+                                          theme.scrollbarTheme.trackWidth / 2),
                                   thickness: WidgetStateProperty.all(
-                                    theme.scrollbarTheme.width - 4,
+                                    theme.scrollbarTheme.thickness ??
+                                        theme.scrollbarTheme.trackWidth * 0.7,
                                   ),
                                 ),
                               ),
@@ -820,9 +824,9 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                   child: SizedBox(
                                     height: needsHorizontalScroll
                                         ? tableDataHeight -
-                                            theme.scrollbarTheme.width
+                                            theme.scrollbarTheme.trackWidth
                                         : tableDataHeight,
-                                    width: theme.scrollbarTheme.width,
+                                    width: theme.scrollbarTheme.trackWidth,
                                   ),
                                 ),
                               ),
@@ -846,26 +850,30 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                               : theme.scrollbarTheme.opacity,
                           duration: theme.scrollbarTheme.animationDuration,
                           child: Container(
-                            height: theme.scrollbarTheme.width,
+                            height: theme.scrollbarTheme.trackWidth,
                             decoration: BoxDecoration(
                               color: theme.scrollbarTheme.trackColor,
+                              border: theme.scrollbarTheme.trackBorder,
                               borderRadius: BorderRadius.circular(
-                                theme.scrollbarTheme.width / 2,
+                                theme.scrollbarTheme.radius ??
+                                    theme.scrollbarTheme.trackWidth / 2,
                               ),
                             ),
                             child: Theme(
                               data: Theme.of(context).copyWith(
                                 scrollbarTheme: ScrollbarThemeData(
                                   thumbColor: WidgetStateProperty.all(
-                                    theme.scrollbarTheme.color,
+                                    theme.scrollbarTheme.thumbColor,
                                   ),
                                   trackColor: WidgetStateProperty.all(
                                     Colors.transparent,
                                   ),
                                   radius: Radius.circular(
-                                      theme.scrollbarTheme.width / 2),
+                                      theme.scrollbarTheme.radius ??
+                                          theme.scrollbarTheme.trackWidth / 2),
                                   thickness: WidgetStateProperty.all(
-                                    theme.scrollbarTheme.width - 4,
+                                    theme.scrollbarTheme.thickness ??
+                                        theme.scrollbarTheme.trackWidth * 0.7,
                                   ),
                                 ),
                               ),
@@ -878,7 +886,7 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                   scrollDirection: Axis.horizontal,
                                   child: SizedBox(
                                     width: contentWidth,
-                                    height: theme.scrollbarTheme.width,
+                                    height: theme.scrollbarTheme.trackWidth,
                                   ),
                                 ),
                               ),
