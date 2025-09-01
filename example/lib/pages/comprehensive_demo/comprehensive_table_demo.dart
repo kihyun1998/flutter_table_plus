@@ -9,24 +9,6 @@ import 'widgets/demo_control_panel.dart';
 import 'widgets/demo_stats_panel.dart';
 import 'widgets/demo_table_area.dart';
 
-/// Comprehensive Flutter Table Plus Demo
-///
-/// This demo showcases ALL features of Flutter Table Plus in a single page:
-/// - Basic table functionality (sorting, column reordering)
-/// - Selection and editing
-/// - Merged rows
-/// - Expandable rows
-/// - Hover buttons
-/// - Custom cells and themes
-///
-/// Phase 1: Basic structure and data models ✅
-/// Phase 2: Basic table and sorting ✅
-/// Phase 3: Selection and editing ✅
-/// Phase 4: Merged rows ✅
-/// Phase 5: Expandable rows (pending)
-/// Phase 6: Hover buttons (pending)
-/// Phase 7: Custom cells and themes (pending)
-/// Phase 8: Control panel and final integration (pending)
 class ComprehensiveTableDemo extends StatefulWidget {
   const ComprehensiveTableDemo({super.key});
 
@@ -137,24 +119,38 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
   /// Phase 2: Handle column reordering
   void _handleColumnReorder(int oldIndex, int newIndex) {
     setState(() {
-      // Get the list of column keys in order
-      final columnKeys = _columns.values.toList()
+      // Get visible columns (excluding selection column) sorted by order
+      final visibleColumns = _columns.values
+          .where((col) => col.visible)
+          .toList()
         ..sort((a, b) => a.order.compareTo(b.order));
 
-      // Adjust newIndex if moving forward
-      if (newIndex > oldIndex) {
-        newIndex -= 1;
+      // Boundary checks to prevent runtime errors
+      if (oldIndex < 0 ||
+          oldIndex >= visibleColumns.length ||
+          newIndex < 0 ||
+          newIndex >= visibleColumns.length) {
+        debugPrint('⚠️ Invalid column reorder indices: $oldIndex -> $newIndex');
+        return;
       }
 
-      // Reorder the columns
-      final movedColumn = columnKeys.removeAt(oldIndex);
-      columnKeys.insert(newIndex, movedColumn);
+      // Get the column being moved
+      final movingColumn = visibleColumns[oldIndex];
 
-      // Update order values
-      for (int i = 0; i < columnKeys.length; i++) {
-        final column = columnKeys[i];
-        _columns[column.key] = column.copyWith(order: i);
+      // Create new builder with all existing columns
+      final builder = TableColumnsBuilder();
+
+      // Add all columns in their current order
+      for (final column in _columns.values.toList()
+        ..sort((a, b) => a.order.compareTo(b.order))) {
+        builder.addColumn(column.key, column);
       }
+
+      // Use builder's reorderColumn method to handle the complex logic
+      final targetOrder = newIndex + 1; // Convert to 1-based order
+      builder.reorderColumn(movingColumn.key, targetOrder);
+
+      _columns = builder.build();
     });
 
     debugPrint('🔄 Reordered columns: $oldIndex -> $newIndex');
