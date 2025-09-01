@@ -1,4 +1,4 @@
-## 1.16.0 (Unreleased)
+## 1.16.0
 
 *   **BREAKING**: Removed deprecated `TablePlusSelectionTheme` class
     *   Selection-related styling moved to `TablePlusBodyTheme` (`selectedRowColor`, `selectedRowTextStyle`)
