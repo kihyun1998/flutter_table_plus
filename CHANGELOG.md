@@ -1,3 +1,17 @@
+## 1.16.1 (unreleased)
+
+*   **FEAT**: Enhanced `onRowSecondaryTapDown` callback with selection state information
+    *   Added `isSelected` parameter to provide row selection state during right-click/long-press events
+    *   New signature: `(String rowId, TapDownDetails details, RenderBox renderBox, bool isSelected)`
+    *   Enables context-aware menus that can differentiate between selected and unselected rows
+*   **IMPROVEMENT**: Enhanced `TablePlusScrollbarTheme` with independent styling controls
+    *   Renamed `width` to `trackWidth` for clearer semantics (track container size)
+    *   Added `thickness` property for independent thumb size control (defaults to `trackWidth * 0.7`)
+    *   Added `radius` property for independent corner rounding control (defaults to `trackWidth / 2`)
+    *   Renamed `color` to `thumbColor` for better clarity
+    *   Added `trackBorder` property supporting full `Border` styling for track edges
+    *   Improved flexibility allowing separate customization of track and thumb appearance
+
 ## 1.16.0
 
 *   **BREAKING**: Removed deprecated `TablePlusSelectionTheme` class
