@@ -175,7 +175,7 @@ class TablePlusBodyTheme {
   /// Returns null to use the default framework effect if no color is specified.
   Color? getEffectiveHoverColor(bool isSelected) {
     if (isSelected) {
-      return selectedRowHoverColor;
+      return selectedRowHoverColor ?? hoverColor;
     } else {
       return hoverColor;
     }
@@ -185,7 +185,7 @@ class TablePlusBodyTheme {
   /// Returns null to use the default framework effect if no color is specified.
   Color? getEffectiveSplashColor(bool isSelected) {
     if (isSelected) {
-      return selectedRowSplashColor;
+      return selectedRowSplashColor ?? splashColor;
     } else {
       return splashColor;
     }
@@ -195,7 +195,7 @@ class TablePlusBodyTheme {
   /// Returns null to use the default framework effect if no color is specified.
   Color? getEffectiveHighlightColor(bool isSelected) {
     if (isSelected) {
-      return selectedRowHighlightColor;
+      return selectedRowHighlightColor ?? highlightColor;
     } else {
       return highlightColor;
     }
