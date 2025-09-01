@@ -42,7 +42,7 @@ class FlutterTablePlus extends StatefulWidget {
     this.onCellChanged,
     this.onMergedCellChanged,
     this.onRowDoubleTap,
-    this.onRowSecondaryTap,
+    this.onRowSecondaryTapDown,
     this.onMergedRowExpandToggle,
     this.noDataWidget,
     this.calculateRowHeight,
@@ -147,8 +147,8 @@ class FlutterTablePlus extends StatefulWidget {
   final void Function(String rowId)? onRowDoubleTap;
 
   /// Callback when a row is right-clicked (or long-pressed on touch devices).
-  /// Provides the row ID. Only active when [isSelectable] is true.
-  final void Function(String rowId)? onRowSecondaryTap;
+  /// Provides the row ID, TapDownDetails, and RenderBox for position calculations. Only active when [isSelectable] is true.
+  final void Function(String rowId, TapDownDetails details, RenderBox renderBox)? onRowSecondaryTapDown;
 
   /// Callback when a merged row group's expand/collapse state should be toggled.
   /// Provides the group ID for the group that was clicked.
@@ -735,8 +735,8 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                                 widget.onCheckboxChanged,
                                             onRowDoubleTap:
                                                 widget.onRowDoubleTap,
-                                            onRowSecondaryTap:
-                                                widget.onRowSecondaryTap,
+                                            onRowSecondaryTapDown:
+                                                widget.onRowSecondaryTapDown,
                                             isEditable: widget.isEditable,
                                             editableTheme: theme.editableTheme,
                                             tooltipTheme: theme.tooltipTheme,
