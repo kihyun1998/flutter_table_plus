@@ -1,3 +1,17 @@
+## 1.16.0 (Unreleased)
+
+*   **BREAKING**: Removed deprecated `TablePlusSelectionTheme` class
+    *   Selection-related styling moved to `TablePlusBodyTheme` (`selectedRowColor`, `selectedRowTextStyle`)
+    *   Checkbox-related properties moved to `TablePlusCheckboxTheme` 
+    *   Row interaction colors moved to `TablePlusBodyTheme` (hover, splash, highlight colors)
+*   **BREAKING**: Changed `onRowSecondaryTap` to `onRowSecondaryTapDown` with enhanced position information
+    *   Now provides `TapDownDetails` and `RenderBox` for precise context menu positioning
+*   **MIGRATION**: Update your code for breaking changes:
+    *   Replace `TablePlusSelectionTheme` properties with `TablePlusBodyTheme` and `TablePlusCheckboxTheme`
+    *   Update `onRowSecondaryTap` callbacks to `onRowSecondaryTapDown` with new signature
+*   **IMPROVEMENT**: Enhanced interaction color fallback logic in `TablePlusBodyTheme`
+    *   Selected row interaction colors now fallback to base colors when not specified (previously used Flutter defaults)
+
 ## 1.15.6
 
 *   **FEAT**: Added `TooltipBehavior.onlyTextOverflow` for smart tooltip display
