@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
 import 'package:flutter_table_plus/src/utils/text_overflow_detector.dart';
 import 'package:flutter_table_plus/src/widgets/cells/editable_text_field.dart';
+import 'package:flutter_table_plus/src/widgets/custom_tooltip_wrapper.dart';
 
 /// A single table cell widget.
 class TablePlusCell extends StatefulWidget {
@@ -136,23 +137,34 @@ class _TablePlusCellState extends State<TablePlusCell> {
       textAlign: widget.column.textAlign,
     );
 
-    // Add tooltip based on tooltip behavior
+    // Add tooltip based on tooltip behavior and priority
     if (_shouldShowTooltip(displayValue, textWidget)) {
-      final tooltipMessage = widget.column.tooltipFormatter != null
-          ? widget.column.tooltipFormatter!(widget.rowData)
-          : displayValue;
+      // Priority: tooltipBuilder > tooltipFormatter > default
+      if (widget.column.tooltipBuilder != null) {
+        // Use custom widget tooltip
+        textWidget = CustomTooltipWrapper(
+          content: widget.column.tooltipBuilder!(context, widget.rowData),
+          theme: widget.tooltipTheme,
+          child: textWidget,
+        );
+      } else {
+        // Use text-based tooltip (existing behavior)
+        final tooltipMessage = widget.column.tooltipFormatter != null
+            ? widget.column.tooltipFormatter!(widget.rowData)
+            : displayValue;
 
-      textWidget = Tooltip(
-        message: tooltipMessage,
-        textStyle: widget.tooltipTheme.textStyle,
-        decoration: widget.tooltipTheme.decoration,
-        padding: widget.tooltipTheme.padding,
-        margin: widget.tooltipTheme.margin,
-        waitDuration: widget.tooltipTheme.waitDuration,
-        showDuration: widget.tooltipTheme.showDuration,
-        preferBelow: widget.tooltipTheme.preferBelow,
-        child: textWidget,
-      );
+        textWidget = Tooltip(
+          message: tooltipMessage,
+          textStyle: widget.tooltipTheme.textStyle,
+          decoration: widget.tooltipTheme.decoration,
+          padding: widget.tooltipTheme.padding,
+          margin: widget.tooltipTheme.margin,
+          waitDuration: widget.tooltipTheme.waitDuration,
+          showDuration: widget.tooltipTheme.showDuration,
+          preferBelow: widget.tooltipTheme.preferBelow,
+          child: textWidget,
+        );
+      }
     }
 
     return Align(

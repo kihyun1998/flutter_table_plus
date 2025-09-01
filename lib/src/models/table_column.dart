@@ -97,6 +97,7 @@ class TablePlusColumn {
     this.visible = true,
     this.cellBuilder,
     this.tooltipFormatter,
+    this.tooltipBuilder,
     this.hintText,
     this.textOverflow = TextOverflow.ellipsis,
     this.tooltipBehavior = TooltipBehavior.always,
@@ -156,6 +157,26 @@ class TablePlusColumn {
   /// If null, the default behavior will use the cell's display value.
   final String Function(Map<String, dynamic> rowData)? tooltipFormatter;
 
+  /// Optional custom tooltip widget builder for rich content tooltips.
+  /// Takes precedence over [tooltipFormatter] when both are provided.
+  /// The function receives the build context and row data, returning a custom Widget.
+  /// 
+  /// Example:
+  /// ```dart
+  /// tooltipBuilder: (context, rowData) => Container(
+  ///   padding: EdgeInsets.all(12),
+  ///   child: Column(
+  ///     mainAxisSize: MainAxisSize.min,
+  ///     children: [
+  ///       CircleAvatar(backgroundImage: NetworkImage(rowData['avatar'])),
+  ///       Text(rowData['name'], style: TextStyle(fontWeight: FontWeight.bold)),
+  ///       Text('Department: ${rowData['department']}'),
+  ///     ],
+  ///   ),
+  /// )
+  /// ```
+  final Widget Function(BuildContext context, Map<String, dynamic> rowData)? tooltipBuilder;
+
   /// Optional hint text to display in the TextField when editing a cell.
   final String? hintText;
 
@@ -196,6 +217,7 @@ class TablePlusColumn {
     Widget Function(BuildContext context, Map<String, dynamic> rowData)?
         cellBuilder,
     String Function(Map<String, dynamic> rowData)? tooltipFormatter,
+    Widget Function(BuildContext context, Map<String, dynamic> rowData)? tooltipBuilder,
     String? hintText,
     TextOverflow? textOverflow,
     TooltipBehavior? tooltipBehavior,
@@ -215,6 +237,7 @@ class TablePlusColumn {
       visible: visible ?? this.visible,
       cellBuilder: cellBuilder ?? this.cellBuilder,
       tooltipFormatter: tooltipFormatter ?? this.tooltipFormatter,
+      tooltipBuilder: tooltipBuilder ?? this.tooltipBuilder,
       hintText: hintText ?? this.hintText,
       textOverflow: textOverflow ?? this.textOverflow,
       tooltipBehavior: tooltipBehavior ?? this.tooltipBehavior,

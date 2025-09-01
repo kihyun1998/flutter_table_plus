@@ -14,13 +14,115 @@ class DemoColumnDefinitions {
         alignment: Alignment.centerLeft,
         sortable: true,
         editable: false, // Name should not be editable
-        tooltipFormatter: (rowData) {
-          return '''Employee Details:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-👤 Name: ${rowData['name']}
-🏢 Department: ${rowData['department']}
-💼 Position: ${rowData['position']}
-📧 Contact: ${rowData['email'] ?? 'N/A'}''';
+        tooltipBuilder: (context, rowData) {
+          final performance = rowData['rawPerformance'] ?? 0.0;
+          final experienceYears = (rowData['rawSalary'] as int? ?? 50000) ~/ 10000; // Rough estimate
+
+          return Container(
+            constraints: const BoxConstraints(maxWidth: 300),
+            child: Card(
+              elevation: 12,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Header with avatar and name
+                    Row(
+                      children: [
+                        Hero(
+                          tag: 'avatar_${rowData['name']}',
+                          child: CircleAvatar(
+                            radius: 25,
+                            backgroundColor: _getAvatarColor(rowData['department'] ?? ''),
+                            child: Text(
+                              '${rowData['name']}'.substring(0, 2).toUpperCase(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${rowData['name']}',
+                                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                '${rowData['position']}',
+                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  color: Theme.of(context).colorScheme.secondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    // Performance indicator
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: _getPerformanceColor(performance).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: _getPerformanceColor(performance), width: 1),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(_getPerformanceIcon(performance), 
+                               color: _getPerformanceColor(performance), size: 20),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Performance Score',
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                                Text(
+                                  '${(performance * 100).toInt()}% (${_getPerformanceLabel(performance)})',
+                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    color: _getPerformanceColor(performance),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    // Quick stats
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _buildStatItem(context, Icons.business_center, 
+                                     '${rowData['department']}', 'Department'),
+                        Container(width: 1, height: 30, color: Colors.grey.shade300),
+                        _buildStatItem(context, Icons.timeline, 
+                                     '${experienceYears}Y', 'Experience'),
+                        Container(width: 1, height: 30, color: Colors.grey.shade300),
+                        _buildStatItem(context, Icons.email_outlined, 
+                                     'Contact', 'Available'),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
         },
       ),
       'position': TablePlusColumn(
@@ -154,5 +256,71 @@ class DemoColumnDefinitions {
     final columns = getBasicEmployeeColumns().values.toList();
     columns.sort((a, b) => a.order.compareTo(b.order));
     return columns.map((c) => c.key).toList();
+  }
+
+  // Helper methods for tooltipBuilder examples
+
+  /// Get avatar color based on department
+  static Color _getAvatarColor(String department) {
+    switch (department.toLowerCase()) {
+      case 'engineering':
+        return Colors.blue;
+      case 'marketing':
+        return Colors.orange;
+      case 'sales':
+        return Colors.green;
+      case 'hr':
+        return Colors.purple;
+      case 'finance':
+        return Colors.teal;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  /// Get performance color based on score
+  static Color _getPerformanceColor(double performance) {
+    if (performance >= 0.8) return Colors.green;
+    if (performance >= 0.6) return Colors.orange;
+    return Colors.red;
+  }
+
+  /// Get performance icon based on score
+  static IconData _getPerformanceIcon(double performance) {
+    if (performance >= 0.8) return Icons.trending_up;
+    if (performance >= 0.6) return Icons.trending_flat;
+    return Icons.trending_down;
+  }
+
+  /// Get performance label based on score
+  static String _getPerformanceLabel(double performance) {
+    if (performance >= 0.9) return 'Excellent';
+    if (performance >= 0.8) return 'Great';
+    if (performance >= 0.7) return 'Good';
+    if (performance >= 0.6) return 'Average';
+    return 'Needs Improvement';
+  }
+
+  /// Build stat item for tooltip
+  static Widget _buildStatItem(BuildContext context, IconData icon, String value, String label) {
+    return Column(
+      children: [
+        Icon(icon, size: 16, color: Theme.of(context).colorScheme.primary),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        Text(
+          label,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            fontSize: 10,
+            color: Colors.grey.shade600,
+          ),
+        ),
+      ],
+    );
   }
 }

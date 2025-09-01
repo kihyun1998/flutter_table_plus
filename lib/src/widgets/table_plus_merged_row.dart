@@ -14,6 +14,7 @@ import '../models/tooltip_behavior.dart';
 import '../utils/text_overflow_detector.dart';
 import 'cells/editable_text_field.dart';
 import 'custom_ink_well.dart';
+import 'custom_tooltip_wrapper.dart';
 import 'table_plus_row_widget.dart';
 
 /// A merged table row widget that combines multiple data rows into one visual row.
@@ -258,7 +259,7 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
 
       // Wrap with tooltip if needed
       textWidget = _wrapWithTooltip(
-          textWidget, displayValue, column, width ?? column.width);
+          context, textWidget, displayValue, column, width ?? column.width, rowData);
 
       Widget cellContent = textWidget;
 
@@ -442,7 +443,7 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
 
       // Wrap with tooltip if needed
       textWidget =
-          _wrapWithTooltip(textWidget, displayValue, column, groupHeight);
+          _wrapWithTooltip(context, textWidget, displayValue, column, groupHeight, rowData);
 
       Widget cellContent = textWidget;
 
@@ -536,7 +537,7 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
 
       // Wrap with tooltip if needed
       textWidget =
-          _wrapWithTooltip(textWidget, displayValue, column, groupHeight);
+          _wrapWithTooltip(context, textWidget, displayValue, column, groupHeight, null);
 
       content = Container(
         alignment: column.alignment,
@@ -662,20 +663,41 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
   }
 
   /// Wraps a text widget with tooltip if needed.
-  Widget _wrapWithTooltip(Widget textWidget, String displayValue,
-      TablePlusColumn column, double maxWidth) {
+  Widget _wrapWithTooltip(
+    BuildContext context,
+    Widget textWidget,
+    String displayValue,
+    TablePlusColumn column,
+    double maxWidth,
+    Map<String, dynamic>? rowData,
+  ) {
     if (_shouldShowTooltip(displayValue, column, maxWidth)) {
-      return Tooltip(
-        message: displayValue,
-        textStyle: widget.tooltipTheme.textStyle,
-        decoration: widget.tooltipTheme.decoration,
-        padding: widget.tooltipTheme.padding,
-        margin: widget.tooltipTheme.margin,
-        waitDuration: widget.tooltipTheme.waitDuration,
-        showDuration: widget.tooltipTheme.showDuration,
-        preferBelow: widget.tooltipTheme.preferBelow,
-        child: textWidget,
-      );
+      // Priority: tooltipBuilder > tooltipFormatter > default
+      if (column.tooltipBuilder != null && rowData != null) {
+        // Use custom widget tooltip
+        return CustomTooltipWrapper(
+          content: column.tooltipBuilder!(context, rowData),
+          theme: widget.tooltipTheme,
+          child: textWidget,
+        );
+      } else {
+        // Use text-based tooltip (existing behavior)
+        final tooltipMessage = column.tooltipFormatter != null && rowData != null
+            ? column.tooltipFormatter!(rowData)
+            : displayValue;
+
+        return Tooltip(
+          message: tooltipMessage,
+          textStyle: widget.tooltipTheme.textStyle,
+          decoration: widget.tooltipTheme.decoration,
+          padding: widget.tooltipTheme.padding,
+          margin: widget.tooltipTheme.margin,
+          waitDuration: widget.tooltipTheme.waitDuration,
+          showDuration: widget.tooltipTheme.showDuration,
+          preferBelow: widget.tooltipTheme.preferBelow,
+          child: textWidget,
+        );
+      }
     }
     return textWidget;
   }
