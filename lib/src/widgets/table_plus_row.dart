@@ -29,7 +29,7 @@ class TablePlusRow extends TablePlusRowWidget {
     required this.onCellTap,
     required this.onStopEditing,
     this.onRowDoubleTap,
-    this.onRowSecondaryTap,
+    this.onRowSecondaryTapDown,
     this.calculatedHeight,
     this.needsVerticalScroll = false,
     this.hoverButtonBuilder,
@@ -62,7 +62,7 @@ class TablePlusRow extends TablePlusRowWidget {
   final void Function(int rowIndex, String columnKey)? onCellTap;
   final void Function({required bool save})? onStopEditing;
   final void Function(String rowId)? onRowDoubleTap;
-  final void Function(String rowId)? onRowSecondaryTap;
+  final void Function(String rowId, TapDownDetails details, RenderBox renderBox)? onRowSecondaryTapDown;
   @override
   final double? calculatedHeight;
   final bool needsVerticalScroll;
@@ -263,8 +263,8 @@ class _TablePlusRowState extends State<TablePlusRow> {
         onDoubleTap: () {
           widget.onRowDoubleTap?.call(widget.rowId!);
         },
-        onSecondaryTap: () {
-          widget.onRowSecondaryTap?.call(widget.rowId!);
+        onSecondaryTapDown: (details, renderBox) {
+          widget.onRowSecondaryTapDown?.call(widget.rowId!, details, renderBox);
         },
         backgroundColor: widget.backgroundColor,
         hoverColor: widget.theme.getEffectiveHoverColor(widget.isSelected),

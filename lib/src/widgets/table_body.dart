@@ -30,7 +30,7 @@ class TablePlusBody extends StatelessWidget {
     this.onRowSelectionChanged,
     this.onCheckboxChanged,
     this.onRowDoubleTap,
-    this.onRowSecondaryTap,
+    this.onRowSecondaryTapDown,
     this.isEditable = false,
     this.editableTheme = const TablePlusEditableTheme(),
     this.tooltipTheme = const TablePlusTooltipTheme(),
@@ -92,7 +92,7 @@ class TablePlusBody extends StatelessWidget {
   final void Function(String rowId)? onRowDoubleTap;
 
   /// Callback when a row is right-clicked (or long-pressed on touch devices).
-  final void Function(String rowId)? onRowSecondaryTap;
+  final void Function(String rowId, TapDownDetails details, RenderBox renderBox)? onRowSecondaryTapDown;
 
   /// Whether the table supports cell editing.
   final bool isEditable;
@@ -411,7 +411,7 @@ class TablePlusBody extends StatelessWidget {
           onCellTap: onCellTap,
           onStopEditing: onStopEditing,
           onRowDoubleTap: onRowDoubleTap,
-          onRowSecondaryTap: onRowSecondaryTap,
+          onRowSecondaryTapDown: onRowSecondaryTap,
           onMergedCellChanged: onMergedCellChanged,
           onMergedRowExpandToggle: onMergedRowExpandToggle,
           calculatedHeight: mergedHeight,
@@ -446,7 +446,7 @@ class TablePlusBody extends StatelessWidget {
       onRowSelectionChanged: _handleRowSelectionToggle,
       onCheckboxChanged: _handleCheckboxToggle,
       onRowDoubleTap: onRowDoubleTap,
-      onRowSecondaryTap: onRowSecondaryTap,
+      onRowSecondaryTapDown: onRowSecondaryTap,
       isEditable: isEditable,
       editableTheme: editableTheme,
       tooltipTheme: tooltipTheme,

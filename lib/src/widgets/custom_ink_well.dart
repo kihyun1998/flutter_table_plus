@@ -15,9 +15,9 @@ class CustomInkWell extends StatefulWidget {
   /// Called when the user double-taps this [CustomInkWell].
   final VoidCallback? onDoubleTap;
 
-  /// Called when the user performs a secondary tap (e.g., right-click on desktop)
-  /// on this [CustomInkWell].
-  final VoidCallback? onSecondaryTap;
+  /// Called when the user performs a secondary tap down (e.g., right-click on desktop)
+  /// on this [CustomInkWell]. Provides TapDownDetails and RenderBox for position calculations.
+  final void Function(TapDownDetails details, RenderBox renderBox)? onSecondaryTapDown;
 
   /// The maximum duration between two taps for them to be considered a double-tap.
   /// Defaults to 300 milliseconds.
@@ -43,7 +43,7 @@ class CustomInkWell extends StatefulWidget {
     required this.child,
     this.onTap,
     this.onDoubleTap,
-    this.onSecondaryTap,
+    this.onSecondaryTapDown,
     this.doubleClickTime = const Duration(milliseconds: 300),
     required this.backgroundColor,
     this.splashColor,
@@ -99,7 +99,12 @@ class _CustomInkWellState extends State<CustomInkWell> {
           onTap: (widget.onTap != null || widget.onDoubleTap != null)
               ? _handleTap
               : null,
-          onSecondaryTap: widget.onSecondaryTap,
+          onSecondaryTapDown: widget.onSecondaryTapDown != null
+              ? (details) {
+                  final RenderBox renderBox = context.findRenderObject() as RenderBox;
+                  widget.onSecondaryTapDown!(details, renderBox);
+                }
+              : null,
           splashColor: widget.splashColor,
           highlightColor: widget.highlightColor,
           hoverColor: widget.hoverColor,
