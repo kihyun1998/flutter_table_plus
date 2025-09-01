@@ -92,8 +92,8 @@ class TablePlusBody extends StatelessWidget {
   final void Function(String rowId)? onRowDoubleTap;
 
   /// Callback when a row is right-clicked (or long-pressed on touch devices).
-  final void Function(String rowId, TapDownDetails details, RenderBox renderBox, bool isSelected)?
-      onRowSecondaryTapDown;
+  final void Function(String rowId, TapDownDetails details, RenderBox renderBox,
+      bool isSelected)? onRowSecondaryTapDown;
 
   /// Whether the table supports cell editing.
   final bool isEditable;
