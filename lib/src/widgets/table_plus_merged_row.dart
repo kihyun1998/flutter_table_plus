@@ -80,7 +80,9 @@ class TablePlusMergedRow extends TablePlusRowWidget {
   final void Function(int rowIndex, String columnKey)? onCellTap;
   final void Function({required bool save})? onStopEditing;
   final void Function(String rowId)? onRowDoubleTap;
-  final void Function(String rowId, TapDownDetails details, RenderBox renderBox)? onRowSecondaryTapDown;
+  final void Function(
+          String rowId, TapDownDetails details, RenderBox renderBox)?
+      onRowSecondaryTapDown;
   final void Function(String groupId, String columnKey, dynamic newValue)?
       onMergedCellChanged;
   final void Function(String groupId)? onMergedRowExpandToggle;
@@ -523,9 +525,12 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
       Widget textWidget = Text(
         displayValue,
         style: widget.theme.getEffectiveTextStyle(widget.isSelected).copyWith(
-          fontWeight: FontWeight.w600, // Make summary text slightly bolder
-          color: widget.theme.getEffectiveTextStyle(widget.isSelected).color?.withValues(alpha: 0.8),
-        ),
+              fontWeight: FontWeight.w600, // Make summary text slightly bolder
+              color: widget.theme
+                  .getEffectiveTextStyle(widget.isSelected)
+                  .color
+                  ?.withValues(alpha: 0.8),
+            ),
         textAlign: column.textAlign,
         overflow: column.textOverflow,
       );
@@ -709,7 +714,8 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
                 value: widget.isSelected,
                 onChanged: (value) => (widget.onCheckboxChanged ??
                     widget.onRowSelectionChanged)(widget.mergeGroup.groupId),
-                activeColor: widget.checkboxTheme.fillColor?.resolve({WidgetState.selected}),
+                activeColor: widget.checkboxTheme.fillColor
+                    ?.resolve({WidgetState.selected}),
                 hoverColor: widget.checkboxTheme.hoverColor,
                 focusColor: widget.checkboxTheme.focusColor,
                 fillColor: widget.checkboxTheme.fillColor,
@@ -856,8 +862,8 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
         onTap: _handleRowTap,
         onDoubleTap: () =>
             widget.onRowDoubleTap?.call(widget.mergeGroup.groupId),
-        onSecondaryTapDown: (details, renderBox) =>
-            widget.onRowSecondaryTapDown?.call(widget.mergeGroup.groupId, details, renderBox),
+        onSecondaryTapDown: (details, renderBox) => widget.onRowSecondaryTapDown
+            ?.call(widget.mergeGroup.groupId, details, renderBox),
         backgroundColor: widget.backgroundColor,
         hoverColor: widget.theme.getEffectiveHoverColor(widget.isSelected),
         splashColor: widget.theme.getEffectiveSplashColor(widget.isSelected),

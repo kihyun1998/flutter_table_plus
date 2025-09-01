@@ -319,7 +319,6 @@ class _DynamicHeightExampleState extends State<DynamicHeightExample> {
         showHorizontalDividers: true,
         showVerticalDividers: true,
       ),
-  
       editableTheme: TablePlusEditableTheme(
         editingCellColor: Color(0xFFFFF3E0),
         editingBorderColor: Color(0xFFFF9800),

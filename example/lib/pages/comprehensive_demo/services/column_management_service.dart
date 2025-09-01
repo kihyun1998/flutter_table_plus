@@ -4,7 +4,7 @@ import 'package:flutter_table_plus/flutter_table_plus.dart';
 import '../data/demo_column_definitions.dart';
 
 /// Static service for managing table column operations
-/// 
+///
 /// This service provides static methods for:
 /// - Column initialization and configuration
 /// - Column reordering with safety checks
@@ -72,7 +72,7 @@ class ColumnManagementService {
 
     final updatedColumns = Map<String, TablePlusColumn>.from(currentColumns);
     updatedColumns[columnKey] = column.copyWith(visible: visible);
-    
+
     return updatedColumns;
   }
 
@@ -87,11 +87,11 @@ class ColumnManagementService {
     bool visibleOnly = false,
   }) {
     var columnsList = columns.values.toList();
-    
+
     if (visibleOnly) {
       columnsList = columnsList.where((col) => col.visible).toList();
     }
-    
+
     columnsList.sort((a, b) => a.order.compareTo(b.order));
     return columnsList;
   }
@@ -101,7 +101,7 @@ class ColumnManagementService {
     Map<String, TablePlusColumn> columns,
   ) {
     final issues = <String>[];
-    
+
     // Check for duplicate orders
     final orders = <int>[];
     for (final column in columns.values) {
@@ -110,7 +110,7 @@ class ColumnManagementService {
       }
       orders.add(column.order);
     }
-    
+
     // Check for missing essential columns
     final requiredColumns = ['id', 'name'];
     for (final requiredColumn in requiredColumns) {
@@ -118,13 +118,13 @@ class ColumnManagementService {
         issues.add('Missing required column: $requiredColumn');
       }
     }
-    
+
     // Check for at least one visible column
     final visibleCount = getVisibleColumnCount(columns);
     if (visibleCount == 0) {
       issues.add('At least one column must be visible');
     }
-    
+
     return {
       'valid': issues.isEmpty,
       'issues': issues,
@@ -152,13 +152,13 @@ class ColumnManagementService {
     Map<String, TablePlusColumn> updates,
   ) {
     final updatedColumns = Map<String, TablePlusColumn>.from(currentColumns);
-    
+
     for (final entry in updates.entries) {
       if (currentColumns.containsKey(entry.key)) {
         updatedColumns[entry.key] = entry.value;
       }
     }
-    
+
     return updatedColumns;
   }
 
@@ -168,7 +168,7 @@ class ColumnManagementService {
   ) {
     final visibleColumns = getColumnsByOrder(columns, visibleOnly: true);
     final hiddenColumns = columns.values.where((col) => !col.visible).toList();
-    
+
     return {
       'totalColumns': columns.length,
       'visibleColumns': visibleColumns.length,
@@ -176,8 +176,7 @@ class ColumnManagementService {
       'visibleColumnKeys': visibleColumns.map((col) => col.key).toList(),
       'hiddenColumnKeys': hiddenColumns.map((col) => col.key).toList(),
       'columnOrders': Map.fromEntries(
-        columns.entries.map((e) => MapEntry(e.key, e.value.order))
-      ),
+          columns.entries.map((e) => MapEntry(e.key, e.value.order))),
     };
   }
 
@@ -212,20 +211,20 @@ class ColumnManagementService {
     int? atOrder,
   }) {
     final builder = TableColumnsBuilder();
-    
+
     // Add all existing columns first
     for (final column in getColumnsByOrder(currentColumns)) {
       builder.addColumn(column.key, column);
     }
-    
+
     // Add new column
     builder.addColumn(newColumn.key, newColumn);
-    
+
     // If specific order is requested, reorder to that position
     if (atOrder != null && atOrder > 0) {
       builder.reorderColumn(newColumn.key, atOrder);
     }
-    
+
     return builder.build();
   }
 

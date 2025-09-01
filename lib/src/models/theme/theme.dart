@@ -28,7 +28,6 @@ class TablePlusTheme {
   /// Theme configuration for the scrollbars.
   final TablePlusScrollbarTheme scrollbarTheme;
 
-
   /// Theme configuration for checkboxes.
   final TablePlusCheckboxTheme checkboxTheme;
 

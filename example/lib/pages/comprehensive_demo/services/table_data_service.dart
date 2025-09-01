@@ -4,10 +4,10 @@ import '../data/demo_data_formatters.dart';
 import '../data/demo_data_source.dart';
 
 /// Static service for managing table data operations
-/// 
+///
 /// This service provides static methods for:
 /// - Data initialization and formatting
-/// - Sorting operations  
+/// - Sorting operations
 /// - Cell editing and data updates
 /// - Data parsing and validation
 class TableDataService {
@@ -21,7 +21,7 @@ class TableDataService {
         ...employee,
         // Store raw data for tooltipFormatter and sorting
         'rawSalary': employee['salary'],
-        'rawPerformance': employee['performance'], 
+        'rawPerformance': employee['performance'],
         'rawSkills': employee['skills'],
         // Format data for better display
         'salary': DemoDataFormatters.formatCurrency(
@@ -47,7 +47,7 @@ class TableDataService {
   /// Sort data by column with proper handling of formatted values
   static void sortData(
     List<Map<String, dynamic>> data,
-    String columnKey, 
+    String columnKey,
     SortDirection direction,
   ) {
     if (direction == SortDirection.none) return;
@@ -77,14 +77,20 @@ class TableDataService {
           break;
         case 'joinDate':
           // For formatted dates, use original DateTime for comparison
-          final aEmployee = DemoDataSource.employees.firstWhere((e) => e.id == a['id']);
-          final bEmployee = DemoDataSource.employees.firstWhere((e) => e.id == b['id']);
+          final aEmployee =
+              DemoDataSource.employees.firstWhere((e) => e.id == a['id']);
+          final bEmployee =
+              DemoDataSource.employees.firstWhere((e) => e.id == b['id']);
           comparison = aEmployee.joinDate.compareTo(bEmployee.joinDate);
           break;
         case 'skills':
           // For skills, compare by the number of skills
-          final aSkills = DemoDataSource.employees.firstWhere((e) => e.id == a['id']).skills;
-          final bSkills = DemoDataSource.employees.firstWhere((e) => e.id == b['id']).skills;
+          final aSkills = DemoDataSource.employees
+              .firstWhere((e) => e.id == a['id'])
+              .skills;
+          final bSkills = DemoDataSource.employees
+              .firstWhere((e) => e.id == b['id'])
+              .skills;
           comparison = aSkills.length.compareTo(bSkills.length);
           break;
         default:
@@ -104,7 +110,7 @@ class TableDataService {
   static Map<String, dynamic> updateCellData(
     List<Map<String, dynamic>> data,
     String columnKey,
-    int rowIndex, 
+    int rowIndex,
     dynamic oldValue,
     dynamic newValue,
   ) {
@@ -117,8 +123,9 @@ class TableDataService {
 
     // Also update the original data source for consistency
     final rowId = data[rowIndex]['id'];
-    final employeeIndex = DemoDataSource.employees.indexWhere((e) => e.id == rowId);
-    
+    final employeeIndex =
+        DemoDataSource.employees.indexWhere((e) => e.id == rowId);
+
     if (employeeIndex != -1) {
       final originalEmployee = DemoDataSource.employees[employeeIndex];
 
@@ -131,24 +138,30 @@ class TableDataService {
       }
 
       DemoDataSource.employees[employeeIndex] = originalEmployee.copyWith(
-        position: columnKey == 'position' ? newValue : originalEmployee.position,
-        department: columnKey == 'department' ? newValue : originalEmployee.department, 
+        position:
+            columnKey == 'position' ? newValue : originalEmployee.position,
+        department:
+            columnKey == 'department' ? newValue : originalEmployee.department,
         salary: columnKey == 'salary' ? updatedValue : originalEmployee.salary,
-        performance: columnKey == 'performance' ? updatedValue : originalEmployee.performance,
+        performance: columnKey == 'performance'
+            ? updatedValue
+            : originalEmployee.performance,
       );
 
       // Re-format the display data after updating the source
       if (columnKey == 'salary') {
-        data[rowIndex][columnKey] = DemoDataFormatters.formatCurrency(updatedValue);
+        data[rowIndex][columnKey] =
+            DemoDataFormatters.formatCurrency(updatedValue);
       } else if (columnKey == 'performance') {
-        data[rowIndex][columnKey] = DemoDataFormatters.formatPercentage(updatedValue);
+        data[rowIndex][columnKey] =
+            DemoDataFormatters.formatPercentage(updatedValue);
       }
 
       return {
-        'success': true, 
+        'success': true,
         'rowId': rowId,
-        'updatedValue': columnKey == 'salary' || columnKey == 'performance' 
-            ? data[rowIndex][columnKey] 
+        'updatedValue': columnKey == 'salary' || columnKey == 'performance'
+            ? data[rowIndex][columnKey]
             : newValue
       };
     }
@@ -162,7 +175,7 @@ class TableDataService {
     return double.tryParse(numericString) ?? 0.0;
   }
 
-  /// Extract numeric value from percentage string  
+  /// Extract numeric value from percentage string
   static double extractPercentageNumber(String formattedValue) {
     final numericString = formattedValue.replaceAll('%', '');
     return double.tryParse(numericString) ?? 0.0;
@@ -189,7 +202,7 @@ class TableDataService {
     if (searchTerm.isEmpty) {
       return List<Map<String, dynamic>>.from(originalData);
     }
-    
+
     return originalData.where((row) {
       return row.values.any((value) =>
           value.toString().toLowerCase().contains(searchTerm.toLowerCase()));
@@ -197,7 +210,8 @@ class TableDataService {
   }
 
   /// Validate cell input based on column type
-  static Map<String, dynamic> validateCellInput(String columnKey, String input) {
+  static Map<String, dynamic> validateCellInput(
+      String columnKey, String input) {
     switch (columnKey) {
       case 'salary':
         final numericValue = parseCurrencyValue(input);
@@ -208,14 +222,17 @@ class TableDataService {
           return {'valid': false, 'error': 'Salary seems too high'};
         }
         return {'valid': true, 'value': numericValue};
-        
+
       case 'performance':
         final percentageValue = parsePerformanceValue(input);
         if (percentageValue < 0 || percentageValue > 100) {
-          return {'valid': false, 'error': 'Performance must be between 0-100%'};
+          return {
+            'valid': false,
+            'error': 'Performance must be between 0-100%'
+          };
         }
         return {'valid': true, 'value': percentageValue / 100};
-        
+
       case 'age':
         final age = int.tryParse(input);
         if (age == null) {
@@ -225,7 +242,7 @@ class TableDataService {
           return {'valid': false, 'error': 'Age must be between 18-100'};
         }
         return {'valid': true, 'value': age};
-        
+
       default:
         if (input.trim().isEmpty) {
           return {'valid': false, 'error': 'Field cannot be empty'};

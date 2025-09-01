@@ -386,7 +386,260 @@ class _TableExamplePageState extends State<TableExamplePage> {
     });
   }
 
-  /// Toggle row height mode
+  /// Show context menu for row
+  void _showContextMenu(BuildContext context, String rowId,
+      TapDownDetails details, RenderBox renderBox) {
+    final RenderBox overlay =
+        Overlay.of(context).context.findRenderObject() as RenderBox;
+    final RelativeRect position = RelativeRect.fromRect(
+      Rect.fromPoints(
+        renderBox.localToGlobal(details.localPosition, ancestor: overlay),
+        renderBox.localToGlobal(details.localPosition, ancestor: overlay),
+      ),
+      Offset.zero & overlay.size,
+    );
+
+    // Find the employee data for this row
+    final employee =
+        _sortedData.firstWhere((row) => row['id'].toString() == rowId);
+    final employeeName = employee['name'] ?? 'Unknown';
+    final isSelected = _selectedRows.contains(rowId);
+
+    showMenu<String>(
+      context: context,
+      position: position,
+      items: [
+        PopupMenuItem<String>(
+          value: 'select',
+          child: Row(
+            children: [
+              Icon(
+                isSelected ? Icons.check_box : Icons.check_box_outline_blank,
+                size: 18,
+              ),
+              const SizedBox(width: 8),
+              Text(isSelected ? 'Deselect' : 'Select'),
+            ],
+          ),
+        ),
+        const PopupMenuDivider(),
+        PopupMenuItem<String>(
+          value: 'edit',
+          enabled: _isEditable,
+          child: const Row(
+            children: [
+              Icon(Icons.edit, size: 18),
+              SizedBox(width: 8),
+              Text('Edit Row'),
+            ],
+          ),
+        ),
+        PopupMenuItem<String>(
+          value: 'duplicate',
+          child: const Row(
+            children: [
+              Icon(Icons.copy, size: 18),
+              SizedBox(width: 8),
+              Text('Duplicate'),
+            ],
+          ),
+        ),
+        const PopupMenuDivider(),
+        PopupMenuItem<String>(
+          value: 'view_details',
+          child: const Row(
+            children: [
+              Icon(Icons.info_outline, size: 18),
+              SizedBox(width: 8),
+              Text('View Details'),
+            ],
+          ),
+        ),
+        PopupMenuItem<String>(
+          value: 'delete',
+          child: const Row(
+            children: [
+              Icon(Icons.delete_outline, size: 18, color: Colors.red),
+              SizedBox(width: 8),
+              Text('Delete', style: TextStyle(color: Colors.red)),
+            ],
+          ),
+        ),
+      ],
+    ).then((String? selected) {
+      if (selected != null) {
+        _handleContextMenuAction(selected, rowId, employeeName);
+      }
+    });
+  }
+
+  /// Handle context menu actions
+  void _handleContextMenuAction(
+      String action, String rowId, String employeeName) {
+    switch (action) {
+      case 'select':
+        final isSelected = _selectedRows.contains(rowId);
+        _onRowSelectionChanged(rowId, !isSelected);
+        break;
+
+      case 'edit':
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Edit mode enabled for $employeeName'),
+            duration: const Duration(milliseconds: 1500),
+            action: SnackBarAction(
+              label: 'OK',
+              onPressed: () {},
+            ),
+          ),
+        );
+        break;
+
+      case 'duplicate':
+        _duplicateEmployee(rowId);
+        break;
+
+      case 'view_details':
+        _showEmployeeDetails(rowId, employeeName);
+        break;
+
+      case 'delete':
+        _confirmDeleteEmployee(rowId, employeeName);
+        break;
+    }
+  }
+
+  /// Duplicate an employee row
+  void _duplicateEmployee(String rowId) {
+    final originalEmployee =
+        _sortedData.firstWhere((row) => row['id'].toString() == rowId);
+    final newEmployee = Map<String, dynamic>.from(originalEmployee);
+
+    // Generate new ID (simple increment approach)
+    final maxId =
+        _sortedData.map((e) => e['id'] as int).reduce((a, b) => a > b ? a : b);
+    newEmployee['id'] = maxId + 1;
+    newEmployee['name'] = '${newEmployee['name']} (Copy)';
+
+    setState(() {
+      _sortedData.add(newEmployee);
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Duplicated ${originalEmployee['name']}'),
+        duration: const Duration(milliseconds: 1500),
+      ),
+    );
+  }
+
+  /// Show detailed employee information
+  void _showEmployeeDetails(String rowId, String employeeName) {
+    final employee =
+        _sortedData.firstWhere((row) => row['id'].toString() == rowId);
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Employee Details'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildDetailRow('Name', employee['name']?.toString() ?? 'N/A'),
+            _buildDetailRow(
+                'Position', employee['position']?.toString() ?? 'N/A'),
+            _buildDetailRow(
+                'Department', employee['department']?.toString() ?? 'N/A'),
+            _buildDetailRow('Age', employee['age']?.toString() ?? 'N/A'),
+            _buildDetailRow(
+                'Salary', '\$${employee['salary']?.toString() ?? '0'}'),
+            _buildDetailRow(
+                'Status', employee['active'] == true ? 'Active' : 'Inactive'),
+            _buildDetailRow('ID', employee['id']?.toString() ?? 'N/A'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Build a detail row for the employee details dialog
+  Widget _buildDetailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 80,
+            child: Text(
+              '$label:',
+              style: const TextStyle(fontWeight: FontWeight.w500),
+            ),
+          ),
+          Expanded(child: Text(value)),
+        ],
+      ),
+    );
+  }
+
+  /// Confirm deletion of an employee
+  void _confirmDeleteEmployee(String rowId, String employeeName) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirm Delete'),
+        content: Text('Are you sure you want to delete $employeeName?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _deleteEmployee(rowId, employeeName);
+            },
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Delete an employee from the data
+  void _deleteEmployee(String rowId, String employeeName) {
+    setState(() {
+      _sortedData.removeWhere((row) => row['id'].toString() == rowId);
+      _selectedRows.remove(rowId);
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Deleted $employeeName'),
+        duration: const Duration(milliseconds: 2000),
+        action: SnackBarAction(
+          label: 'Undo',
+          onPressed: () {
+            // Note: In a real app, you'd implement proper undo functionality
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Undo not implemented in this example'),
+                duration: Duration(milliseconds: 1000),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -512,13 +765,8 @@ class _TableExamplePageState extends State<TableExamplePage> {
                         ),
                       );
                     },
-                    onRowSecondaryTap: (rowId) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Secondary-tapped row: $rowId'),
-                          duration: const Duration(milliseconds: 500),
-                        ),
-                      );
+                    onRowSecondaryTapDown: (rowId, details, renderBox) {
+                      _showContextMenu(context, rowId, details, renderBox);
                     },
                     // No data widget
                     noDataWidget: const Center(

@@ -62,7 +62,9 @@ class TablePlusRow extends TablePlusRowWidget {
   final void Function(int rowIndex, String columnKey)? onCellTap;
   final void Function({required bool save})? onStopEditing;
   final void Function(String rowId)? onRowDoubleTap;
-  final void Function(String rowId, TapDownDetails details, RenderBox renderBox)? onRowSecondaryTapDown;
+  final void Function(
+          String rowId, TapDownDetails details, RenderBox renderBox)?
+      onRowSecondaryTapDown;
   @override
   final double? calculatedHeight;
   final bool needsVerticalScroll;

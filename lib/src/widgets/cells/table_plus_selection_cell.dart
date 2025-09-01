@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
 
-import '../../models/theme/checkbox_theme.dart';
-
 /// A selection cell with checkbox.
 class TablePlusSelectionCell extends StatelessWidget {
   const TablePlusSelectionCell({
@@ -48,7 +46,8 @@ class TablePlusSelectionCell extends StatelessWidget {
             value: isSelected,
             onChanged:
                 rowId != null ? (value) => onSelectionChanged(rowId!) : null,
-            activeColor: checkboxTheme.fillColor?.resolve({WidgetState.selected}),
+            activeColor:
+                checkboxTheme.fillColor?.resolve({WidgetState.selected}),
             hoverColor: checkboxTheme.hoverColor,
             focusColor: checkboxTheme.focusColor,
             fillColor: checkboxTheme.fillColor,

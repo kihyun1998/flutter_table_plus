@@ -148,7 +148,9 @@ class FlutterTablePlus extends StatefulWidget {
 
   /// Callback when a row is right-clicked (or long-pressed on touch devices).
   /// Provides the row ID, TapDownDetails, and RenderBox for position calculations. Only active when [isSelectable] is true.
-  final void Function(String rowId, TapDownDetails details, RenderBox renderBox)? onRowSecondaryTapDown;
+  final void Function(
+          String rowId, TapDownDetails details, RenderBox renderBox)?
+      onRowSecondaryTapDown;
 
   /// Callback when a merged row group's expand/collapse state should be toggled.
   /// Provides the group ID for the group that was clicked.
@@ -391,7 +393,8 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
 
     // Add selection column at the beginning if selectable
     if (widget.isSelectable && _currentTheme.checkboxTheme.showCheckboxColumn) {
-      final checkboxColumnWidth = _currentTheme.checkboxTheme.checkboxColumnWidth;
+      final checkboxColumnWidth =
+          _currentTheme.checkboxTheme.checkboxColumnWidth;
       final selectionColumn = TablePlusColumn(
         key: '__selection__', // Special key for selection column
         label: '', // Empty label, will show select-all checkbox
