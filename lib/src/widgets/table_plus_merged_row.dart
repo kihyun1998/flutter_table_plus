@@ -864,6 +864,7 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
         onSecondaryTapDown: (details, renderBox) => widget.onRowSecondaryTapDown
             ?.call(widget.mergeGroup.groupId, details, renderBox,
                 widget.isSelected),
+        doubleClickTime: widget.theme.doubleClickTime,
         backgroundColor: widget.backgroundColor,
         hoverColor: widget.theme.getEffectiveHoverColor(widget.isSelected),
         splashColor: widget.theme.getEffectiveSplashColor(widget.isSelected),

@@ -268,6 +268,7 @@ class _TablePlusRowState extends State<TablePlusRow> {
           widget.onRowSecondaryTapDown
               ?.call(widget.rowId!, details, renderBox, widget.isSelected);
         },
+        doubleClickTime: widget.theme.doubleClickTime,
         backgroundColor: widget.backgroundColor,
         hoverColor: widget.theme.getEffectiveHoverColor(widget.isSelected),
         splashColor: widget.theme.getEffectiveSplashColor(widget.isSelected),

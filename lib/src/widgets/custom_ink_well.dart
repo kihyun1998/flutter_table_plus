@@ -45,7 +45,7 @@ class CustomInkWell extends StatefulWidget {
     this.onTap,
     this.onDoubleTap,
     this.onSecondaryTapDown,
-    this.doubleClickTime = const Duration(milliseconds: 300),
+    this.doubleClickTime = const Duration(milliseconds: 500),
     required this.backgroundColor,
     this.splashColor,
     this.highlightColor,

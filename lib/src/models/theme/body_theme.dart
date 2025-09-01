@@ -42,6 +42,7 @@ class TablePlusBodyTheme {
     this.selectedRowHoverColor,
     this.selectedRowSplashColor,
     this.selectedRowHighlightColor,
+    this.doubleClickTime = const Duration(milliseconds: 500),
   });
 
   /// The height of each data row.
@@ -120,6 +121,10 @@ class TablePlusBodyTheme {
   /// Use Colors.transparent to disable the highlight effect for selected rows.
   final Color? selectedRowHighlightColor;
 
+  /// The maximum duration between two taps for them to be considered a double-tap.
+  /// Defaults to 500 milliseconds.
+  final Duration doubleClickTime;
+
   /// Creates a copy of this theme with the given fields replaced with new values.
   TablePlusBodyTheme copyWith({
     double? rowHeight,
@@ -141,6 +146,7 @@ class TablePlusBodyTheme {
     Color? selectedRowHoverColor,
     Color? selectedRowSplashColor,
     Color? selectedRowHighlightColor,
+    Duration? doubleClickTime,
   }) {
     return TablePlusBodyTheme(
       rowHeight: rowHeight ?? this.rowHeight,
@@ -168,6 +174,7 @@ class TablePlusBodyTheme {
           selectedRowSplashColor ?? this.selectedRowSplashColor,
       selectedRowHighlightColor:
           selectedRowHighlightColor ?? this.selectedRowHighlightColor,
+      doubleClickTime: doubleClickTime ?? this.doubleClickTime,
     );
   }
 
