@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
 
-import 'data/demo_column_definitions.dart';
-import 'data/demo_data_formatters.dart';
-import 'data/demo_data_source.dart';
-import 'data/demo_merged_groups.dart';
+import 'services/column_management_service.dart';
+import 'services/table_data_service.dart';
+import 'services/table_state_service.dart';
 import 'widgets/demo_control_panel.dart';
 import 'widgets/demo_stats_panel.dart';
 import 'widgets/demo_table_area.dart';
@@ -29,7 +28,7 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
   // Phase 3: Selection and editing state
   final bool _isSelectable = true;
   SelectionMode _selectionMode = SelectionMode.multiple;
-  final Set<String> _selectedRows = <String>{};
+  Set<String> _selectedRows = <String>{};
   final bool _isEditable = true;
 
   // Phase 4: Merged rows state
@@ -50,290 +49,120 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
     _initializeData();
   }
 
-  /// Initialize table data and columns
+  /// Initialize table data and columns using services
   void _initializeData() {
-    // Get column definitions
-    _columns = DemoColumnDefinitions.getBasicEmployeeColumns();
+    // Initialize columns using service
+    _columns = ColumnManagementService.initializeColumns();
 
-    // Get sample data and format it for display
-    _data = DemoDataSource.employeeTableData.map((employee) {
-      return {
-        ...employee,
-        // Store raw data for tooltipFormatter
-        'rawSalary': employee['salary'],
-        'rawPerformance': employee['performance'],
-        'rawSkills': employee['skills'],
-        // Phase 2: Format data for better display
-        'salary': DemoDataFormatters.formatCurrency(
-            employee['salary']?.toDouble() ?? 0.0),
-        'performance': DemoDataFormatters.formatPercentage(
-            employee['performance']?.toDouble() ?? 0.0),
-        'joinDate': DemoDataFormatters.formatDate(
-            employee['joinDate'] ?? DateTime.now()),
-        'skills': DemoDataFormatters.formatSkills(
-            List<String>.from(employee['skills'] ?? [])),
-      };
-    }).toList();
+    // Initialize and format data using service
+    _data = TableDataService.initializeData();
 
     // Store original data order for reset functionality
     _originalData = List<Map<String, dynamic>>.from(_data);
 
-    // Phase 2: Set default sort
-    final defaultSort = DemoColumnDefinitions.getDefaultSortConfig();
+    // Set default sort using service
+    final defaultSort = TableDataService.getDefaultSortConfig();
     _currentSortColumn = defaultSort['column'];
     _currentSortDirection = defaultSort['direction'];
 
-    // Apply initial sort
-    _sortData(_currentSortColumn!, _currentSortDirection);
+    // Apply initial sort using service
+    TableDataService.sortData(
+        _data, _currentSortColumn!, _currentSortDirection);
 
-    // Phase 4: Initialize merged groups
+    // Initialize merged groups using service
     _updateMergedGroups();
 
     debugPrint(
-        '✅ Phase 2: Initialized with ${_data.length} employees, ${_columns.length} columns, default sort: $_currentSortColumn');
+        '✅ Service-based initialization: ${_data.length} employees, ${_columns.length} columns, default sort: $_currentSortColumn');
   }
 
-  /// Phase 2: Handle column sorting
+  /// Handle column sorting using service
   void _handleSort(String columnKey, SortDirection direction) {
     setState(() {
-      // Reset sort column when direction is none
+      // Update sort state
       if (direction == SortDirection.none) {
         _currentSortColumn = null;
         _currentSortDirection = SortDirection.none;
+        // Reset to original data order
+        _data = List<Map<String, dynamic>>.from(_originalData);
       } else {
         _currentSortColumn = columnKey;
         _currentSortDirection = direction;
+        // Use service to sort data
+        TableDataService.sortData(_data, columnKey, direction);
       }
 
-      _sortData(columnKey, direction);
-
-      // Phase 4: Update merged groups after sorting to maintain correct grouping
+      // Update merged groups after sorting to maintain correct grouping
       if (_showMergedRows) {
         _updateMergedGroups();
       }
     });
 
-    debugPrint('🔄 Sorted by $columnKey: $direction');
+    debugPrint('🔄 Service-based sort by $columnKey: $direction');
   }
 
-  /// Phase 2: Handle column reordering
+  /// Handle column reordering using service
   void _handleColumnReorder(int oldIndex, int newIndex) {
     setState(() {
-      // Get visible columns (excluding selection column) sorted by order
-      final visibleColumns = _columns.values
-          .where((col) => col.visible)
-          .toList()
-        ..sort((a, b) => a.order.compareTo(b.order));
-
-      // Boundary checks to prevent runtime errors
-      if (oldIndex < 0 ||
-          oldIndex >= visibleColumns.length ||
-          newIndex < 0 ||
-          newIndex >= visibleColumns.length) {
-        debugPrint('⚠️ Invalid column reorder indices: $oldIndex -> $newIndex');
-        return;
-      }
-
-      // Get the column being moved
-      final movingColumn = visibleColumns[oldIndex];
-
-      // Create new builder with all existing columns
-      final builder = TableColumnsBuilder();
-
-      // Add all columns in their current order
-      for (final column in _columns.values.toList()
-        ..sort((a, b) => a.order.compareTo(b.order))) {
-        builder.addColumn(column.key, column);
-      }
-
-      // Use builder's reorderColumn method to handle the complex logic
-      final targetOrder = newIndex + 1; // Convert to 1-based order
-      builder.reorderColumn(movingColumn.key, targetOrder);
-
-      _columns = builder.build();
+      // Use service to safely reorder columns
+      _columns =
+          ColumnManagementService.reorderColumns(_columns, oldIndex, newIndex);
     });
 
-    debugPrint('🔄 Reordered columns: $oldIndex -> $newIndex');
+    debugPrint('🔄 Service-based column reorder: $oldIndex -> $newIndex');
   }
 
-  /// Phase 2: Sort data by column (considering formatted data)
-  void _sortData(String columnKey, SortDirection direction) {
-    if (direction == SortDirection.none) {
-      // Restore original data order
-      _data = List<Map<String, dynamic>>.from(_originalData);
-      debugPrint('🔄 Restored original data order');
-      return;
-    }
-
-    _data.sort((a, b) {
-      final aValue = a[columnKey];
-      final bValue = b[columnKey];
-
-      // Handle null values
-      if (aValue == null && bValue == null) return 0;
-      if (aValue == null) return 1;
-      if (bValue == null) return -1;
-
-      int comparison = 0;
-
-      // Special handling for formatted columns
-      if (columnKey == 'salary') {
-        // Extract numeric value from formatted currency
-        final aNum = _extractSalaryNumber(aValue.toString());
-        final bNum = _extractSalaryNumber(bValue.toString());
-        comparison = aNum.compareTo(bNum);
-      } else if (columnKey == 'performance') {
-        // Extract numeric value from percentage
-        final aNum = _extractPercentageNumber(aValue.toString());
-        final bNum = _extractPercentageNumber(bValue.toString());
-        comparison = aNum.compareTo(bNum);
-      } else if (columnKey == 'joinDate') {
-        // For formatted dates, use original DateTime for comparison
-        final aEmployee =
-            DemoDataSource.employees.firstWhere((e) => e.id == a['id']);
-        final bEmployee =
-            DemoDataSource.employees.firstWhere((e) => e.id == b['id']);
-        comparison = aEmployee.joinDate.compareTo(bEmployee.joinDate);
-      } else if (columnKey == 'skills') {
-        // For skills, compare by the number of skills
-        final aSkills =
-            DemoDataSource.employees.firstWhere((e) => e.id == a['id']).skills;
-        final bSkills =
-            DemoDataSource.employees.firstWhere((e) => e.id == b['id']).skills;
-        comparison = aSkills.length.compareTo(bSkills.length);
-      } else if (aValue is String && bValue is String) {
-        // Standard string comparison
-        comparison = aValue.toLowerCase().compareTo(bValue.toLowerCase());
-      } else {
-        // Fallback to string comparison
-        comparison = aValue.toString().compareTo(bValue.toString());
-      }
-
-      // Apply sort direction
-      return direction == SortDirection.ascending ? comparison : -comparison;
-    });
-  }
-
-  /// Extract numeric value from formatted currency
-  double _extractSalaryNumber(String formattedValue) {
-    final numericString = formattedValue.replaceAll(RegExp(r'[^\d.]'), '');
-    return double.tryParse(numericString) ?? 0.0;
-  }
-
-  /// Extract numeric value from percentage
-  double _extractPercentageNumber(String formattedValue) {
-    final numericString = formattedValue.replaceAll('%', '');
-    return double.tryParse(numericString) ?? 0.0;
-  }
-
-  /// Phase 3: Handle row selection
+  /// Handle row selection using service
   void _handleRowSelection(String rowId, bool isSelected) {
     setState(() {
-      if (isSelected) {
-        if (_selectionMode == SelectionMode.single) {
-          // Single selection: clear previous and select new
-          _selectedRows.clear();
-        }
-        _selectedRows.add(rowId);
-      } else {
-        _selectedRows.remove(rowId);
-      }
+      _selectedRows = TableStateService.updateSelection(
+          _selectedRows, rowId, isSelected, _selectionMode);
     });
 
-    debugPrint('🔘 Selected rows: $_selectedRows');
+    debugPrint('🔘 Service-based selection: $_selectedRows');
   }
 
-  /// Phase 4: Handle cell editing (expanded to include salary and performance)
+  /// Handle cell editing using service
   void _handleCellChanged(
       String columnKey, int rowIndex, dynamic oldValue, dynamic newValue) {
     setState(() {
-      // Update the display data
-      _data[rowIndex][columnKey] = newValue;
+      // Use service to update cell data
+      final result = TableDataService.updateCellData(
+          _data, columnKey, rowIndex, oldValue, newValue);
 
-      // Also update the original data source for consistency
-      final rowId = _data[rowIndex]['id'];
-      final employeeIndex =
-          DemoDataSource.employees.indexWhere((e) => e.id == rowId);
-      if (employeeIndex != -1) {
-        final originalEmployee = DemoDataSource.employees[employeeIndex];
-
-        // Handle different column types
-        dynamic updatedValue = newValue;
-        if (columnKey == 'salary') {
-          // Parse salary value (remove currency formatting if present)
-          updatedValue = _parseCurrencyValue(newValue.toString());
-        } else if (columnKey == 'performance') {
-          // Parse percentage value (remove % if present)
-          updatedValue = _parsePerformanceValue(newValue.toString());
-        }
-
-        DemoDataSource.employees[employeeIndex] = originalEmployee.copyWith(
-          position:
-              columnKey == 'position' ? newValue : originalEmployee.position,
-          department: columnKey == 'department'
-              ? newValue
-              : originalEmployee.department,
-          salary:
-              columnKey == 'salary' ? updatedValue : originalEmployee.salary,
-          performance: columnKey == 'performance'
-              ? updatedValue
-              : originalEmployee.performance,
-        );
-
-        // Re-format the display data after updating the source
-        if (columnKey == 'salary') {
-          _data[rowIndex][columnKey] =
-              DemoDataFormatters.formatCurrency(updatedValue);
-        } else if (columnKey == 'performance') {
-          _data[rowIndex][columnKey] =
-              DemoDataFormatters.formatPercentage(updatedValue);
-        }
-
+      if (result['success'] == true) {
         // Update original data to reflect the edit (maintain sort reset functionality)
+        final rowId = result['rowId'];
         final originalRowIndex =
             _originalData.indexWhere((row) => row['id'] == rowId);
         if (originalRowIndex != -1) {
           _originalData[originalRowIndex] =
               Map<String, dynamic>.from(_data[rowIndex]);
         }
+
+        debugPrint(
+            '✏️ Service-based cell edit: Row $rowIndex, Column $columnKey: $oldValue -> ${result['updatedValue']}');
+      } else {
+        debugPrint('❌ Cell edit failed: ${result['error']}');
       }
     });
-
-    debugPrint(
-        '✏️ Cell edited: Row $rowIndex, Column $columnKey: $oldValue -> $newValue');
   }
 
-  /// Parse currency value from string (removes $ and commas)
-  double _parseCurrencyValue(String value) {
-    final numericString = value.replaceAll(RegExp(r'[^\d.]'), '');
-    return double.tryParse(numericString) ?? 0.0;
-  }
-
-  /// Parse performance value from string (removes % and converts to decimal)
-  double _parsePerformanceValue(String value) {
-    final numericString = value.replaceAll('%', '');
-    final percentage = double.tryParse(numericString) ?? 0.0;
-    return percentage / 100.0; // Convert percentage to decimal
-  }
-
-  /// Phase 3: Clear all selections
+  /// Clear all selections using service
   void _clearSelections() {
     setState(() {
-      _selectedRows.clear();
+      _selectedRows = TableStateService.clearAllSelections();
     });
-    debugPrint('🗑️ Cleared all selections');
+    debugPrint('🗑️ Service-based clear selections');
   }
 
-  /// Phase 4: Update merged groups based on current settings and data order
+  /// Update merged groups using service
   void _updateMergedGroups() {
     _mergedGroups = _showMergedRows
-        ? DemoMergedGroups.createDepartmentGroups(
-            expanded: _expandedGroups,
-            currentData: _data, // Pass current data order
-          )
+        ? TableStateService.createMergedGroups(_data, expanded: _expandedGroups)
         : [];
     debugPrint(
-        '📊 Updated merged groups: ${_mergedGroups.length} groups, expanded: $_expandedGroups');
+        '📊 Service-based merged groups: ${_mergedGroups.length} groups, expanded: $_expandedGroups');
   }
 
   /// Phase 4: Toggle merged rows display
@@ -345,7 +174,8 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
       // Maintain current sort when toggling merged rows
       if (_currentSortColumn != null &&
           _currentSortDirection != SortDirection.none) {
-        _sortData(_currentSortColumn!, _currentSortDirection);
+        TableDataService.sortData(
+            _data, _currentSortColumn!, _currentSortDirection);
       }
     });
     debugPrint('🔄 Toggled merged rows: $_showMergedRows');
@@ -373,44 +203,20 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
     debugPrint('🔄 Row $rowId expansion toggled. Expanded row');
   }
 
-  /// Phase 4: Handle merged row group expansion change
+  /// Handle merged row group expansion using service
   void _handleGroupExpansionChanged(String groupId) {
     setState(() {
-      // Find the group and toggle its expansion state
-      final groupIndex =
-          _mergedGroups.indexWhere((group) => group.groupId == groupId);
-      if (groupIndex != -1) {
-        final currentGroup = _mergedGroups[groupIndex];
-        final newExpansionState = !currentGroup.isExpanded;
+      // Find the current expansion state
+      final currentGroup = _mergedGroups.firstWhere(
+        (group) => group.groupId == groupId,
+        orElse: () => _mergedGroups.first, // Fallback
+      );
 
-        // Recreate merged groups with individual expansion state
-        _mergedGroups = DemoMergedGroups.createDepartmentGroups(
-          expanded: _expandedGroups, // Keep global setting
-          currentData: _data,
-        );
-
-        // Find the same group again and update its expansion state
-        final updatedGroupIndex = _mergedGroups.indexWhere((group) =>
-                group.groupId == groupId ||
-                group.rowKeys.join(',') ==
-                    currentGroup.rowKeys
-                        .join(',') // Fallback: match by row keys
-            );
-
-        if (updatedGroupIndex != -1) {
-          final updatedGroup = _mergedGroups[updatedGroupIndex];
-          _mergedGroups[updatedGroupIndex] = MergedRowGroup(
-            groupId: updatedGroup.groupId,
-            rowKeys: updatedGroup.rowKeys,
-            mergeConfig: updatedGroup.mergeConfig,
-            isExpandable: updatedGroup.isExpandable,
-            isExpanded: newExpansionState,
-            summaryRowData: updatedGroup.summaryRowData,
-          );
-        }
-      }
+      // Toggle expansion state using service
+      _mergedGroups = TableStateService.updateGroupExpansion(
+          _mergedGroups, groupId, !currentGroup.isExpanded);
     });
-    debugPrint('🔄 Group $groupId expansion toggled');
+    debugPrint('🔄 Service-based group $groupId expansion toggled');
   }
 
   /// Phase 4: Calculate dynamic row height based on department
@@ -624,7 +430,6 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
       ),
       selectionTheme: TablePlusSelectionTheme(
         selectedRowColor: Colors.blue.shade100.withValues(alpha: 0.6),
-        checkboxColor: Colors.blue.shade600,
       ),
       editableTheme: TablePlusEditableTheme(
         editingCellColor: Colors.yellow.shade100,
