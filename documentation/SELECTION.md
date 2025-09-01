@@ -177,7 +177,11 @@ class _SelectableTablePageState extends State<SelectableTablePage> {
 
 ## 4. Customizing Selection Appearance
 
-You can customize the appearance of selected rows, interaction effects, and checkboxes via the `TablePlusSelectionTheme`. See `THEMING.md` for more details on styling hover, splash, and highlight colors.
+You can customize the appearance of selected rows and checkboxes using the theme system:
+
+- **Row selection colors**: Use `TablePlusSelectionTheme` for selected row background and text styling
+- **Row interaction effects**: Use `TablePlusBodyTheme` for hover, splash, and highlight colors
+- **Checkboxes**: Use `TablePlusCheckboxTheme` for checkbox styling
 
 ```dart
 FlutterTablePlus(
@@ -185,9 +189,18 @@ FlutterTablePlus(
   theme: const TablePlusTheme(
     selectionTheme: TablePlusSelectionTheme(
       selectedRowColor: Color(0xFFE3F2FD), // Light blue for selected rows
-      checkboxColor: Colors.blue,
-      rowHoverColor: Colors.black.withValues(alpha: 0.05),
+      selectedRowTextStyle: TextStyle(fontWeight: FontWeight.w500),
+    ),
+    bodyTheme: TablePlusBodyTheme(
+      hoverColor: Colors.black.withValues(alpha: 0.05),
+      selectedRowHoverColor: Colors.blue.withValues(alpha: 0.1),
+    ),
+    checkboxTheme: TablePlusCheckboxTheme(
+      fillColor: WidgetStateProperty.all(Colors.blue),
+      size: 18.0,
     ),
   ),
 );
 ```
+
+**Note**: Some properties in `TablePlusSelectionTheme` are now deprecated in favor of more appropriate theme locations. See `THEMING.md` for the complete migration guide.

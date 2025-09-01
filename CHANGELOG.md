@@ -1,4 +1,4 @@
-## 1.15.6 (Unreleased)
+## 1.15.6
 
 *   **FEAT**: Added `TooltipBehavior.onlyTextOverflow` for smart tooltip display
     *   Tooltips now only appear when text actually overflows the available space
@@ -10,6 +10,14 @@
     *   Container background color is now conditionally applied based on CustomInkWell availability
     *   Hover effects from TablePlusSelectionTheme (rowHoverColor, selectedRowHoverColor) now work properly
 *   **FEAT**: Added tooltip overflow test page to example app for demonstrating smart tooltip behavior
+*   **REFACTOR**: Moved row interaction properties from TablePlusSelectionTheme to TablePlusBodyTheme
+    *   Moved `rowHoverColor`, `rowSplashColor`, `rowHighlightColor` to `TablePlusBodyTheme.hoverColor`, `splashColor`, `highlightColor`
+    *   Moved `selectedRowHoverColor`, `selectedRowSplashColor`, `selectedRowHighlightColor` to corresponding properties in `TablePlusBodyTheme`
+    *   Updated widget implementations to use `TablePlusBodyTheme` for row interaction effects
+*   **DEPRECATED**: Row interaction properties in TablePlusSelectionTheme will be removed in v1.16.0
+    *   Use corresponding properties in `TablePlusBodyTheme` instead
+    *   Added deprecation warnings and migration guidance in documentation
+*   **UPDATE**: Updated documentation (THEMING.md, SELECTION.md) to reflect new theme structure
 
 ## 1.15.5
 
