@@ -19,7 +19,6 @@ class TablePlusRow extends TablePlusRowWidget {
     required this.isSelectable,
     required this.selectionMode,
     required this.isSelected,
-    required this.selectionTheme,
     required this.onRowSelectionChanged,
     this.onCheckboxChanged,
     required this.isEditable,
@@ -52,7 +51,6 @@ class TablePlusRow extends TablePlusRowWidget {
   final bool isSelectable;
   final SelectionMode selectionMode;
   final bool isSelected;
-  final TablePlusSelectionTheme selectionTheme;
   final void Function(String rowId) onRowSelectionChanged;
   final void Function(String rowId)? onCheckboxChanged;
   final bool isEditable;
@@ -165,7 +163,6 @@ class _TablePlusRowState extends State<TablePlusRow> {
               rowId: widget.rowId,
               isSelected: widget.isSelected,
               theme: widget.theme,
-              selectionTheme: widget.selectionTheme,
               checkboxTheme: widget.checkboxTheme,
               onSelectionChanged:
                   widget.onCheckboxChanged ?? widget.onRowSelectionChanged,
@@ -186,7 +183,6 @@ class _TablePlusRowState extends State<TablePlusRow> {
                 widget.isCellEditing?.call(widget.rowIndex, column.key) ??
                     false,
             isSelected: widget.isSelected,
-            selectionTheme: widget.selectionTheme,
             cellController:
                 widget.getCellController?.call(widget.rowIndex, column.key),
             onCellTap: widget.onCellTap != null

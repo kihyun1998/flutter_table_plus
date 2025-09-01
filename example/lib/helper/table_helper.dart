@@ -264,38 +264,48 @@ ${isActive ? '✅ Active' : '❌ Inactive'}
           fontSize: 14,
           color: Color(0xFF212529),
         ),
-        showVerticalDividers: showVerticalDividers,
-        showHorizontalDividers: true,
-        dividerColor: Colors.grey.shade300,
-        dividerThickness: 1.0,
-        lastRowBorderBehavior: LastRowBorderBehavior.always,
-      ),
-      scrollbarTheme: const TablePlusScrollbarTheme(
-        hoverOnly: true,
-        opacity: 0.8,
-      ),
-      selectionTheme: TablePlusSelectionTheme(
+        // Selection styling moved from selectionTheme
         selectedRowColor: Color(0xFFE3F2FD),
-        checkboxColor: Color(0xFF2196F3),
-        checkboxHoverColor: Colors.blue.shade100,
-        checkboxFocusColor: Colors.blue.shade200,
-        checkboxFillColor: Colors.blue.shade600,
-        checkboxSide: BorderSide(
-          color: Colors.purple.shade400,
-          width: 2.0,
-        ),
-        checkboxSize: 18.0,
-        rowHoverColor: Colors.red,
-        rowSplashColor: Colors.green,
-        rowHighlightColor: Colors.blue,
-        selectedRowHoverColor: Colors.red,
-        selectedRowSplashColor: Colors.green,
-        selectedRowHighlightColor: Colors.blue,
         selectedRowTextStyle: TextStyle(
           fontSize: 14,
           color: Color(0xFF1565C0),
           fontWeight: FontWeight.w600,
         ),
+        showVerticalDividers: showVerticalDividers,
+        showHorizontalDividers: true,
+        dividerColor: Colors.grey.shade300,
+        dividerThickness: 1.0,
+        lastRowBorderBehavior: LastRowBorderBehavior.always,
+        // Row interaction colors moved from selectionTheme
+        hoverColor: Colors.red,
+        splashColor: Colors.green,
+        highlightColor: Colors.blue,
+        selectedRowHoverColor: Colors.red,
+        selectedRowSplashColor: Colors.green,
+        selectedRowHighlightColor: Colors.blue,
+      ),
+      scrollbarTheme: const TablePlusScrollbarTheme(
+        hoverOnly: true,
+        opacity: 0.8,
+      ),
+      checkboxTheme: TablePlusCheckboxTheme(
+        // Checkbox colors and styling
+        fillColor: WidgetStateProperty.resolveWith<Color?>((states) {
+          if (states.contains(WidgetState.selected)) {
+            return Colors.blue.shade600;
+          }
+          return Colors.transparent;
+        }),
+        hoverColor: Colors.blue.shade100,
+        focusColor: Colors.blue.shade200,
+        side: BorderSide(
+          color: Colors.purple.shade400,
+          width: 2.0,
+        ),
+        size: 18.0,
+        showCheckboxColumn: true,
+        showSelectAllCheckbox: true,
+        checkboxColumnWidth: 60.0,
       ),
       editableTheme: const TablePlusEditableTheme(
         editingCellColor: Color(0xFFFFFDE7),

@@ -433,11 +433,6 @@ class _ExpandableSummaryExampleState extends State<ExpandableSummaryExample> {
         textStyle: textStyle,
         padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       ),
-      selectionTheme: TablePlusSelectionTheme(
-        checkboxColor: Color(0xFF6A1B9A), // Colors.purple.shade600 equivalent
-        selectedRowColor:
-            Color(0xFFE1BEE7), // Colors.purple.shade100 equivalent with alpha
-      ),
     );
 
     // Get columns for height calculation

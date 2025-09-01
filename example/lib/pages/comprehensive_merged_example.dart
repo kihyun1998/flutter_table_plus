@@ -920,6 +920,7 @@ class _ComprehensiveMergedExampleState
                       lastRowBorderBehavior: _borderBehavior,
                       dividerColor: Colors.blue.shade200,
                       alternateRowColor: Colors.blue.shade50,
+                      selectedRowColor: Colors.blue.shade100,
                     ),
                     headerTheme: TablePlusHeaderTheme(
                       backgroundColor: Colors.blue.shade50,
@@ -927,10 +928,6 @@ class _ComprehensiveMergedExampleState
                         fontWeight: FontWeight.w600,
                         color: Colors.blue.shade800,
                       ),
-                    ),
-                    selectionTheme: TablePlusSelectionTheme(
-                      selectedRowColor: Colors.blue.shade100,
-                      checkboxColor: Colors.blue.shade600,
                     ),
                   ),
                 ),

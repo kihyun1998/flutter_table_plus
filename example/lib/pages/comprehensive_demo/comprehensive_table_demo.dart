@@ -427,10 +427,9 @@ class _ComprehensiveTableDemoState extends State<ComprehensiveTableDemo> {
         dividerColor: Colors.grey.shade300,
         showHorizontalDividers: true,
         showVerticalDividers: true,
-      ),
-      selectionTheme: TablePlusSelectionTheme(
         selectedRowColor: Colors.blue.shade100.withValues(alpha: 0.6),
       ),
+
       editableTheme: TablePlusEditableTheme(
         editingCellColor: Colors.yellow.shade100,
         editingBorderColor: Colors.orange.shade400,

@@ -11,7 +11,6 @@ class TablePlusSelectionCell extends StatelessWidget {
     required this.rowId,
     required this.isSelected,
     required this.theme,
-    required this.selectionTheme,
     required this.onSelectionChanged,
     this.calculatedHeight,
     this.checkboxTheme = const TablePlusCheckboxTheme(),
@@ -21,7 +20,6 @@ class TablePlusSelectionCell extends StatelessWidget {
   final String? rowId;
   final bool isSelected;
   final TablePlusBodyTheme theme;
-  final TablePlusSelectionTheme selectionTheme;
   final void Function(String rowId) onSelectionChanged;
   final double? calculatedHeight;
   final TablePlusCheckboxTheme checkboxTheme;
@@ -44,23 +42,18 @@ class TablePlusSelectionCell extends StatelessWidget {
       ),
       child: Center(
         child: SizedBox(
-          width: selectionTheme.getEffectiveCheckboxSize(checkboxTheme),
-          height: selectionTheme.getEffectiveCheckboxSize(checkboxTheme),
+          width: checkboxTheme.size,
+          height: checkboxTheme.size,
           child: Checkbox(
             value: isSelected,
             onChanged:
                 rowId != null ? (value) => onSelectionChanged(rowId!) : null,
-            // Use deprecated properties if available, otherwise fall back to checkboxTheme
-            activeColor:
-                selectionTheme.getEffectiveCheckboxActiveColor(checkboxTheme),
-            hoverColor:
-                selectionTheme.getEffectiveCheckboxHoverColor(checkboxTheme),
-            focusColor:
-                selectionTheme.getEffectiveCheckboxFocusColor(checkboxTheme),
-            fillColor:
-                selectionTheme.getEffectiveCheckboxFillColor(checkboxTheme),
+            activeColor: checkboxTheme.fillColor?.resolve({WidgetState.selected}),
+            hoverColor: checkboxTheme.hoverColor,
+            focusColor: checkboxTheme.focusColor,
+            fillColor: checkboxTheme.fillColor,
             checkColor: checkboxTheme.checkColor,
-            side: selectionTheme.getEffectiveCheckboxSide(checkboxTheme),
+            side: checkboxTheme.side,
             shape: checkboxTheme.shape,
             mouseCursor: checkboxTheme.mouseCursor,
             materialTapTargetSize: checkboxTheme.materialTapTargetSize ??

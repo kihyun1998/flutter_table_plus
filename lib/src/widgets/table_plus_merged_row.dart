@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../flutter_table_plus.dart'
-    show TablePlusSelectionTheme, LastRowBorderBehavior, HoverButtonPosition;
+    show LastRowBorderBehavior, HoverButtonPosition;
 import '../models/merged_row_group.dart';
 import '../models/table_column.dart';
 import '../models/theme/body_theme.dart' show TablePlusBodyTheme;
@@ -30,7 +30,6 @@ class TablePlusMergedRow extends TablePlusRowWidget {
     required this.isSelectable,
     required this.selectionMode,
     required this.isSelected,
-    required this.selectionTheme,
     required this.onRowSelectionChanged,
     this.onCheckboxChanged,
     required this.isEditable,
@@ -70,7 +69,6 @@ class TablePlusMergedRow extends TablePlusRowWidget {
   final bool isSelectable;
   final SelectionMode selectionMode;
   final bool isSelected;
-  final TablePlusSelectionTheme selectionTheme;
   final void Function(String rowId) onRowSelectionChanged;
   final void Function(String rowId)? onCheckboxChanged;
   final bool isEditable;
@@ -252,10 +250,7 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
       final displayValue = (rowData ?? {})[column.key]?.toString() ?? '';
       Widget textWidget = Text(
         displayValue,
-        style: widget.selectionTheme.getEffectiveTextStyle(
-          widget.isSelected,
-          widget.theme.textStyle,
-        ),
+        style: widget.theme.getEffectiveTextStyle(widget.isSelected),
         textAlign: column.textAlign,
         overflow: column.textOverflow,
       );
@@ -439,10 +434,7 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
       final displayValue = (rowData ?? {})[column.key]?.toString() ?? '';
       Widget textWidget = Text(
         displayValue,
-        style: widget.selectionTheme.getEffectiveTextStyle(
-          widget.isSelected,
-          widget.theme.textStyle,
-        ),
+        style: widget.theme.getEffectiveTextStyle(widget.isSelected),
         textAlign: column.textAlign,
         overflow: column.textOverflow,
       );
@@ -530,12 +522,9 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
 
       Widget textWidget = Text(
         displayValue,
-        style: widget.selectionTheme.getEffectiveTextStyle(
-          widget.isSelected,
-          widget.theme.textStyle.copyWith(
-            fontWeight: FontWeight.w600, // Make summary text slightly bolder
-            color: widget.theme.textStyle.color?.withValues(alpha: 0.8),
-          ),
+        style: widget.theme.getEffectiveTextStyle(widget.isSelected).copyWith(
+          fontWeight: FontWeight.w600, // Make summary text slightly bolder
+          color: widget.theme.getEffectiveTextStyle(widget.isSelected).color?.withValues(alpha: 0.8),
         ),
         textAlign: column.textAlign,
         overflow: column.textOverflow,
@@ -663,7 +652,7 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
           context: context,
           text: displayValue,
           maxWidth: availableWidth,
-          style: widget.theme.textStyle,
+          style: widget.theme.getEffectiveTextStyle(widget.isSelected),
         );
     }
   }
@@ -714,26 +703,18 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             SizedBox(
-              width: widget.selectionTheme
-                  .getEffectiveCheckboxSize(widget.checkboxTheme),
-              height: widget.selectionTheme
-                  .getEffectiveCheckboxSize(widget.checkboxTheme),
+              width: widget.checkboxTheme.size,
+              height: widget.checkboxTheme.size,
               child: Checkbox(
                 value: widget.isSelected,
                 onChanged: (value) => (widget.onCheckboxChanged ??
                     widget.onRowSelectionChanged)(widget.mergeGroup.groupId),
-                // Use deprecated properties if available, otherwise fall back to checkboxTheme
-                activeColor: widget.selectionTheme
-                    .getEffectiveCheckboxActiveColor(widget.checkboxTheme),
-                hoverColor: widget.selectionTheme
-                    .getEffectiveCheckboxHoverColor(widget.checkboxTheme),
-                focusColor: widget.selectionTheme
-                    .getEffectiveCheckboxFocusColor(widget.checkboxTheme),
-                fillColor: widget.selectionTheme
-                    .getEffectiveCheckboxFillColor(widget.checkboxTheme),
+                activeColor: widget.checkboxTheme.fillColor?.resolve({WidgetState.selected}),
+                hoverColor: widget.checkboxTheme.hoverColor,
+                focusColor: widget.checkboxTheme.focusColor,
+                fillColor: widget.checkboxTheme.fillColor,
                 checkColor: widget.checkboxTheme.checkColor,
-                side: widget.selectionTheme
-                    .getEffectiveCheckboxSide(widget.checkboxTheme),
+                side: widget.checkboxTheme.side,
                 shape: widget.checkboxTheme.shape,
                 mouseCursor: widget.checkboxTheme.mouseCursor,
                 materialTapTargetSize:

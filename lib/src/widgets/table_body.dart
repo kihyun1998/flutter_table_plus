@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_table_plus/src/widgets/table_plus_row.dart';
 
 import '../../flutter_table_plus.dart'
-    show
-        TablePlusSelectionTheme,
-        HoverButtonPosition,
-        TablePlusHoverButtonTheme;
+    show HoverButtonPosition, TablePlusHoverButtonTheme;
 import '../models/merged_row_group.dart';
 import '../models/table_column.dart';
 import '../models/theme/body_theme.dart' show TablePlusBodyTheme;
@@ -30,7 +27,6 @@ class TablePlusBody extends StatelessWidget {
     this.isSelectable = false,
     this.selectionMode = SelectionMode.multiple,
     this.selectedRows = const <String>{},
-    this.selectionTheme = const TablePlusSelectionTheme(),
     this.onRowSelectionChanged,
     this.onCheckboxChanged,
     this.onRowDoubleTap,
@@ -84,7 +80,6 @@ class TablePlusBody extends StatelessWidget {
   final Set<String> selectedRows;
 
   /// The theme configuration for selection.
-  final TablePlusSelectionTheme selectionTheme;
 
   /// Callback when a row's selection state changes via row click.
   final void Function(String rowId, bool isSelected)? onRowSelectionChanged;
@@ -160,7 +155,7 @@ class TablePlusBody extends StatelessWidget {
   Color _getRowColor(int index, bool isSelected) {
     // Selected rows get selection color
     if (isSelected && isSelectable) {
-      return selectionTheme.selectedRowColor;
+      return theme.selectedRowColor;
     }
 
     // Alternate row colors
@@ -404,7 +399,6 @@ class TablePlusBody extends StatelessWidget {
           isSelectable: isSelectable,
           selectionMode: selectionMode,
           isSelected: isSelected,
-          selectionTheme: selectionTheme,
           checkboxTheme: checkboxTheme,
           onRowSelectionChanged: _handleRowSelectionToggle,
           onCheckboxChanged: _handleCheckboxToggle,
@@ -448,7 +442,6 @@ class TablePlusBody extends StatelessWidget {
       isSelectable: isSelectable,
       selectionMode: selectionMode,
       isSelected: isSelected,
-      selectionTheme: selectionTheme,
       checkboxTheme: checkboxTheme,
       onRowSelectionChanged: _handleRowSelectionToggle,
       onCheckboxChanged: _handleCheckboxToggle,

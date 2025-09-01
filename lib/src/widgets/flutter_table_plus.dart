@@ -364,14 +364,14 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
   }
 
   /// Get the current theme, using default if not provided.
-  /// Automatically adjusts selection theme based on selection mode.
+  /// Automatically adjusts checkbox theme based on selection mode.
   TablePlusTheme get _currentTheme {
     final baseTheme = widget.theme ?? TablePlusTheme.defaultTheme;
 
     // For single selection mode, automatically disable select-all checkbox
     if (widget.isSelectable && widget.selectionMode == SelectionMode.single) {
       return baseTheme.copyWith(
-        selectionTheme: baseTheme.selectionTheme.copyWith(
+        checkboxTheme: baseTheme.checkboxTheme.copyWith(
           showSelectAllCheckbox: false,
         ),
       );
@@ -390,11 +390,8 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
       ..sort((a, b) => a.order.compareTo(b.order));
 
     // Add selection column at the beginning if selectable
-    if (widget.isSelectable &&
-        _currentTheme.selectionTheme
-            .getEffectiveShowCheckboxColumn(_currentTheme.checkboxTheme)) {
-      final checkboxColumnWidth = _currentTheme.selectionTheme
-          .getEffectiveCheckboxColumnWidth(_currentTheme.checkboxTheme);
+    if (widget.isSelectable && _currentTheme.checkboxTheme.showCheckboxColumn) {
+      final checkboxColumnWidth = _currentTheme.checkboxTheme.checkboxColumnWidth;
       final selectionColumn = TablePlusColumn(
         key: '__selection__', // Special key for selection column
         label: '', // Empty label, will show select-all checkbox
@@ -697,7 +694,6 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                               selectedRows: widget.selectedRows,
                               sortCycleOrder: widget.sortCycleOrder,
                               totalRowCount: _getTotalRowCount(),
-                              selectionTheme: theme.selectionTheme,
                               tooltipTheme: theme.tooltipTheme,
                               checkboxTheme: theme.checkboxTheme,
                               onSelectAll: widget.onSelectAll,
@@ -732,8 +728,6 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                             isSelectable: widget.isSelectable,
                                             selectionMode: widget.selectionMode,
                                             selectedRows: widget.selectedRows,
-                                            selectionTheme:
-                                                theme.selectionTheme,
                                             checkboxTheme: theme.checkboxTheme,
                                             onRowSelectionChanged:
                                                 widget.onRowSelectionChanged,

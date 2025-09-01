@@ -26,6 +26,9 @@ class TablePlusBodyTheme {
       fontSize: 14,
       color: Color(0xFF212121),
     ),
+    // Selection styling
+    this.selectedRowColor = const Color(0xFFE3F2FD),
+    this.selectedRowTextStyle,
     this.padding = const EdgeInsets.symmetric(horizontal: 16.0),
     this.dividerColor = const Color(0xFFE0E0E0),
     this.dividerThickness = 1.0,
@@ -57,6 +60,13 @@ class TablePlusBodyTheme {
 
   /// The text style for body cells.
   final TextStyle textStyle;
+
+  /// The background color for selected rows.
+  final Color selectedRowColor;
+
+  /// The text style for selected rows.
+  /// If null, the default [textStyle] will be used.
+  final TextStyle? selectedRowTextStyle;
 
   /// The padding inside body cells.
   final EdgeInsets padding;
@@ -117,6 +127,8 @@ class TablePlusBodyTheme {
     Color? alternateRowColor,
     Color? summaryRowBackgroundColor,
     TextStyle? textStyle,
+    Color? selectedRowColor,
+    TextStyle? selectedRowTextStyle,
     EdgeInsets? padding,
     Color? dividerColor,
     double? dividerThickness,
@@ -137,6 +149,8 @@ class TablePlusBodyTheme {
       summaryRowBackgroundColor:
           summaryRowBackgroundColor ?? this.summaryRowBackgroundColor,
       textStyle: textStyle ?? this.textStyle,
+      selectedRowColor: selectedRowColor ?? this.selectedRowColor,
+      selectedRowTextStyle: selectedRowTextStyle ?? this.selectedRowTextStyle,
       padding: padding ?? this.padding,
       dividerColor: dividerColor ?? this.dividerColor,
       dividerThickness: dividerThickness ?? this.dividerThickness,
@@ -184,6 +198,17 @@ class TablePlusBodyTheme {
       return selectedRowHighlightColor;
     } else {
       return highlightColor;
+    }
+  }
+
+  /// Gets the effective text style for rows based on selection state.
+  /// Returns the selected row text style if available and row is selected,
+  /// otherwise returns the default body text style.
+  TextStyle getEffectiveTextStyle(bool isSelected) {
+    if (isSelected && selectedRowTextStyle != null) {
+      return selectedRowTextStyle!;
+    } else {
+      return textStyle;
     }
   }
 }
