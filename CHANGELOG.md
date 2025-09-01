@@ -1,4 +1,4 @@
-## 1.16.1 (unreleased)
+## 1.16.1
 
 *   **FEAT**: Enhanced `onRowSecondaryTapDown` callback with selection state information
     *   Added `isSelected` parameter to provide row selection state during right-click/long-press events
