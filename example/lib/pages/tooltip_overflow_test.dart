@@ -6,7 +6,8 @@ class TooltipOverflowTestPage extends StatefulWidget {
   const TooltipOverflowTestPage({super.key});
 
   @override
-  State<TooltipOverflowTestPage> createState() => _TooltipOverflowTestPageState();
+  State<TooltipOverflowTestPage> createState() =>
+      _TooltipOverflowTestPageState();
 }
 
 class _TooltipOverflowTestPageState extends State<TooltipOverflowTestPage> {
@@ -50,14 +51,17 @@ class _TooltipOverflowTestPageState extends State<TooltipOverflowTestPage> {
     {
       'id': 1,
       'short': 'Short text',
-      'long': 'This is a very long text that should definitely overflow and trigger the onlyTextOverflow tooltip behavior',
+      'long':
+          'This is a very long text that should definitely overflow and trigger the onlyTextOverflow tooltip behavior',
       'always': 'Short',
-      'never': 'This text is long but will never show tooltip due to never behavior',
+      'never':
+          'This text is long but will never show tooltip due to never behavior',
     },
     {
       'id': 2,
       'short': 'OK',
-      'long': 'Another very long text content that exceeds the column width and should show tooltip only when it actually overflows',
+      'long':
+          'Another very long text content that exceeds the column width and should show tooltip only when it actually overflows',
       'always': 'Also short',
       'never': 'Long text that will be cut off but no tooltip will appear',
     },
@@ -90,17 +94,23 @@ class _TooltipOverflowTestPageState extends State<TooltipOverflowTestPage> {
                   children: [
                     Text(
                       'Tooltip Behavior Test',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 8),
-                    Text('• Short Content: Only shows tooltip when text overflows'),
-                    Text('• Long Content: Only shows tooltip when text overflows (header too)'),
-                    Text('• Always Shows: Always shows tooltip regardless of overflow'),
-                    Text('• Never Shows: Never shows tooltip even when text overflows'),
+                    Text(
+                        '• Short Content: Only shows tooltip when text overflows'),
+                    Text(
+                        '• Long Content: Only shows tooltip when text overflows (header too)'),
+                    Text(
+                        '• Always Shows: Always shows tooltip regardless of overflow'),
+                    Text(
+                        '• Never Shows: Never shows tooltip even when text overflows'),
                     SizedBox(height: 8),
                     Text(
                       'Hover over cells and headers to test tooltip behavior!',
-                      style: TextStyle(fontStyle: FontStyle.italic, color: Colors.blue),
+                      style: TextStyle(
+                          fontStyle: FontStyle.italic, color: Colors.blue),
                     ),
                   ],
                 ),

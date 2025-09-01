@@ -187,7 +187,8 @@ class ExampleHomePage extends StatelessWidget {
               child: ListTile(
                 leading: const Icon(Icons.info_outline, color: Colors.green),
                 title: const Text('Tooltip Overflow Test'),
-                subtitle: const Text('Smart tooltip behavior - onlyTextOverflow - NEW!'),
+                subtitle: const Text(
+                    'Smart tooltip behavior - onlyTextOverflow - NEW!'),
                 trailing: const Icon(Icons.arrow_forward_ios),
                 onTap: () {
                   Navigator.push(

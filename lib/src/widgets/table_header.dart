@@ -390,9 +390,11 @@ class _HeaderCell extends StatelessWidget {
       case TooltipBehavior.onlyTextOverflow:
         // Calculate available width for the header text
         final padding = theme.padding;
-        final sortIconWidth = column.sortable && onSortClick != null ? 24.0 : 0.0; // Approximate sort icon width
+        final sortIconWidth = column.sortable && onSortClick != null
+            ? 24.0
+            : 0.0; // Approximate sort icon width
         final availableWidth = width - padding.horizontal - sortIconWidth;
-        
+
         // Use TextOverflowDetector to check if text would overflow
         return TextOverflowDetector.willTextOverflowInContext(
           context: context,

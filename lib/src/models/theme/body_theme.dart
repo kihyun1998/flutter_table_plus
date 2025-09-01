@@ -148,9 +148,12 @@ class TablePlusBodyTheme {
       hoverColor: hoverColor ?? this.hoverColor,
       splashColor: splashColor ?? this.splashColor,
       highlightColor: highlightColor ?? this.highlightColor,
-      selectedRowHoverColor: selectedRowHoverColor ?? this.selectedRowHoverColor,
-      selectedRowSplashColor: selectedRowSplashColor ?? this.selectedRowSplashColor,
-      selectedRowHighlightColor: selectedRowHighlightColor ?? this.selectedRowHighlightColor,
+      selectedRowHoverColor:
+          selectedRowHoverColor ?? this.selectedRowHoverColor,
+      selectedRowSplashColor:
+          selectedRowSplashColor ?? this.selectedRowSplashColor,
+      selectedRowHighlightColor:
+          selectedRowHighlightColor ?? this.selectedRowHighlightColor,
     );
   }
 

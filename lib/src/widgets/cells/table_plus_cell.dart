@@ -236,11 +236,11 @@ class _TablePlusCellState extends State<TablePlusCell> {
         if (widget.column.textOverflow != TextOverflow.ellipsis) {
           return false;
         }
-        
+
         // Calculate available width for the cell content
         final padding = widget.theme.padding;
         final availableWidth = widget.width - padding.horizontal;
-        
+
         // Use TextOverflowDetector to check if text would overflow
         return TextOverflowDetector.willTextOverflowInContext(
           context: context,
