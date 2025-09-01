@@ -1,3 +1,11 @@
+## 1.16.2
+
+*   **FEAT**: Added configurable `doubleClickTime` to `TablePlusBodyTheme`
+    *   Double-click timing for row interactions is now customizable through theme
+    *   Default value changed from 300ms to 500ms for improved user experience
+    *   Applies to both regular rows and merged row groups
+    *   Usage: `bodyTheme: TablePlusBodyTheme(doubleClickTime: Duration(milliseconds: 400))`
+
 ## 1.16.1
 
 *   **FEAT**: Enhanced `onRowSecondaryTapDown` callback with selection state information

@@ -118,6 +118,7 @@ Row interaction effects like hover, splash, and highlight are now configured in 
 - `hoverColor` / `selectedRowHoverColor`: Colors for hover effects on unselected/selected rows
 - `splashColor` / `selectedRowSplashColor`: Colors for tap splash effects on unselected/selected rows  
 - `highlightColor` / `selectedRowHighlightColor`: Colors for highlight effects on unselected/selected rows
+- `doubleClickTime`: Duration for double-click detection timing (defaults to 500ms)
 
 ### Example
 
@@ -131,6 +132,9 @@ theme: TablePlusTheme(
     // Disable splash effects
     splashColor: Colors.transparent,
     selectedRowSplashColor: Colors.transparent,
+    
+    // Custom double-click timing
+    doubleClickTime: Duration(milliseconds: 400),
   ),
 ),
 ```
