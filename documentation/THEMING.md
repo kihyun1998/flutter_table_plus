@@ -12,8 +12,7 @@ FlutterTablePlus(
   theme: const TablePlusTheme(
     headerTheme: TablePlusHeaderTheme(/* ... */),
     bodyTheme: TablePlusBodyTheme(/* ... */),
-    selectionTheme: TablePlusSelectionTheme(/* ... */),
-    checkboxTheme: TablePlusCheckboxTheme(/* ... */), // New!
+    checkboxTheme: TablePlusCheckboxTheme(/* ... */),
     scrollbarTheme: TablePlusScrollbarTheme(/* ... */),
     editableTheme: TablePlusEditableTheme(/* ... */),
     tooltipTheme: TablePlusTooltipTheme(/* ... */),
@@ -136,59 +135,8 @@ theme: TablePlusTheme(
 ),
 ```
 
-## 5. Selection Styling (`TablePlusSelectionTheme`)
 
-This theme now focuses purely on selection-related appearance:
-
-- `selectedRowColor`: The background color applied to a row when it is selected.
-- `selectedRowTextStyle`: The `TextStyle` for cell content in a selected row. If `null`, it defaults to `bodyTheme.textStyle`.
-
-### Deprecated Properties
-
-**⚠️ DEPRECATED:** The following properties are deprecated and will be removed in v1.16.0:
-
-**Checkbox Properties** - Use `TablePlusCheckboxTheme` instead:
-- ~~`checkboxColor`~~ → Use `TablePlusCheckboxTheme.fillColor`
-- ~~`checkboxHoverColor`~~ → Use `TablePlusCheckboxTheme.hoverColor`
-- ~~`checkboxFocusColor`~~ → Use `TablePlusCheckboxTheme.focusColor`
-- ~~`checkboxFillColor`~~ → Use `TablePlusCheckboxTheme.fillColor`
-- ~~`checkboxSide`~~ → Use `TablePlusCheckboxTheme.side`
-- ~~`checkboxSize`~~ → Use `TablePlusCheckboxTheme.size`
-- ~~`checkboxColumnWidth`~~ → Use `TablePlusCheckboxTheme.checkboxColumnWidth`
-- ~~`showCheckboxColumn`~~ → Use `TablePlusCheckboxTheme.showCheckboxColumn`
-- ~~`showSelectAllCheckbox`~~ → Use `TablePlusCheckboxTheme.showSelectAllCheckbox`
-
-**Row Interaction Properties** - Use `TablePlusBodyTheme` instead:
-- ~~`rowHoverColor`~~ → Use `TablePlusBodyTheme.hoverColor`
-- ~~`rowSplashColor`~~ → Use `TablePlusBodyTheme.splashColor`
-- ~~`rowHighlightColor`~~ → Use `TablePlusBodyTheme.highlightColor`
-- ~~`selectedRowHoverColor`~~ → Use `TablePlusBodyTheme.selectedRowHoverColor`
-- ~~`selectedRowSplashColor`~~ → Use `TablePlusBodyTheme.selectedRowSplashColor`
-- ~~`selectedRowHighlightColor`~~ → Use `TablePlusBodyTheme.selectedRowHighlightColor`
-
-### Example
-
-```dart
-theme: TablePlusTheme(
-  selectionTheme: TablePlusSelectionTheme(
-    selectedRowColor: Colors.blue.shade100,
-    selectedRowTextStyle: TextStyle(fontWeight: FontWeight.w500),
-  ),
-  bodyTheme: TablePlusBodyTheme(
-    // Use default hover for normal rows
-    hoverColor: null, 
-    
-    // Use a custom semi-transparent blue for selected row hover
-    selectedRowHoverColor: Colors.blue.withValues(alpha: 0.1), 
-    
-    // Disable the splash effect entirely
-    splashColor: Colors.transparent,
-    selectedRowSplashColor: Colors.transparent,
-  ),
-),
-```
-
-## 6. Checkbox Styling (`TablePlusCheckboxTheme`)
+## 5. Checkbox Styling (`TablePlusCheckboxTheme`)
 
 This theme provides comprehensive styling options for table checkboxes, supporting both the latest Flutter Material 3 design system with `WidgetStateProperty` and legacy single-color properties.
 
@@ -279,40 +227,48 @@ theme: TablePlusTheme(
 
 #### Legacy Style (For Backward Compatibility)
 
-```dart
-// This still works but shows deprecation warnings
-theme: TablePlusTheme(
-  selectionTheme: TablePlusSelectionTheme(
-    checkboxColor: Colors.blue.shade700,        // Deprecated
-    checkboxHoverColor: Colors.blue.shade200,   // Deprecated
-    checkboxSize: 18.0,                         // Deprecated
-    // ... other deprecated properties
-  ),
-),
-```
 
-**Note:** When both deprecated `selectionTheme` checkbox properties and new `checkboxTheme` properties are provided, the deprecated properties take precedence for backward compatibility. For new projects, use `TablePlusCheckboxTheme` exclusively.
-
-## 7. Scrollbar Styling (`TablePlusScrollbarTheme`)
+## 6. Scrollbar Styling (`TablePlusScrollbarTheme`)
 
 This theme controls the appearance and behavior of the synchronized scrollbars.
 
-- `width`: The thickness of the scrollbar.
-- `color`: The color of the scrollbar thumb (the part you drag).
-- `trackColor`: The color of the scrollbar track.
+- `trackWidth`: The width of the scrollbar track container.
+- `thickness`: The thickness of the scrollbar thumb. If null, defaults to `trackWidth * 0.7`.
+- `radius`: The corner radius of both track and thumb. If null, defaults to `trackWidth / 2`.
+- `thumbColor`: The color of the scrollbar thumb (the part you drag).
+- `trackColor`: The color of the scrollbar track background.
+- `trackBorder`: Optional border styling for the scrollbar track using Flutter's `Border` class.
 - `hoverOnly`: If `true`, the scrollbars will only be visible when the mouse is hovering over the table.
 - `animationDuration`: The fade-in/out duration for the scrollbar when `hoverOnly` is true.
 - **Dynamic Visibility**: Scrollbars are now dynamically shown or hidden based on content overflow, providing a cleaner UI when not needed.
 
-## 8. Editable Cell Styling (`TablePlusEditableTheme`)
+### Example
+
+```dart
+scrollbarTheme: const TablePlusScrollbarTheme(
+  trackWidth: 16.0,                    // Track container size
+  thickness: 12.0,                     // Thumb size (or null for auto)
+  radius: 8.0,                         // Corner rounding (or null for auto)
+  thumbColor: Colors.blueGrey,         // Thumb color
+  trackColor: Colors.grey.shade200,    // Track background
+  trackBorder: Border.all(             // Optional track border
+    color: Colors.grey.shade400,
+    width: 1.0,
+  ),
+  hoverOnly: true,                     // Show only on hover
+  animationDuration: Duration(milliseconds: 200),
+),
+```
+
+## 7. Editable Cell Styling (`TablePlusEditableTheme`)
 
 Controls the appearance of cells in editing mode. See `EDITING.md` for more details.
 
-## 9. Tooltip Styling (`TablePlusTooltipTheme`)
+## 8. Tooltip Styling (`TablePlusTooltipTheme`)
 
 Controls the appearance of tooltips that appear when cell content overflows. See `ADVANCED_COLUMNS.md` for more details.
 
-## 10. Last Row Border Behavior (`lastRowBorderBehavior`)
+## 9. Last Row Border Behavior (`lastRowBorderBehavior`)
 
 The `lastRowBorderBehavior` property in `TablePlusBodyTheme` gives you fine-grained control over when the bottom border of the very last row in the table is displayed. This is useful for achieving a clean, polished look in different scenarios.
 

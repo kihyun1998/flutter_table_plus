@@ -148,11 +148,9 @@ FlutterTablePlus(
     bodyTheme: TablePlusBodyTheme(
       rowHeight: 48,
       alternateRowColor: Colors.grey.shade50,
-    ),
-    selectionTheme: TablePlusSelectionTheme(
       selectedRowColor: Colors.blue.withValues(alpha: 0.2),
-      rowHoverColor: Colors.blue.withValues(alpha: 0.05), // Custom hover color
-      rowSplashColor: null, // Use default splash effect
+      hoverColor: Colors.blue.withValues(alpha: 0.05), // Custom hover color
+      splashColor: null, // Use default splash effect
       selectedRowSplashColor: Colors.transparent, // Disable splash for selected rows
     ),
   ),

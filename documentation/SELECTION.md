@@ -63,7 +63,7 @@ The table delegates selection state management to the parent widget. You need to
 - `onCheckboxChanged`: Called when a checkbox is clicked specifically. If not provided, falls back to `onRowSelectionChanged`. This allows you to distinguish between row clicks and checkbox clicks for different behaviors.
 - `onSelectAll`: Called when the header checkbox is clicked. This callback needs to handle selecting/deselecting both individual rows and merged groups. **Note:** This is only relevant for `SelectionMode.multiple`.
 - `onRowDoubleTap`: Called when a row is double-tapped. Provides the `rowId`. Active only when `isSelectable` is `true`.
-- `onRowSecondaryTap`: Called when a row is right-clicked or long-pressed. Provides the `rowId`. Active only when `isSelectable` is `true`.
+- `onRowSecondaryTapDown`: Called when a row is right-clicked or long-pressed. Provides the `rowId`, `TapDownDetails`, `RenderBox`, and `isSelected` state for precise context menu positioning. Active only when `isSelectable` is `true`.
 
 ### Example with `StatefulWidget`
 
@@ -179,7 +179,7 @@ class _SelectableTablePageState extends State<SelectableTablePage> {
 
 You can customize the appearance of selected rows and checkboxes using the theme system:
 
-- **Row selection colors**: Use `TablePlusSelectionTheme` for selected row background and text styling
+- **Row selection colors**: Use `TablePlusBodyTheme` for selected row background and text styling
 - **Row interaction effects**: Use `TablePlusBodyTheme` for hover, splash, and highlight colors
 - **Checkboxes**: Use `TablePlusCheckboxTheme` for checkbox styling
 
@@ -187,11 +187,9 @@ You can customize the appearance of selected rows and checkboxes using the theme
 FlutterTablePlus(
   // ... other properties
   theme: const TablePlusTheme(
-    selectionTheme: TablePlusSelectionTheme(
+    bodyTheme: TablePlusBodyTheme(
       selectedRowColor: Color(0xFFE3F2FD), // Light blue for selected rows
       selectedRowTextStyle: TextStyle(fontWeight: FontWeight.w500),
-    ),
-    bodyTheme: TablePlusBodyTheme(
       hoverColor: Colors.black.withValues(alpha: 0.05),
       selectedRowHoverColor: Colors.blue.withValues(alpha: 0.1),
     ),
@@ -202,5 +200,3 @@ FlutterTablePlus(
   ),
 );
 ```
-
-**Note**: Some properties in `TablePlusSelectionTheme` are now deprecated in favor of more appropriate theme locations. See `THEMING.md` for the complete migration guide.
