@@ -765,9 +765,15 @@ class _TableExamplePageState extends State<TableExamplePage> {
                         ),
                       );
                     },
-                    onRowSecondaryTapDown: (rowId, details, renderBox) {
+                    onRowSecondaryTapDown: (
+                      rowId,
+                      details,
+                      renderBox,
+                      isSelected,
+                    ) {
                       _showContextMenu(context, rowId, details, renderBox);
                     },
+
                     // No data widget
                     noDataWidget: const Center(
                       child: Column(

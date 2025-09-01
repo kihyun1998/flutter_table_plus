@@ -80,8 +80,7 @@ class TablePlusMergedRow extends TablePlusRowWidget {
   final void Function(int rowIndex, String columnKey)? onCellTap;
   final void Function({required bool save})? onStopEditing;
   final void Function(String rowId)? onRowDoubleTap;
-  final void Function(
-          String rowId, TapDownDetails details, RenderBox renderBox)?
+  final void Function(String rowId, TapDownDetails details, RenderBox renderBox, bool isSelected)?
       onRowSecondaryTapDown;
   final void Function(String groupId, String columnKey, dynamic newValue)?
       onMergedCellChanged;
@@ -863,7 +862,7 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
         onDoubleTap: () =>
             widget.onRowDoubleTap?.call(widget.mergeGroup.groupId),
         onSecondaryTapDown: (details, renderBox) => widget.onRowSecondaryTapDown
-            ?.call(widget.mergeGroup.groupId, details, renderBox),
+            ?.call(widget.mergeGroup.groupId, details, renderBox, widget.isSelected),
         backgroundColor: widget.backgroundColor,
         hoverColor: widget.theme.getEffectiveHoverColor(widget.isSelected),
         splashColor: widget.theme.getEffectiveSplashColor(widget.isSelected),

@@ -147,9 +147,8 @@ class FlutterTablePlus extends StatefulWidget {
   final void Function(String rowId)? onRowDoubleTap;
 
   /// Callback when a row is right-clicked (or long-pressed on touch devices).
-  /// Provides the row ID, TapDownDetails, and RenderBox for position calculations. Only active when [isSelectable] is true.
-  final void Function(
-          String rowId, TapDownDetails details, RenderBox renderBox)?
+  /// Provides the row ID, TapDownDetails, RenderBox for position calculations, and selection state. Only active when [isSelectable] is true.
+  final void Function(String rowId, TapDownDetails details, RenderBox renderBox, bool isSelected)?
       onRowSecondaryTapDown;
 
   /// Callback when a merged row group's expand/collapse state should be toggled.
