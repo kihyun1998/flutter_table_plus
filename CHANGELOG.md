@@ -1,3 +1,17 @@
+## 1.16.3 (unreleased)
+
+*   **FEAT**: Added `tooltipBuilder` support for custom widget tooltips
+    *   New `tooltipBuilder` property enables rich content tooltips with any Flutter widget
+    *   Priority system: `tooltipBuilder` > `tooltipFormatter` > default text tooltip
+    *   Works with both regular cells and merged rows
+    *   Full backward compatibility with existing `tooltipFormatter`
+
+*   **FEAT**: Enhanced `TablePlusTooltipTheme` with improved tooltip timing controls
+    *   Added `exitDuration` property for controlling tooltip dismiss timing
+    *   Clarified `waitDuration`, `showDuration`, and `exitDuration` documentation
+    *   Fixed tooltip hover interaction - tooltips now stay visible when mouse hovers over tooltip content
+    *   Default `exitDuration` is 100ms for responsive tooltip dismissal
+
 ## 1.16.2
 
 *   **FEAT**: Added configurable `doubleClickTime` to `TablePlusBodyTheme`
