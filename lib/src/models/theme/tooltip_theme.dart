@@ -17,6 +17,7 @@ class TablePlusTooltipTheme {
     this.margin = const EdgeInsets.all(0.0),
     this.waitDuration = const Duration(milliseconds: 500),
     this.showDuration = const Duration(seconds: 2),
+    this.exitDuration = const Duration(milliseconds: 100),
     this.preferBelow = true,
   });
 
@@ -36,13 +37,35 @@ class TablePlusTooltipTheme {
   /// The margin around the tooltip.
   final EdgeInsets margin;
 
-  /// The duration to wait before showing the tooltip after hover.
+  /// The length of time that a pointer must hover over a tooltip's widget
+  /// before the tooltip will be shown.
+  /// 
+  /// Defaults to 500 milliseconds.
   final Duration waitDuration;
 
-  /// The duration to show the tooltip.
+  /// The length of time that the tooltip will be shown after a tap or long press
+  /// is released (touch devices only). This property does not affect mouse hover.
+  /// 
+  /// For mouse hover tooltips, the tooltip remains visible as long as the mouse
+  /// is over the target widget and disappears based on [exitDuration].
+  /// 
+  /// Defaults to 2 seconds.
   final Duration showDuration;
 
+  /// The length of time that a pointer must have stopped hovering over a
+  /// tooltip's widget before the tooltip will be hidden.
+  /// 
+  /// This controls how quickly the tooltip disappears when the mouse exits
+  /// the target widget area.
+  /// 
+  /// Defaults to 100 milliseconds.
+  final Duration exitDuration;
+
   /// Whether to prefer showing the tooltip below the widget.
+  /// 
+  /// If true, the tooltip will be positioned below the widget when possible.
+  /// If false, the tooltip will be positioned above the widget when possible.
+  /// The actual position may vary based on available screen space.
   final bool preferBelow;
 
   /// Creates a copy of this theme with the given fields replaced with new values.
@@ -54,6 +77,7 @@ class TablePlusTooltipTheme {
     EdgeInsets? margin,
     Duration? waitDuration,
     Duration? showDuration,
+    Duration? exitDuration,
     bool? preferBelow,
   }) {
     return TablePlusTooltipTheme(
@@ -64,6 +88,7 @@ class TablePlusTooltipTheme {
       margin: margin ?? this.margin,
       waitDuration: waitDuration ?? this.waitDuration,
       showDuration: showDuration ?? this.showDuration,
+      exitDuration: exitDuration ?? this.exitDuration,
       preferBelow: preferBelow ?? this.preferBelow,
     );
   }
