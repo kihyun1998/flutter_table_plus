@@ -76,14 +76,27 @@ class _CustomTooltipWrapperState extends State<CustomTooltipWrapper>
           color: Colors.transparent,
           child: FadeTransition(
             opacity: _fadeAnimation!,
-            child: Container(
-              constraints: const BoxConstraints(maxWidth: 300),
-              margin: widget.theme.margin,
-              padding: widget.theme.padding,
-              decoration: widget.theme.decoration,
-              child: DefaultTextStyle(
-                style: widget.theme.textStyle,
-                child: widget.content,
+            child: MouseRegion(
+              onEnter: (_) {
+                _isHovering = true; // Keep tooltip visible when mouse is over tooltip
+              },
+              onExit: (_) {
+                _isHovering = false;
+                Future.delayed(widget.theme.exitDuration, () {
+                  if (!_isHovering && mounted) {
+                    _removeTooltip();
+                  }
+                });
+              },
+              child: Container(
+                constraints: const BoxConstraints(maxWidth: 300),
+                margin: widget.theme.margin,
+                padding: widget.theme.padding,
+                decoration: widget.theme.decoration,
+                child: DefaultTextStyle(
+                  style: widget.theme.textStyle,
+                  child: widget.content,
+                ),
               ),
             ),
           ),
@@ -115,7 +128,7 @@ class _CustomTooltipWrapperState extends State<CustomTooltipWrapper>
 
   void _handlePointerExit() {
     _isHovering = false;
-    Future.delayed(widget.theme.showDuration, () {
+    Future.delayed(widget.theme.exitDuration, () {
       if (!_isHovering && mounted) {
         _removeTooltip();
       }
