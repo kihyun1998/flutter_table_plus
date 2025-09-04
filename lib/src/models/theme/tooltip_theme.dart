@@ -19,6 +19,7 @@ class TablePlusTooltipTheme {
     this.showDuration = const Duration(seconds: 2),
     this.exitDuration = const Duration(milliseconds: 100),
     this.preferBelow = true,
+    this.customWrapper = const CustomTooltipWrapperTheme(),
   });
 
   /// Whether tooltips are enabled globally.
@@ -68,6 +69,12 @@ class TablePlusTooltipTheme {
   /// The actual position may vary based on available screen space.
   final bool preferBelow;
 
+  /// Configuration for CustomTooltipWrapper positioning and behavior.
+  /// 
+  /// This contains settings specific to widget-based tooltips created with
+  /// tooltipBuilder. Basic text tooltips only use the main theme properties.
+  final CustomTooltipWrapperTheme customWrapper;
+
   /// Creates a copy of this theme with the given fields replaced with new values.
   TablePlusTooltipTheme copyWith({
     bool? enabled,
@@ -79,6 +86,7 @@ class TablePlusTooltipTheme {
     Duration? showDuration,
     Duration? exitDuration,
     bool? preferBelow,
+    CustomTooltipWrapperTheme? customWrapper,
   }) {
     return TablePlusTooltipTheme(
       enabled: enabled ?? this.enabled,
@@ -90,6 +98,80 @@ class TablePlusTooltipTheme {
       showDuration: showDuration ?? this.showDuration,
       exitDuration: exitDuration ?? this.exitDuration,
       preferBelow: preferBelow ?? this.preferBelow,
+      customWrapper: customWrapper ?? this.customWrapper,
+    );
+  }
+}
+
+/// Theme configuration specifically for CustomTooltipWrapper positioning and behavior.
+/// 
+/// This class contains settings that are only relevant for widget-based tooltips
+/// created with tooltipBuilder. Basic text tooltips use only the main 
+/// TablePlusTooltipTheme properties.
+class CustomTooltipWrapperTheme {
+  /// Creates a [CustomTooltipWrapperTheme] with the specified positioning properties.
+  const CustomTooltipWrapperTheme({
+    this.maxWidth = 300.0,
+    this.spacingPadding = 8.0,
+    this.horizontalPadding = 8.0,
+    this.minSpace = 100.0,
+    this.minScrollHeight = 80.0,
+    this.estimatedHeight = 150.0,
+  });
+
+  /// Maximum width constraint for the tooltip content.
+  /// 
+  /// This limits how wide the tooltip can be, forcing content to wrap or scroll
+  /// if it exceeds this width. Defaults to 300.0 pixels.
+  final double maxWidth;
+
+  /// Spacing padding between the tooltip and the target widget.
+  /// 
+  /// This controls the gap between the tooltip and the element that triggered it.
+  /// Used for both above and below positioning. Defaults to 8.0 pixels.
+  final double spacingPadding;
+
+  /// Horizontal padding from screen edges when positioning the tooltip.
+  /// 
+  /// This ensures the tooltip doesn't touch the screen edges and provides
+  /// visual breathing room. Defaults to 8.0 pixels.
+  final double horizontalPadding;
+
+  /// Minimum space required to show a tooltip without intelligent positioning.
+  /// 
+  /// If available space is less than this value, the tooltip may switch to 
+  /// the opposite side for better visibility. Defaults to 100.0 pixels.
+  final double minSpace;
+
+  /// Minimum height required for meaningful scrolling when content overflows.
+  /// 
+  /// If available space is less than this value, the tooltip may switch sides
+  /// to provide better scrolling experience. Defaults to 80.0 pixels.
+  final double minScrollHeight;
+
+  /// Estimated height of tooltip content for overflow calculations.
+  /// 
+  /// This value is used to determine if content will likely overflow before 
+  /// positioning the tooltip. A more sophisticated implementation could 
+  /// dynamically calculate this based on content. Defaults to 150.0 pixels.
+  final double estimatedHeight;
+
+  /// Creates a copy of this theme with the given fields replaced with new values.
+  CustomTooltipWrapperTheme copyWith({
+    double? maxWidth,
+    double? spacingPadding,
+    double? horizontalPadding,
+    double? minSpace,
+    double? minScrollHeight,
+    double? estimatedHeight,
+  }) {
+    return CustomTooltipWrapperTheme(
+      maxWidth: maxWidth ?? this.maxWidth,
+      spacingPadding: spacingPadding ?? this.spacingPadding,
+      horizontalPadding: horizontalPadding ?? this.horizontalPadding,
+      minSpace: minSpace ?? this.minSpace,
+      minScrollHeight: minScrollHeight ?? this.minScrollHeight,
+      estimatedHeight: estimatedHeight ?? this.estimatedHeight,
     );
   }
 }

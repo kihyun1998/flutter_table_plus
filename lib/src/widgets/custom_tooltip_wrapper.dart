@@ -70,13 +70,14 @@ class _CustomTooltipWrapperState extends State<CustomTooltipWrapper>
     final screenWidth = screenSize.width;
 
     // Calculate available space above and below the target widget
-    const padding = 8.0;
+    final customTheme = widget.theme.customWrapper;
+    final padding = customTheme.spacingPadding;
     final spaceBelow = screenHeight - (offset.dy + size.height);
     final spaceAbove = offset.dy;
-    const minSpace = 100.0; // Minimum space needed for tooltip
+    final minSpace = customTheme.minSpace;
     
-    // Estimate tooltip content height (rough approximation)
-    const estimatedTooltipHeight = 150.0; // This could be made more sophisticated
+    // Estimate tooltip content height from theme
+    final estimatedTooltipHeight = customTheme.estimatedHeight;
     
     // Smart positioning logic with overflow consideration
     bool showBelow;
@@ -93,7 +94,7 @@ class _CustomTooltipWrapperState extends State<CustomTooltipWrapper>
       showBelow = false;
     } else if (willOverflowAbove && willOverflowBelow) {
       // Will overflow both ways -> use intelligent space comparison
-      const minScrollHeight = 80.0; // Minimum height for meaningful scrolling
+      final minScrollHeight = customTheme.minScrollHeight;
       
       if (widget.theme.preferBelow) {
         // Originally wanted below, but check if above has better scrolling space
@@ -137,8 +138,8 @@ class _CustomTooltipWrapperState extends State<CustomTooltipWrapper>
     }
 
     // Calculate horizontal position with boundary checking
-    const tooltipMaxWidth = 300.0;
-    const horizontalPadding = 8.0;
+    final tooltipMaxWidth = customTheme.maxWidth;
+    final horizontalPadding = customTheme.horizontalPadding;
     
     double leftPosition = offset.dx;
     double rightEdge = leftPosition + tooltipMaxWidth;
