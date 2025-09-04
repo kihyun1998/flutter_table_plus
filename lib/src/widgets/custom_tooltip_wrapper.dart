@@ -65,77 +65,131 @@ class _CustomTooltipWrapperState extends State<CustomTooltipWrapper>
     final renderBox = context.findRenderObject() as RenderBox;
     final size = renderBox.size;
     final offset = renderBox.localToGlobal(Offset.zero);
+    final screenSize = MediaQuery.of(context).size;
+    final screenHeight = screenSize.height;
+    final screenWidth = screenSize.width;
+
+    // Calculate available space above and below the target widget
+    const padding = 8.0;
+    final spaceBelow = screenHeight - (offset.dy + size.height);
+    final spaceAbove = offset.dy;
+    const minSpace = 100.0; // Minimum space needed for tooltip
+    
+    // Estimate tooltip content height (rough approximation)
+    const estimatedTooltipHeight = 150.0; // This could be made more sophisticated
+    
+    // Smart positioning logic with overflow consideration
+    bool showBelow;
+    
+    // Check if content will likely overflow
+    bool willOverflowAbove = estimatedTooltipHeight > spaceAbove;
+    bool willOverflowBelow = estimatedTooltipHeight > spaceBelow;
+    
+    if (willOverflowAbove && !willOverflowBelow) {
+      // Content will overflow above but not below -> force below
+      showBelow = true;
+    } else if (!willOverflowAbove && willOverflowBelow) {
+      // Content will overflow below but not above -> force above  
+      showBelow = false;
+    } else if (willOverflowAbove && willOverflowBelow) {
+      // Will overflow both ways -> prefer below (more natural for scrolling)
+      showBelow = true;
+    } else {
+      // No overflow expected -> use original preference logic
+      if (widget.theme.preferBelow) {
+        // Prefer below: only switch to above if below has no space but above does
+        if (spaceBelow >= minSpace) {
+          showBelow = true; // Enough space below
+        } else if (spaceAbove >= minSpace) {
+          showBelow = false; // Not enough below, but enough above
+        } else {
+          showBelow = true; // Both insufficient, stick to preference
+        }
+      } else {
+        // Prefer above: only switch to below if above has no space but below does
+        if (spaceAbove >= minSpace) {
+          showBelow = false; // Enough space above
+        } else if (spaceBelow >= minSpace) {
+          showBelow = true; // Not enough above, but enough below
+        } else {
+          showBelow = false; // Both insufficient, stick to preference
+        }
+      }
+    }
+
+    // Calculate horizontal position with boundary checking
+    const tooltipMaxWidth = 300.0;
+    const horizontalPadding = 8.0;
+    
+    double leftPosition = offset.dx;
+    double rightEdge = leftPosition + tooltipMaxWidth;
+    
+    // Adjust horizontal position if tooltip would go off-screen
+    if (rightEdge > screenWidth - horizontalPadding) {
+      // Move tooltip to the left so it fits
+      leftPosition = screenWidth - tooltipMaxWidth - horizontalPadding;
+    }
+    // Ensure tooltip doesn't go off the left edge
+    if (leftPosition < horizontalPadding) {
+      leftPosition = horizontalPadding;
+    }
 
     _overlayEntry = OverlayEntry(
       builder: (context) {
-        if (widget.theme.preferBelow) {
+        Widget tooltipWidget = Container(
+          constraints: BoxConstraints(
+            maxWidth: tooltipMaxWidth,
+            maxHeight: showBelow ? spaceBelow - padding : spaceAbove - padding,
+          ),
+          margin: widget.theme.margin,
+          padding: widget.theme.padding,
+          decoration: widget.theme.decoration,
+          child: DefaultTextStyle(
+            style: widget.theme.textStyle,
+            child: SingleChildScrollView(
+              child: widget.content,
+            ),
+          ),
+        );
+
+        Widget mouseRegionWidget = MouseRegion(
+          onEnter: (_) {
+            _isHovering = true; // Keep tooltip visible when mouse is over tooltip
+          },
+          onExit: (_) {
+            _isHovering = false;
+            Future.delayed(widget.theme.exitDuration, () {
+              if (!_isHovering && mounted) {
+                _removeTooltip();
+              }
+            });
+          },
+          child: tooltipWidget,
+        );
+
+        if (showBelow) {
           // Show tooltip below the target widget
           return Positioned(
-            left: offset.dx,
-            top: offset.dy + size.height + 8,
+            left: leftPosition,
+            top: offset.dy + size.height + padding,
             child: Material(
               color: Colors.transparent,
               child: FadeTransition(
                 opacity: _fadeAnimation!,
-                child: MouseRegion(
-                  onEnter: (_) {
-                    _isHovering = true; // Keep tooltip visible when mouse is over tooltip
-                  },
-                  onExit: (_) {
-                    _isHovering = false;
-                    Future.delayed(widget.theme.exitDuration, () {
-                      if (!_isHovering && mounted) {
-                        _removeTooltip();
-                      }
-                    });
-                  },
-                  child: Container(
-                    constraints: const BoxConstraints(maxWidth: 300),
-                    margin: widget.theme.margin,
-                    padding: widget.theme.padding,
-                    decoration: widget.theme.decoration,
-                    child: DefaultTextStyle(
-                      style: widget.theme.textStyle,
-                      child: widget.content,
-                    ),
-                  ),
-                ),
+                child: mouseRegionWidget,
               ),
             ),
           );
         } else {
           // Show tooltip above the target widget using bottom positioning
-          final screenHeight = MediaQuery.of(context).size.height;
           return Positioned(
-            left: offset.dx,
-            bottom: screenHeight - offset.dy + 8, // Position tooltip bottom above target top
+            left: leftPosition,
+            bottom: screenHeight - offset.dy + padding,
             child: Material(
               color: Colors.transparent,
               child: FadeTransition(
                 opacity: _fadeAnimation!,
-                child: MouseRegion(
-                  onEnter: (_) {
-                    _isHovering = true; // Keep tooltip visible when mouse is over tooltip
-                  },
-                  onExit: (_) {
-                    _isHovering = false;
-                    Future.delayed(widget.theme.exitDuration, () {
-                      if (!_isHovering && mounted) {
-                        _removeTooltip();
-                      }
-                    });
-                  },
-                  child: Container(
-                    constraints: const BoxConstraints(maxWidth: 300),
-                    margin: widget.theme.margin,
-                    padding: widget.theme.padding,
-                    decoration: widget.theme.decoration,
-                    child: DefaultTextStyle(
-                      style: widget.theme.textStyle,
-                      child: widget.content,
-                    ),
-                  ),
-                ),
+                child: mouseRegionWidget,
               ),
             ),
           );
