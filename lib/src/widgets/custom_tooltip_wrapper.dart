@@ -92,8 +92,27 @@ class _CustomTooltipWrapperState extends State<CustomTooltipWrapper>
       // Content will overflow below but not above -> force above  
       showBelow = false;
     } else if (willOverflowAbove && willOverflowBelow) {
-      // Will overflow both ways -> prefer below (more natural for scrolling)
-      showBelow = true;
+      // Will overflow both ways -> use intelligent space comparison
+      const minScrollHeight = 80.0; // Minimum height for meaningful scrolling
+      
+      if (widget.theme.preferBelow) {
+        // Originally wanted below, but check if above has better scrolling space
+        if (spaceAbove >= minScrollHeight && spaceAbove > spaceBelow) {
+          showBelow = false; // Above has better scroll space
+        } else {
+          showBelow = true; // Stick with below preference or below has more space
+        }
+      } else {
+        // Originally wanted above, but check if it's viable for scrolling
+        if (spaceAbove >= minScrollHeight) {
+          showBelow = false; // Above has enough space for scrolling
+        } else if (spaceBelow >= minScrollHeight) {
+          showBelow = true; // Above too narrow, use below
+        } else {
+          // Both too narrow, choose the larger one
+          showBelow = spaceBelow > spaceAbove;
+        }
+      }
     } else {
       // No overflow expected -> use original preference logic
       if (widget.theme.preferBelow) {
