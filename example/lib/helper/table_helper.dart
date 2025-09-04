@@ -48,7 +48,9 @@ class TableHelper {
                             CircleAvatar(
                               backgroundColor: Theme.of(context).primaryColor,
                               child: Text(
-                                '${rowData['name']}'.substring(0, 1).toUpperCase(),
+                                '${rowData['name']}'
+                                    .substring(0, 1)
+                                    .toUpperCase(),
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
@@ -62,15 +64,23 @@ class TableHelper {
                                 children: [
                                   Text(
                                     '${rowData['name']}',
-                                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium
+                                        ?.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                   ),
                                   Text(
                                     '${rowData['department']}',
-                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      color: Theme.of(context).colorScheme.secondary,
-                                    ),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall
+                                        ?.copyWith(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .secondary,
+                                        ),
                                   ),
                                 ],
                               ),
@@ -103,7 +113,8 @@ class TableHelper {
                         ),
                         const SizedBox(height: 12),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color: (rowData['active'] as bool? ?? false)
                                 ? Colors.green.withOpacity(0.1)
@@ -117,7 +128,9 @@ class TableHelper {
                             ),
                           ),
                           child: Text(
-                            (rowData['active'] as bool? ?? false) ? 'Active' : 'Inactive',
+                            (rowData['active'] as bool? ?? false)
+                                ? 'Active'
+                                : 'Inactive',
                             style: TextStyle(
                               color: (rowData['active'] as bool? ?? false)
                                   ? Colors.green.shade700
@@ -212,7 +225,8 @@ class TableHelper {
                                 color: Colors.green.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: const Icon(Icons.attach_money, color: Colors.green),
+                              child: const Icon(Icons.attach_money,
+                                  color: Colors.green),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
@@ -221,15 +235,23 @@ class TableHelper {
                                 children: [
                                   Text(
                                     'Salary Breakdown',
-                                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium
+                                        ?.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                   ),
                                   Text(
                                     department,
-                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      color: Theme.of(context).colorScheme.secondary,
-                                    ),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall
+                                        ?.copyWith(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .secondary,
+                                        ),
                                   ),
                                 ],
                               ),
@@ -237,12 +259,18 @@ class TableHelper {
                           ],
                         ),
                         const SizedBox(height: 16),
-                        _buildSalaryRow(context, 'Monthly Salary', '\$${_formatNumber(salary)}', Colors.blue),
-                        _buildSalaryRow(context, 'Annual Gross', '\$${_formatNumber(yearlyTotal)}', Colors.green),
-                        _buildSalaryRow(context, 'Est. Benefits', '\$${_formatNumber(benefits)}', Colors.orange),
-                        _buildSalaryRow(context, 'Est. Tax (25%)', '\$${_formatNumber(taxEstimate)}', Colors.red),
+                        _buildSalaryRow(context, 'Monthly Salary',
+                            '\$${_formatNumber(salary)}', Colors.blue),
+                        _buildSalaryRow(context, 'Annual Gross',
+                            '\$${_formatNumber(yearlyTotal)}', Colors.green),
+                        _buildSalaryRow(context, 'Est. Benefits',
+                            '\$${_formatNumber(benefits)}', Colors.orange),
+                        _buildSalaryRow(context, 'Est. Tax (25%)',
+                            '\$${_formatNumber(taxEstimate)}', Colors.red),
                         const Divider(height: 20),
-                        _buildSalaryRow(context, 'Net Annual', '\$${_formatNumber(netAnnual)}', Colors.purple, isBold: true),
+                        _buildSalaryRow(context, 'Net Annual',
+                            '\$${_formatNumber(netAnnual)}', Colors.purple,
+                            isBold: true),
                         const SizedBox(height: 16),
                         // Visual breakdown
                         Container(
@@ -267,7 +295,8 @@ class TableHelper {
                               Expanded(
                                 flex: (taxEstimate * 100 ~/ yearlyTotal),
                                 child: Container(
-                                  decoration: const BoxDecoration(color: Colors.red),
+                                  decoration:
+                                      const BoxDecoration(color: Colors.red),
                                 ),
                               ),
                               Expanded(
@@ -288,9 +317,10 @@ class TableHelper {
                         const SizedBox(height: 8),
                         Text(
                           'Net Income • Taxes • Benefits',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors.grey.shade600,
-                          ),
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: Colors.grey.shade600,
+                                  ),
                           textAlign: TextAlign.center,
                         ),
                       ],
@@ -424,102 +454,105 @@ ${isActive ? '✅ Active' : '❌ Inactive'}
     required bool showVerticalDividers,
   }) {
     return TablePlusTheme(
-      headerTheme: TablePlusHeaderTheme(
-        height: 48,
-        backgroundColor: Colors.blue.shade50,
-        textStyle: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w700,
-          color: Color(0xFF495057),
+        headerTheme: TablePlusHeaderTheme(
+          height: 48,
+          backgroundColor: Colors.blue.shade50,
+          textStyle: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF495057),
+          ),
+          showVerticalDividers: showVerticalDividers,
+          showBottomDivider: true,
+          dividerColor: Colors.grey.shade300,
+          sortedColumnBackgroundColor: Colors.blue.shade100,
+          sortedColumnTextStyle: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w800,
+            color: Color(0xFF1976D2),
+          ),
+          sortIcons: const SortIcons(
+            ascending:
+                Icon(Icons.arrow_upward, size: 14, color: Color(0xFF1976D2)),
+            descending:
+                Icon(Icons.arrow_downward, size: 14, color: Color(0xFF1976D2)),
+            unsorted: Icon(Icons.unfold_more, size: 14, color: Colors.grey),
+          ),
         ),
-        showVerticalDividers: showVerticalDividers,
-        showBottomDivider: true,
-        dividerColor: Colors.grey.shade300,
-        sortedColumnBackgroundColor: Colors.blue.shade100,
-        sortedColumnTextStyle: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w800,
-          color: Color(0xFF1976D2),
+        bodyTheme: TablePlusBodyTheme(
+          rowHeight: 56,
+          alternateRowColor: null,
+          backgroundColor: const Color.fromARGB(255, 200, 250, 255),
+          textStyle: const TextStyle(
+            fontSize: 14,
+            color: Color(0xFF212529),
+          ),
+          // Selection styling moved from selectionTheme
+          selectedRowColor: Color(0xFFE3F2FD),
+          selectedRowTextStyle: TextStyle(
+            fontSize: 14,
+            color: Color(0xFF1565C0),
+            fontWeight: FontWeight.w600,
+          ),
+          showVerticalDividers: showVerticalDividers,
+          showHorizontalDividers: true,
+          dividerColor: Colors.grey.shade300,
+          dividerThickness: 1.0,
+          lastRowBorderBehavior: LastRowBorderBehavior.always,
+          // Row interaction colors moved from selectionTheme
+          hoverColor: Colors.red,
+          splashColor: Colors.green,
+          highlightColor: Colors.blue,
+          selectedRowHoverColor: Colors.red,
+          selectedRowSplashColor: Colors.green,
+          selectedRowHighlightColor: Colors.blue,
         ),
-        sortIcons: const SortIcons(
-          ascending:
-              Icon(Icons.arrow_upward, size: 14, color: Color(0xFF1976D2)),
-          descending:
-              Icon(Icons.arrow_downward, size: 14, color: Color(0xFF1976D2)),
-          unsorted: Icon(Icons.unfold_more, size: 14, color: Colors.grey),
+        scrollbarTheme: const TablePlusScrollbarTheme(
+          hoverOnly: true,
+          opacity: 0.8,
         ),
-      ),
-      bodyTheme: TablePlusBodyTheme(
-        rowHeight: 56,
-        alternateRowColor: null,
-        backgroundColor: const Color.fromARGB(255, 200, 250, 255),
-        textStyle: const TextStyle(
-          fontSize: 14,
-          color: Color(0xFF212529),
+        checkboxTheme: TablePlusCheckboxTheme(
+          // Checkbox colors and styling
+          fillColor: WidgetStateProperty.resolveWith<Color?>((states) {
+            if (states.contains(WidgetState.selected)) {
+              return Colors.blue.shade600;
+            }
+            return Colors.transparent;
+          }),
+          hoverColor: Colors.blue.shade100,
+          focusColor: Colors.blue.shade200,
+          side: BorderSide(
+            color: Colors.purple.shade400,
+            width: 2.0,
+          ),
+          size: 18.0,
+          showCheckboxColumn: true,
+          showSelectAllCheckbox: true,
+          checkboxColumnWidth: 60.0,
         ),
-        // Selection styling moved from selectionTheme
-        selectedRowColor: Color(0xFFE3F2FD),
-        selectedRowTextStyle: TextStyle(
-          fontSize: 14,
-          color: Color(0xFF1565C0),
-          fontWeight: FontWeight.w600,
+        editableTheme: const TablePlusEditableTheme(
+          editingCellColor: Color(0xFFFFFDE7),
+          editingTextStyle: TextStyle(
+            fontSize: 14,
+            color: Color(0xFF212529),
+            fontWeight: FontWeight.w500,
+          ),
+          editingBorderColor: Color(0xFF2196F3),
+          editingBorderWidth: 2.0,
+          editingBorderRadius: BorderRadius.all(Radius.circular(6.0)),
+          textFieldPadding:
+              EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+          cursorColor: Color(0xFF2196F3),
+          textAlignVertical: TextAlignVertical.center,
+          focusedBorderColor: Color(0xFF1976D2),
+          enabledBorderColor: Color(0xFFBBBBBB),
+          fillColor: Color(0xFFFFFDE7),
+          filled: true,
+          isDense: true,
         ),
-        showVerticalDividers: showVerticalDividers,
-        showHorizontalDividers: true,
-        dividerColor: Colors.grey.shade300,
-        dividerThickness: 1.0,
-        lastRowBorderBehavior: LastRowBorderBehavior.always,
-        // Row interaction colors moved from selectionTheme
-        hoverColor: Colors.red,
-        splashColor: Colors.green,
-        highlightColor: Colors.blue,
-        selectedRowHoverColor: Colors.red,
-        selectedRowSplashColor: Colors.green,
-        selectedRowHighlightColor: Colors.blue,
-      ),
-      scrollbarTheme: const TablePlusScrollbarTheme(
-        hoverOnly: true,
-        opacity: 0.8,
-      ),
-      checkboxTheme: TablePlusCheckboxTheme(
-        // Checkbox colors and styling
-        fillColor: WidgetStateProperty.resolveWith<Color?>((states) {
-          if (states.contains(WidgetState.selected)) {
-            return Colors.blue.shade600;
-          }
-          return Colors.transparent;
-        }),
-        hoverColor: Colors.blue.shade100,
-        focusColor: Colors.blue.shade200,
-        side: BorderSide(
-          color: Colors.purple.shade400,
-          width: 2.0,
-        ),
-        size: 18.0,
-        showCheckboxColumn: true,
-        showSelectAllCheckbox: true,
-        checkboxColumnWidth: 60.0,
-      ),
-      editableTheme: const TablePlusEditableTheme(
-        editingCellColor: Color(0xFFFFFDE7),
-        editingTextStyle: TextStyle(
-          fontSize: 14,
-          color: Color(0xFF212529),
-          fontWeight: FontWeight.w500,
-        ),
-        editingBorderColor: Color(0xFF2196F3),
-        editingBorderWidth: 2.0,
-        editingBorderRadius: BorderRadius.all(Radius.circular(6.0)),
-        textFieldPadding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-        cursorColor: Color(0xFF2196F3),
-        textAlignVertical: TextAlignVertical.center,
-        focusedBorderColor: Color(0xFF1976D2),
-        enabledBorderColor: Color(0xFFBBBBBB),
-        fillColor: Color(0xFFFFFDE7),
-        filled: true,
-        isDense: true,
-      ),
-    );
+        tooltipTheme: TablePlusTooltipTheme(
+          preferBelow: false,
+        ));
   }
 
   /// Get selected employee names
@@ -601,17 +634,17 @@ ${isActive ? '✅ Active' : '❌ Inactive'}
               Text(
                 label,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-                ),
+                      fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+                    ),
               ),
             ],
           ),
           Text(
             value,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              fontWeight: isBold ? FontWeight.bold : FontWeight.w500,
-              color: color,
-            ),
+                  fontWeight: isBold ? FontWeight.bold : FontWeight.w500,
+                  color: color,
+                ),
           ),
         ],
       ),
@@ -621,8 +654,8 @@ ${isActive ? '✅ Active' : '❌ Inactive'}
   /// Helper method to format numbers with commas
   static String _formatNumber(int number) {
     return number.toString().replaceAllMapped(
-      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-      (match) => '${match[1]},',
-    );
+          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+          (match) => '${match[1]},',
+        );
   }
 }

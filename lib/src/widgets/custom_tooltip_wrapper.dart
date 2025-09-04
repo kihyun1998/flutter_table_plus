@@ -67,41 +67,80 @@ class _CustomTooltipWrapperState extends State<CustomTooltipWrapper>
     final offset = renderBox.localToGlobal(Offset.zero);
 
     _overlayEntry = OverlayEntry(
-      builder: (context) => Positioned(
-        left: offset.dx,
-        top: widget.theme.preferBelow
-            ? offset.dy + size.height + 8
-            : offset.dy - 8,
-        child: Material(
-          color: Colors.transparent,
-          child: FadeTransition(
-            opacity: _fadeAnimation!,
-            child: MouseRegion(
-              onEnter: (_) {
-                _isHovering = true; // Keep tooltip visible when mouse is over tooltip
-              },
-              onExit: (_) {
-                _isHovering = false;
-                Future.delayed(widget.theme.exitDuration, () {
-                  if (!_isHovering && mounted) {
-                    _removeTooltip();
-                  }
-                });
-              },
-              child: Container(
-                constraints: const BoxConstraints(maxWidth: 300),
-                margin: widget.theme.margin,
-                padding: widget.theme.padding,
-                decoration: widget.theme.decoration,
-                child: DefaultTextStyle(
-                  style: widget.theme.textStyle,
-                  child: widget.content,
+      builder: (context) {
+        if (widget.theme.preferBelow) {
+          // Show tooltip below the target widget
+          return Positioned(
+            left: offset.dx,
+            top: offset.dy + size.height + 8,
+            child: Material(
+              color: Colors.transparent,
+              child: FadeTransition(
+                opacity: _fadeAnimation!,
+                child: MouseRegion(
+                  onEnter: (_) {
+                    _isHovering = true; // Keep tooltip visible when mouse is over tooltip
+                  },
+                  onExit: (_) {
+                    _isHovering = false;
+                    Future.delayed(widget.theme.exitDuration, () {
+                      if (!_isHovering && mounted) {
+                        _removeTooltip();
+                      }
+                    });
+                  },
+                  child: Container(
+                    constraints: const BoxConstraints(maxWidth: 300),
+                    margin: widget.theme.margin,
+                    padding: widget.theme.padding,
+                    decoration: widget.theme.decoration,
+                    child: DefaultTextStyle(
+                      style: widget.theme.textStyle,
+                      child: widget.content,
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
-        ),
-      ),
+          );
+        } else {
+          // Show tooltip above the target widget using bottom positioning
+          final screenHeight = MediaQuery.of(context).size.height;
+          return Positioned(
+            left: offset.dx,
+            bottom: screenHeight - offset.dy + 8, // Position tooltip bottom above target top
+            child: Material(
+              color: Colors.transparent,
+              child: FadeTransition(
+                opacity: _fadeAnimation!,
+                child: MouseRegion(
+                  onEnter: (_) {
+                    _isHovering = true; // Keep tooltip visible when mouse is over tooltip
+                  },
+                  onExit: (_) {
+                    _isHovering = false;
+                    Future.delayed(widget.theme.exitDuration, () {
+                      if (!_isHovering && mounted) {
+                        _removeTooltip();
+                      }
+                    });
+                  },
+                  child: Container(
+                    constraints: const BoxConstraints(maxWidth: 300),
+                    margin: widget.theme.margin,
+                    padding: widget.theme.padding,
+                    decoration: widget.theme.decoration,
+                    child: DefaultTextStyle(
+                      style: widget.theme.textStyle,
+                      child: widget.content,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        }
+      },
     );
 
     overlay.insert(_overlayEntry!);
