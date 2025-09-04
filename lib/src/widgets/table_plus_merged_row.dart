@@ -258,8 +258,8 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
       );
 
       // Wrap with tooltip if needed
-      textWidget = _wrapWithTooltip(
-          context, textWidget, displayValue, column, width ?? column.width, rowData);
+      textWidget = _wrapWithTooltip(context, textWidget, displayValue, column,
+          width ?? column.width, rowData);
 
       Widget cellContent = textWidget;
 
@@ -442,8 +442,8 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
       );
 
       // Wrap with tooltip if needed
-      textWidget =
-          _wrapWithTooltip(context, textWidget, displayValue, column, groupHeight, rowData);
+      textWidget = _wrapWithTooltip(
+          context, textWidget, displayValue, column, groupHeight, rowData);
 
       Widget cellContent = textWidget;
 
@@ -536,8 +536,8 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
       );
 
       // Wrap with tooltip if needed
-      textWidget =
-          _wrapWithTooltip(context, textWidget, displayValue, column, groupHeight, null);
+      textWidget = _wrapWithTooltip(
+          context, textWidget, displayValue, column, groupHeight, null);
 
       content = Container(
         alignment: column.alignment,
@@ -682,9 +682,10 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
         );
       } else {
         // Use text-based tooltip (existing behavior)
-        final tooltipMessage = column.tooltipFormatter != null && rowData != null
-            ? column.tooltipFormatter!(rowData)
-            : displayValue;
+        final tooltipMessage =
+            column.tooltipFormatter != null && rowData != null
+                ? column.tooltipFormatter!(rowData)
+                : displayValue;
 
         return Tooltip(
           message: tooltipMessage,

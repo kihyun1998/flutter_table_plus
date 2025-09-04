@@ -16,13 +16,15 @@ class DemoColumnDefinitions {
         editable: false, // Name should not be editable
         tooltipBuilder: (context, rowData) {
           final performance = rowData['rawPerformance'] ?? 0.0;
-          final experienceYears = (rowData['rawSalary'] as int? ?? 50000) ~/ 10000; // Rough estimate
+          final experienceYears = (rowData['rawSalary'] as int? ?? 50000) ~/
+              10000; // Rough estimate
 
           return Container(
             constraints: const BoxConstraints(maxWidth: 300),
             child: Card(
               elevation: 12,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
               child: Padding(
                 padding: const EdgeInsets.all(20.0),
                 child: Column(
@@ -35,9 +37,12 @@ class DemoColumnDefinitions {
                           tag: 'avatar_${rowData['name']}',
                           child: CircleAvatar(
                             radius: 25,
-                            backgroundColor: _getAvatarColor(rowData['department'] ?? ''),
+                            backgroundColor:
+                                _getAvatarColor(rowData['department'] ?? ''),
                             child: Text(
-                              '${rowData['name']}'.substring(0, 2).toUpperCase(),
+                              '${rowData['name']}'
+                                  .substring(0, 2)
+                                  .toUpperCase(),
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -53,15 +58,23 @@ class DemoColumnDefinitions {
                             children: [
                               Text(
                                 '${rowData['name']}',
-                                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleLarge
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                    ),
                               ),
                               Text(
                                 '${rowData['position']}',
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  color: Theme.of(context).colorScheme.secondary,
-                                ),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .secondary,
+                                    ),
                               ),
                             ],
                           ),
@@ -73,14 +86,17 @@ class DemoColumnDefinitions {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: _getPerformanceColor(performance).withOpacity(0.1),
+                        color:
+                            _getPerformanceColor(performance).withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: _getPerformanceColor(performance), width: 1),
+                        border: Border.all(
+                            color: _getPerformanceColor(performance), width: 1),
                       ),
                       child: Row(
                         children: [
-                          Icon(_getPerformanceIcon(performance), 
-                               color: _getPerformanceColor(performance), size: 20),
+                          Icon(_getPerformanceIcon(performance),
+                              color: _getPerformanceColor(performance),
+                              size: 20),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Column(
@@ -92,10 +108,14 @@ class DemoColumnDefinitions {
                                 ),
                                 Text(
                                   '${(performance * 100).toInt()}% (${_getPerformanceLabel(performance)})',
-                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    color: _getPerformanceColor(performance),
-                                  ),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.w600,
+                                        color:
+                                            _getPerformanceColor(performance),
+                                      ),
                                 ),
                               ],
                             ),
@@ -108,14 +128,16 @@ class DemoColumnDefinitions {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        _buildStatItem(context, Icons.business_center, 
-                                     '${rowData['department']}', 'Department'),
-                        Container(width: 1, height: 30, color: Colors.grey.shade300),
-                        _buildStatItem(context, Icons.timeline, 
-                                     '${experienceYears}Y', 'Experience'),
-                        Container(width: 1, height: 30, color: Colors.grey.shade300),
-                        _buildStatItem(context, Icons.email_outlined, 
-                                     'Contact', 'Available'),
+                        _buildStatItem(context, Icons.business_center,
+                            '${rowData['department']}', 'Department'),
+                        Container(
+                            width: 1, height: 30, color: Colors.grey.shade300),
+                        _buildStatItem(context, Icons.timeline,
+                            '${experienceYears}Y', 'Experience'),
+                        Container(
+                            width: 1, height: 30, color: Colors.grey.shade300),
+                        _buildStatItem(context, Icons.email_outlined, 'Contact',
+                            'Available'),
                       ],
                     ),
                   ],
@@ -302,7 +324,8 @@ class DemoColumnDefinitions {
   }
 
   /// Build stat item for tooltip
-  static Widget _buildStatItem(BuildContext context, IconData icon, String value, String label) {
+  static Widget _buildStatItem(
+      BuildContext context, IconData icon, String value, String label) {
     return Column(
       children: [
         Icon(icon, size: 16, color: Theme.of(context).colorScheme.primary),
@@ -310,15 +333,15 @@ class DemoColumnDefinitions {
         Text(
           value,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+                fontWeight: FontWeight.w600,
+              ),
         ),
         Text(
           label,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            fontSize: 10,
-            color: Colors.grey.shade600,
-          ),
+                fontSize: 10,
+                color: Colors.grey.shade600,
+              ),
         ),
       ],
     );

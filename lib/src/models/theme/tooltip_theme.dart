@@ -40,37 +40,37 @@ class TablePlusTooltipTheme {
 
   /// The length of time that a pointer must hover over a tooltip's widget
   /// before the tooltip will be shown.
-  /// 
+  ///
   /// Defaults to 500 milliseconds.
   final Duration waitDuration;
 
   /// The length of time that the tooltip will be shown after a tap or long press
   /// is released (touch devices only). This property does not affect mouse hover.
-  /// 
+  ///
   /// For mouse hover tooltips, the tooltip remains visible as long as the mouse
   /// is over the target widget and disappears based on [exitDuration].
-  /// 
+  ///
   /// Defaults to 2 seconds.
   final Duration showDuration;
 
   /// The length of time that a pointer must have stopped hovering over a
   /// tooltip's widget before the tooltip will be hidden.
-  /// 
+  ///
   /// This controls how quickly the tooltip disappears when the mouse exits
   /// the target widget area.
-  /// 
+  ///
   /// Defaults to 100 milliseconds.
   final Duration exitDuration;
 
   /// Whether to prefer showing the tooltip below the widget.
-  /// 
+  ///
   /// If true, the tooltip will be positioned below the widget when possible.
   /// If false, the tooltip will be positioned above the widget when possible.
   /// The actual position may vary based on available screen space.
   final bool preferBelow;
 
   /// Configuration for CustomTooltipWrapper positioning and behavior.
-  /// 
+  ///
   /// This contains settings specific to widget-based tooltips created with
   /// tooltipBuilder. Basic text tooltips only use the main theme properties.
   final CustomTooltipWrapperTheme customWrapper;
@@ -104,9 +104,9 @@ class TablePlusTooltipTheme {
 }
 
 /// Theme configuration specifically for CustomTooltipWrapper positioning and behavior.
-/// 
+///
 /// This class contains settings that are only relevant for widget-based tooltips
-/// created with tooltipBuilder. Basic text tooltips use only the main 
+/// created with tooltipBuilder. Basic text tooltips use only the main
 /// TablePlusTooltipTheme properties.
 class CustomTooltipWrapperTheme {
   /// Creates a [CustomTooltipWrapperTheme] with the specified positioning properties.
@@ -120,39 +120,39 @@ class CustomTooltipWrapperTheme {
   });
 
   /// Maximum width constraint for the tooltip content.
-  /// 
+  ///
   /// This limits how wide the tooltip can be, forcing content to wrap or scroll
   /// if it exceeds this width. Defaults to 300.0 pixels.
   final double maxWidth;
 
   /// Spacing padding between the tooltip and the target widget.
-  /// 
+  ///
   /// This controls the gap between the tooltip and the element that triggered it.
   /// Used for both above and below positioning. Defaults to 8.0 pixels.
   final double spacingPadding;
 
   /// Horizontal padding from screen edges when positioning the tooltip.
-  /// 
+  ///
   /// This ensures the tooltip doesn't touch the screen edges and provides
   /// visual breathing room. Defaults to 8.0 pixels.
   final double horizontalPadding;
 
   /// Minimum space required to show a tooltip without intelligent positioning.
-  /// 
-  /// If available space is less than this value, the tooltip may switch to 
+  ///
+  /// If available space is less than this value, the tooltip may switch to
   /// the opposite side for better visibility. Defaults to 100.0 pixels.
   final double minSpace;
 
   /// Minimum height required for meaningful scrolling when content overflows.
-  /// 
+  ///
   /// If available space is less than this value, the tooltip may switch sides
   /// to provide better scrolling experience. Defaults to 80.0 pixels.
   final double minScrollHeight;
 
   /// Estimated height of tooltip content for overflow calculations.
-  /// 
-  /// This value is used to determine if content will likely overflow before 
-  /// positioning the tooltip. A more sophisticated implementation could 
+  ///
+  /// This value is used to determine if content will likely overflow before
+  /// positioning the tooltip. A more sophisticated implementation could
   /// dynamically calculate this based on content. Defaults to 150.0 pixels.
   final double estimatedHeight;
 

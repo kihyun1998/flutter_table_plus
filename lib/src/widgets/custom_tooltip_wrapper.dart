@@ -3,7 +3,7 @@ import 'package:flutter_table_plus/src/models/theme/tooltip_theme.dart';
 
 /// A wrapper widget that provides custom widget tooltip functionality
 /// while integrating with the existing TablePlusTooltipTheme system.
-/// 
+///
 /// This widget uses an overlay-based approach to display rich content tooltips
 /// that can contain any Flutter widget, not just text.
 class CustomTooltipWrapper extends StatefulWidget {
@@ -75,33 +75,34 @@ class _CustomTooltipWrapperState extends State<CustomTooltipWrapper>
     final spaceBelow = screenHeight - (offset.dy + size.height);
     final spaceAbove = offset.dy;
     final minSpace = customTheme.minSpace;
-    
+
     // Estimate tooltip content height from theme
     final estimatedTooltipHeight = customTheme.estimatedHeight;
-    
+
     // Smart positioning logic with overflow consideration
     bool showBelow;
-    
+
     // Check if content will likely overflow
     bool willOverflowAbove = estimatedTooltipHeight > spaceAbove;
     bool willOverflowBelow = estimatedTooltipHeight > spaceBelow;
-    
+
     if (willOverflowAbove && !willOverflowBelow) {
       // Content will overflow above but not below -> force below
       showBelow = true;
     } else if (!willOverflowAbove && willOverflowBelow) {
-      // Content will overflow below but not above -> force above  
+      // Content will overflow below but not above -> force above
       showBelow = false;
     } else if (willOverflowAbove && willOverflowBelow) {
       // Will overflow both ways -> use intelligent space comparison
       final minScrollHeight = customTheme.minScrollHeight;
-      
+
       if (widget.theme.preferBelow) {
         // Originally wanted below, but check if above has better scrolling space
         if (spaceAbove >= minScrollHeight && spaceAbove > spaceBelow) {
           showBelow = false; // Above has better scroll space
         } else {
-          showBelow = true; // Stick with below preference or below has more space
+          showBelow =
+              true; // Stick with below preference or below has more space
         }
       } else {
         // Originally wanted above, but check if it's viable for scrolling
@@ -140,10 +141,10 @@ class _CustomTooltipWrapperState extends State<CustomTooltipWrapper>
     // Calculate horizontal position with boundary checking
     final tooltipMaxWidth = customTheme.maxWidth;
     final horizontalPadding = customTheme.horizontalPadding;
-    
+
     double leftPosition = offset.dx;
     double rightEdge = leftPosition + tooltipMaxWidth;
-    
+
     // Adjust horizontal position if tooltip would go off-screen
     if (rightEdge > screenWidth - horizontalPadding) {
       // Move tooltip to the left so it fits
@@ -174,7 +175,8 @@ class _CustomTooltipWrapperState extends State<CustomTooltipWrapper>
 
         Widget mouseRegionWidget = MouseRegion(
           onEnter: (_) {
-            _isHovering = true; // Keep tooltip visible when mouse is over tooltip
+            _isHovering =
+                true; // Keep tooltip visible when mouse is over tooltip
           },
           onExit: (_) {
             _isHovering = false;

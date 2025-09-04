@@ -160,7 +160,7 @@ class TablePlusColumn {
   /// Optional custom tooltip widget builder for rich content tooltips.
   /// Takes precedence over [tooltipFormatter] when both are provided.
   /// The function receives the build context and row data, returning a custom Widget.
-  /// 
+  ///
   /// Example:
   /// ```dart
   /// tooltipBuilder: (context, rowData) => Container(
@@ -175,7 +175,8 @@ class TablePlusColumn {
   ///   ),
   /// )
   /// ```
-  final Widget Function(BuildContext context, Map<String, dynamic> rowData)? tooltipBuilder;
+  final Widget Function(BuildContext context, Map<String, dynamic> rowData)?
+      tooltipBuilder;
 
   /// Optional hint text to display in the TextField when editing a cell.
   final String? hintText;
@@ -217,7 +218,8 @@ class TablePlusColumn {
     Widget Function(BuildContext context, Map<String, dynamic> rowData)?
         cellBuilder,
     String Function(Map<String, dynamic> rowData)? tooltipFormatter,
-    Widget Function(BuildContext context, Map<String, dynamic> rowData)? tooltipBuilder,
+    Widget Function(BuildContext context, Map<String, dynamic> rowData)?
+        tooltipBuilder,
     String? hintText,
     TextOverflow? textOverflow,
     TooltipBehavior? tooltipBehavior,
