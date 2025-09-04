@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
 import 'package:flutter_table_plus/src/utils/text_overflow_detector.dart';
 import 'package:flutter_table_plus/src/widgets/cells/editable_text_field.dart';
-import 'package:flutter_table_plus/src/widgets/custom_tooltip_wrapper.dart';
 
 /// A single table cell widget.
 class TablePlusCell extends StatefulWidget {

@@ -117,8 +117,8 @@ class TableHelper {
                               horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color: (rowData['active'] as bool? ?? false)
-                                ? Colors.green.withOpacity(0.1)
-                                : Colors.red.withOpacity(0.1),
+                                ? Colors.green.withValues(alpha: 0.1)
+                                : Colors.red.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
                               color: (rowData['active'] as bool? ?? false)
@@ -222,7 +222,7 @@ class TableHelper {
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: Colors.green.withOpacity(0.1),
+                                color: Colors.green.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: const Icon(Icons.attach_money,

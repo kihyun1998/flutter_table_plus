@@ -86,8 +86,8 @@ class DemoColumnDefinitions {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color:
-                            _getPerformanceColor(performance).withOpacity(0.1),
+                        color: _getPerformanceColor(performance)
+                            .withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
                             color: _getPerformanceColor(performance), width: 1),
