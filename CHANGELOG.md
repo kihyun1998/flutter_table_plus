@@ -1,4 +1,4 @@
-## 1.16.3 (unreleased)
+## 1.16.3
 
 *   **FEAT**: Added `tooltipBuilder` support for custom widget tooltips
     *   New `tooltipBuilder` property enables rich content tooltips with any Flutter widget
@@ -11,6 +11,14 @@
     *   Clarified `waitDuration`, `showDuration`, and `exitDuration` documentation
     *   Fixed tooltip hover interaction - tooltips now stay visible when mouse hovers over tooltip content
     *   Default `exitDuration` is 100ms for responsive tooltip dismissal
+
+*   **FEAT**: Intelligent tooltip positioning system for `tooltipBuilder`
+    *   Automatically switches between above/below based on available screen space
+    *   Prevents clipping at screen boundaries with horizontal repositioning
+
+*   **FEAT**: Added `CustomTooltipWrapperTheme` for tooltip configuration
+    *   New theme structure: `TablePlusTooltipTheme.customWrapper` 
+    *   Configurable positioning and spacing parameters with sensible defaults
 
 ## 1.16.2
 

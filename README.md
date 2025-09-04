@@ -36,7 +36,7 @@ A highly customizable and efficient table widget for Flutter. It provides a rich
 - **Row Selection & Editing**: Enable row selection and cell editing simultaneously, now fully compatible with merged rows. Supports double-tap and secondary-tap events on rows.
 - **Column Reordering**: Easily reorder columns with drag-and-drop.
 - **Column Visibility**: Dynamically show or hide individual columns.
-- **Smart Text Handling**: Control text overflow (`ellipsis`, `clip`, `visible`). Tooltips for both **cells and headers** can be configured to appear always, only when text overflows, or never, giving you precise control over user feedback. Use `tooltipFormatter` to generate custom tooltip content based on complete row data.
+- **Smart Text Handling**: Control text overflow (`ellipsis`, `clip`, `visible`). Tooltips for both **cells and headers** can be configured to appear always, only when text overflows, or never, giving you precise control over user feedback. Use `tooltipFormatter` for custom text content or `tooltipBuilder` for rich widget-based tooltips with intelligent positioning.
 - **Custom Cell Widgets**: Render any widget inside a cell using `cellBuilder` for maximum flexibility.
 - **Conditional Feature Control**: Dynamically enable/disable features like sorting and column reordering based on user permissions or application state.
 - **Code Refinements**: Removed deprecated code and updated to the latest syntax for improved maintainability and performance.
@@ -47,7 +47,7 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  flutter_table_plus: ^1.16.2
+  flutter_table_plus: ^1.16.3
 ```
 
 Then, run `flutter pub get` in your terminal.
@@ -202,7 +202,9 @@ FlutterTablePlus(
 
 ### 💬 Custom Tooltip Content
 
-Create rich, contextual tooltips using complete row data with `tooltipFormatter`:
+Create rich, contextual tooltips using complete row data. Choose between text-based (`tooltipFormatter`) or widget-based (`tooltipBuilder`) tooltips:
+
+#### Text-Based Tooltips
 
 ```dart
 TablePlusColumn(
@@ -215,6 +217,50 @@ TablePlusColumn(
 🏢 Department: ${rowData['department']}
 💼 Position: ${rowData['position']}
 📧 Email: ${rowData['email']}''';
+  },
+),
+```
+
+#### Rich Widget Tooltips
+
+Create interactive tooltips with any Flutter widget, featuring intelligent positioning:
+
+```dart
+TablePlusColumn(
+  key: 'employee_name',
+  label: 'Employee',
+  width: 150,
+  tooltipBuilder: (context, rowData) {
+    return Container(
+      width: 280,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            leading: CircleAvatar(
+              backgroundImage: NetworkImage(rowData['avatar_url']),
+            ),
+            title: Text(rowData['name']),
+            subtitle: Text(rowData['position']),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              TextButton.icon(
+                onPressed: () => _sendMessage(rowData['id']),
+                icon: Icon(Icons.message, size: 16),
+                label: Text('Message'),
+              ),
+              ElevatedButton.icon(
+                onPressed: () => _viewProfile(rowData['id']),
+                icon: Icon(Icons.person, size: 16),
+                label: Text('Profile'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   },
 ),
 ```

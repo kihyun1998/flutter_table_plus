@@ -4,10 +4,11 @@ Flutter Table Plus provides comprehensive tooltip customization options, allowin
 
 ## Overview
 
-The package offers two main ways to customize tooltips:
+The package offers three main ways to customize tooltips:
 
 1. **Styling**: Control appearance using `TablePlusTooltipTheme`
-2. **Content**: Generate custom content using `tooltipFormatter`
+2. **Text Content**: Generate custom text content using `tooltipFormatter`
+3. **Widget Content**: Create rich widget-based tooltips using `tooltipBuilder`
 
 ## Basic Tooltip Configuration
 
@@ -72,7 +73,13 @@ FlutterTablePlus(
       margin: EdgeInsets.all(8),
       waitDuration: Duration(milliseconds: 800),
       showDuration: Duration(seconds: 3),
+      exitDuration: Duration(milliseconds: 100),
       preferBelow: false,
+      customWrapper: CustomTooltipWrapperTheme(
+        maxWidth: 400,
+        spacingPadding: 12,
+        horizontalPadding: 16,
+      ),
     ),
   ),
 )
@@ -243,6 +250,258 @@ Status: ${isOverdue ? 'Overdue' : 'On Track'}''';
 )
 ```
 
+## Rich Widget Tooltips
+
+### Using tooltipBuilder
+
+The `tooltipBuilder` function allows you to create completely custom widget-based tooltips with rich content including images, buttons, and complex layouts. This feature uses intelligent positioning to ensure tooltips are always visible on screen.
+
+```dart
+TablePlusColumn(
+  key: 'employee_name',
+  label: 'Employee',
+  tooltipBuilder: (context, rowData) {
+    return Container(
+      width: 300,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                backgroundImage: NetworkImage(rowData['avatar_url']),
+                radius: 20,
+              ),
+              SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      rowData['name'],
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    Text(
+                      rowData['position'],
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          Divider(height: 20),
+          _buildInfoRow(Icons.email, rowData['email']),
+          _buildInfoRow(Icons.phone, rowData['phone']),
+          _buildInfoRow(Icons.business, rowData['department']),
+          SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton.icon(
+                onPressed: () => _sendMessage(rowData['id']),
+                icon: Icon(Icons.message, size: 16),
+                label: Text('Message'),
+              ),
+              SizedBox(width: 8),
+              ElevatedButton.icon(
+                onPressed: () => _viewProfile(rowData['id']),
+                icon: Icon(Icons.person, size: 16),
+                label: Text('View Profile'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  },
+)
+
+Widget _buildInfoRow(IconData icon, String text) {
+  return Padding(
+    padding: EdgeInsets.symmetric(vertical: 4),
+    child: Row(
+      children: [
+        Icon(icon, size: 16, color: Colors.grey[600]),
+        SizedBox(width: 8),
+        Expanded(child: Text(text)),
+      ],
+    ),
+  );
+}
+```
+
+### Tooltip Priority System
+
+When multiple tooltip options are provided, the system uses the following priority:
+
+1. **tooltipBuilder** (highest priority) - Widget-based tooltips
+2. **tooltipFormatter** - Custom text content
+3. **Default behavior** - Shows cell text content
+
+```dart
+TablePlusColumn(
+  key: 'name',
+  label: 'Name',
+  tooltipBuilder: (context, rowData) => Widget(), // This will be used
+  tooltipFormatter: (rowData) => 'Text',          // This will be ignored
+)
+```
+
+### Advanced Widget Examples
+
+#### Product Information Card
+```dart
+TablePlusColumn(
+  key: 'product',
+  label: 'Product',
+  tooltipBuilder: (context, rowData) {
+    return Container(
+      width: 350,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.network(
+              rowData['product_image'],
+              height: 150,
+              width: double.infinity,
+              fit: BoxFit.cover,
+            ),
+          ),
+          SizedBox(height: 12),
+          Text(
+            rowData['product_name'],
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 8),
+          Text(
+            rowData['description'],
+            style: TextStyle(color: Colors.grey[600]),
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+          ),
+          SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '\$${rowData['price']}',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green,
+                ),
+              ),
+              Row(
+                children: List.generate(5, (index) {
+                  return Icon(
+                    index < (rowData['rating'] as double).floor()
+                        ? Icons.star
+                        : Icons.star_border,
+                    color: Colors.orange,
+                    size: 16,
+                  );
+                }),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  },
+)
+```
+
+#### Chart and Analytics
+```dart
+TablePlusColumn(
+  key: 'performance',
+  label: 'Performance',
+  tooltipBuilder: (context, rowData) {
+    final List<double> data = List<double>.from(rowData['monthly_sales']);
+    
+    return Container(
+      width: 300,
+      height: 200,
+      child: Column(
+        children: [
+          Text(
+            'Sales Performance',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 12),
+          Expanded(
+            child: LineChart(
+              LineChartData(
+                gridData: FlGridData(show: true),
+                titlesData: FlTitlesData(show: true),
+                borderData: FlBorderData(show: true),
+                lineBarsData: [
+                  LineChartBarData(
+                    spots: data.asMap().entries.map((entry) {
+                      return FlSpot(entry.key.toDouble(), entry.value);
+                    }).toList(),
+                    isCurved: true,
+                    color: Colors.blue,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SizedBox(height: 8),
+          Text(
+            'Avg: \$${(data.reduce((a, b) => a + b) / data.length).toStringAsFixed(0)}',
+            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+          ),
+        ],
+      ),
+    );
+  },
+)
+```
+
+### Intelligent Positioning System
+
+Widget tooltips automatically use intelligent positioning that:
+
+- **Switches above/below** based on available screen space
+- **Prevents clipping** at screen boundaries with horizontal repositioning  
+- **Handles content overflow** by choosing the best scrolling direction
+- **Respects screen edges** with configurable padding
+
+### CustomTooltipWrapperTheme Configuration
+
+Fine-tune the positioning behavior of widget tooltips:
+
+```dart
+TablePlusTooltipTheme(
+  customWrapper: CustomTooltipWrapperTheme(
+    maxWidth: 400.0,              // Maximum tooltip width
+    spacingPadding: 12.0,         // Gap between tooltip and target
+    horizontalPadding: 16.0,      // Distance from screen edges
+    minSpace: 120.0,              // Min space before switching sides
+    minScrollHeight: 100.0,       // Min height for good scrolling
+    estimatedHeight: 200.0,       // Estimated tooltip height for calculations
+  ),
+)
+```
+
+### Performance Considerations for Widget Tooltips
+
+1. **Keep Widgets Lightweight**: Avoid heavy widgets in tooltips
+2. **Limit Network Requests**: Cache images and data when possible
+3. **Use const Constructors**: Where applicable for better performance
+4. **Avoid Complex Animations**: Simple transitions work best
+
 ## Best Practices
 
 ### Content Guidelines
@@ -309,15 +568,23 @@ ${l10n.lastModified}: ${_formatDate(rowData['modified_at'])}''';
 - Check `tooltipBehavior` is not set to `TooltipBehavior.never`
 - Verify `TablePlusTooltipTheme.enabled` is `true`
 - Ensure `textOverflow` is `TextOverflow.ellipsis` for default behavior
+- For widget tooltips, verify `tooltipBuilder` returns a valid widget
 
 #### Performance Issues
 - Avoid complex calculations in `tooltipFormatter`
+- Keep `tooltipBuilder` widgets lightweight
 - Consider pre-computing values during data preparation
-- Limit tooltip content length
+- Limit tooltip content length and avoid heavy animations
+
+#### Widget Tooltip Positioning Issues
+- Adjust `CustomTooltipWrapperTheme.estimatedHeight` for better overflow detection
+- Increase `minSpace` if tooltips switch sides too frequently
+- Check `maxWidth` setting if content appears clipped
 
 #### Styling Not Applied
 - Verify theme is properly configured in `FlutterTablePlus`
 - Check that custom `decoration` properties are valid
+- For widget tooltips, styling is handled within your custom widget
 - Ensure proper color contrast for visibility
 
 ### Debug Tips
@@ -348,7 +615,7 @@ TablePlusColumn(
 )
 ```
 
-**After (custom tooltip):**
+**After (custom text tooltip):**
 ```dart
 TablePlusColumn(
   key: 'name',
@@ -357,4 +624,48 @@ TablePlusColumn(
 )
 ```
 
-This guide covers all aspects of tooltip customization in Flutter Table Plus. The combination of flexible styling and powerful content generation makes it possible to create rich, informative tooltips that enhance the user experience significantly.
+**After (custom widget tooltip):**
+```dart
+TablePlusColumn(
+  key: 'name',
+  label: 'Name',
+  tooltipBuilder: (context, rowData) {
+    return Container(
+      padding: EdgeInsets.all(12),
+      child: Text('Rich widget content: ${rowData['name']}'),
+    );
+  },
+)
+```
+
+### From tooltipFormatter to tooltipBuilder
+
+**Before (text only):**
+```dart
+TablePlusColumn(
+  tooltipFormatter: (rowData) => '''Details:
+Name: ${rowData['name']}
+Role: ${rowData['role']}''',
+)
+```
+
+**After (rich widgets):**
+```dart
+TablePlusColumn(
+  tooltipBuilder: (context, rowData) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text('Details:', style: TextStyle(fontWeight: FontWeight.bold)),
+        ListTile(
+          leading: Icon(Icons.person),
+          title: Text(rowData['name']),
+          subtitle: Text(rowData['role']),
+        ),
+      ],
+    );
+  },
+)
+```
+
+This guide covers all aspects of tooltip customization in Flutter Table Plus. The combination of flexible styling, custom text content, and rich widget tooltips makes it possible to create highly informative and interactive tooltips that significantly enhance the user experience.

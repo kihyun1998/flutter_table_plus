@@ -270,7 +270,71 @@ Controls the appearance of cells in editing mode. See `EDITING.md` for more deta
 
 ## 8. Tooltip Styling (`TablePlusTooltipTheme`)
 
-Controls the appearance of tooltips that appear when cell content overflows. See `ADVANCED_COLUMNS.md` for more details.
+Controls the appearance and behavior of tooltips that appear when hovering over cells. This theme works for both text-based tooltips (using `tooltipFormatter`) and widget-based tooltips (using `tooltipBuilder`).
+
+### Basic Tooltip Properties
+
+```dart
+TablePlusTooltipTheme(
+  enabled: true,                           // Enable/disable all tooltips
+  textStyle: TextStyle(                    // Text style for tooltip content
+    fontSize: 14,
+    color: Colors.white,
+    fontWeight: FontWeight.w500,
+  ),
+  decoration: BoxDecoration(               // Tooltip background decoration
+    color: Colors.grey[800],
+    borderRadius: BorderRadius.circular(8),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.black26,
+        blurRadius: 8,
+        offset: Offset(0, 2),
+      ),
+    ],
+  ),
+  padding: EdgeInsets.all(12),            // Interior padding
+  margin: EdgeInsets.all(4),              // External margin
+  waitDuration: Duration(milliseconds: 500),  // Hover delay before showing
+  showDuration: Duration(seconds: 2),         // Touch display duration
+  exitDuration: Duration(milliseconds: 100),  // Exit delay
+  preferBelow: true,                          // Preferred positioning
+)
+```
+
+### Timing Controls
+
+- **waitDuration**: Delay before tooltip appears on hover
+- **showDuration**: How long tooltip stays visible after touch (mobile)
+- **exitDuration**: Delay before tooltip disappears when mouse exits
+
+### CustomTooltipWrapperTheme
+
+For widget-based tooltips created with `tooltipBuilder`, additional positioning controls are available:
+
+```dart
+TablePlusTooltipTheme(
+  // ... other properties
+  customWrapper: CustomTooltipWrapperTheme(
+    maxWidth: 350.0,              // Maximum tooltip width constraint
+    spacingPadding: 8.0,          // Space between tooltip and target
+    horizontalPadding: 12.0,      // Distance from screen edges
+    minSpace: 100.0,              // Minimum space before switching sides
+    minScrollHeight: 80.0,        // Minimum height for scrollable content
+    estimatedHeight: 150.0,       // Estimated height for positioning calculations
+  ),
+)
+```
+
+### Intelligent Positioning
+
+Widget tooltips automatically use smart positioning that:
+- Switches between above/below based on available screen space
+- Prevents clipping at screen boundaries
+- Handles content overflow with optimal scrolling
+- Respects screen edge padding
+
+See `TOOLTIP_CUSTOMIZATION.md` for comprehensive tooltip configuration examples and best practices.
 
 ## 9. Last Row Border Behavior (`lastRowBorderBehavior`)
 
