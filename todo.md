@@ -2,6 +2,7 @@ TODO: TwoDimensionalScrollable를 사용해서 개선해야할듯
 
 TODO: tooltip 제공해주자.
 
+todo: row double click null 이면 duration 1로고정 ? or ㅇ안하게?
 
 
 
