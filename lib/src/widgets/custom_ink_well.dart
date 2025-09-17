@@ -62,20 +62,22 @@ class _CustomInkWellState extends State<CustomInkWell> {
   Timer? _timer;
 
   void _handleTap() {
+    if (widget.onDoubleTap == null) {
+      // 더블탭 기능이 없으면 모든 탭을 단일 탭으로 처리
+      widget.onTap?.call();
+      return;
+    }
+
     _clickCount++;
 
     if (_clickCount == 1) {
       // 첫 번째 클릭 - 즉시 처리 (지연 없음!)
       widget.onTap?.call();
 
-      if (widget.onDoubleTap != null) {
-        // 더블클릭 콜백이 있으면 타이머 시작
-        _timer = Timer(widget.doubleClickTime, () {
-          _clickCount = 0;
-        });
-      } else {
+      // 더블클릭 콜백이 있으면 타이머 시작
+      _timer = Timer(widget.doubleClickTime, () {
         _clickCount = 0;
-      }
+      });
     } else if (_clickCount == 2) {
       // 두 번째 클릭 - 더블클릭 처리
       _timer?.cancel();
