@@ -1,3 +1,10 @@
+## 1.16.4
+
+*   **FIX**: Fixed row tap behavior when `onRowDoubleTap` is null
+    *   When `onRowDoubleTap` is not provided, rapid consecutive taps now correctly trigger multiple `onRowTap` calls
+    *   Previously, the second tap in a rapid sequence was incorrectly treated as a double-tap and ignored
+    *   Improved user experience by ensuring consistent tap response when double-tap functionality is disabled
+
 ## 1.16.3
 
 *   **FEAT**: Added `tooltipBuilder` support for custom widget tooltips
