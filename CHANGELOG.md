@@ -1,3 +1,10 @@
+## 1.16.6
+
+*   **BREAKING**: Replaced `isDimRow` callback with `dimRowKey` and `invertDimRow` for better performance
+    *   Use `dimRowKey` to specify a boolean field in rowData that determines dim state
+    *   Use `invertDimRow: true` to invert the logic (e.g., dim when `isActive` is false)
+    *   Eliminates callback overhead - dim state is determined by simple Map lookup
+
 ## 1.16.5
 
 *   **FEAT**: Added dim row feature with `isDimRow` callback and theme support for styling inactive or conditional rows

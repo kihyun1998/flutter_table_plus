@@ -46,7 +46,8 @@ class TablePlusBody extends StatelessWidget {
     this.hoverButtonPosition = HoverButtonPosition.right,
     this.hoverButtonTheme,
     this.checkboxTheme = const TablePlusCheckboxTheme(),
-    this.isDimRow,
+    this.dimRowKey,
+    this.invertDimRow = false,
   });
 
   /// The list of columns for the table.
@@ -153,19 +154,42 @@ class TablePlusBody extends StatelessWidget {
   /// the [TablePlusBodyTheme.lastRowBorderBehavior] setting.
   final bool needsVerticalScroll;
 
-  /// Callback to determine if a row should be displayed as a dim row.
-  /// Provides the row data and should return true if the row should be dimmed.
-  final bool Function(Map<String, dynamic> rowData)? isDimRow;
+  /// The key in rowData that determines if a row should be dimmed.
+  /// The value at this key must be a boolean.
+  final String? dimRowKey;
+
+  /// Whether to invert the dim row logic.
+  final bool invertDimRow;
+
+  /// Check if a row should be dimmed based on dimRowKey.
+  bool _isDimRow(Map<String, dynamic> rowData) {
+    if (dimRowKey == null) return false;
+
+    final value = rowData[dimRowKey];
+
+    // Type check: must be bool
+    if (value is! bool) {
+      assert(
+        false,
+        'dimRowKey "$dimRowKey" value must be a bool, but got ${value.runtimeType}. '
+        'Row data: $rowData',
+      );
+      return false;
+    }
+
+    // Apply inversion if needed
+    return invertDimRow ? !value : value;
+  }
 
   /// Get the background color for a row at the given index.
-  Color _getRowColor(int index, bool isSelected, Map<String, dynamic> rowData) {
+  Color _getRowColor(int index, bool isSelected, bool isDim) {
     // Selected rows get selection color (highest priority)
     if (isSelected && isSelectable) {
       return theme.selectedRowColor;
     }
 
-    // Dim rows get dim color (if callback provided and returns true)
-    if (isDimRow != null && isDimRow!(rowData)) {
+    // Dim rows get dim color
+    if (isDim) {
       return theme.dimRowColor ?? theme.backgroundColor;
     }
 
@@ -358,7 +382,7 @@ class TablePlusBody extends StatelessWidget {
         // This is the first row in a merge group - create a merged row
         final isSelected = selectedRows.contains(mergeGroup.groupId);
         final firstRowData = data[firstRowIndex];
-        final isDimmed = isDimRow?.call(firstRowData) ?? false;
+        final isDimmed = _isDimRow(firstRowData);
 
         // Calculate merged row height and individual heights
         double? mergedHeight;
@@ -402,7 +426,7 @@ class TablePlusBody extends StatelessWidget {
           columns: columns,
           columnWidths: columnWidths,
           theme: theme,
-          backgroundColor: _getRowColor(renderIndex, isSelected, firstRowData),
+          backgroundColor: _getRowColor(renderIndex, isSelected, isDimmed),
           isLastRow: (() {
             final lastRowKey = mergeGroup.rowKeys.last;
             final lastRowIndex = data
@@ -443,7 +467,7 @@ class TablePlusBody extends StatelessWidget {
     final rowId = _getRowId(rowData);
     final isSelected = rowId != null && selectedRows.contains(rowId);
     final calculatedHeight = _calculateRowHeight(index);
-    final isDimmed = isDimRow?.call(rowData) ?? false;
+    final isDimmed = _isDimRow(rowData);
 
     return TablePlusRow(
       rowIndex: index,
@@ -452,7 +476,7 @@ class TablePlusBody extends StatelessWidget {
       columns: columns,
       columnWidths: columnWidths,
       theme: theme,
-      backgroundColor: _getRowColor(renderIndex, isSelected, rowData),
+      backgroundColor: _getRowColor(renderIndex, isSelected, isDimmed),
       isLastRow: index == data.length - 1,
       isSelectable: isSelectable,
       selectionMode: selectionMode,

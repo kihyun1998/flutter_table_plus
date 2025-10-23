@@ -48,7 +48,8 @@ class FlutterTablePlus extends StatefulWidget {
     this.calculateRowHeight,
     this.hoverButtonBuilder,
     this.hoverButtonPosition = HoverButtonPosition.right,
-    this.isDimRow,
+    this.dimRowKey,
+    this.invertDimRow = false,
   });
 
   /// The map of columns to display in the table.
@@ -206,13 +207,44 @@ class FlutterTablePlus extends StatefulWidget {
   /// - [HoverButtonPosition.right]: Buttons appear on the right side (default)
   final HoverButtonPosition hoverButtonPosition;
 
-  /// Callback to determine if a row should be displayed as a dim row.
-  /// Provides the row data and should return true if the row should be dimmed.
-  /// Dim rows can have different styling as defined in [TablePlusBodyTheme].
+  /// The key in rowData that determines if a row should be dimmed.
   ///
+  /// The value at this key must be a boolean (`bool`).
+  /// The row will be dimmed when this value is `true` (or `false` if [invertDimRow] is `true`).
+  ///
+  /// Dim rows can have different styling as defined in [TablePlusBodyTheme].
   /// Priority: selected > dim > normal
-  /// Note: Selected rows will always use selected styling, regardless of dim state.
-  final bool Function(Map<String, dynamic> rowData)? isDimRow;
+  ///
+  /// Example:
+  /// ```dart
+  /// // Dim when isInactive is true
+  /// FlutterTablePlus(
+  ///   data: [
+  ///     {'id': 1, 'name': 'John', 'isInactive': true},  // dimmed
+  ///     {'id': 2, 'name': 'Jane', 'isInactive': false}, // normal
+  ///   ],
+  ///   dimRowKey: 'isInactive',
+  /// )
+  ///
+  /// // Dim when isActive is false
+  /// FlutterTablePlus(
+  ///   data: [
+  ///     {'id': 1, 'name': 'John', 'isActive': false},  // dimmed
+  ///     {'id': 2, 'name': 'Jane', 'isActive': true},   // normal
+  ///   ],
+  ///   dimRowKey: 'isActive',
+  ///   invertDimRow: true,
+  /// )
+  /// ```
+  final String? dimRowKey;
+
+  /// Whether to invert the dim row logic.
+  ///
+  /// When `true`, rows will be dimmed when [dimRowKey] value is `false`.
+  /// When `false` (default), rows will be dimmed when [dimRowKey] value is `true`.
+  ///
+  /// This is useful when you have an `isActive` field and want to dim inactive rows.
+  final bool invertDimRow;
 
   @override
   State<FlutterTablePlus> createState() => _FlutterTablePlusState();
@@ -768,7 +800,8 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                                 widget.hoverButtonPosition,
                                             hoverButtonTheme:
                                                 theme.hoverButtonTheme,
-                                            isDimRow: widget.isDimRow,
+                                            dimRowKey: widget.dimRowKey,
+                                            invertDimRow: widget.invertDimRow,
                                           ),
                                         );
                                       },
