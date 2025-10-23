@@ -36,6 +36,7 @@ class TablePlusRow extends TablePlusRowWidget {
     this.hoverButtonPosition = HoverButtonPosition.right,
     this.hoverButtonTheme,
     this.checkboxTheme = const TablePlusCheckboxTheme(),
+    this.isDim = false,
   });
 
   final int rowIndex;
@@ -78,6 +79,9 @@ class TablePlusRow extends TablePlusRowWidget {
   /// Theme configuration for hover buttons.
   final TablePlusHoverButtonTheme? hoverButtonTheme;
   final TablePlusCheckboxTheme checkboxTheme;
+
+  /// Whether this row is a dim row.
+  final bool isDim;
 
   // Implementation of TablePlusRowWidget abstract methods
   @override
@@ -191,6 +195,7 @@ class _TablePlusRowState extends State<TablePlusRow> {
                 : null,
             onStopEditing: widget.onStopEditing,
             calculatedHeight: widget.calculatedHeight,
+            isDim: widget.isDim,
           );
         }),
       ),
@@ -270,10 +275,12 @@ class _TablePlusRowState extends State<TablePlusRow> {
         },
         doubleClickTime: widget.theme.doubleClickTime,
         backgroundColor: widget.backgroundColor,
-        hoverColor: widget.theme.getEffectiveHoverColor(widget.isSelected),
-        splashColor: widget.theme.getEffectiveSplashColor(widget.isSelected),
-        highlightColor:
-            widget.theme.getEffectiveHighlightColor(widget.isSelected),
+        hoverColor: widget.theme
+            .getEffectiveHoverColor(widget.isSelected, widget.isDim),
+        splashColor: widget.theme
+            .getEffectiveSplashColor(widget.isSelected, widget.isDim),
+        highlightColor: widget.theme
+            .getEffectiveHighlightColor(widget.isSelected, widget.isDim),
         child: hoveredContent,
       );
     }

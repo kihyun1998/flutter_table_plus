@@ -46,6 +46,7 @@ class TablePlusBody extends StatelessWidget {
     this.hoverButtonPosition = HoverButtonPosition.right,
     this.hoverButtonTheme,
     this.checkboxTheme = const TablePlusCheckboxTheme(),
+    this.isDimRow,
   });
 
   /// The list of columns for the table.
@@ -152,11 +153,20 @@ class TablePlusBody extends StatelessWidget {
   /// the [TablePlusBodyTheme.lastRowBorderBehavior] setting.
   final bool needsVerticalScroll;
 
+  /// Callback to determine if a row should be displayed as a dim row.
+  /// Provides the row data and should return true if the row should be dimmed.
+  final bool Function(Map<String, dynamic> rowData)? isDimRow;
+
   /// Get the background color for a row at the given index.
-  Color _getRowColor(int index, bool isSelected) {
-    // Selected rows get selection color
+  Color _getRowColor(int index, bool isSelected, Map<String, dynamic> rowData) {
+    // Selected rows get selection color (highest priority)
     if (isSelected && isSelectable) {
       return theme.selectedRowColor;
+    }
+
+    // Dim rows get dim color (if callback provided and returns true)
+    if (isDimRow != null && isDimRow!(rowData)) {
+      return theme.dimRowColor ?? theme.backgroundColor;
     }
 
     // Alternate row colors
@@ -347,6 +357,8 @@ class TablePlusBody extends StatelessWidget {
       if (firstRowIndex == index) {
         // This is the first row in a merge group - create a merged row
         final isSelected = selectedRows.contains(mergeGroup.groupId);
+        final firstRowData = data[firstRowIndex];
+        final isDimmed = isDimRow?.call(firstRowData) ?? false;
 
         // Calculate merged row height and individual heights
         double? mergedHeight;
@@ -390,7 +402,7 @@ class TablePlusBody extends StatelessWidget {
           columns: columns,
           columnWidths: columnWidths,
           theme: theme,
-          backgroundColor: _getRowColor(renderIndex, isSelected),
+          backgroundColor: _getRowColor(renderIndex, isSelected, firstRowData),
           isLastRow: (() {
             final lastRowKey = mergeGroup.rowKeys.last;
             final lastRowIndex = data
@@ -421,6 +433,7 @@ class TablePlusBody extends StatelessWidget {
           hoverButtonBuilder: hoverButtonBuilder,
           hoverButtonPosition: hoverButtonPosition,
           hoverButtonTheme: hoverButtonTheme,
+          isDim: isDimmed,
         );
       }
     }
@@ -430,6 +443,7 @@ class TablePlusBody extends StatelessWidget {
     final rowId = _getRowId(rowData);
     final isSelected = rowId != null && selectedRows.contains(rowId);
     final calculatedHeight = _calculateRowHeight(index);
+    final isDimmed = isDimRow?.call(rowData) ?? false;
 
     return TablePlusRow(
       rowIndex: index,
@@ -438,7 +452,7 @@ class TablePlusBody extends StatelessWidget {
       columns: columns,
       columnWidths: columnWidths,
       theme: theme,
-      backgroundColor: _getRowColor(renderIndex, isSelected),
+      backgroundColor: _getRowColor(renderIndex, isSelected, rowData),
       isLastRow: index == data.length - 1,
       isSelectable: isSelectable,
       selectionMode: selectionMode,
@@ -460,6 +474,7 @@ class TablePlusBody extends StatelessWidget {
       hoverButtonBuilder: hoverButtonBuilder,
       hoverButtonPosition: hoverButtonPosition,
       hoverButtonTheme: hoverButtonTheme,
+      isDim: isDimmed,
     );
   }
 }

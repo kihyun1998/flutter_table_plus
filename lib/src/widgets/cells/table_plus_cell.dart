@@ -22,6 +22,7 @@ class TablePlusCell extends StatefulWidget {
     this.onCellTap,
     this.onStopEditing,
     this.calculatedHeight,
+    this.isDim = false,
   });
 
   final int rowIndex;
@@ -38,6 +39,7 @@ class TablePlusCell extends StatefulWidget {
   final VoidCallback? onCellTap;
   final void Function({required bool save})? onStopEditing;
   final double? calculatedHeight;
+  final bool isDim;
 
   @override
   State<TablePlusCell> createState() => _TablePlusCellState();
@@ -131,7 +133,8 @@ class _TablePlusCellState extends State<TablePlusCell> {
 
     Widget textWidget = Text(
       displayValue,
-      style: widget.theme.getEffectiveTextStyle(widget.isSelected),
+      style:
+          widget.theme.getEffectiveTextStyle(widget.isSelected, widget.isDim),
       overflow: widget.column.textOverflow,
       textAlign: widget.column.textAlign,
     );
@@ -252,7 +255,8 @@ class _TablePlusCellState extends State<TablePlusCell> {
           context: context,
           text: displayValue,
           maxWidth: availableWidth,
-          style: widget.theme.getEffectiveTextStyle(widget.isSelected),
+          style: widget.theme
+              .getEffectiveTextStyle(widget.isSelected, widget.isDim),
         );
     }
   }

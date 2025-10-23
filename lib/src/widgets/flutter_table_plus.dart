@@ -48,6 +48,7 @@ class FlutterTablePlus extends StatefulWidget {
     this.calculateRowHeight,
     this.hoverButtonBuilder,
     this.hoverButtonPosition = HoverButtonPosition.right,
+    this.isDimRow,
   });
 
   /// The map of columns to display in the table.
@@ -204,6 +205,14 @@ class FlutterTablePlus extends StatefulWidget {
   /// - [HoverButtonPosition.center]: Buttons appear in the center
   /// - [HoverButtonPosition.right]: Buttons appear on the right side (default)
   final HoverButtonPosition hoverButtonPosition;
+
+  /// Callback to determine if a row should be displayed as a dim row.
+  /// Provides the row data and should return true if the row should be dimmed.
+  /// Dim rows can have different styling as defined in [TablePlusBodyTheme].
+  ///
+  /// Priority: selected > dim > normal
+  /// Note: Selected rows will always use selected styling, regardless of dim state.
+  final bool Function(Map<String, dynamic> rowData)? isDimRow;
 
   @override
   State<FlutterTablePlus> createState() => _FlutterTablePlusState();
@@ -759,6 +768,7 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                                 widget.hoverButtonPosition,
                                             hoverButtonTheme:
                                                 theme.hoverButtonTheme,
+                                            isDimRow: widget.isDimRow,
                                           ),
                                         );
                                       },

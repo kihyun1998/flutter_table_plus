@@ -52,6 +52,7 @@ class TablePlusMergedRow extends TablePlusRowWidget {
     this.hoverButtonPosition = HoverButtonPosition.right,
     this.hoverButtonTheme,
     this.checkboxTheme = const TablePlusCheckboxTheme(),
+    this.isDim = false,
   });
 
   @override
@@ -109,6 +110,9 @@ class TablePlusMergedRow extends TablePlusRowWidget {
   /// Theme configuration for hover buttons.
   final TablePlusHoverButtonTheme? hoverButtonTheme;
   final TablePlusCheckboxTheme checkboxTheme;
+
+  /// Whether this row is a dim row.
+  final bool isDim;
 
   // Implementation of TablePlusRowWidget abstract methods
   @override
@@ -252,7 +256,8 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
       final displayValue = (rowData ?? {})[column.key]?.toString() ?? '';
       Widget textWidget = Text(
         displayValue,
-        style: widget.theme.getEffectiveTextStyle(widget.isSelected),
+        style:
+            widget.theme.getEffectiveTextStyle(widget.isSelected, widget.isDim),
         textAlign: column.textAlign,
         overflow: column.textOverflow,
       );
@@ -436,7 +441,8 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
       final displayValue = (rowData ?? {})[column.key]?.toString() ?? '';
       Widget textWidget = Text(
         displayValue,
-        style: widget.theme.getEffectiveTextStyle(widget.isSelected),
+        style:
+            widget.theme.getEffectiveTextStyle(widget.isSelected, widget.isDim),
         textAlign: column.textAlign,
         overflow: column.textOverflow,
       );
@@ -524,10 +530,12 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
 
       Widget textWidget = Text(
         displayValue,
-        style: widget.theme.getEffectiveTextStyle(widget.isSelected).copyWith(
+        style: widget.theme
+            .getEffectiveTextStyle(widget.isSelected, widget.isDim)
+            .copyWith(
               fontWeight: FontWeight.w600, // Make summary text slightly bolder
               color: widget.theme
-                  .getEffectiveTextStyle(widget.isSelected)
+                  .getEffectiveTextStyle(widget.isSelected, widget.isDim)
                   .color
                   ?.withValues(alpha: 0.8),
             ),
@@ -657,7 +665,8 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
           context: context,
           text: displayValue,
           maxWidth: availableWidth,
-          style: widget.theme.getEffectiveTextStyle(widget.isSelected),
+          style: widget.theme
+              .getEffectiveTextStyle(widget.isSelected, widget.isDim),
         );
     }
   }
@@ -889,10 +898,12 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
                 widget.isSelected),
         doubleClickTime: widget.theme.doubleClickTime,
         backgroundColor: widget.backgroundColor,
-        hoverColor: widget.theme.getEffectiveHoverColor(widget.isSelected),
-        splashColor: widget.theme.getEffectiveSplashColor(widget.isSelected),
-        highlightColor:
-            widget.theme.getEffectiveHighlightColor(widget.isSelected),
+        hoverColor: widget.theme
+            .getEffectiveHoverColor(widget.isSelected, widget.isDim),
+        splashColor: widget.theme
+            .getEffectiveSplashColor(widget.isSelected, widget.isDim),
+        highlightColor: widget.theme
+            .getEffectiveHighlightColor(widget.isSelected, widget.isDim),
         child: hoveredContent,
       );
     }

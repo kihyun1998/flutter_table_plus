@@ -29,6 +29,12 @@ class TablePlusBodyTheme {
     // Selection styling
     this.selectedRowColor = const Color(0xFFE3F2FD),
     this.selectedRowTextStyle,
+    // Dim row styling
+    this.dimRowColor,
+    this.dimRowTextStyle,
+    this.dimRowHoverColor,
+    this.dimRowSplashColor,
+    this.dimRowHighlightColor,
     this.padding = const EdgeInsets.symmetric(horizontal: 16.0),
     this.dividerColor = const Color(0xFFE0E0E0),
     this.dividerThickness = 1.0,
@@ -68,6 +74,27 @@ class TablePlusBodyTheme {
   /// The text style for selected rows.
   /// If null, the default [textStyle] will be used.
   final TextStyle? selectedRowTextStyle;
+
+  /// The background color for dim rows.
+  /// Dim rows are rows that meet a certain condition (determined by isDimRow callback).
+  /// If null, dim rows will use normal row colors.
+  final Color? dimRowColor;
+
+  /// The text style for dim rows.
+  /// If null, the default [textStyle] will be used.
+  final TextStyle? dimRowTextStyle;
+
+  /// The hover color for dim rows.
+  /// If null, uses the default [hoverColor].
+  final Color? dimRowHoverColor;
+
+  /// The splash color for dim rows.
+  /// If null, uses the default [splashColor].
+  final Color? dimRowSplashColor;
+
+  /// The highlight color for dim rows.
+  /// If null, uses the default [highlightColor].
+  final Color? dimRowHighlightColor;
 
   /// The padding inside body cells.
   final EdgeInsets padding;
@@ -134,6 +161,11 @@ class TablePlusBodyTheme {
     TextStyle? textStyle,
     Color? selectedRowColor,
     TextStyle? selectedRowTextStyle,
+    Color? dimRowColor,
+    TextStyle? dimRowTextStyle,
+    Color? dimRowHoverColor,
+    Color? dimRowSplashColor,
+    Color? dimRowHighlightColor,
     EdgeInsets? padding,
     Color? dividerColor,
     double? dividerThickness,
@@ -157,6 +189,11 @@ class TablePlusBodyTheme {
       textStyle: textStyle ?? this.textStyle,
       selectedRowColor: selectedRowColor ?? this.selectedRowColor,
       selectedRowTextStyle: selectedRowTextStyle ?? this.selectedRowTextStyle,
+      dimRowColor: dimRowColor ?? this.dimRowColor,
+      dimRowTextStyle: dimRowTextStyle ?? this.dimRowTextStyle,
+      dimRowHoverColor: dimRowHoverColor ?? this.dimRowHoverColor,
+      dimRowSplashColor: dimRowSplashColor ?? this.dimRowSplashColor,
+      dimRowHighlightColor: dimRowHighlightColor ?? this.dimRowHighlightColor,
       padding: padding ?? this.padding,
       dividerColor: dividerColor ?? this.dividerColor,
       dividerThickness: dividerThickness ?? this.dividerThickness,
@@ -178,42 +215,53 @@ class TablePlusBodyTheme {
     );
   }
 
-  /// Gets the effective hover color for rows based on selection state.
+  /// Gets the effective hover color for rows based on selection and dim state.
+  /// Priority: selected > dim > normal
   /// Returns null to use the default framework effect if no color is specified.
-  Color? getEffectiveHoverColor(bool isSelected) {
+  Color? getEffectiveHoverColor(bool isSelected, bool isDim) {
     if (isSelected) {
       return selectedRowHoverColor ?? hoverColor;
+    } else if (isDim) {
+      return dimRowHoverColor ?? hoverColor;
     } else {
       return hoverColor;
     }
   }
 
-  /// Gets the effective splash color for rows based on selection state.
+  /// Gets the effective splash color for rows based on selection and dim state.
+  /// Priority: selected > dim > normal
   /// Returns null to use the default framework effect if no color is specified.
-  Color? getEffectiveSplashColor(bool isSelected) {
+  Color? getEffectiveSplashColor(bool isSelected, bool isDim) {
     if (isSelected) {
       return selectedRowSplashColor ?? splashColor;
+    } else if (isDim) {
+      return dimRowSplashColor ?? splashColor;
     } else {
       return splashColor;
     }
   }
 
-  /// Gets the effective highlight color for rows based on selection state.
+  /// Gets the effective highlight color for rows based on selection and dim state.
+  /// Priority: selected > dim > normal
   /// Returns null to use the default framework effect if no color is specified.
-  Color? getEffectiveHighlightColor(bool isSelected) {
+  Color? getEffectiveHighlightColor(bool isSelected, bool isDim) {
     if (isSelected) {
       return selectedRowHighlightColor ?? highlightColor;
+    } else if (isDim) {
+      return dimRowHighlightColor ?? highlightColor;
     } else {
       return highlightColor;
     }
   }
 
-  /// Gets the effective text style for rows based on selection state.
-  /// Returns the selected row text style if available and row is selected,
-  /// otherwise returns the default body text style.
-  TextStyle getEffectiveTextStyle(bool isSelected) {
+  /// Gets the effective text style for rows based on selection and dim state.
+  /// Priority: selected > dim > normal
+  /// Returns the appropriate text style based on row state.
+  TextStyle getEffectiveTextStyle(bool isSelected, bool isDim) {
     if (isSelected && selectedRowTextStyle != null) {
       return selectedRowTextStyle!;
+    } else if (isDim && dimRowTextStyle != null) {
+      return dimRowTextStyle!;
     } else {
       return textStyle;
     }

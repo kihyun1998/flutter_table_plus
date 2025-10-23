@@ -1,3 +1,7 @@
+## 1.16.5
+
+*   **FEAT**: Added dim row feature with `isDimRow` callback and theme support for styling inactive or conditional rows
+
 ## 1.16.4
 
 *   **FIX**: Fixed row tap behavior when `onRowDoubleTap` is null
