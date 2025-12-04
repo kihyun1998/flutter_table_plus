@@ -13,6 +13,7 @@ import '../models/theme/tooltip_theme.dart' show TablePlusTooltipTheme;
 import '../models/tooltip_behavior.dart';
 import '../utils/text_overflow_detector.dart';
 import 'cells/editable_text_field.dart';
+import 'flutter_tooltip_plus.dart';
 import 'custom_ink_well.dart';
 import 'custom_tooltip_wrapper.dart';
 import 'table_plus_row_widget.dart';
@@ -696,15 +697,9 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
                 ? column.tooltipFormatter!(rowData)
                 : displayValue;
 
-        return Tooltip(
+        return FlutterTooltipPlus(
           message: tooltipMessage,
-          textStyle: widget.tooltipTheme.textStyle,
-          decoration: widget.tooltipTheme.decoration,
-          padding: widget.tooltipTheme.padding,
-          margin: widget.tooltipTheme.margin,
-          waitDuration: widget.tooltipTheme.waitDuration,
-          showDuration: widget.tooltipTheme.showDuration,
-          preferBelow: widget.tooltipTheme.preferBelow,
+          theme: widget.tooltipTheme,
           child: textWidget,
         );
       }

@@ -6,6 +6,7 @@ import '../models/theme/header_theme.dart' show TablePlusHeaderTheme;
 import '../models/theme/tooltip_theme.dart' show TablePlusTooltipTheme;
 import '../models/tooltip_behavior.dart';
 import '../utils/text_overflow_detector.dart';
+import 'flutter_tooltip_plus.dart';
 
 /// A widget that renders the header row of the table.
 class TablePlusHeader extends StatefulWidget {
@@ -409,15 +410,9 @@ class _HeaderCell extends StatelessWidget {
     // Add tooltip based on tooltip behavior
     if (_shouldShowTooltip(context, column.label)) {
       try {
-        textWidget = Tooltip(
+        textWidget = FlutterTooltipPlus(
           message: column.label,
-          textStyle: tooltipTheme.textStyle,
-          decoration: tooltipTheme.decoration,
-          padding: tooltipTheme.padding,
-          margin: tooltipTheme.margin,
-          waitDuration: tooltipTheme.waitDuration,
-          showDuration: tooltipTheme.showDuration,
-          preferBelow: tooltipTheme.preferBelow,
+          theme: tooltipTheme,
           child: textWidget,
         );
       } catch (e) {

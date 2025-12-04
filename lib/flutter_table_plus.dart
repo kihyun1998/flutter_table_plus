@@ -44,3 +44,4 @@ export 'src/utils/table_row_height_calculator.dart';
 export 'src/widgets/custom_ink_well.dart';
 export 'src/widgets/custom_tooltip_wrapper.dart';
 export 'src/widgets/flutter_table_plus.dart';
+export 'src/widgets/flutter_tooltip_plus.dart';

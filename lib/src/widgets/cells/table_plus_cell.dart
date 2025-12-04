@@ -155,15 +155,9 @@ class _TablePlusCellState extends State<TablePlusCell> {
             ? widget.column.tooltipFormatter!(widget.rowData)
             : displayValue;
 
-        textWidget = Tooltip(
+        textWidget = FlutterTooltipPlus(
           message: tooltipMessage,
-          textStyle: widget.tooltipTheme.textStyle,
-          decoration: widget.tooltipTheme.decoration,
-          padding: widget.tooltipTheme.padding,
-          margin: widget.tooltipTheme.margin,
-          waitDuration: widget.tooltipTheme.waitDuration,
-          showDuration: widget.tooltipTheme.showDuration,
-          preferBelow: widget.tooltipTheme.preferBelow,
+          theme: widget.tooltipTheme,
           child: textWidget,
         );
       }

@@ -71,7 +71,7 @@ class DemoControlPanel extends StatelessWidget {
               Switch(
                 value: showHoverButtons,
                 onChanged: (value) => onToggleHoverButtons(),
-                activeColor: Colors.amber.shade600,
+                activeThumbColor: Colors.amber.shade600,
                 materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
             ],
@@ -212,7 +212,7 @@ class DemoControlPanel extends StatelessWidget {
         Switch(
           value: showMergedRows,
           onChanged: (value) => onToggleMergedRows(),
-          activeColor: Colors.purple.shade600,
+          activeThumbColor: Colors.purple.shade600,
           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
         ),
         const SizedBox(width: 16),
@@ -232,7 +232,7 @@ class DemoControlPanel extends StatelessWidget {
           Switch(
             value: expandedGroups,
             onChanged: (value) => onToggleGroupExpansion(),
-            activeColor: Colors.indigo.shade600,
+            activeThumbColor: Colors.indigo.shade600,
             materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
           const SizedBox(width: 16),

@@ -19,6 +19,7 @@ class TablePlusTooltipTheme {
     this.showDuration = const Duration(seconds: 2),
     this.exitDuration = const Duration(milliseconds: 100),
     this.preferBelow = true,
+    this.verticalOffset = 24.0,
     this.customWrapper = const CustomTooltipWrapperTheme(),
   });
 
@@ -69,6 +70,12 @@ class TablePlusTooltipTheme {
   /// The actual position may vary based on available screen space.
   final bool preferBelow;
 
+  /// The vertical distance between the widget and the displayed tooltip.
+  ///
+  /// This value determines how far the tooltip appears from the target widget.
+  /// Defaults to 24.0 pixels, which is Flutter's standard tooltip offset.
+  final double verticalOffset;
+
   /// Configuration for CustomTooltipWrapper positioning and behavior.
   ///
   /// This contains settings specific to widget-based tooltips created with
@@ -86,6 +93,7 @@ class TablePlusTooltipTheme {
     Duration? showDuration,
     Duration? exitDuration,
     bool? preferBelow,
+    double? verticalOffset,
     CustomTooltipWrapperTheme? customWrapper,
   }) {
     return TablePlusTooltipTheme(
@@ -98,6 +106,7 @@ class TablePlusTooltipTheme {
       showDuration: showDuration ?? this.showDuration,
       exitDuration: exitDuration ?? this.exitDuration,
       preferBelow: preferBelow ?? this.preferBelow,
+      verticalOffset: verticalOffset ?? this.verticalOffset,
       customWrapper: customWrapper ?? this.customWrapper,
     );
   }

@@ -1,3 +1,8 @@
+## 1.16.7
+
+*   **FEAT**: Added `verticalOffset` to `TablePlusTooltipTheme` for customizable tooltip positioning (default: 24.0px)
+*   **IMPROVEMENT**: Created `FlutterTooltipPlus` widget to centralize tooltip logic across all table components
+
 ## 1.16.6
 
 *   **BREAKING**: Replaced `isDimRow` callback with `dimRowKey` and `invertDimRow` for better performance
