@@ -214,15 +214,17 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
       }
     });
 
-    debugPrint('✅ Generated ${newData.length} rows in ${stopwatch.elapsedMilliseconds}ms');
+    debugPrint(
+        '✅ Generated ${newData.length} rows in ${stopwatch.elapsedMilliseconds}ms');
   }
 
   /// Handle settings changes
   void _handleSettingsChanged(PlaygroundSettings newSettings) {
     setState(() {
       // Check if features changed that require column rebuild
-      final needsColumnRebuild = newSettings.sortingEnabled != _settings.sortingEnabled ||
-          newSettings.editingEnabled != _settings.editingEnabled;
+      final needsColumnRebuild =
+          newSettings.sortingEnabled != _settings.sortingEnabled ||
+              newSettings.editingEnabled != _settings.editingEnabled;
 
       _settings = newSettings;
 
@@ -276,7 +278,9 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
             comparison = aValue.toString().compareTo(bValue.toString());
           }
 
-          return direction == SortDirection.ascending ? comparison : -comparison;
+          return direction == SortDirection.ascending
+              ? comparison
+              : -comparison;
         });
       }
 
@@ -324,7 +328,8 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
       _data[rowIndex][columnKey] = newValue;
     });
 
-    debugPrint('✏️ Edited row $rowIndex, column $columnKey: $oldValue → $newValue');
+    debugPrint(
+        '✏️ Edited row $rowIndex, column $columnKey: $oldValue → $newValue');
   }
 
   /// Handle column reorder
@@ -412,7 +417,8 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
               padding: const EdgeInsets.only(right: 16),
               child: Center(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(4),
@@ -490,7 +496,8 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         sortColumnKey: _currentSortColumn,
         sortDirection: _currentSortDirection,
         onSort: _settings.sortingEnabled ? _handleSort : null,
-        onColumnReorder: _settings.columnReorderEnabled ? _handleColumnReorder : null,
+        onColumnReorder:
+            _settings.columnReorderEnabled ? _handleColumnReorder : null,
         isSelectable: true,
         selectionMode: _settings.selectionMode,
         selectedRows: _selectedRows,
@@ -530,7 +537,8 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
           horizontal: _settings.horizontalPadding,
           vertical: _settings.verticalPadding,
         ),
-        dividerColor: _settings.showDividers ? Colors.grey.shade300 : Colors.transparent,
+        dividerColor:
+            _settings.showDividers ? Colors.grey.shade300 : Colors.transparent,
         showHorizontalDividers: _settings.showDividers,
         showVerticalDividers: _settings.showDividers,
         selectedRowColor: Colors.blue.shade100.withValues(alpha: 0.6),

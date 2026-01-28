@@ -92,7 +92,8 @@ class PerformanceMonitor extends StatelessWidget {
               label: 'Data Generation',
               value: _formatTime(metrics.dataGenerationTimeMs!),
               color: Colors.green,
-              subtitle: _formatRate(metrics.rowCount, metrics.dataGenerationTimeMs!),
+              subtitle:
+                  _formatRate(metrics.rowCount, metrics.dataGenerationTimeMs!),
             ),
           if (metrics.dataGenerationTimeMs != null) const SizedBox(height: 12),
 

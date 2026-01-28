@@ -1,3 +1,11 @@
+## 1.17.0
+
+*   **IMPROVEMENT**: Added `itemExtentBuilder` to `ListView.builder` in `TablePlusBody` for significantly improved scroll performance with large datasets
+    *   Eliminates jank when jumping to middle of list (e.g., scrollbar drag) with 10,000+ rows
+    *   Flutter no longer needs to build intermediate items to calculate scroll positions
+    *   Works with both fixed row heights and dynamic row heights (`calculateRowHeight`)
+    *   Properly handles merged row groups with `_getMergedGroupExtent` helper
+
 ## 1.16.7
 
 *   **FEAT**: Added `verticalOffset` to `TablePlusTooltipTheme` for customizable tooltip positioning (default: 24.0px)

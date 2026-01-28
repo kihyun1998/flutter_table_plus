@@ -13,7 +13,7 @@ import 'table_plus_merged_row.dart';
 import 'table_plus_row_widget.dart';
 
 /// A widget that renders the data rows of the table.
-class TablePlusBody extends StatelessWidget {
+class TablePlusBody extends StatefulWidget {
   /// Creates a [TablePlusBody] with the specified configuration.
   const TablePlusBody({
     super.key,
@@ -161,108 +161,164 @@ class TablePlusBody extends StatelessWidget {
   /// Whether to invert the dim row logic.
   final bool invertDimRow;
 
+  @override
+  State<TablePlusBody> createState() => _TablePlusBodyState();
+}
+
+class _TablePlusBodyState extends State<TablePlusBody> {
+  /// Cached renderable indices — recomputed only when data or mergedGroups change.
+  /// Null when no merged groups exist (use data indices directly).
+  List<int>? _cachedRenderableIndices;
+
+  /// Cached lookup: rowKey → MergedRowGroup for O(1) access.
+  Map<String, MergedRowGroup> _rowKeyToGroup = const {};
+
+  /// Cached lookup: rowKey → data index for O(1) access.
+  Map<String, int> _rowKeyToIndex = const {};
+
+  /// Cached row heights — avoids repeated calculateRowHeight calls.
+  /// Invalidated together with other caches when data changes.
+  Map<int, double> _cachedRowHeights = const {};
+
+  @override
+  void initState() {
+    super.initState();
+    _rebuildCaches();
+  }
+
+  @override
+  void didUpdateWidget(covariant TablePlusBody oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!identical(widget.data, oldWidget.data) ||
+        !identical(widget.mergedGroups, oldWidget.mergedGroups) ||
+        widget.rowIdKey != oldWidget.rowIdKey) {
+      _rebuildCaches();
+    }
+  }
+
+  /// Rebuild all lookup caches. O(n + m*k) once, then O(1) per query.
+  void _rebuildCaches() {
+    final data = widget.data;
+    final mergedGroups = widget.mergedGroups;
+    final rowIdKey = widget.rowIdKey;
+
+    // Build rowKey → index map: O(n)
+    final rowKeyToIndex = <String, int>{};
+    for (int i = 0; i < data.length; i++) {
+      final key = data[i][rowIdKey]?.toString();
+      if (key != null) {
+        rowKeyToIndex[key] = i;
+      }
+    }
+
+    // Build rowKey → group map: O(m*k)
+    final rowKeyToGroup = <String, MergedRowGroup>{};
+    for (final group in mergedGroups) {
+      for (final rowKey in group.rowKeys) {
+        rowKeyToGroup[rowKey] = group;
+      }
+    }
+
+    // Build renderable indices only when merged groups exist
+    if (mergedGroups.isEmpty) {
+      _cachedRenderableIndices = null; // Skip — use data.length directly
+    } else {
+      final renderableIndices = <int>[];
+      final processedIndices = <int>{};
+
+      for (int i = 0; i < data.length; i++) {
+        if (processedIndices.contains(i)) continue;
+
+        final rowKey = data[i][rowIdKey]?.toString();
+        final group = rowKey != null ? rowKeyToGroup[rowKey] : null;
+
+        if (group != null) {
+          final firstRowKey = group.rowKeys.first;
+          final firstRowIndex = rowKeyToIndex[firstRowKey];
+          if (firstRowIndex == i) {
+            renderableIndices.add(i);
+          }
+          for (final gRowKey in group.rowKeys) {
+            final idx = rowKeyToIndex[gRowKey];
+            if (idx != null) {
+              processedIndices.add(idx);
+            }
+          }
+        } else {
+          renderableIndices.add(i);
+          processedIndices.add(i);
+        }
+      }
+
+      _cachedRenderableIndices = renderableIndices;
+    }
+
+    _rowKeyToGroup = rowKeyToGroup;
+    _rowKeyToIndex = rowKeyToIndex;
+    _cachedRowHeights = {}; // Invalidate height cache when data changes
+  }
+
   /// Check if a row should be dimmed based on dimRowKey.
   bool _isDimRow(Map<String, dynamic> rowData) {
-    if (dimRowKey == null) return false;
+    if (widget.dimRowKey == null) return false;
 
-    final value = rowData[dimRowKey];
+    final value = rowData[widget.dimRowKey];
 
     // Type check: must be bool
     if (value is! bool) {
       assert(
         false,
-        'dimRowKey "$dimRowKey" value must be a bool, but got ${value.runtimeType}. '
+        'dimRowKey "${widget.dimRowKey}" value must be a bool, but got ${value.runtimeType}. '
         'Row data: $rowData',
       );
       return false;
     }
 
     // Apply inversion if needed
-    return invertDimRow ? !value : value;
+    return widget.invertDimRow ? !value : value;
   }
 
   /// Get the background color for a row at the given index.
   Color _getRowColor(int index, bool isSelected, bool isDim) {
     // Selected rows get selection color (highest priority)
-    if (isSelected && isSelectable) {
-      return theme.selectedRowColor;
+    if (isSelected && widget.isSelectable) {
+      return widget.theme.selectedRowColor;
     }
 
     // Dim rows get dim color
     if (isDim) {
-      return theme.dimRowColor ?? theme.backgroundColor;
+      return widget.theme.dimRowColor ?? widget.theme.backgroundColor;
     }
 
     // Alternate row colors
-    if (theme.alternateRowColor != null && index.isOdd) {
-      return theme.alternateRowColor!;
+    if (widget.theme.alternateRowColor != null && index.isOdd) {
+      return widget.theme.alternateRowColor!;
     }
 
-    return theme.backgroundColor;
+    return widget.theme.backgroundColor;
   }
 
   /// Extract the row ID from row data.
   String? _getRowId(Map<String, dynamic> rowData) {
-    return rowData[rowIdKey]?.toString();
+    return rowData[widget.rowIdKey]?.toString();
   }
 
   /// Find the merged group that contains the specified row index.
+  /// Uses cached O(1) lookup instead of O(m) linear scan.
   MergedRowGroup? _getMergedGroupForRow(int rowIndex) {
-    if (rowIndex >= data.length) return null;
-    final rowData = data[rowIndex];
-    final rowKey = rowData[rowIdKey]?.toString();
+    if (rowIndex >= widget.data.length) return null;
+    final rowData = widget.data[rowIndex];
+    final rowKey = rowData[widget.rowIdKey]?.toString();
     if (rowKey == null) return null;
-
-    for (final group in mergedGroups) {
-      if (group.rowKeys.contains(rowKey)) {
-        return group;
-      }
-    }
-    return null;
-  }
-
-  /// Get the list of indices that should actually be rendered.
-  /// This excludes rows that are part of merge groups (except the first row of each group).
-  List<int> _getRenderableIndices() {
-    List<int> renderableIndices = [];
-    Set<int> processedIndices = {};
-
-    for (int i = 0; i < data.length; i++) {
-      if (processedIndices.contains(i)) continue;
-
-      final mergeGroup = _getMergedGroupForRow(i);
-      if (mergeGroup != null) {
-        // Add only the first row of the merge group
-        final firstRowKey = mergeGroup.rowKeys.first;
-        final firstRowIndex =
-            data.indexWhere((row) => row[rowIdKey]?.toString() == firstRowKey);
-        if (firstRowIndex == i) {
-          renderableIndices.add(i);
-        }
-        // Mark all rows in this group as processed
-        for (final rowKey in mergeGroup.rowKeys) {
-          final rowIndex =
-              data.indexWhere((row) => row[rowIdKey]?.toString() == rowKey);
-          if (rowIndex != -1) {
-            processedIndices.add(rowIndex);
-          }
-        }
-      } else {
-        // Regular row - add it
-        renderableIndices.add(i);
-        processedIndices.add(i);
-      }
-    }
-
-    return renderableIndices;
+    return _rowKeyToGroup[rowKey];
   }
 
   /// Handle row selection toggle via row click.
   /// For merged groups, this handles both group IDs and individual row IDs.
   void _handleRowSelectionToggle(String rowId) {
-    if (onRowSelectionChanged == null) return;
+    if (widget.onRowSelectionChanged == null) return;
 
-    final isCurrentlySelected = selectedRows.contains(rowId);
+    final isCurrentlySelected = widget.selectedRows.contains(rowId);
 
     // Check if this rowId represents a merged group
     final mergeGroup = _getMergedGroupById(rowId);
@@ -280,10 +336,10 @@ class TablePlusBody extends StatelessWidget {
   /// For merged groups, this handles both group IDs and individual row IDs.
   void _handleCheckboxToggle(String rowId) {
     // Use onCheckboxChanged if available, otherwise fall back to onRowSelectionChanged
-    final callback = onCheckboxChanged ?? onRowSelectionChanged;
+    final callback = widget.onCheckboxChanged ?? widget.onRowSelectionChanged;
     if (callback == null) return;
 
-    final isCurrentlySelected = selectedRows.contains(rowId);
+    final isCurrentlySelected = widget.selectedRows.contains(rowId);
 
     // Check if this rowId represents a merged group
     final mergeGroup = _getMergedGroupById(rowId);
@@ -301,25 +357,22 @@ class TablePlusBody extends StatelessWidget {
   void _handleMergedGroupSelectionToggle(
       MergedRowGroup mergeGroup, bool isCurrentlySelected) {
     // For both single and multiple selection modes, toggle the selection
-    onRowSelectionChanged!(mergeGroup.groupId, !isCurrentlySelected);
+    widget.onRowSelectionChanged!(mergeGroup.groupId, !isCurrentlySelected);
   }
 
   /// Handle selection toggle for regular rows.
   void _handleRegularRowSelectionToggle(
       String rowId, bool isCurrentlySelected) {
-    if (selectionMode == SelectionMode.single) {
-      // For single selection mode, toggle the selection
-      // If already selected, deselect it; if not selected, select it
-      onRowSelectionChanged!(rowId, !isCurrentlySelected);
+    if (widget.selectionMode == SelectionMode.single) {
+      widget.onRowSelectionChanged!(rowId, !isCurrentlySelected);
     } else {
-      // For multiple selection mode, toggle the selection
-      onRowSelectionChanged!(rowId, !isCurrentlySelected);
+      widget.onRowSelectionChanged!(rowId, !isCurrentlySelected);
     }
   }
 
   /// Find merged group by group ID.
   MergedRowGroup? _getMergedGroupById(String groupId) {
-    for (final group in mergedGroups) {
+    for (final group in widget.mergedGroups) {
       if (group.groupId == groupId) {
         return group;
       }
@@ -329,16 +382,16 @@ class TablePlusBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (data.isEmpty) {
+    if (widget.data.isEmpty) {
       return Container(
-        height: theme.rowHeight * 3, // Show some height even when empty
+        height: widget.theme.rowHeight * 3,
         decoration: BoxDecoration(
-          color: theme.backgroundColor,
+          color: widget.theme.backgroundColor,
         ),
         child: Center(
           child: Text(
             'No data available',
-            style: theme.textStyle.copyWith(
+            style: widget.theme.textStyle.copyWith(
               color: Colors.grey.shade600,
               fontStyle: FontStyle.italic,
             ),
@@ -347,23 +400,56 @@ class TablePlusBody extends StatelessWidget {
       );
     }
 
-    final renderableIndices = _getRenderableIndices();
+    final indices = _cachedRenderableIndices;
 
     return ListView.builder(
-      controller: verticalController,
+      controller: widget.verticalController,
       physics: const ClampingScrollPhysics(),
-      itemCount: renderableIndices.length,
+      itemExtentBuilder: (int index, _) {
+        final actualIndex = indices?[index] ?? index;
+        final group = _getMergedGroupForRow(actualIndex);
+        if (group != null) {
+          return _getMergedGroupExtent(group);
+        }
+        return _calculateRowHeight(actualIndex) ?? widget.theme.rowHeight;
+      },
+      itemCount: indices?.length ?? widget.data.length,
       itemBuilder: (context, index) {
-        final actualIndex = renderableIndices[index];
-        return _buildRowWidget(actualIndex, index); // Pass rendering index
+        final actualIndex = indices?[index] ?? index;
+        return _buildRowWidget(actualIndex, index);
       },
     );
   }
 
-  /// Calculate the height for a specific row.
+  /// Calculate the total extent for a merged group (for itemExtentBuilder).
+  double _getMergedGroupExtent(MergedRowGroup group) {
+    double total = 0;
+    for (final rowKey in group.rowKeys) {
+      final rowIndex = _rowKeyToIndex[rowKey];
+      if (rowIndex != null) {
+        total += _calculateRowHeight(rowIndex) ?? widget.theme.rowHeight;
+      } else {
+        total += widget.theme.rowHeight;
+      }
+    }
+    if (group.isExpandable && group.isExpanded) {
+      total += widget.theme.rowHeight;
+    }
+    return total;
+  }
+
+  /// Calculate the height for a specific row, with caching.
   double? _calculateRowHeight(int index) {
-    if (calculateRowHeight == null || index >= data.length) return null;
-    return calculateRowHeight!(index, data[index]);
+    if (widget.calculateRowHeight == null || index >= widget.data.length) {
+      return null;
+    }
+    final cached = _cachedRowHeights[index];
+    if (cached != null) return cached;
+    final height = widget.calculateRowHeight!(index, widget.data[index]);
+    if (height != null) {
+      _cachedRowHeights[index] = height;
+    }
+    return height;
   }
 
   /// Build a row widget for the given index.
@@ -376,96 +462,94 @@ class TablePlusBody extends StatelessWidget {
 
     if (mergeGroup != null) {
       final firstRowKey = mergeGroup.rowKeys.first;
-      final firstRowIndex =
-          data.indexWhere((row) => row[rowIdKey]?.toString() == firstRowKey);
-      if (firstRowIndex == index) {
+      final firstRowIndex = _rowKeyToIndex[firstRowKey];
+      if (firstRowIndex != null && firstRowIndex == index) {
         // This is the first row in a merge group - create a merged row
-        final isSelected = selectedRows.contains(mergeGroup.groupId);
-        final firstRowData = data[firstRowIndex];
+        final isSelected = widget.selectedRows.contains(mergeGroup.groupId);
+        final firstRowData = widget.data[firstRowIndex];
         final isDimmed = _isDimRow(firstRowData);
 
         // Calculate merged row height and individual heights
         double? mergedHeight;
         List<double>? individualHeights;
-        if (calculateRowHeight != null) {
+        if (widget.calculateRowHeight != null) {
           final heights = <double>[];
           double totalHeight = 0;
 
-          // Calculate height for each row in the group
+          // Calculate height for each row in the group (using cache)
           for (final rowKey in mergeGroup.rowKeys) {
-            final rowIndex =
-                data.indexWhere((row) => row[rowIdKey]?.toString() == rowKey);
-            if (rowIndex != -1) {
-              final height = calculateRowHeight!(rowIndex, data[rowIndex]);
+            final rowIndex = _rowKeyToIndex[rowKey];
+            if (rowIndex != null) {
+              final height = _calculateRowHeight(rowIndex);
               if (height != null) {
                 heights.add(height);
                 totalHeight += height;
               } else {
-                heights.add(theme.rowHeight);
-                totalHeight += theme.rowHeight;
+                heights.add(widget.theme.rowHeight);
+                totalHeight += widget.theme.rowHeight;
               }
             } else {
-              heights.add(theme.rowHeight);
-              totalHeight += theme.rowHeight;
+              heights.add(widget.theme.rowHeight);
+              totalHeight += widget.theme.rowHeight;
             }
           }
 
           // Add summary row height if expandable and expanded
           if (mergeGroup.isExpandable && mergeGroup.isExpanded) {
-            heights.add(theme.rowHeight); // Summary row uses default height
-            totalHeight += theme.rowHeight;
+            heights.add(widget.theme.rowHeight);
+            totalHeight += widget.theme.rowHeight;
           }
 
           individualHeights = heights;
           mergedHeight = totalHeight;
         }
 
+        // Check if last row using cached index lookup
+        final lastRowKey = mergeGroup.rowKeys.last;
+        final lastRowIndex = _rowKeyToIndex[lastRowKey];
+        final isLastRow = lastRowIndex == widget.data.length - 1;
+
         return TablePlusMergedRow(
           mergeGroup: mergeGroup,
-          allData: data,
-          columns: columns,
-          columnWidths: columnWidths,
-          theme: theme,
+          allData: widget.data,
+          columns: widget.columns,
+          columnWidths: widget.columnWidths,
+          theme: widget.theme,
           backgroundColor: _getRowColor(renderIndex, isSelected, isDimmed),
-          isLastRow: (() {
-            final lastRowKey = mergeGroup.rowKeys.last;
-            final lastRowIndex = data
-                .indexWhere((row) => row[rowIdKey]?.toString() == lastRowKey);
-            return lastRowIndex == data.length - 1;
-          })(),
-          isSelectable: isSelectable,
-          selectionMode: selectionMode,
+          isLastRow: isLastRow,
+          isSelectable: widget.isSelectable,
+          selectionMode: widget.selectionMode,
           isSelected: isSelected,
-          checkboxTheme: checkboxTheme,
+          checkboxTheme: widget.checkboxTheme,
           onRowSelectionChanged: _handleRowSelectionToggle,
           onCheckboxChanged: _handleCheckboxToggle,
-          isEditable: isEditable,
-          editableTheme: editableTheme,
-          tooltipTheme: tooltipTheme,
-          rowIdKey: rowIdKey,
-          isCellEditing: isCellEditing,
-          getCellController: getCellController,
-          onCellTap: onCellTap,
-          onStopEditing: onStopEditing,
-          onRowDoubleTap: onRowDoubleTap,
-          onRowSecondaryTapDown: onRowSecondaryTapDown,
-          onMergedCellChanged: onMergedCellChanged,
-          onMergedRowExpandToggle: onMergedRowExpandToggle,
+          isEditable: widget.isEditable,
+          editableTheme: widget.editableTheme,
+          tooltipTheme: widget.tooltipTheme,
+          rowIdKey: widget.rowIdKey,
+          isCellEditing: widget.isCellEditing,
+          getCellController: widget.getCellController,
+          onCellTap: widget.onCellTap,
+          onStopEditing: widget.onStopEditing,
+          onRowDoubleTap: widget.onRowDoubleTap,
+          onRowSecondaryTapDown: widget.onRowSecondaryTapDown,
+          onMergedCellChanged: widget.onMergedCellChanged,
+          onMergedRowExpandToggle: widget.onMergedRowExpandToggle,
           calculatedHeight: mergedHeight,
           individualHeights: individualHeights,
-          needsVerticalScroll: needsVerticalScroll,
-          hoverButtonBuilder: hoverButtonBuilder,
-          hoverButtonPosition: hoverButtonPosition,
-          hoverButtonTheme: hoverButtonTheme,
+          needsVerticalScroll: widget.needsVerticalScroll,
+          hoverButtonBuilder: widget.hoverButtonBuilder,
+          hoverButtonPosition: widget.hoverButtonPosition,
+          hoverButtonTheme: widget.hoverButtonTheme,
           isDim: isDimmed,
         );
       }
     }
 
     // This is a normal row (not part of any merge group)
-    final rowData = data[index];
+    final rowData = widget.data[index];
     final rowId = _getRowId(rowData);
-    final isSelected = rowId != null && selectedRows.contains(rowId);
+    final isSelected = rowId != null && widget.selectedRows.contains(rowId);
     final calculatedHeight = _calculateRowHeight(index);
     final isDimmed = _isDimRow(rowData);
 
@@ -473,31 +557,31 @@ class TablePlusBody extends StatelessWidget {
       rowIndex: index,
       rowData: rowData,
       rowId: rowId,
-      columns: columns,
-      columnWidths: columnWidths,
-      theme: theme,
+      columns: widget.columns,
+      columnWidths: widget.columnWidths,
+      theme: widget.theme,
       backgroundColor: _getRowColor(renderIndex, isSelected, isDimmed),
-      isLastRow: index == data.length - 1,
-      isSelectable: isSelectable,
-      selectionMode: selectionMode,
+      isLastRow: index == widget.data.length - 1,
+      isSelectable: widget.isSelectable,
+      selectionMode: widget.selectionMode,
       isSelected: isSelected,
-      checkboxTheme: checkboxTheme,
+      checkboxTheme: widget.checkboxTheme,
       onRowSelectionChanged: _handleRowSelectionToggle,
       onCheckboxChanged: _handleCheckboxToggle,
-      onRowDoubleTap: onRowDoubleTap,
-      onRowSecondaryTapDown: onRowSecondaryTapDown,
-      isEditable: isEditable,
-      editableTheme: editableTheme,
-      tooltipTheme: tooltipTheme,
-      isCellEditing: isCellEditing,
-      getCellController: getCellController,
-      onCellTap: onCellTap,
-      onStopEditing: onStopEditing,
+      onRowDoubleTap: widget.onRowDoubleTap,
+      onRowSecondaryTapDown: widget.onRowSecondaryTapDown,
+      isEditable: widget.isEditable,
+      editableTheme: widget.editableTheme,
+      tooltipTheme: widget.tooltipTheme,
+      isCellEditing: widget.isCellEditing,
+      getCellController: widget.getCellController,
+      onCellTap: widget.onCellTap,
+      onStopEditing: widget.onStopEditing,
       calculatedHeight: calculatedHeight,
-      needsVerticalScroll: needsVerticalScroll,
-      hoverButtonBuilder: hoverButtonBuilder,
-      hoverButtonPosition: hoverButtonPosition,
-      hoverButtonTheme: hoverButtonTheme,
+      needsVerticalScroll: widget.needsVerticalScroll,
+      hoverButtonBuilder: widget.hoverButtonBuilder,
+      hoverButtonPosition: widget.hoverButtonPosition,
+      hoverButtonTheme: widget.hoverButtonTheme,
       isDim: isDimmed,
     );
   }

@@ -543,7 +543,8 @@ class SettingsPanel extends StatelessWidget {
         onSettingsChanged(settings.copyWith(rowCount: value));
       },
       style: ElevatedButton.styleFrom(
-        backgroundColor: isSelected ? Colors.green.shade600 : Colors.grey.shade200,
+        backgroundColor:
+            isSelected ? Colors.green.shade600 : Colors.grey.shade200,
         foregroundColor: isSelected ? Colors.white : Colors.grey.shade700,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         minimumSize: Size.zero,
