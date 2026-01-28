@@ -19,7 +19,7 @@ import 'custom_tooltip_wrapper.dart';
 import 'table_plus_row_widget.dart';
 
 /// A merged table row widget that combines multiple data rows into one visual row.
-class TablePlusMergedRow extends TablePlusRowWidget {
+class TablePlusMergedRow<T> extends TablePlusRowWidget {
   const TablePlusMergedRow({
     super.key,
     required this.mergeGroup,
@@ -37,7 +37,7 @@ class TablePlusMergedRow extends TablePlusRowWidget {
     required this.isEditable,
     required this.editableTheme,
     required this.tooltipTheme,
-    required this.rowIdKey,
+    required this.rowId,
     this.isCellEditing,
     this.getCellController,
     this.onCellTap,
@@ -57,14 +57,14 @@ class TablePlusMergedRow extends TablePlusRowWidget {
   });
 
   @override
-  State<TablePlusMergedRow> createState() => _TablePlusMergedRowState();
+  State<TablePlusMergedRow<T>> createState() => _TablePlusMergedRowState<T>();
 
-  final MergedRowGroup mergeGroup;
-  final List<Map<String, dynamic>> allData;
-  final List<TablePlusColumn> columns;
+  final MergedRowGroup<T> mergeGroup;
+  final List<T> allData;
+  final List<TablePlusColumn<T>> columns;
   final List<double> columnWidths;
   final TablePlusBodyTheme theme;
-  final String rowIdKey;
+  final String Function(T) rowId;
   @override
   final Color backgroundColor;
   @override
@@ -92,18 +92,13 @@ class TablePlusMergedRow extends TablePlusRowWidget {
   final double? calculatedHeight;
 
   /// Individual heights for each row in the merge group.
-  /// Used when heightMode is MergedRowHeightMode.individual.
-  /// Index corresponds to rows in mergeGroup.rowKeys order, plus summary row if expanded.
   final List<double>? individualHeights;
 
   /// Whether the table needs vertical scrolling.
-  /// Used to determine if the last row should have a bottom border.
   final bool needsVerticalScroll;
 
   /// Builder function for creating custom hover buttons.
-  /// Called when the row is hovered with the group ID and representative row data.
-  final Widget? Function(String rowId, Map<String, dynamic> rowData)?
-      hoverButtonBuilder;
+  final Widget? Function(String rowId, T rowData)? hoverButtonBuilder;
 
   /// The position where hover buttons should be displayed.
   final HoverButtonPosition hoverButtonPosition;
@@ -124,13 +119,13 @@ class TablePlusMergedRow extends TablePlusRowWidget {
     // Convert rowKeys back to indices for compatibility
     return mergeGroup.rowKeys
         .map((rowKey) =>
-            allData.indexWhere((row) => row[rowIdKey]?.toString() == rowKey))
+            allData.indexWhere((row) => rowId(row) == rowKey))
         .where((index) => index != -1)
         .toList();
   }
 }
 
-class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
+class _TablePlusMergedRowState<T> extends State<TablePlusMergedRow<T>> {
   bool _isHovered = false;
 
   /// Handle row tap for selection.
@@ -143,48 +138,36 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
   }
 
   /// Get the data for a specific row key within the merge group.
-  Map<String, dynamic>? _getRowData(String rowKey) {
+  T? _getRowData(String rowKey) {
     return widget.mergeGroup
-        .getRowData(widget.allData, rowKey, widget.rowIdKey);
+        .getRowData(widget.allData, rowKey, widget.rowId);
   }
 
   /// Get the correct width for a column based on its key.
-  /// This ensures proper alignment with header and regular rows.
-  double _getColumnWidth(TablePlusColumn column) {
-    // Find the actual index of this column in the widget.columns list
+  double _getColumnWidth(TablePlusColumn<T> column) {
     final actualIndex =
         widget.columns.indexWhere((col) => col.key == column.key);
 
-    // Return the corresponding width from columnWidths array if found
     if (actualIndex != -1 &&
         actualIndex < widget.columnWidths.length &&
         widget.columnWidths.isNotEmpty) {
       return widget.columnWidths[actualIndex];
     }
 
-    // Fallback to column's default width
     return column.width;
   }
 
   /// Determines whether to show a bottom border for the merged row.
-  ///
-  /// Takes into account the row position (last vs non-last) and the theme's
-  /// [LastRowBorderBehavior] setting to decide if a border should be shown.
   bool _shouldShowBottomBorder(bool isLastRow, TablePlusBodyTheme theme) {
-    // Don't show any borders if horizontal dividers are disabled
     if (!theme.showHorizontalDividers) return false;
-
-    // Always show border for non-last rows
     if (!isLastRow) return true;
 
-    // For last row, check the border behavior setting
     switch (theme.lastRowBorderBehavior) {
       case LastRowBorderBehavior.never:
         return false;
       case LastRowBorderBehavior.always:
         return true;
       case LastRowBorderBehavior.smart:
-        // Show border only when there's no vertical scroll
         return !widget.needsVerticalScroll;
     }
   }
@@ -201,10 +184,9 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
 
   /// Build a cell for the merged row.
   Widget _buildCell(
-      BuildContext context, int columnIndex, TablePlusColumn column) {
+      BuildContext context, int columnIndex, TablePlusColumn<T> column) {
     final width = _getColumnWidth(column);
 
-    // Check if this column should be merged
     if (widget.mergeGroup.shouldMergeColumn(column.key)) {
       return _buildMergedCell(context, column, width, columnIndex);
     } else {
@@ -213,22 +195,20 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
   }
 
   /// Build a merged cell that spans multiple rows.
-  Widget _buildMergedCell(BuildContext context, TablePlusColumn column,
+  Widget _buildMergedCell(BuildContext context, TablePlusColumn<T> column,
       double? width, int columnIndex) {
     final mergedContent = widget.mergeGroup.getMergedContent(column.key);
     final spanningRowKey = widget.mergeGroup.getSpanningRowKey(column.key);
     final rowData = _getRowData(spanningRowKey);
 
-    // Calculate height for merged cell
     final mergedHeight = widget.calculatedHeight ??
         (widget.theme.rowHeight * widget.mergeGroup.effectiveRowCount);
 
-    // Check if this merged cell is editable
     final isCellEditable = widget.isEditable &&
         column.editable &&
         widget.mergeGroup.isMergedCellEditable(column.key);
     final spanningDataIndex = widget.allData.indexWhere(
-        (row) => row[widget.rowIdKey]?.toString() == spanningRowKey);
+        (row) => widget.rowId(row) == spanningRowKey);
     final isCurrentlyEditing = isCellEditable &&
         spanningDataIndex != -1 &&
         widget.isCellEditing?.call(spanningDataIndex, column.key) == true;
@@ -236,25 +216,23 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
     Widget content;
 
     if (mergedContent != null) {
-      // Custom merged content - not editable
       content = mergedContent;
     } else if (isCurrentlyEditing) {
-      // Editing mode for merged cell
       content = _buildMergedCellEditingTextField(
-          context, column, spanningDataIndex, rowData ?? {}, mergedHeight);
-    } else if (column.cellBuilder != null) {
-      // Custom cell builder
+          context, column, spanningDataIndex, rowData, mergedHeight);
+    } else if (column.cellBuilder != null && rowData != null) {
       content = Container(
         alignment: column.alignment,
         padding: widget.theme.padding,
         child: Align(
           alignment: column.alignment,
-          child: column.cellBuilder!(context, rowData ?? {}),
+          child: column.cellBuilder!(context, rowData),
         ),
       );
     } else {
-      // Default text content
-      final displayValue = (rowData ?? {})[column.key]?.toString() ?? '';
+      final displayValue = rowData != null
+          ? (column.valueAccessor(rowData)?.toString() ?? '')
+          : '';
       Widget textWidget = Text(
         displayValue,
         style:
@@ -263,7 +241,6 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
         overflow: column.textOverflow,
       );
 
-      // Wrap with tooltip if needed
       textWidget = _wrapWithTooltip(context, textWidget, displayValue, column,
           width ?? column.width, rowData);
 
@@ -276,7 +253,6 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
       );
     }
 
-    // Wrap with gesture detector for editing if applicable
     if (isCellEditable && !isCurrentlyEditing && widget.onCellTap != null) {
       content = GestureDetector(
         onTap: () => widget.onCellTap!(spanningDataIndex, column.key),
@@ -324,9 +300,9 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
   /// Build editing text field for merged cell.
   Widget _buildMergedCellEditingTextField(
     BuildContext context,
-    TablePlusColumn column,
+    TablePlusColumn<T> column,
     int dataIndex,
-    Map<String, dynamic> rowData,
+    T? rowData,
     double mergedHeight,
   ) {
     final controller = widget.getCellController?.call(dataIndex, column.key);
@@ -364,26 +340,24 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
             }
             return false;
           },
-          onStopEditing: null, // Handled by Focus onFocusChange and onKeyEvent
+          onStopEditing: null,
         ),
       ),
     );
   }
 
   /// Build stacked cells for non-merged columns.
-  Widget _buildStackedCells(BuildContext context, TablePlusColumn column,
+  Widget _buildStackedCells(BuildContext context, TablePlusColumn<T> column,
       double? width, int columnIndex) {
     final totalHeight = widget.calculatedHeight ??
         (widget.theme.rowHeight * widget.mergeGroup.effectiveRowCount);
 
     final List<Widget> cells = [];
 
-    // Use maximum height for all rows (uniform height)
     final maxHeight =
         widget.individualHeights?.reduce((a, b) => a > b ? a : b) ??
             widget.theme.rowHeight;
 
-    // Regular row cells
     for (final entry in widget.mergeGroup.rowKeys.asMap().entries) {
       final rowIndex = entry.key;
       final rowKey = entry.value;
@@ -392,7 +366,6 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
           context, column, rowKey, rowData, maxHeight, rowIndex, columnIndex));
     }
 
-    // Add summary row if expandable and expanded
     if (widget.mergeGroup.isExpandable && widget.mergeGroup.isExpanded) {
       cells.add(_buildSummaryRowCell(context, column, maxHeight));
     }
@@ -409,16 +382,15 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
   /// Build a single stacked row cell.
   Widget _buildStackedRowCell(
       BuildContext context,
-      TablePlusColumn column,
+      TablePlusColumn<T> column,
       String rowKey,
-      Map<String, dynamic>? rowData,
+      T? rowData,
       double groupHeight,
       int rowIndex,
       int columnIndex) {
-    // Check if this individual cell is editable
     final isCellEditable = widget.isEditable && column.editable;
     final originalIndex = widget.allData
-        .indexWhere((row) => row[widget.rowIdKey]?.toString() == rowKey);
+        .indexWhere((row) => widget.rowId(row) == rowKey);
     final isCurrentlyEditing = isCellEditable &&
         originalIndex != -1 &&
         widget.isCellEditing?.call(originalIndex, column.key) == true;
@@ -426,20 +398,21 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
     Widget content;
 
     if (isCurrentlyEditing) {
-      // Editing mode for individual cell
       content = _buildStackedCellEditingTextField(
-          context, column, originalIndex, rowData ?? {}, groupHeight);
-    } else if (column.cellBuilder != null) {
+          context, column, originalIndex, rowData, groupHeight);
+    } else if (column.cellBuilder != null && rowData != null) {
       content = Container(
         alignment: column.alignment,
         padding: widget.theme.padding,
         child: Align(
           alignment: column.alignment,
-          child: column.cellBuilder!(context, rowData ?? {}),
+          child: column.cellBuilder!(context, rowData),
         ),
       );
     } else {
-      final displayValue = (rowData ?? {})[column.key]?.toString() ?? '';
+      final displayValue = rowData != null
+          ? (column.valueAccessor(rowData)?.toString() ?? '')
+          : '';
       Widget textWidget = Text(
         displayValue,
         style:
@@ -448,7 +421,6 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
         overflow: column.textOverflow,
       );
 
-      // Wrap with tooltip if needed
       textWidget = _wrapWithTooltip(
           context, textWidget, displayValue, column, groupHeight, rowData);
 
@@ -483,7 +455,6 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
       ),
     );
 
-    // Wrap with gesture detector for editing if applicable
     if (isCellEditable && !isCurrentlyEditing && widget.onCellTap != null) {
       cellContainer = Expanded(
         child: GestureDetector(
@@ -522,39 +493,17 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
 
   /// Build a summary row cell.
   Widget _buildSummaryRowCell(
-      BuildContext context, TablePlusColumn column, double groupHeight) {
+      BuildContext context, TablePlusColumn<T> column, double groupHeight) {
     Widget content;
 
-    if (widget.mergeGroup.hasSummaryData(column.key)) {
-      final summaryData = widget.mergeGroup.getSummaryData(column.key);
-      final displayValue = summaryData?.toString() ?? '';
-
-      Widget textWidget = Text(
-        displayValue,
-        style: widget.theme
-            .getEffectiveTextStyle(widget.isSelected, widget.isDim)
-            .copyWith(
-              fontWeight: FontWeight.w600, // Make summary text slightly bolder
-              color: widget.theme
-                  .getEffectiveTextStyle(widget.isSelected, widget.isDim)
-                  .color
-                  ?.withValues(alpha: 0.8),
-            ),
-        textAlign: column.textAlign,
-        overflow: column.textOverflow,
-      );
-
-      // Wrap with tooltip if needed
-      textWidget = _wrapWithTooltip(
-          context, textWidget, displayValue, column, groupHeight, null);
-
+    final summaryWidget = widget.mergeGroup.summaryBuilder?.call(column.key);
+    if (summaryWidget != null) {
       content = Container(
         alignment: column.alignment,
         padding: widget.theme.padding,
-        child: textWidget,
+        child: summaryWidget,
       );
     } else {
-      // Empty cell for columns without summary data
       content = Container(
         alignment: column.alignment,
         padding: widget.theme.padding,
@@ -565,8 +514,7 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
       child: Container(
         decoration: BoxDecoration(
           color: widget.theme.summaryRowBackgroundColor ??
-              widget.theme.backgroundColor
-                  .withValues(alpha: 0.2), // Summary row background color
+              widget.theme.backgroundColor.withValues(alpha: 0.2),
           border: Border(
             right: widget.theme.showVerticalDividers
                 ? BorderSide(
@@ -594,9 +542,9 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
   /// Build editing text field for individual stacked cell.
   Widget _buildStackedCellEditingTextField(
     BuildContext context,
-    TablePlusColumn column,
+    TablePlusColumn<T> column,
     int dataIndex,
-    Map<String, dynamic> rowData,
+    T? rowData,
     double cellHeight,
   ) {
     final controller = widget.getCellController?.call(dataIndex, column.key);
@@ -630,16 +578,15 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
             }
             return false;
           },
-          onStopEditing: null, // Handled by Focus onFocusChange and onKeyEvent
+          onStopEditing: null,
         ),
       ),
     );
   }
 
-  /// Determines whether a tooltip should be shown based on the column's tooltip behavior.
+  /// Determines whether a tooltip should be shown.
   bool _shouldShowTooltip(
-      String displayValue, TablePlusColumn column, double maxWidth) {
-    // Basic checks - tooltip must be enabled and text must not be empty
+      String displayValue, TablePlusColumn<T> column, double maxWidth) {
     if (!widget.tooltipTheme.enabled || displayValue.isEmpty) {
       return false;
     }
@@ -652,16 +599,13 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
         return column.textOverflow == TextOverflow.ellipsis;
 
       case TooltipBehavior.onlyTextOverflow:
-        // Only show tooltip if text actually overflows
         if (column.textOverflow != TextOverflow.ellipsis) {
           return false;
         }
 
-        // Calculate available width for the cell content
         final padding = widget.theme.padding;
         final availableWidth = maxWidth - padding.horizontal;
 
-        // Use TextOverflowDetector to check if text would overflow
         return TextOverflowDetector.willTextOverflowInContext(
           context: context,
           text: displayValue,
@@ -677,21 +621,18 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
     BuildContext context,
     Widget textWidget,
     String displayValue,
-    TablePlusColumn column,
+    TablePlusColumn<T> column,
     double maxWidth,
-    Map<String, dynamic>? rowData,
+    T? rowData,
   ) {
     if (_shouldShowTooltip(displayValue, column, maxWidth)) {
-      // Priority: tooltipBuilder > tooltipFormatter > default
       if (column.tooltipBuilder != null && rowData != null) {
-        // Use custom widget tooltip
         return CustomTooltipWrapper(
           content: column.tooltipBuilder!(context, rowData),
           theme: widget.tooltipTheme,
           child: textWidget,
         );
       } else {
-        // Use text-based tooltip (existing behavior)
         final tooltipMessage =
             column.tooltipFormatter != null && rowData != null
                 ? column.tooltipFormatter!(rowData)
@@ -782,20 +723,19 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
 
     // Get representative row data (first row in the merge group)
     final representativeData =
-        _getRowData(widget.mergeGroup.rowKeys.first) ?? {};
+        _getRowData(widget.mergeGroup.rowKeys.first);
 
-    // Create button widget using builder
+    if (representativeData == null) return null;
+
     final buttonWidget = widget.hoverButtonBuilder!(
       widget.mergeGroup.groupId,
       representativeData,
     );
 
-    // Return null if builder returned null
     if (buttonWidget == null) {
       return null;
     }
 
-    // Position the buttons based on hoverButtonPosition
     switch (widget.hoverButtonPosition) {
       case HoverButtonPosition.left:
         return Positioned(
@@ -846,9 +786,7 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
       ),
       child: Row(
         children: [
-          // Selection cell (if selectable)
           if (widget.isSelectable) _buildSelectionCell()!,
-          // Regular cells
           ...List.generate(
             widget.columns.where((col) => col.key != '__selection__').length,
             (index) {
@@ -863,10 +801,8 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
       ),
     );
 
-    // Create hover buttons
     final hoverButtons = _buildHoverButtons(mergedHeight);
 
-    // Stack rowContent with hover buttons
     Widget stackedContent = Stack(
       children: [
         rowContent,
@@ -874,14 +810,12 @@ class _TablePlusMergedRowState extends State<TablePlusMergedRow> {
       ],
     );
 
-    // Wrap with MouseRegion for hover detection
     Widget hoveredContent = MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
       child: stackedContent,
     );
 
-    // Wrap with CustomInkWell for row selection if selectable and not editable
     if (widget.isSelectable && !widget.isEditable) {
       return CustomInkWell(
         key: ValueKey(widget.mergeGroup.groupId),

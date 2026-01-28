@@ -5,7 +5,7 @@ import 'package:flutter_table_plus/src/widgets/cells/table_plus_selection_cell.d
 import 'package:flutter_table_plus/src/widgets/table_plus_row_widget.dart';
 
 /// A single table row widget.
-class TablePlusRow extends TablePlusRowWidget {
+class TablePlusRow<T> extends TablePlusRowWidget {
   const TablePlusRow({
     super.key,
     required this.rowIndex,
@@ -40,9 +40,9 @@ class TablePlusRow extends TablePlusRowWidget {
   });
 
   final int rowIndex;
-  final Map<String, dynamic> rowData;
+  final T rowData;
   final String? rowId;
-  final List<TablePlusColumn> columns;
+  final List<TablePlusColumn<T>> columns;
   final List<double> columnWidths;
   final TablePlusBodyTheme theme;
   @override
@@ -70,8 +70,7 @@ class TablePlusRow extends TablePlusRowWidget {
   final bool needsVerticalScroll;
 
   /// Builder function to create custom hover buttons for this row.
-  final Widget? Function(String rowId, Map<String, dynamic> rowData)?
-      hoverButtonBuilder;
+  final Widget? Function(String rowId, T rowData)? hoverButtonBuilder;
 
   /// The position where hover buttons should be displayed.
   final HoverButtonPosition hoverButtonPosition;
@@ -91,10 +90,10 @@ class TablePlusRow extends TablePlusRowWidget {
   List<int> get originalDataIndices => [rowIndex];
 
   @override
-  State<TablePlusRow> createState() => _TablePlusRowState();
+  State<TablePlusRow<T>> createState() => _TablePlusRowState<T>();
 }
 
-class _TablePlusRowState extends State<TablePlusRow> {
+class _TablePlusRowState<T> extends State<TablePlusRow<T>> {
   bool _isHovered = false;
 
   /// Determines whether to show a bottom border for this row.
@@ -175,7 +174,7 @@ class _TablePlusRowState extends State<TablePlusRow> {
             );
           }
 
-          return TablePlusCell(
+          return TablePlusCell<T>(
             rowIndex: widget.rowIndex,
             column: column,
             rowData: widget.rowData,

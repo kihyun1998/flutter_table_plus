@@ -13,7 +13,7 @@ import 'table_plus_merged_row.dart';
 import 'table_plus_row_widget.dart';
 
 /// A widget that renders the data rows of the table.
-class TablePlusBody extends StatefulWidget {
+class TablePlusBody<T> extends StatefulWidget {
   /// Creates a [TablePlusBody] with the specified configuration.
   const TablePlusBody({
     super.key,
@@ -22,8 +22,9 @@ class TablePlusBody extends StatefulWidget {
     required this.columnWidths,
     required this.theme,
     required this.verticalController,
+    required this.rowId,
     this.mergedGroups = const [],
-    this.rowIdKey = 'id',
+    this.isDimRow,
     this.isSelectable = false,
     this.selectionMode = SelectionMode.multiple,
     this.selectedRows = const <String>{},
@@ -46,21 +47,19 @@ class TablePlusBody extends StatefulWidget {
     this.hoverButtonPosition = HoverButtonPosition.right,
     this.hoverButtonTheme,
     this.checkboxTheme = const TablePlusCheckboxTheme(),
-    this.dimRowKey,
-    this.invertDimRow = false,
   });
 
   /// The list of columns for the table.
-  final List<TablePlusColumn> columns;
+  final List<TablePlusColumn<T>> columns;
 
   /// The data to display in the table rows.
-  final List<Map<String, dynamic>> data;
+  final List<T> data;
 
   /// The calculated width for each column.
   final List<double> columnWidths;
 
   /// List of merged row groups.
-  final List<MergedRowGroup> mergedGroups;
+  final List<MergedRowGroup<T>> mergedGroups;
 
   /// The theme configuration for the table body.
   final TablePlusBodyTheme theme;
@@ -68,9 +67,11 @@ class TablePlusBody extends StatefulWidget {
   /// The scroll controller for vertical scrolling.
   final ScrollController verticalController;
 
-  /// The key used to extract row IDs from row data.
-  /// Defaults to 'id'. Each row must have a unique value for this key when using selection features.
-  final String rowIdKey;
+  /// Function to extract the row ID from a row object.
+  final String Function(T) rowId;
+
+  /// Function to determine if a row should be dimmed.
+  final bool Function(T)? isDimRow;
 
   /// Whether the table supports row selection.
   final bool isSelectable;
@@ -81,19 +82,16 @@ class TablePlusBody extends StatefulWidget {
   /// The set of currently selected row IDs.
   final Set<String> selectedRows;
 
-  /// The theme configuration for selection.
-
   /// Callback when a row's selection state changes via row click.
   final void Function(String rowId, bool isSelected)? onRowSelectionChanged;
 
   /// Callback when a row's selection state changes via checkbox click.
-  /// If not provided, falls back to [onRowSelectionChanged].
   final void Function(String rowId, bool isSelected)? onCheckboxChanged;
 
   /// Callback when a row is double-tapped.
   final void Function(String rowId)? onRowDoubleTap;
 
-  /// Callback when a row is right-clicked (or long-pressed on touch devices).
+  /// Callback when a row is right-clicked.
   final void Function(String rowId, TapDownDetails details, RenderBox renderBox,
       bool isSelected)? onRowSecondaryTapDown;
 
@@ -127,18 +125,10 @@ class TablePlusBody extends StatefulWidget {
   final void Function(String groupId)? onMergedRowExpandToggle;
 
   /// Callback to calculate the height of a specific row.
-  /// Provides row index and row data, and should return the height for that row.
-  /// If null, uses the fixed row height from the theme.
-  final double? Function(int rowIndex, Map<String, dynamic> rowData)?
-      calculateRowHeight;
+  final double? Function(int rowIndex, T rowData)? calculateRowHeight;
 
   /// Builder function to create custom hover buttons for each row.
-  ///
-  /// Called when a row is hovered, providing the row ID and row data.
-  /// Should return a Widget to display as an overlay on the row.
-  /// If null, no hover buttons will be displayed.
-  final Widget? Function(String rowId, Map<String, dynamic> rowData)?
-      hoverButtonBuilder;
+  final Widget? Function(String rowId, T rowData)? hoverButtonBuilder;
 
   /// The position where hover buttons should be displayed.
   final HoverButtonPosition hoverButtonPosition;
@@ -150,34 +140,23 @@ class TablePlusBody extends StatefulWidget {
   final TablePlusCheckboxTheme checkboxTheme;
 
   /// Whether the table needs vertical scrolling.
-  /// Used to determine if the last row should have a bottom border based on
-  /// the [TablePlusBodyTheme.lastRowBorderBehavior] setting.
   final bool needsVerticalScroll;
 
-  /// The key in rowData that determines if a row should be dimmed.
-  /// The value at this key must be a boolean.
-  final String? dimRowKey;
-
-  /// Whether to invert the dim row logic.
-  final bool invertDimRow;
-
   @override
-  State<TablePlusBody> createState() => _TablePlusBodyState();
+  State<TablePlusBody<T>> createState() => _TablePlusBodyState<T>();
 }
 
-class _TablePlusBodyState extends State<TablePlusBody> {
+class _TablePlusBodyState<T> extends State<TablePlusBody<T>> {
   /// Cached renderable indices — recomputed only when data or mergedGroups change.
-  /// Null when no merged groups exist (use data indices directly).
   List<int>? _cachedRenderableIndices;
 
   /// Cached lookup: rowKey → MergedRowGroup for O(1) access.
-  Map<String, MergedRowGroup> _rowKeyToGroup = const {};
+  Map<String, MergedRowGroup<T>> _rowKeyToGroup = const {};
 
   /// Cached lookup: rowKey → data index for O(1) access.
   Map<String, int> _rowKeyToIndex = const {};
 
-  /// Cached row heights — avoids repeated calculateRowHeight calls.
-  /// Invalidated together with other caches when data changes.
+  /// Cached row heights.
   Map<int, double> _cachedRowHeights = const {};
 
   @override
@@ -187,32 +166,28 @@ class _TablePlusBodyState extends State<TablePlusBody> {
   }
 
   @override
-  void didUpdateWidget(covariant TablePlusBody oldWidget) {
+  void didUpdateWidget(covariant TablePlusBody<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (!identical(widget.data, oldWidget.data) ||
-        !identical(widget.mergedGroups, oldWidget.mergedGroups) ||
-        widget.rowIdKey != oldWidget.rowIdKey) {
+        !identical(widget.mergedGroups, oldWidget.mergedGroups)) {
       _rebuildCaches();
     }
   }
 
-  /// Rebuild all lookup caches. O(n + m*k) once, then O(1) per query.
+  /// Rebuild all lookup caches.
   void _rebuildCaches() {
     final data = widget.data;
     final mergedGroups = widget.mergedGroups;
-    final rowIdKey = widget.rowIdKey;
 
-    // Build rowKey → index map: O(n)
+    // Build rowKey → index map
     final rowKeyToIndex = <String, int>{};
     for (int i = 0; i < data.length; i++) {
-      final key = data[i][rowIdKey]?.toString();
-      if (key != null) {
-        rowKeyToIndex[key] = i;
-      }
+      final key = widget.rowId(data[i]);
+      rowKeyToIndex[key] = i;
     }
 
-    // Build rowKey → group map: O(m*k)
-    final rowKeyToGroup = <String, MergedRowGroup>{};
+    // Build rowKey → group map
+    final rowKeyToGroup = <String, MergedRowGroup<T>>{};
     for (final group in mergedGroups) {
       for (final rowKey in group.rowKeys) {
         rowKeyToGroup[rowKey] = group;
@@ -221,7 +196,7 @@ class _TablePlusBodyState extends State<TablePlusBody> {
 
     // Build renderable indices only when merged groups exist
     if (mergedGroups.isEmpty) {
-      _cachedRenderableIndices = null; // Skip — use data.length directly
+      _cachedRenderableIndices = null;
     } else {
       final renderableIndices = <int>[];
       final processedIndices = <int>{};
@@ -229,8 +204,8 @@ class _TablePlusBodyState extends State<TablePlusBody> {
       for (int i = 0; i < data.length; i++) {
         if (processedIndices.contains(i)) continue;
 
-        final rowKey = data[i][rowIdKey]?.toString();
-        final group = rowKey != null ? rowKeyToGroup[rowKey] : null;
+        final rowKey = widget.rowId(data[i]);
+        final group = rowKeyToGroup[rowKey];
 
         if (group != null) {
           final firstRowKey = group.rowKeys.first;
@@ -255,42 +230,19 @@ class _TablePlusBodyState extends State<TablePlusBody> {
 
     _rowKeyToGroup = rowKeyToGroup;
     _rowKeyToIndex = rowKeyToIndex;
-    _cachedRowHeights = {}; // Invalidate height cache when data changes
-  }
-
-  /// Check if a row should be dimmed based on dimRowKey.
-  bool _isDimRow(Map<String, dynamic> rowData) {
-    if (widget.dimRowKey == null) return false;
-
-    final value = rowData[widget.dimRowKey];
-
-    // Type check: must be bool
-    if (value is! bool) {
-      assert(
-        false,
-        'dimRowKey "${widget.dimRowKey}" value must be a bool, but got ${value.runtimeType}. '
-        'Row data: $rowData',
-      );
-      return false;
-    }
-
-    // Apply inversion if needed
-    return widget.invertDimRow ? !value : value;
+    _cachedRowHeights = {};
   }
 
   /// Get the background color for a row at the given index.
   Color _getRowColor(int index, bool isSelected, bool isDim) {
-    // Selected rows get selection color (highest priority)
     if (isSelected && widget.isSelectable) {
       return widget.theme.selectedRowColor;
     }
 
-    // Dim rows get dim color
     if (isDim) {
       return widget.theme.dimRowColor ?? widget.theme.backgroundColor;
     }
 
-    // Alternate row colors
     if (widget.theme.alternateRowColor != null && index.isOdd) {
       return widget.theme.alternateRowColor!;
     }
@@ -298,65 +250,47 @@ class _TablePlusBodyState extends State<TablePlusBody> {
     return widget.theme.backgroundColor;
   }
 
-  /// Extract the row ID from row data.
-  String? _getRowId(Map<String, dynamic> rowData) {
-    return rowData[widget.rowIdKey]?.toString();
-  }
-
   /// Find the merged group that contains the specified row index.
-  /// Uses cached O(1) lookup instead of O(m) linear scan.
-  MergedRowGroup? _getMergedGroupForRow(int rowIndex) {
+  MergedRowGroup<T>? _getMergedGroupForRow(int rowIndex) {
     if (rowIndex >= widget.data.length) return null;
-    final rowData = widget.data[rowIndex];
-    final rowKey = rowData[widget.rowIdKey]?.toString();
-    if (rowKey == null) return null;
+    final rowKey = widget.rowId(widget.data[rowIndex]);
     return _rowKeyToGroup[rowKey];
   }
 
   /// Handle row selection toggle via row click.
-  /// For merged groups, this handles both group IDs and individual row IDs.
   void _handleRowSelectionToggle(String rowId) {
     if (widget.onRowSelectionChanged == null) return;
 
     final isCurrentlySelected = widget.selectedRows.contains(rowId);
 
-    // Check if this rowId represents a merged group
     final mergeGroup = _getMergedGroupById(rowId);
 
     if (mergeGroup != null) {
-      // This is a merged group selection
       _handleMergedGroupSelectionToggle(mergeGroup, isCurrentlySelected);
     } else {
-      // This is a regular row selection
       _handleRegularRowSelectionToggle(rowId, isCurrentlySelected);
     }
   }
 
   /// Handle checkbox selection toggle.
-  /// For merged groups, this handles both group IDs and individual row IDs.
   void _handleCheckboxToggle(String rowId) {
-    // Use onCheckboxChanged if available, otherwise fall back to onRowSelectionChanged
     final callback = widget.onCheckboxChanged ?? widget.onRowSelectionChanged;
     if (callback == null) return;
 
     final isCurrentlySelected = widget.selectedRows.contains(rowId);
 
-    // Check if this rowId represents a merged group
     final mergeGroup = _getMergedGroupById(rowId);
 
     if (mergeGroup != null) {
-      // This is a merged group selection
       callback(mergeGroup.groupId, !isCurrentlySelected);
     } else {
-      // This is a regular row selection
       callback(rowId, !isCurrentlySelected);
     }
   }
 
   /// Handle selection toggle for merged groups.
   void _handleMergedGroupSelectionToggle(
-      MergedRowGroup mergeGroup, bool isCurrentlySelected) {
-    // For both single and multiple selection modes, toggle the selection
+      MergedRowGroup<T> mergeGroup, bool isCurrentlySelected) {
     widget.onRowSelectionChanged!(mergeGroup.groupId, !isCurrentlySelected);
   }
 
@@ -371,7 +305,7 @@ class _TablePlusBodyState extends State<TablePlusBody> {
   }
 
   /// Find merged group by group ID.
-  MergedRowGroup? _getMergedGroupById(String groupId) {
+  MergedRowGroup<T>? _getMergedGroupById(String groupId) {
     for (final group in widget.mergedGroups) {
       if (group.groupId == groupId) {
         return group;
@@ -421,8 +355,8 @@ class _TablePlusBodyState extends State<TablePlusBody> {
     );
   }
 
-  /// Calculate the total extent for a merged group (for itemExtentBuilder).
-  double _getMergedGroupExtent(MergedRowGroup group) {
+  /// Calculate the total extent for a merged group.
+  double _getMergedGroupExtent(MergedRowGroup<T> group) {
     double total = 0;
     for (final rowKey in group.rowKeys) {
       final rowIndex = _rowKeyToIndex[rowKey];
@@ -453,30 +387,23 @@ class _TablePlusBodyState extends State<TablePlusBody> {
   }
 
   /// Build a row widget for the given index.
-  /// This method can be overridden or extended to support different row types.
-  /// [index] - Original data index
-  /// [renderIndex] - Rendering order index (for alternateRowColor)
   TablePlusRowWidget _buildRowWidget(int index, int renderIndex) {
-    // Check if this index is part of a merged group
     final mergeGroup = _getMergedGroupForRow(index);
 
     if (mergeGroup != null) {
       final firstRowKey = mergeGroup.rowKeys.first;
       final firstRowIndex = _rowKeyToIndex[firstRowKey];
       if (firstRowIndex != null && firstRowIndex == index) {
-        // This is the first row in a merge group - create a merged row
         final isSelected = widget.selectedRows.contains(mergeGroup.groupId);
         final firstRowData = widget.data[firstRowIndex];
-        final isDimmed = _isDimRow(firstRowData);
+        final isDimmed = widget.isDimRow?.call(firstRowData) ?? false;
 
-        // Calculate merged row height and individual heights
         double? mergedHeight;
         List<double>? individualHeights;
         if (widget.calculateRowHeight != null) {
           final heights = <double>[];
           double totalHeight = 0;
 
-          // Calculate height for each row in the group (using cache)
           for (final rowKey in mergeGroup.rowKeys) {
             final rowIndex = _rowKeyToIndex[rowKey];
             if (rowIndex != null) {
@@ -494,7 +421,6 @@ class _TablePlusBodyState extends State<TablePlusBody> {
             }
           }
 
-          // Add summary row height if expandable and expanded
           if (mergeGroup.isExpandable && mergeGroup.isExpanded) {
             heights.add(widget.theme.rowHeight);
             totalHeight += widget.theme.rowHeight;
@@ -504,12 +430,11 @@ class _TablePlusBodyState extends State<TablePlusBody> {
           mergedHeight = totalHeight;
         }
 
-        // Check if last row using cached index lookup
         final lastRowKey = mergeGroup.rowKeys.last;
         final lastRowIndex = _rowKeyToIndex[lastRowKey];
         final isLastRow = lastRowIndex == widget.data.length - 1;
 
-        return TablePlusMergedRow(
+        return TablePlusMergedRow<T>(
           mergeGroup: mergeGroup,
           allData: widget.data,
           columns: widget.columns,
@@ -526,7 +451,7 @@ class _TablePlusBodyState extends State<TablePlusBody> {
           isEditable: widget.isEditable,
           editableTheme: widget.editableTheme,
           tooltipTheme: widget.tooltipTheme,
-          rowIdKey: widget.rowIdKey,
+          rowId: widget.rowId,
           isCellEditing: widget.isCellEditing,
           getCellController: widget.getCellController,
           onCellTap: widget.onCellTap,
@@ -546,17 +471,17 @@ class _TablePlusBodyState extends State<TablePlusBody> {
       }
     }
 
-    // This is a normal row (not part of any merge group)
+    // This is a normal row
     final rowData = widget.data[index];
-    final rowId = _getRowId(rowData);
-    final isSelected = rowId != null && widget.selectedRows.contains(rowId);
+    final rowIdStr = widget.rowId(rowData);
+    final isSelected = widget.selectedRows.contains(rowIdStr);
     final calculatedHeight = _calculateRowHeight(index);
-    final isDimmed = _isDimRow(rowData);
+    final isDimmed = widget.isDimRow?.call(rowData) ?? false;
 
-    return TablePlusRow(
+    return TablePlusRow<T>(
       rowIndex: index,
       rowData: rowData,
-      rowId: rowId,
+      rowId: rowIdStr,
       columns: widget.columns,
       columnWidths: widget.columnWidths,
       theme: widget.theme,

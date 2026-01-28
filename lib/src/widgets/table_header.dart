@@ -9,7 +9,7 @@ import '../utils/text_overflow_detector.dart';
 import 'flutter_tooltip_plus.dart';
 
 /// A widget that renders the header row of the table.
-class TablePlusHeader extends StatefulWidget {
+class TablePlusHeader<T> extends StatefulWidget {
   /// Creates a [TablePlusHeader] with the specified configuration.
   const TablePlusHeader({
     super.key,
@@ -32,7 +32,7 @@ class TablePlusHeader extends StatefulWidget {
   });
 
   /// The list of columns to display in the header.
-  final List<TablePlusColumn> columns;
+  final List<TablePlusColumn<T>> columns;
 
   /// The calculated width for each column.
   final List<double> columnWidths;
@@ -80,10 +80,10 @@ class TablePlusHeader extends StatefulWidget {
   final void Function(String columnKey, SortDirection direction)? onSort;
 
   @override
-  State<TablePlusHeader> createState() => _TablePlusHeaderState();
+  State<TablePlusHeader<T>> createState() => _TablePlusHeaderState<T>();
 }
 
-class _TablePlusHeaderState extends State<TablePlusHeader> {
+class _TablePlusHeaderState<T> extends State<TablePlusHeader<T>> {
   /// Track if column reordering is currently active to prevent tooltip positioning errors
   bool _isReordering = false;
 
@@ -96,7 +96,7 @@ class _TablePlusHeaderState extends State<TablePlusHeader> {
   }
 
   /// Get reorderable columns (excludes selection column)
-  List<TablePlusColumn> _getReorderableColumns() {
+  List<TablePlusColumn<T>> _getReorderableColumns() {
     return widget.columns
         .where((column) => column.key != '__selection__')
         .toList();
@@ -143,12 +143,10 @@ class _TablePlusHeaderState extends State<TablePlusHeader> {
   Decoration _buildHeaderDecoration() {
     final customDecoration = widget.theme.decoration;
 
-    // 사용자 decoration이 있으면 그것을 우선 사용
     if (customDecoration != null) {
       return customDecoration;
     }
 
-    // 없으면 기본 테마 속성들로 BoxDecoration 생성
     return BoxDecoration(
       color: widget.theme.backgroundColor,
       border: widget.theme.showBottomDivider
@@ -322,7 +320,7 @@ class _HeaderCell extends StatelessWidget {
     this.onSortClick,
   });
 
-  final TablePlusColumn column;
+  final TablePlusColumn<dynamic> column;
   final double width;
   final TablePlusHeaderTheme theme;
   final TablePlusTooltipTheme tooltipTheme;
@@ -363,12 +361,10 @@ class _HeaderCell extends StatelessWidget {
 
   /// Determines whether a tooltip should be shown based on the column's header tooltip behavior.
   bool _shouldShowTooltip(BuildContext context, String label) {
-    // Basic checks - tooltip must be enabled and text must not be empty
     if (!tooltipTheme.enabled || label.isEmpty) {
       return false;
     }
 
-    // Disable tooltips during column reordering to prevent positioning errors
     if (isReordering) {
       return false;
     }
@@ -381,14 +377,12 @@ class _HeaderCell extends StatelessWidget {
         return true;
 
       case TooltipBehavior.onlyTextOverflow:
-        // Calculate available width for the header text
         final padding = theme.padding;
         final sortIconWidth = column.sortable && onSortClick != null
             ? 24.0
-            : 0.0; // Approximate sort icon width
+            : 0.0;
         final availableWidth = width - padding.horizontal - sortIconWidth;
 
-        // Use TextOverflowDetector to check if text would overflow
         return TextOverflowDetector.willTextOverflowInContext(
           context: context,
           text: label,
@@ -407,7 +401,6 @@ class _HeaderCell extends StatelessWidget {
       textAlign: column.textAlign,
     );
 
-    // Add tooltip based on tooltip behavior
     if (_shouldShowTooltip(context, column.label)) {
       try {
         textWidget = FlutterTooltipPlus(
@@ -416,7 +409,7 @@ class _HeaderCell extends StatelessWidget {
           child: textWidget,
         );
       } catch (e) {
-        // Ignore tooltip creation errors during reordering - tooltip will be restored on next rebuild
+        // Ignore tooltip creation errors during reordering
       }
     }
 
@@ -427,12 +420,10 @@ class _HeaderCell extends StatelessWidget {
   Decoration _buildCellDecoration() {
     final customCellDecoration = theme.cellDecoration;
 
-    // cellDecoration이 있으면 그것을 우선 사용
     if (customCellDecoration != null) {
       return customCellDecoration;
     }
 
-    // 없으면 기본 테마 속성들로 BoxDecoration 생성
     return BoxDecoration(
       color: _getBackgroundColor(),
       border: theme.showVerticalDividers
@@ -515,12 +506,10 @@ class _SelectionHeaderCell extends StatelessWidget {
   Decoration _buildSelectionCellDecoration() {
     final customCellDecoration = theme.cellDecoration;
 
-    // cellDecoration이 있으면 그것을 우선 사용
     if (customCellDecoration != null) {
       return customCellDecoration;
     }
 
-    // 없으면 기본 테마 속성들로 BoxDecoration 생성
     return BoxDecoration(
       color: theme.backgroundColor,
       border: theme.showVerticalDividers
@@ -551,8 +540,6 @@ class _SelectionHeaderCell extends StatelessWidget {
                   tristate: true, // Allows indeterminate state
                   onChanged: onSelectAll != null
                       ? (value) {
-                          // Improved logic: if any rows are selected, deselect all
-                          // If no rows are selected, select all
                           final shouldSelectAll = selectedRows.isEmpty;
                           onSelectAll!(shouldSelectAll);
                         }
@@ -575,7 +562,7 @@ class _SelectionHeaderCell extends StatelessWidget {
                 ),
               ),
             )
-          : const SizedBox.shrink(), // Empty space when checkbox is hidden
+          : const SizedBox.shrink(),
     );
   }
 }

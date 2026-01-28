@@ -30,7 +30,7 @@ class MergeCellConfig {
 }
 
 /// Represents a group of rows that should be merged together for specific columns.
-class MergedRowGroup {
+class MergedRowGroup<T> {
   /// Creates a [MergedRowGroup] with the specified configuration.
   const MergedRowGroup({
     required this.groupId,
@@ -38,7 +38,7 @@ class MergedRowGroup {
     required this.mergeConfig,
     this.isExpandable = false,
     this.isExpanded = false,
-    this.summaryRowData,
+    this.summaryBuilder,
   });
 
   /// Unique identifier for this merge group.
@@ -61,10 +61,10 @@ class MergedRowGroup {
   /// This state should be managed by the parent widget.
   final bool isExpanded;
 
-  /// Data to display in the summary row when expanded.
-  /// Key: column key, Value: data to display in that column's summary cell.
-  /// Only columns with data in this map will show content in the summary row.
-  final Map<String, dynamic>? summaryRowData;
+  /// Builder function to create summary content for a specific column.
+  /// Returns a Widget to display in the summary row cell for the given column key.
+  /// If null or returns null for a column, the summary cell will be empty.
+  final Widget? Function(String columnKey)? summaryBuilder;
 
   /// Returns the number of rows in this group.
   int get rowCount => rowKeys.length;
@@ -86,22 +86,22 @@ class MergedRowGroup {
   }
 
   /// Returns the row data for a specific row key from the provided data list.
-  Map<String, dynamic>? getRowData(
-      List<Map<String, dynamic>> allData, String rowKey, String rowIdKey) {
+  T? getRowData(
+      List<T> allData, String rowKey, String Function(T) rowId) {
     try {
-      return allData.firstWhere((row) => row[rowIdKey]?.toString() == rowKey);
+      return allData.firstWhere((row) => rowId(row) == rowKey);
     } catch (e) {
       return null;
     }
   }
 
   /// Returns all row data for this group from the provided data list.
-  List<Map<String, dynamic>> getAllRowData(
-      List<Map<String, dynamic>> allData, String rowIdKey) {
+  List<T> getAllRowData(
+      List<T> allData, String Function(T) rowId) {
     return rowKeys
-        .map((rowKey) => getRowData(allData, rowKey, rowIdKey))
+        .map((rowKey) => getRowData(allData, rowKey, rowId))
         .where((data) => data != null)
-        .cast<Map<String, dynamic>>()
+        .cast<T>()
         .toList();
   }
 
@@ -118,16 +118,6 @@ class MergedRowGroup {
       return false;
     }
     return config.isEditable;
-  }
-
-  /// Returns true if this group has summary data for the specified column.
-  bool hasSummaryData(String columnKey) {
-    return summaryRowData?.containsKey(columnKey) ?? false;
-  }
-
-  /// Returns the summary data for the specified column.
-  dynamic getSummaryData(String columnKey) {
-    return summaryRowData?[columnKey];
   }
 
   /// Returns the effective row count including summary row if expanded.

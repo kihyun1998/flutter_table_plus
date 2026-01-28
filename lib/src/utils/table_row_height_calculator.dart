@@ -54,7 +54,7 @@ class TableRowHeightCalculator {
   /// height needed to accommodate the tallest cell.
   ///
   /// Parameters:
-  /// - [rowData]: The data for this row
+  /// - [rowData]: The data object for this row
   /// - [columns]: List of table columns
   /// - [columnWidths]: List of calculated column widths
   /// - [defaultTextStyle]: Default text style for cells
@@ -62,9 +62,9 @@ class TableRowHeightCalculator {
   /// - [minHeight]: Minimum height to return (defaults to 48.0)
   ///
   /// Returns the calculated height needed for the entire row.
-  static double calculateRowHeight({
-    required Map<String, dynamic> rowData,
-    required List<TablePlusColumn> columns,
+  static double calculateRowHeight<T>({
+    required T rowData,
+    required List<TablePlusColumn<T>> columns,
     required List<double> columnWidths,
     required TextStyle defaultTextStyle,
     EdgeInsets cellPadding =
@@ -82,7 +82,7 @@ class TableRowHeightCalculator {
       // Skip if TextOverflow is not visible (no dynamic height needed)
       if (column.textOverflow != TextOverflow.visible) continue;
 
-      final cellValue = rowData[column.key];
+      final cellValue = column.valueAccessor(rowData);
       if (cellValue == null) continue;
 
       final text = cellValue.toString();
@@ -124,16 +124,16 @@ class TableRowHeightCalculator {
   /// - [minHeight]: Minimum height to return (defaults to 48.0)
   ///
   /// Returns a function that can be used as FlutterTablePlus.calculateRowHeight
-  static double? Function(int, Map<String, dynamic>) createHeightCalculator({
-    required List<TablePlusColumn> columns,
+  static double? Function(int, T) createHeightCalculator<T>({
+    required List<TablePlusColumn<T>> columns,
     required List<double> columnWidths,
     required TextStyle defaultTextStyle,
     EdgeInsets cellPadding =
         const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
     double minHeight = 48.0,
   }) {
-    return (int rowIndex, Map<String, dynamic> rowData) {
-      return calculateRowHeight(
+    return (int rowIndex, T rowData) {
+      return calculateRowHeight<T>(
         rowData: rowData,
         columns: columns,
         columnWidths: columnWidths,

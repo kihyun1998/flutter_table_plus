@@ -7,14 +7,12 @@ import 'table_column.dart';
 ///
 /// Example usage:
 /// ```dart
-/// final columns = TableColumnsBuilder()
-///   .addColumn('id', TablePlusColumn(key: 'id', label: 'ID', order: 0))
-///   .addColumn('name', TablePlusColumn(key: 'name', label: 'Name', order: 0))
-///   .insertColumn('email', TablePlusColumn(key: 'email', label: 'Email', order: 0), 1)
-///   .build();
+/// final columns = TableColumnsBuilder<Employee>()
+///   ..addColumn('id', TablePlusColumn<Employee>(key: 'id', label: 'ID', order: 0, valueAccessor: (e) => e.id))
+///   ..addColumn('name', TablePlusColumn<Employee>(key: 'name', label: 'Name', order: 0, valueAccessor: (e) => e.name));
 /// ```
-class TableColumnsBuilder {
-  final Map<String, TablePlusColumn> _columns = {};
+class TableColumnsBuilder<T> {
+  final Map<String, TablePlusColumn<T>> _columns = {};
   int _nextOrder = 1;
 
   /// Adds a column to the end of the table with automatically assigned order.
@@ -22,7 +20,7 @@ class TableColumnsBuilder {
   /// The [column]'s order value will be ignored and replaced with the next available order.
   ///
   /// Returns this builder for method chaining.
-  TableColumnsBuilder addColumn(String key, TablePlusColumn column) {
+  TableColumnsBuilder<T> addColumn(String key, TablePlusColumn<T> column) {
     if (_columns.containsKey(key)) {
       throw ArgumentError('Column with key "$key" already exists');
     }
@@ -37,8 +35,8 @@ class TableColumnsBuilder {
   /// The [column]'s order value will be ignored and replaced with [targetOrder].
   ///
   /// Returns this builder for method chaining.
-  TableColumnsBuilder insertColumn(
-      String key, TablePlusColumn column, int targetOrder) {
+  TableColumnsBuilder<T> insertColumn(
+      String key, TablePlusColumn<T> column, int targetOrder) {
     if (_columns.containsKey(key)) {
       throw ArgumentError('Column with key "$key" already exists');
     }
@@ -63,7 +61,7 @@ class TableColumnsBuilder {
   /// Removes a column by key.
   ///
   /// Returns this builder for method chaining.
-  TableColumnsBuilder removeColumn(String key) {
+  TableColumnsBuilder<T> removeColumn(String key) {
     if (!_columns.containsKey(key)) {
       throw ArgumentError('Column with key "$key" does not exist');
     }
@@ -83,7 +81,7 @@ class TableColumnsBuilder {
   /// Reorders an existing column to a new position.
   ///
   /// Returns this builder for method chaining.
-  TableColumnsBuilder reorderColumn(String key, int newOrder) {
+  TableColumnsBuilder<T> reorderColumn(String key, int newOrder) {
     if (!_columns.containsKey(key)) {
       throw ArgumentError('Column with key "$key" does not exist');
     }
@@ -143,7 +141,7 @@ class TableColumnsBuilder {
   /// Builds and returns an unmodifiable map of columns.
   ///
   /// ⚠️ After calling build(), this builder should not be used again.
-  Map<String, TablePlusColumn> build() {
+  Map<String, TablePlusColumn<T>> build() {
     _validateOrders();
     return Map.unmodifiable(_columns);
   }

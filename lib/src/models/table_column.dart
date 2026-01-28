@@ -36,11 +36,13 @@ enum SelectionMode {
 
 /// Callback type for when a cell value is changed in editable mode.
 ///
+/// [row]: The row object that was edited.
 /// [columnKey]: The key of the column that was edited.
 /// [rowIndex]: The index of the row that was edited.
 /// [oldValue]: The previous value of the cell.
 /// [newValue]: The new value of the cell.
-typedef CellChangedCallback = void Function(
+typedef CellChangedCallback<T> = void Function(
+  T row,
   String columnKey,
   int rowIndex,
   dynamic oldValue,
@@ -81,12 +83,16 @@ class SortIcons {
 }
 
 /// Defines a column in the table with its properties and behavior.
-class TablePlusColumn {
+///
+/// The type parameter [T] represents the type of row data objects.
+/// Use [valueAccessor] to extract the display value from a row object.
+class TablePlusColumn<T> {
   /// Creates a [TablePlusColumn] with the specified properties.
   const TablePlusColumn({
     required this.key,
     required this.label,
     required this.order,
+    required this.valueAccessor,
     this.width = 100.0,
     this.minWidth = 50.0,
     this.maxWidth,
@@ -105,7 +111,6 @@ class TablePlusColumn {
   });
 
   /// The unique identifier for this column.
-  /// This key is used to extract data from Map entries.
   final String key;
 
   /// The display label for the column header.
@@ -115,6 +120,9 @@ class TablePlusColumn {
   /// Columns are sorted by this value in ascending order.
   /// Selection column uses order: -1 to appear first.
   final int order;
+
+  /// Function to extract the display value from a row object.
+  final dynamic Function(T row) valueAccessor;
 
   /// The preferred width of the column in pixels.
   final double width;
@@ -144,39 +152,22 @@ class TablePlusColumn {
 
   /// Optional custom cell builder for this column.
   /// If provided, this will be used instead of the default cell rendering.
-  /// The function receives the row data and should return a Widget.
+  /// The function receives the build context and row data object.
   ///
   /// Note: If [editable] is true and [cellBuilder] is provided,
   /// the cell will not be editable unless the custom builder handles editing.
-  final Widget Function(BuildContext context, Map<String, dynamic> rowData)?
-      cellBuilder;
+  final Widget Function(BuildContext context, T rowData)? cellBuilder;
 
   /// Optional custom tooltip formatter for this column.
   /// If provided, this will be used to generate custom tooltip text based on row data.
-  /// The function receives the row data and should return a String for the tooltip.
+  /// The function receives the row data object and should return a String for the tooltip.
   /// If null, the default behavior will use the cell's display value.
-  final String Function(Map<String, dynamic> rowData)? tooltipFormatter;
+  final String Function(T rowData)? tooltipFormatter;
 
   /// Optional custom tooltip widget builder for rich content tooltips.
   /// Takes precedence over [tooltipFormatter] when both are provided.
-  /// The function receives the build context and row data, returning a custom Widget.
-  ///
-  /// Example:
-  /// ```dart
-  /// tooltipBuilder: (context, rowData) => Container(
-  ///   padding: EdgeInsets.all(12),
-  ///   child: Column(
-  ///     mainAxisSize: MainAxisSize.min,
-  ///     children: [
-  ///       CircleAvatar(backgroundImage: NetworkImage(rowData['avatar'])),
-  ///       Text(rowData['name'], style: TextStyle(fontWeight: FontWeight.bold)),
-  ///       Text('Department: ${rowData['department']}'),
-  ///     ],
-  ///   ),
-  /// )
-  /// ```
-  final Widget Function(BuildContext context, Map<String, dynamic> rowData)?
-      tooltipBuilder;
+  /// The function receives the build context and row data object, returning a custom Widget.
+  final Widget Function(BuildContext context, T rowData)? tooltipBuilder;
 
   /// Optional hint text to display in the TextField when editing a cell.
   final String? hintText;
@@ -203,10 +194,11 @@ class TablePlusColumn {
   final TooltipBehavior headerTooltipBehavior;
 
   /// Creates a copy of this column with the given fields replaced with new values.
-  TablePlusColumn copyWith({
+  TablePlusColumn<T> copyWith({
     String? key,
     String? label,
     int? order,
+    dynamic Function(T row)? valueAccessor,
     double? width,
     double? minWidth,
     double? maxWidth,
@@ -215,20 +207,19 @@ class TablePlusColumn {
     bool? sortable,
     bool? editable,
     bool? visible,
-    Widget Function(BuildContext context, Map<String, dynamic> rowData)?
-        cellBuilder,
-    String Function(Map<String, dynamic> rowData)? tooltipFormatter,
-    Widget Function(BuildContext context, Map<String, dynamic> rowData)?
-        tooltipBuilder,
+    Widget Function(BuildContext context, T rowData)? cellBuilder,
+    String Function(T rowData)? tooltipFormatter,
+    Widget Function(BuildContext context, T rowData)? tooltipBuilder,
     String? hintText,
     TextOverflow? textOverflow,
     TooltipBehavior? tooltipBehavior,
     TooltipBehavior? headerTooltipBehavior,
   }) {
-    return TablePlusColumn(
+    return TablePlusColumn<T>(
       key: key ?? this.key,
       label: label ?? this.label,
       order: order ?? this.order,
+      valueAccessor: valueAccessor ?? this.valueAccessor,
       width: width ?? this.width,
       minWidth: minWidth ?? this.minWidth,
       maxWidth: maxWidth ?? this.maxWidth,

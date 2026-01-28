@@ -5,7 +5,7 @@ import 'package:flutter_table_plus/src/utils/text_overflow_detector.dart';
 import 'package:flutter_table_plus/src/widgets/cells/editable_text_field.dart';
 
 /// A single table cell widget.
-class TablePlusCell extends StatefulWidget {
+class TablePlusCell<T> extends StatefulWidget {
   const TablePlusCell({
     super.key,
     required this.rowIndex,
@@ -26,8 +26,8 @@ class TablePlusCell extends StatefulWidget {
   });
 
   final int rowIndex;
-  final TablePlusColumn column;
-  final Map<String, dynamic> rowData;
+  final TablePlusColumn<T> column;
+  final T rowData;
   final double width;
   final TablePlusBodyTheme theme;
   final bool isEditable;
@@ -42,10 +42,10 @@ class TablePlusCell extends StatefulWidget {
   final bool isDim;
 
   @override
-  State<TablePlusCell> createState() => _TablePlusCellState();
+  State<TablePlusCell<T>> createState() => _TablePlusCellState<T>();
 }
 
-class _TablePlusCellState extends State<TablePlusCell> {
+class _TablePlusCellState<T> extends State<TablePlusCell<T>> {
   late FocusNode _focusNode;
 
   // Cached overflow detection result
@@ -61,7 +61,7 @@ class _TablePlusCellState extends State<TablePlusCell> {
   }
 
   @override
-  void didUpdateWidget(TablePlusCell oldWidget) {
+  void didUpdateWidget(TablePlusCell<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     // Focus the text field when editing starts
@@ -104,7 +104,7 @@ class _TablePlusCellState extends State<TablePlusCell> {
 
   /// Extract the display value for this cell.
   String _getCellDisplayValue() {
-    final value = widget.rowData[widget.column.key];
+    final value = widget.column.valueAccessor(widget.rowData);
     if (value == null) return '';
     return value.toString();
   }

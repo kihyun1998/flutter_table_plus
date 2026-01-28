@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
+import 'models/employee.dart';
 import 'utils/random_data_generator.dart';
 import 'widgets/settings_panel.dart';
 import 'widgets/performance_monitor.dart';
@@ -23,8 +24,8 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
   PlaygroundSettings _settings = const PlaygroundSettings();
 
   // Data
-  List<Map<String, dynamic>> _data = [];
-  Map<String, TablePlusColumn> _columns = {};
+  List<Employee> _data = [];
+  Map<String, TablePlusColumn<Employee>> _columns = {};
 
   // Performance metrics
   PerformanceMetrics _performanceMetrics = PerformanceMetrics(
@@ -39,7 +40,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
   bool _isGenerating = false;
 
   // Merged rows (if enabled)
-  List<MergedRowGroup> _mergedGroups = [];
+  List<MergedRowGroup<Employee>> _mergedGroups = [];
 
   @override
   void initState() {
@@ -50,16 +51,17 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
 
   /// Initialize table columns
   void _initializeColumns() {
-    final builder = TableColumnsBuilder();
+    final builder = TableColumnsBuilder<Employee>();
 
     final tooltip = _settings.tooltipBehavior;
 
     builder.addColumn(
       'avatar',
-      TablePlusColumn(
+      TablePlusColumn<Employee>(
         key: 'avatar',
         label: '👤',
         order: 0,
+        valueAccessor: (row) => row.avatar,
         width: 60,
         sortable: false,
         tooltipBehavior: tooltip,
@@ -69,10 +71,11 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
 
     builder.addColumn(
       'name',
-      TablePlusColumn(
+      TablePlusColumn<Employee>(
         key: 'name',
         label: 'Name',
         order: 0,
+        valueAccessor: (row) => row.name,
         width: 180,
         sortable: _settings.sortingEnabled,
         tooltipBehavior: tooltip,
@@ -82,10 +85,11 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
 
     builder.addColumn(
       'position',
-      TablePlusColumn(
+      TablePlusColumn<Employee>(
         key: 'position',
         label: 'Position',
         order: 0,
+        valueAccessor: (row) => row.position,
         width: 200,
         sortable: _settings.sortingEnabled,
         editable: _settings.editingEnabled,
@@ -96,10 +100,11 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
 
     builder.addColumn(
       'department',
-      TablePlusColumn(
+      TablePlusColumn<Employee>(
         key: 'department',
         label: 'Department',
         order: 0,
+        valueAccessor: (row) => row.department,
         width: 150,
         sortable: _settings.sortingEnabled,
         editable: _settings.editingEnabled,
@@ -110,20 +115,20 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
 
     builder.addColumn(
       'salary',
-      TablePlusColumn(
+      TablePlusColumn<Employee>(
         key: 'salary',
         label: 'Salary',
         order: 0,
+        valueAccessor: (row) => row.salary,
         width: 120,
         sortable: _settings.sortingEnabled,
         editable: _settings.editingEnabled,
         tooltipBehavior: tooltip,
         headerTooltipBehavior: tooltip,
-        cellBuilder: (context, rowData) {
-          final salary = rowData['salary'] as int;
+        cellBuilder: (context, employee) {
           return Center(
             child: Text(
-              '\$${_formatNumber(salary)}',
+              '\$${_formatNumber(employee.salary)}',
               style: TextStyle(
                 fontWeight: FontWeight.w600,
                 color: Colors.green.shade700,
@@ -136,25 +141,25 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
 
     builder.addColumn(
       'performance',
-      TablePlusColumn(
+      TablePlusColumn<Employee>(
         key: 'performance',
         label: 'Performance',
         order: 0,
+        valueAccessor: (row) => row.performance,
         width: 130,
         sortable: _settings.sortingEnabled,
         tooltipBehavior: tooltip,
         headerTooltipBehavior: tooltip,
-        cellBuilder: (context, rowData) {
-          final performance = rowData['performance'] as double;
+        cellBuilder: (context, employee) {
           return Center(
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: _getPerformanceColor(performance),
+                color: _getPerformanceColor(employee.performance),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
-                '${(performance * 100).toStringAsFixed(0)}%',
+                '${(employee.performance * 100).toStringAsFixed(0)}%',
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
@@ -169,10 +174,11 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
 
     builder.addColumn(
       'email',
-      TablePlusColumn(
+      TablePlusColumn<Employee>(
         key: 'email',
         label: 'Email',
         order: 0,
+        valueAccessor: (row) => row.email,
         width: 220,
         sortable: _settings.sortingEnabled,
         tooltipBehavior: tooltip,
@@ -182,10 +188,11 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
 
     builder.addColumn(
       'phone',
-      TablePlusColumn(
+      TablePlusColumn<Employee>(
         key: 'phone',
         label: 'Phone',
         order: 0,
+        valueAccessor: (row) => row.phone,
         width: 130,
         sortable: _settings.sortingEnabled,
         tooltipBehavior: tooltip,
@@ -275,33 +282,36 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         // Reset to original order - regenerate
         _data = RandomDataGenerator.generateEmployees(_settings.rowCount);
       } else {
-        // Sort data
-        _data.sort((a, b) {
-          final aValue = a[columnKey];
-          final bValue = b[columnKey];
+        // Sort data using the column's valueAccessor
+        final column = _columns[columnKey];
+        if (column != null) {
+          _data.sort((a, b) {
+            final aValue = column.valueAccessor(a);
+            final bValue = column.valueAccessor(b);
 
-          int comparison = 0;
+            int comparison = 0;
 
-          if (aValue == null && bValue == null) {
-            comparison = 0;
-          } else if (aValue == null) {
-            comparison = 1;
-          } else if (bValue == null) {
-            comparison = -1;
-          } else if (aValue is num && bValue is num) {
-            comparison = aValue.compareTo(bValue);
-          } else if (aValue is String && bValue is String) {
-            comparison = aValue.compareTo(bValue);
-          } else if (aValue is DateTime && bValue is DateTime) {
-            comparison = aValue.compareTo(bValue);
-          } else {
-            comparison = aValue.toString().compareTo(bValue.toString());
-          }
+            if (aValue == null && bValue == null) {
+              comparison = 0;
+            } else if (aValue == null) {
+              comparison = 1;
+            } else if (bValue == null) {
+              comparison = -1;
+            } else if (aValue is num && bValue is num) {
+              comparison = aValue.compareTo(bValue);
+            } else if (aValue is String && bValue is String) {
+              comparison = aValue.compareTo(bValue);
+            } else if (aValue is DateTime && bValue is DateTime) {
+              comparison = aValue.compareTo(bValue);
+            } else {
+              comparison = aValue.toString().compareTo(bValue.toString());
+            }
 
-          return direction == SortDirection.ascending
-              ? comparison
-              : -comparison;
-        });
+            return direction == SortDirection.ascending
+                ? comparison
+                : -comparison;
+          });
+        }
       }
 
       // Update merged groups after sorting
@@ -319,7 +329,8 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
       );
     });
 
-    debugPrint('🔄 Sorted by $columnKey in ${stopwatch.elapsedMilliseconds}ms');
+    debugPrint(
+        '🔄 Sorted by $columnKey in ${stopwatch.elapsedMilliseconds}ms');
   }
 
   /// Handle row selection
@@ -339,13 +350,28 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
 
   /// Handle cell editing
   void _handleCellChanged(
+    Employee row,
     String columnKey,
     int rowIndex,
     dynamic oldValue,
     dynamic newValue,
   ) {
     setState(() {
-      _data[rowIndex][columnKey] = newValue;
+      final employee = _data[rowIndex];
+      switch (columnKey) {
+        case 'position':
+          _data[rowIndex] = employee.copyWith(position: newValue as String);
+          break;
+        case 'department':
+          _data[rowIndex] = employee.copyWith(department: newValue as String);
+          break;
+        case 'salary':
+          final parsed = int.tryParse(newValue.toString());
+          if (parsed != null) {
+            _data[rowIndex] = employee.copyWith(salary: parsed);
+          }
+          break;
+      }
     });
 
     debugPrint(
@@ -359,7 +385,8 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
     RenderBox renderBox,
     bool isSelected,
   ) {
-    final overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
+    final overlay =
+        Overlay.of(context).context.findRenderObject() as RenderBox;
     final position = RelativeRect.fromRect(
       Rect.fromPoints(
         renderBox.localToGlobal(details.localPosition, ancestor: overlay),
@@ -369,11 +396,10 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
     );
 
     // Find the row data for display
-    final rowData = _data.firstWhere(
-      (row) => row['id'].toString() == rowId,
-      orElse: () => <String, dynamic>{},
+    final employee = _data.firstWhere(
+      (row) => row.id == rowId,
+      orElse: () => _data.first,
     );
-    final rowName = rowData['name'] ?? rowId;
 
     showMenu<String>(
       context: context,
@@ -385,7 +411,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
             children: [
               Icon(Icons.visibility, size: 18, color: Colors.blue.shade600),
               const SizedBox(width: 8),
-              Text('View "$rowName"'),
+              Text('View "${employee.name}"'),
             ],
           ),
         ),
@@ -418,14 +444,14 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
       if (value == null) return;
       switch (value) {
         case 'view':
-          _showRowDetailDialog(rowData);
+          _showRowDetailDialog(employee);
           break;
         case 'select':
           _handleRowSelection(rowId, !isSelected);
           break;
         case 'delete':
           setState(() {
-            _data.removeWhere((row) => row['id'].toString() == rowId);
+            _data.removeWhere((row) => row.id == rowId);
             _selectedRows.remove(rowId);
             if (_settings.mergedRowsEnabled) _updateMergedGroups();
           });
@@ -436,17 +462,28 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
   }
 
   /// Show row detail dialog
-  void _showRowDetailDialog(Map<String, dynamic> rowData) {
+  void _showRowDetailDialog(Employee employee) {
+    final details = {
+      'ID': employee.id,
+      'Name': employee.name,
+      'Position': employee.position,
+      'Department': employee.department,
+      'Salary': '\$${_formatNumber(employee.salary)}',
+      'Performance': '${(employee.performance * 100).toStringAsFixed(0)}%',
+      'Email': employee.email,
+      'Phone': employee.phone,
+      'Active': employee.isActive ? 'Yes' : 'No',
+    };
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(rowData['name']?.toString() ?? 'Row Details'),
+        title: Text(employee.name),
         content: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
-            children: rowData.entries
-                .where((e) => e.key != 'avatar')
+            children: details.entries
                 .map((e) => Padding(
                       padding: const EdgeInsets.symmetric(vertical: 4),
                       child: Row(
@@ -460,7 +497,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
                                   const TextStyle(fontWeight: FontWeight.bold),
                             ),
                           ),
-                          Expanded(child: Text(e.value.toString())),
+                          Expanded(child: Text(e.value)),
                         ],
                       ),
                     ))
@@ -525,20 +562,19 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
       return;
     }
 
-    final Map<String, List<Map<String, dynamic>>> groupedByDept = {};
+    final Map<String, List<Employee>> groupedByDept = {};
 
     for (var row in _data) {
-      final dept = row['department']?.toString() ?? 'Unknown';
-      groupedByDept.putIfAbsent(dept, () => []);
-      groupedByDept[dept]!.add(row);
+      groupedByDept.putIfAbsent(row.department, () => []);
+      groupedByDept[row.department]!.add(row);
     }
 
     _mergedGroups = groupedByDept.entries.map((entry) {
       final department = entry.key;
       final rows = entry.value;
-      final rowKeys = rows.map((r) => r['id'] as String).toList();
+      final rowKeys = rows.map((r) => r.id).toList();
 
-      return MergedRowGroup(
+      return MergedRowGroup<Employee>(
         groupId: 'dept_$department',
         rowKeys: rowKeys,
         mergeConfig: {
@@ -622,9 +658,10 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
   Widget _buildTableArea() {
     return Container(
       color: Colors.white,
-      child: FlutterTablePlus(
+      child: FlutterTablePlus<Employee>(
         columns: _columns,
         data: _data,
+        rowId: (row) => row.id,
         sortColumnKey: _currentSortColumn,
         sortDirection: _currentSortDirection,
         sortCycleOrder: _settings.sortCycleOrder,
@@ -639,7 +676,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         onSelectAll: (selectAll) {
           setState(() {
             if (selectAll) {
-              _selectedRows = _data.map((row) => row['id'] as String).toSet();
+              _selectedRows = _data.map((row) => row.id).toSet();
             } else {
               _selectedRows = {};
             }
@@ -649,14 +686,13 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         onCellChanged: _handleCellChanged,
         onRowSecondaryTapDown: _handleRowSecondaryTapDown,
         calculateRowHeight: _settings.dynamicRowHeight
-            ? (rowIndex, rowData) {
-                final position = rowData['position']?.toString() ?? '';
+            ? (rowIndex, employee) {
                 // Taller rows for longer position titles
-                return position.length > 20 ? 70.0 : null;
+                return employee.position.length > 20 ? 70.0 : null;
               }
             : null,
-        dimRowKey: _settings.dimInactiveRows ? 'isActive' : null,
-        invertDimRow: true,
+        isDimRow:
+            _settings.dimInactiveRows ? (row) => !row.isActive : null,
         noDataWidget: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -677,14 +713,14 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
             ),
           ],
         ),
-        hoverButtonBuilder: (rowId, rowData) => Row(
+        hoverButtonBuilder: (rowId, employee) => Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             _hoverActionButton(
               icon: Icons.visibility,
               color: Colors.blue,
               tooltip: 'View',
-              onPressed: () => _showRowDetailDialog(rowData),
+              onPressed: () => _showRowDetailDialog(employee),
             ),
             _hoverActionButton(
               icon: Icons.edit,
@@ -694,7 +730,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
-                        'Edit "${rowData['name']}" — enable editing in settings to edit cells directly'),
+                        'Edit "${employee.name}" — enable editing in settings to edit cells directly'),
                     duration: const Duration(seconds: 2),
                   ),
                 );
@@ -706,7 +742,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
               tooltip: 'Delete',
               onPressed: () {
                 setState(() {
-                  _data.removeWhere((row) => row['id'].toString() == rowId);
+                  _data.removeWhere((row) => row.id == rowId);
                   _selectedRows.remove(rowId);
                   if (_settings.mergedRowsEnabled) _updateMergedGroups();
                 });

@@ -21,7 +21,7 @@ class EditableTextField extends StatelessWidget {
   });
 
   /// The column configuration for this text field.
-  final TablePlusColumn column;
+  final TablePlusColumn<dynamic> column;
 
   /// The theme configuration for editable cells.
   final TablePlusEditableTheme theme;

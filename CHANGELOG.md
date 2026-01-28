@@ -1,3 +1,18 @@
+## 2.0.0
+
+*   **BREAKING**: Migrated from `Map<String, dynamic>` to generic type parameter `<T>`
+    *   `FlutterTablePlus<T>` now accepts any data model type instead of `Map<String, dynamic>`
+    *   `rowIdKey` (String) replaced with `rowId` (function `String Function(T)`)
+    *   `dimRowKey`/`invertDimRow` replaced with `isDimRow` (function `bool Function(T)?`)
+    *   `TablePlusColumn<T>` requires `valueAccessor: (T) => dynamic` for cell value extraction
+    *   `cellBuilder` signature changed from `(context, Map)` to `(context, T)`
+    *   `hoverButtonBuilder` signature changed from `(rowId, Map)` to `(rowId, T)`
+    *   `calculateRowHeight` signature changed from `(index, Map)` to `(index, T)`
+    *   `onCellChanged` callback now receives `T` row object instead of `Map`
+    *   `MergedRowGroup<T>` parameterized with data type
+    *   `TableRowHeightCalculator` methods now generic
+    *   `summaryRowData` in `MergedRowGroup` replaced with `summaryBuilder` (function `Widget? Function(String columnKey)?`)
+
 ## 1.17.2
 
 *   **PERF**: Eliminated full table rebuilds on mouse hover
