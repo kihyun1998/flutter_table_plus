@@ -1,3 +1,21 @@
+## 1.17.2
+
+*   **PERF**: Eliminated full table rebuilds on mouse hover
+    *   Replaced `setState` with `ValueNotifier` + `ValueListenableBuilder` for scrollbar hover opacity
+    *   Mouse enter/exit now only rebuilds the two `AnimatedOpacity` scrollbar widgets instead of the entire widget tree
+*   **PERF**: Cached total data height and row count calculations
+    *   `_calculateTotalDataHeight()` and `_getTotalRowCount()` were O(n×m×k) on every build — now computed once and cached
+    *   Added O(1) `rowKey → index` and `rowKey → MergedRowGroup` lookup maps, replacing linear scans
+    *   Cache is automatically invalidated when `data`, `mergedGroups`, or `calculateRowHeight` change
+*   **PERF**: Reduced `_visibleColumns` computation from 4+ calls per build to 1
+    *   Cached visible columns as a local variable in the build method
+    *   Inlined `_columnsMinWidth` and passed cached columns to `_calculateColumnWidths`
+*   **PERF**: Added overflow detection caching in `TablePlusCell`
+    *   `TextOverflowDetector` result is now cached per cell and reused when text and width are unchanged
+    *   Eliminates redundant `TextPainter` allocation/layout/dispose on every rebuild for `TooltipBehavior.onlyTextOverflow`
+*   **FIX**: Added missing `TextPainter.dispose()` in `TableRowHeightCalculator.calculateTextHeight`
+    *   Previously leaked native Skia paragraph resources until garbage collection
+
 ## 1.17.1
 
 *   **FIX**: Fixed scroll controllers being destroyed on every parent rebuild (e.g., hover)

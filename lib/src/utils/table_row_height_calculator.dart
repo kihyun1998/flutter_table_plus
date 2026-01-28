@@ -43,6 +43,8 @@ class TableRowHeightCalculator {
     // Add cell padding
     final calculatedHeight = textPainter.height + padding.vertical;
 
+    textPainter.dispose();
+
     return math.max(minHeight, calculatedHeight);
   }
 

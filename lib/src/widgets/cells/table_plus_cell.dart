@@ -48,6 +48,11 @@ class TablePlusCell extends StatefulWidget {
 class _TablePlusCellState extends State<TablePlusCell> {
   late FocusNode _focusNode;
 
+  // Cached overflow detection result
+  bool? _cachedOverflow;
+  String _cachedOverflowText = '';
+  double _cachedOverflowWidth = 0;
+
   @override
   void initState() {
     super.initState();
@@ -244,14 +249,25 @@ class _TablePlusCellState extends State<TablePlusCell> {
         final padding = widget.theme.padding;
         final availableWidth = widget.width - padding.horizontal;
 
-        // Use TextOverflowDetector to check if text would overflow
-        return TextOverflowDetector.willTextOverflowInContext(
+        // Use cached result if inputs haven't changed
+        if (_cachedOverflow != null &&
+            _cachedOverflowText == displayValue &&
+            _cachedOverflowWidth == availableWidth) {
+          return _cachedOverflow!;
+        }
+
+        // Use TextOverflowDetector and cache the result
+        final result = TextOverflowDetector.willTextOverflowInContext(
           context: context,
           text: displayValue,
           maxWidth: availableWidth,
           style: widget.theme
               .getEffectiveTextStyle(widget.isSelected, widget.isDim),
         );
+        _cachedOverflowText = displayValue;
+        _cachedOverflowWidth = availableWidth;
+        _cachedOverflow = result;
+        return result;
     }
   }
 }

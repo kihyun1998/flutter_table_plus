@@ -251,7 +251,7 @@ class FlutterTablePlus extends StatefulWidget {
 }
 
 class _FlutterTablePlusState extends State<FlutterTablePlus> {
-  bool _isHovered = false;
+  final ValueNotifier<bool> _isHovered = ValueNotifier<bool>(false);
 
   /// Current editing state: {rowIndex: {columnKey: TextEditingController}}
   final Map<int, Map<String, TextEditingController>> _editingControllers = {};
@@ -259,10 +259,23 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
   /// Current editing cell: {rowIndex, columnKey}
   ({int rowIndex, String columnKey})? _currentEditingCell;
 
+  /// Cached total data height (sum of all row heights including merged groups)
+  double _cachedTotalDataHeight = 0;
+
+  /// Cached total row count (merged groups count as 1)
+  int _cachedTotalRowCount = 0;
+
+  /// Cached rowKey → data index lookup for O(1) access
+  Map<String, int> _rowKeyToIndex = {};
+
+  /// Cached rowKey → MergedRowGroup lookup for O(1) access
+  Map<String, MergedRowGroup> _rowKeyToMergedGroup = {};
+
   @override
   void initState() {
     super.initState();
     _validateUniqueIds();
+    _rebuildParentCaches();
   }
 
   @override
@@ -273,10 +286,65 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
       _validateUniqueIds();
       _clearAllEditing(); // Clear editing state when data changes
     }
+
+    if (widget.data != oldWidget.data ||
+        widget.mergedGroups != oldWidget.mergedGroups ||
+        widget.calculateRowHeight != oldWidget.calculateRowHeight) {
+      _rebuildParentCaches();
+    }
+  }
+
+  /// Rebuild cached values for total height, row count, and lookup maps.
+  void _rebuildParentCaches() {
+    // Build rowKey → index lookup
+    _rowKeyToIndex = {};
+    for (int i = 0; i < widget.data.length; i++) {
+      final key = widget.data[i][widget.rowIdKey]?.toString();
+      if (key != null) {
+        _rowKeyToIndex[key] = i;
+      }
+    }
+
+    // Build rowKey → MergedRowGroup lookup
+    _rowKeyToMergedGroup = {};
+    for (final group in widget.mergedGroups) {
+      for (final rowKey in group.rowKeys) {
+        _rowKeyToMergedGroup[rowKey] = group;
+      }
+    }
+
+    // Calculate total height and row count in a single pass
+    double totalHeight = 0;
+    int totalCount = 0;
+    final Set<int> processedIndices = {};
+
+    for (int i = 0; i < widget.data.length; i++) {
+      if (processedIndices.contains(i)) continue;
+
+      final mergeGroup = _getMergedGroupForRow(i);
+      if (mergeGroup != null) {
+        totalHeight += _getMergedRowHeight(mergeGroup);
+        totalCount++;
+        for (final rowKey in mergeGroup.rowKeys) {
+          final rowIndex = _rowKeyToIndex[rowKey];
+          if (rowIndex != null) {
+            processedIndices.add(rowIndex);
+          }
+        }
+      } else {
+        totalHeight += _getRowHeight(i);
+        totalCount++;
+        processedIndices.add(i);
+      }
+    }
+
+    _cachedTotalDataHeight = totalHeight;
+    _cachedTotalRowCount = totalCount;
   }
 
   @override
   void dispose() {
+    _isHovered.dispose();
     _clearAllEditing();
     super.dispose();
   }
@@ -464,9 +532,8 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
   double _getMergedRowHeight(MergedRowGroup mergeGroup) {
     double totalHeight = 0;
     for (final rowKey in mergeGroup.rowKeys) {
-      final rowIndex = widget.data
-          .indexWhere((row) => row[widget.rowIdKey]?.toString() == rowKey);
-      if (rowIndex != -1) {
+      final rowIndex = _rowKeyToIndex[rowKey];
+      if (rowIndex != null) {
         totalHeight += _getRowHeight(rowIndex);
       }
     }
@@ -479,42 +546,10 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
     return totalHeight;
   }
 
-  /// Calculate the total height of all data rows.
-  double _calculateTotalDataHeight() {
-    if (widget.data.isEmpty) return 0;
-
-    double totalHeight = 0;
-    Set<int> processedIndices = {};
-
-    for (int i = 0; i < widget.data.length; i++) {
-      if (processedIndices.contains(i)) continue;
-
-      // Check if this row is part of a merged group
-      final mergeGroup = _getMergedGroupForRow(i);
-      if (mergeGroup != null) {
-        // Calculate merged row height using helper method
-        totalHeight += _getMergedRowHeight(mergeGroup);
-        // Add all merged row indices to processed set
-        for (final rowKey in mergeGroup.rowKeys) {
-          final rowIndex = widget.data
-              .indexWhere((row) => row[widget.rowIdKey]?.toString() == rowKey);
-          if (rowIndex != -1) {
-            processedIndices.add(rowIndex);
-          }
-        }
-      } else {
-        // Regular row - use helper method
-        totalHeight += _getRowHeight(i);
-        processedIndices.add(i);
-      }
-    }
-
-    return totalHeight;
-  }
 
   /// Calculate the actual width for columns based on available space.
-  List<double> _calculateColumnWidths(double availableWidth) {
-    final columns = _visibleColumns;
+  List<double> _calculateColumnWidths(
+      List<TablePlusColumn> columns, double availableWidth) {
     if (columns.isEmpty) return [];
 
     // Separate selection column from regular columns
@@ -554,44 +589,7 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
     return allWidths;
   }
 
-  /// Get minimum width needed for all columns.
-  double get _columnsMinWidth {
-    return _visibleColumns.fold(0.0, (sum, col) => sum + col.minWidth);
-  }
 
-  /// Get the total number of displayed rows considering merged groups.
-  /// Each merged group counts as 1 displayed row, regardless of how many data rows it contains.
-  /// This count is used for both selection features and sort functionality.
-  int _getTotalRowCount() {
-    if (widget.data.isEmpty) return 0;
-
-    Set<int> processedIndices = {};
-    int totalCount = 0;
-
-    for (int i = 0; i < widget.data.length; i++) {
-      if (processedIndices.contains(i)) continue;
-
-      // Check if this row is part of a merged group
-      final mergeGroup = _getMergedGroupForRow(i);
-      if (mergeGroup != null) {
-        // This row is part of a merged group - count as 1 displayed row
-        totalCount++;
-        for (final rowKey in mergeGroup.rowKeys) {
-          final rowIndex = widget.data
-              .indexWhere((row) => row[widget.rowIdKey]?.toString() == rowKey);
-          if (rowIndex != -1) {
-            processedIndices.add(rowIndex);
-          }
-        }
-      } else {
-        // Regular row - count as 1 displayed row
-        totalCount++;
-        processedIndices.add(i);
-      }
-    }
-
-    return totalCount;
-  }
 
   /// Find the merged group that contains the specified row index.
   MergedRowGroup? _getMergedGroupForRow(int rowIndex) {
@@ -599,13 +597,7 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
     final rowData = widget.data[rowIndex];
     final rowKey = rowData[widget.rowIdKey]?.toString();
     if (rowKey == null) return null;
-
-    for (final group in widget.mergedGroups) {
-      if (group.rowKeys.contains(rowKey)) {
-        return group;
-      }
-    }
-    return null;
+    return _rowKeyToMergedGroup[rowKey];
   }
 
   /// Calculate widths for regular columns (excluding selection column)
@@ -672,12 +664,16 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
         final double availableHeight = constraints.maxHeight;
         final double availableWidth = constraints.maxWidth;
 
+        // Cache visible columns once per build
+        final columns = _visibleColumns;
+
         // Calculate minimum required widths
-        final double columnsMinWidth = _columnsMinWidth;
+        final double columnsMinWidth =
+            columns.fold(0.0, (sum, col) => sum + col.minWidth);
 
         // Calculate preferred width for all columns
         final double columnsPreferredWidth =
-            _visibleColumns.fold(0.0, (sum, col) => sum + col.width);
+            columns.fold(0.0, (sum, col) => sum + col.width);
 
         // Actual content width (can be wider than available space for horizontal scroll)
         final double contentWidth = max(
@@ -686,10 +682,11 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
         );
 
         // Calculate column widths based on content width
-        final List<double> columnWidths = _calculateColumnWidths(contentWidth);
+        final List<double> columnWidths =
+            _calculateColumnWidths(columns, contentWidth);
 
         // Calculate table data height
-        final double tableDataHeight = _calculateTotalDataHeight();
+        final double tableDataHeight = _cachedTotalDataHeight;
 
         // Total content height for scrollbar calculation
         final double totalContentHeight =
@@ -709,8 +706,8 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
             final bool needsHorizontalScroll = contentWidth > availableWidth;
 
             return MouseRegion(
-              onEnter: (_) => setState(() => _isHovered = true),
-              onExit: (_) => setState(() => _isHovered = false),
+              onEnter: (_) => _isHovered.value = true,
+              onExit: (_) => _isHovered.value = false,
               child: ScrollConfiguration(
                 // Hide default Flutter scrollbars
                 behavior: ScrollConfiguration.of(context).copyWith(
@@ -728,7 +725,7 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                           children: [
                             // Scrollable Header
                             TablePlusHeader(
-                              columns: _visibleColumns,
+                              columns: columns,
                               columnWidths: columnWidths,
                               totalWidth: contentWidth,
                               theme: theme.headerTheme,
@@ -736,7 +733,7 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                               selectionMode: widget.selectionMode,
                               selectedRows: widget.selectedRows,
                               sortCycleOrder: widget.sortCycleOrder,
-                              totalRowCount: _getTotalRowCount(),
+                              totalRowCount: _cachedTotalRowCount,
                               tooltipTheme: theme.tooltipTheme,
                               checkboxTheme: theme.checkboxTheme,
                               onSelectAll: widget.onSelectAll,
@@ -758,7 +755,7 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                           height: max(constraints.maxHeight,
                                               tableDataHeight),
                                           child: TablePlusBody(
-                                            columns: _visibleColumns,
+                                            columns: columns,
                                             data: widget.data,
                                             mergedGroups: widget.mergedGroups,
                                             columnWidths: columnWidths,
@@ -822,13 +819,20 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                 needsHorizontalScroll)
                             ? theme.scrollbarTheme.trackWidth
                             : 0,
-                        child: AnimatedOpacity(
-                          opacity: theme.scrollbarTheme.hoverOnly
-                              ? (_isHovered
-                                  ? theme.scrollbarTheme.opacity
-                                  : 0.0)
-                              : theme.scrollbarTheme.opacity,
-                          duration: theme.scrollbarTheme.animationDuration,
+                        child: ValueListenableBuilder<bool>(
+                          valueListenable: _isHovered,
+                          builder: (context, isHovered, child) {
+                            return AnimatedOpacity(
+                              opacity: theme.scrollbarTheme.hoverOnly
+                                  ? (isHovered
+                                      ? theme.scrollbarTheme.opacity
+                                      : 0.0)
+                                  : theme.scrollbarTheme.opacity,
+                              duration:
+                                  theme.scrollbarTheme.animationDuration,
+                              child: child,
+                            );
+                          },
                           child: Container(
                             width: theme.scrollbarTheme.trackWidth,
                             decoration: BoxDecoration(
@@ -850,10 +854,12 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                   ),
                                   radius: Radius.circular(
                                       theme.scrollbarTheme.radius ??
-                                          theme.scrollbarTheme.trackWidth / 2),
+                                          theme.scrollbarTheme.trackWidth /
+                                              2),
                                   thickness: WidgetStateProperty.all(
                                     theme.scrollbarTheme.thickness ??
-                                        theme.scrollbarTheme.trackWidth * 0.7,
+                                        theme.scrollbarTheme.trackWidth *
+                                            0.7,
                                   ),
                                 ),
                               ),
@@ -885,13 +891,20 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                         left: 0,
                         right: 0,
                         bottom: 0,
-                        child: AnimatedOpacity(
-                          opacity: theme.scrollbarTheme.hoverOnly
-                              ? (_isHovered
-                                  ? theme.scrollbarTheme.opacity
-                                  : 0.0)
-                              : theme.scrollbarTheme.opacity,
-                          duration: theme.scrollbarTheme.animationDuration,
+                        child: ValueListenableBuilder<bool>(
+                          valueListenable: _isHovered,
+                          builder: (context, isHovered, child) {
+                            return AnimatedOpacity(
+                              opacity: theme.scrollbarTheme.hoverOnly
+                                  ? (isHovered
+                                      ? theme.scrollbarTheme.opacity
+                                      : 0.0)
+                                  : theme.scrollbarTheme.opacity,
+                              duration:
+                                  theme.scrollbarTheme.animationDuration,
+                              child: child,
+                            );
+                          },
                           child: Container(
                             height: theme.scrollbarTheme.trackWidth,
                             decoration: BoxDecoration(
@@ -913,10 +926,12 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                   ),
                                   radius: Radius.circular(
                                       theme.scrollbarTheme.radius ??
-                                          theme.scrollbarTheme.trackWidth / 2),
+                                          theme.scrollbarTheme.trackWidth /
+                                              2),
                                   thickness: WidgetStateProperty.all(
                                     theme.scrollbarTheme.thickness ??
-                                        theme.scrollbarTheme.trackWidth * 0.7,
+                                        theme.scrollbarTheme.trackWidth *
+                                            0.7,
                                   ),
                                 ),
                               ),
@@ -929,7 +944,8 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                   scrollDirection: Axis.horizontal,
                                   child: SizedBox(
                                     width: contentWidth,
-                                    height: theme.scrollbarTheme.trackWidth,
+                                    height:
+                                        theme.scrollbarTheme.trackWidth,
                                   ),
                                 ),
                               ),
