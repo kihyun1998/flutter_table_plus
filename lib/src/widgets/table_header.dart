@@ -95,37 +95,15 @@ class _TablePlusHeaderState<T> extends State<TablePlusHeader<T>> {
     return null; // Indeterminate state
   }
 
-  /// Get reorderable columns (excludes selection column)
-  List<TablePlusColumn<T>> _getReorderableColumns() {
-    return widget.columns
-        .where((column) => column.key != '__selection__')
-        .toList();
-  }
-
-  /// Get reorderable column widths (excludes selection column width)
-  List<double> _getReorderableColumnWidths(List<double> allWidths) {
-    List<double> reorderableWidths = [];
-    for (int i = 0; i < widget.columns.length; i++) {
-      if (widget.columns[i].key != '__selection__') {
-        reorderableWidths.add(allWidths[i]);
-      }
-    }
-    return reorderableWidths;
-  }
-
   /// Handle column reorder
   void _handleColumnReorder(int oldIndex, int newIndex) {
     if (widget.onColumnReorder == null) return;
+    if (oldIndex == newIndex) return;
 
     // Set reordering state to prevent tooltip positioning errors
     setState(() {
       _isReordering = true;
     });
-
-    // Adjust newIndex if dragging down
-    if (oldIndex < newIndex) {
-      newIndex -= 1;
-    }
 
     widget.onColumnReorder!(oldIndex, newIndex);
 
@@ -207,100 +185,81 @@ class _TablePlusHeaderState<T> extends State<TablePlusHeader<T>> {
 
   @override
   Widget build(BuildContext context) {
-    final reorderableColumns = _getReorderableColumns();
-    final reorderableWidths = _getReorderableColumnWidths(widget.columnWidths);
-
     return Container(
       height: widget.theme.height,
       width: widget.totalWidth,
       decoration: _buildHeaderDecoration(),
       child: Row(
         children: [
-          // Selection column (fixed, non-reorderable)
-          if (widget.isSelectable &&
-              widget.columns.any((col) => col.key == '__selection__'))
-            _SelectionHeaderCell(
-              width: widget.checkboxTheme.checkboxColumnWidth,
-              theme: widget.theme,
-              selectAllState: _getSelectAllState(),
-              selectedRows: widget.selectedRows,
-              onSelectAll: widget.onSelectAll,
-              checkboxTheme: widget.checkboxTheme,
-              showSelectAllCheckbox: widget.checkboxTheme.showSelectAllCheckbox,
-            ),
+          ...() {
+            int reorderIndex = 0;
+            return widget.columns.asMap().entries.map((entry) {
+              final index = entry.key;
+              final column = entry.value;
+              final width = widget.columnWidths.isNotEmpty
+                  ? widget.columnWidths[index]
+                  : column.width;
 
-          // Reorderable or non-reorderable columns
-          if (reorderableColumns.isNotEmpty)
-            Expanded(
-              child: SizedBox(
-                height: widget.theme.height,
-                child: widget.onColumnReorder != null
-                    ? ReorderableListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        buildDefaultDragHandles:
-                            false, // Disable default drag handles
-                        onReorder: _handleColumnReorder,
-                        itemCount: reorderableColumns.length,
-                        itemBuilder: (context, index) {
-                          final column = reorderableColumns[index];
-                          final width = reorderableWidths.isNotEmpty
-                              ? reorderableWidths[index]
-                              : column.width;
+              // Selection column (non-reorderable)
+              if (widget.isSelectable && column.key == '__selection__') {
+                return _SelectionHeaderCell(
+                  width: width,
+                  theme: widget.theme,
+                  selectAllState: _getSelectAllState(),
+                  selectedRows: widget.selectedRows,
+                  onSelectAll: widget.onSelectAll,
+                  checkboxTheme: widget.checkboxTheme,
+                  showSelectAllCheckbox:
+                      widget.checkboxTheme.showSelectAllCheckbox,
+                );
+              }
 
-                          return ReorderableDragStartListener(
-                            key: ValueKey(column.key),
-                            index: index,
-                            child: _HeaderCell(
-                              column: column,
-                              width: width,
-                              theme: widget.theme,
-                              tooltipTheme: widget.tooltipTheme,
-                              isSorted: widget.sortColumnKey == column.key,
-                              sortDirection: widget.sortColumnKey == column.key
-                                  ? widget.sortDirection
-                                  : SortDirection.none,
-                              isReordering: _isReordering,
-                              onSortClick: column.sortable &&
-                                      widget.onSort != null &&
-                                      widget.totalRowCount > 0
-                                  ? () => _handleSortClick(column.key)
-                                  : null,
-                            ),
-                          );
-                        },
-                      )
-                    : SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children:
-                              reorderableColumns.asMap().entries.map((entry) {
-                            final index = entry.key;
-                            final column = entry.value;
-                            final width = reorderableWidths.isNotEmpty
-                                ? reorderableWidths[index]
-                                : column.width;
+              final currentReorderIndex = reorderIndex;
+              reorderIndex++;
 
-                            return _HeaderCell(
-                              column: column,
-                              width: width,
-                              theme: widget.theme,
-                              tooltipTheme: widget.tooltipTheme,
-                              isSorted: widget.sortColumnKey == column.key,
-                              sortDirection: widget.sortColumnKey == column.key
-                                  ? widget.sortDirection
-                                  : SortDirection.none,
-                              isReordering: _isReordering,
-                              onSortClick: column.sortable &&
-                                      widget.onSort != null &&
-                                      widget.totalRowCount > 0
-                                  ? () => _handleSortClick(column.key)
-                                  : null,
-                            );
-                          }).toList(),
-                        ),
-                      ),
-              ),
-            ),
+              final headerCell = _HeaderCell(
+                column: column,
+                width: width,
+                theme: widget.theme,
+                tooltipTheme: widget.tooltipTheme,
+                isSorted: widget.sortColumnKey == column.key,
+                sortDirection: widget.sortColumnKey == column.key
+                    ? widget.sortDirection
+                    : SortDirection.none,
+                isReordering: _isReordering,
+                onSortClick: column.sortable &&
+                        widget.onSort != null &&
+                        widget.totalRowCount > 0
+                    ? () => _handleSortClick(column.key)
+                    : null,
+              );
+
+              if (widget.onColumnReorder != null) {
+                return Draggable<int>(
+                  data: currentReorderIndex,
+                  axis: Axis.horizontal,
+                  feedback: Material(
+                    elevation: 4,
+                    child: headerCell,
+                  ),
+                  childWhenDragging: Opacity(
+                    opacity: 0.3,
+                    child: headerCell,
+                  ),
+                  child: DragTarget<int>(
+                    onAcceptWithDetails: (details) {
+                      _handleColumnReorder(details.data, currentReorderIndex);
+                    },
+                    builder: (context, candidateData, rejectedData) {
+                      return headerCell;
+                    },
+                  ),
+                );
+              }
+
+              return headerCell;
+            });
+          }(),
         ],
       ),
     );

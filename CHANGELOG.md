@@ -1,3 +1,10 @@
+## 2.0.1
+
+*   **FIX**: Fixed header-body column width misalignment when table width exceeds total column widths
+    *   Header now uses the same proportionally distributed `columnWidths` as body rows, including the selection checkbox column
+    *   Replaced `Expanded` + `ReorderableListView` with flat `Row` layout to eliminate nested horizontal scrolling that caused header overlap artifacts
+    *   Column reorder functionality preserved using `Draggable` + `DragTarget` instead of `ReorderableListView`
+
 ## 2.0.0
 
 *   **BREAKING**: Migrated from `Map<String, dynamic>` to generic type parameter `<T>`

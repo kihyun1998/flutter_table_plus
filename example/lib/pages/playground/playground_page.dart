@@ -657,6 +657,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
 
   Widget _buildTableArea() {
     return Container(
+      margin: const EdgeInsets.all(16),
       color: Colors.white,
       child: FlutterTablePlus<Employee>(
         columns: _columns,
@@ -760,6 +761,19 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
     return TablePlusTheme(
       headerTheme: TablePlusHeaderTheme(
         backgroundColor: Colors.blue.shade50,
+        decoration: BoxDecoration(
+          color: Colors.blue.shade50,
+          border: Border(
+            top: BorderSide(
+              color: Colors.blue.shade200,
+              width: 2.0,
+            ),
+            bottom: BorderSide(
+              color: Colors.grey.shade300,
+              width: 1.0,
+            ),
+          ),
+        ),
         textStyle: TextStyle(
           fontWeight: FontWeight.w600,
           color: Colors.blue.shade800,
