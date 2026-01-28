@@ -52,6 +52,8 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
   void _initializeColumns() {
     final builder = TableColumnsBuilder();
 
+    final tooltip = _settings.tooltipBehavior;
+
     builder.addColumn(
       'avatar',
       TablePlusColumn(
@@ -60,6 +62,8 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         order: 0,
         width: 60,
         sortable: false,
+        tooltipBehavior: tooltip,
+        headerTooltipBehavior: tooltip,
       ),
     );
 
@@ -71,6 +75,8 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         order: 0,
         width: 180,
         sortable: _settings.sortingEnabled,
+        tooltipBehavior: tooltip,
+        headerTooltipBehavior: tooltip,
       ),
     );
 
@@ -83,6 +89,8 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         width: 200,
         sortable: _settings.sortingEnabled,
         editable: _settings.editingEnabled,
+        tooltipBehavior: tooltip,
+        headerTooltipBehavior: tooltip,
       ),
     );
 
@@ -95,6 +103,8 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         width: 150,
         sortable: _settings.sortingEnabled,
         editable: _settings.editingEnabled,
+        tooltipBehavior: tooltip,
+        headerTooltipBehavior: tooltip,
       ),
     );
 
@@ -107,6 +117,8 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         width: 120,
         sortable: _settings.sortingEnabled,
         editable: _settings.editingEnabled,
+        tooltipBehavior: tooltip,
+        headerTooltipBehavior: tooltip,
         cellBuilder: (context, rowData) {
           final salary = rowData['salary'] as int;
           return Center(
@@ -130,6 +142,8 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         order: 0,
         width: 130,
         sortable: _settings.sortingEnabled,
+        tooltipBehavior: tooltip,
+        headerTooltipBehavior: tooltip,
         cellBuilder: (context, rowData) {
           final performance = rowData['performance'] as double;
           return Center(
@@ -161,6 +175,8 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         order: 0,
         width: 220,
         sortable: _settings.sortingEnabled,
+        tooltipBehavior: tooltip,
+        headerTooltipBehavior: tooltip,
       ),
     );
 
@@ -172,6 +188,8 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         order: 0,
         width: 130,
         sortable: _settings.sortingEnabled,
+        tooltipBehavior: tooltip,
+        headerTooltipBehavior: tooltip,
       ),
     );
 
@@ -221,19 +239,21 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
   /// Handle settings changes
   void _handleSettingsChanged(PlaygroundSettings newSettings) {
     setState(() {
+      final oldSettings = _settings;
+      _settings = newSettings;
+
       // Check if features changed that require column rebuild
       final needsColumnRebuild =
-          newSettings.sortingEnabled != _settings.sortingEnabled ||
-              newSettings.editingEnabled != _settings.editingEnabled;
-
-      _settings = newSettings;
+          newSettings.sortingEnabled != oldSettings.sortingEnabled ||
+              newSettings.editingEnabled != oldSettings.editingEnabled ||
+              newSettings.tooltipBehavior != oldSettings.tooltipBehavior;
 
       if (needsColumnRebuild) {
         _initializeColumns();
       }
 
       // Update merged groups if toggle changed
-      if (newSettings.mergedRowsEnabled != _settings.mergedRowsEnabled) {
+      if (newSettings.mergedRowsEnabled != oldSettings.mergedRowsEnabled) {
         if (newSettings.mergedRowsEnabled) {
           _updateMergedGroups();
         } else {
@@ -330,6 +350,150 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
 
     debugPrint(
         '✏️ Edited row $rowIndex, column $columnKey: $oldValue → $newValue');
+  }
+
+  /// Handle right-click context menu on a row
+  void _handleRowSecondaryTapDown(
+    String rowId,
+    TapDownDetails details,
+    RenderBox renderBox,
+    bool isSelected,
+  ) {
+    final overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
+    final position = RelativeRect.fromRect(
+      Rect.fromPoints(
+        renderBox.localToGlobal(details.localPosition, ancestor: overlay),
+        renderBox.localToGlobal(details.localPosition, ancestor: overlay),
+      ),
+      Offset.zero & overlay.size,
+    );
+
+    // Find the row data for display
+    final rowData = _data.firstWhere(
+      (row) => row['id'].toString() == rowId,
+      orElse: () => <String, dynamic>{},
+    );
+    final rowName = rowData['name'] ?? rowId;
+
+    showMenu<String>(
+      context: context,
+      position: position,
+      items: [
+        PopupMenuItem(
+          value: 'view',
+          child: Row(
+            children: [
+              Icon(Icons.visibility, size: 18, color: Colors.blue.shade600),
+              const SizedBox(width: 8),
+              Text('View "$rowName"'),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: 'select',
+          child: Row(
+            children: [
+              Icon(
+                isSelected ? Icons.deselect : Icons.check_circle_outline,
+                size: 18,
+                color: Colors.green.shade600,
+              ),
+              const SizedBox(width: 8),
+              Text(isSelected ? 'Deselect' : 'Select'),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: 'delete',
+          child: Row(
+            children: [
+              Icon(Icons.delete_outline, size: 18, color: Colors.red.shade600),
+              const SizedBox(width: 8),
+              const Text('Delete'),
+            ],
+          ),
+        ),
+      ],
+    ).then((value) {
+      if (value == null) return;
+      switch (value) {
+        case 'view':
+          _showRowDetailDialog(rowData);
+          break;
+        case 'select':
+          _handleRowSelection(rowId, !isSelected);
+          break;
+        case 'delete':
+          setState(() {
+            _data.removeWhere((row) => row['id'].toString() == rowId);
+            _selectedRows.remove(rowId);
+            if (_settings.mergedRowsEnabled) _updateMergedGroups();
+          });
+          debugPrint('🗑️ Deleted row $rowId');
+          break;
+      }
+    });
+  }
+
+  /// Show row detail dialog
+  void _showRowDetailDialog(Map<String, dynamic> rowData) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(rowData['name']?.toString() ?? 'Row Details'),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: rowData.entries
+                .where((e) => e.key != 'avatar')
+                .map((e) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(
+                            width: 100,
+                            child: Text(
+                              '${e.key}:',
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          Expanded(child: Text(e.value.toString())),
+                        ],
+                      ),
+                    ))
+                .toList(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _hoverActionButton({
+    required IconData icon,
+    required Color color,
+    required String tooltip,
+    required VoidCallback onPressed,
+  }) {
+    return Tooltip(
+      message: tooltip,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(4),
+        child: Padding(
+          padding: const EdgeInsets.all(4),
+          child: Icon(icon, size: 18, color: color),
+        ),
+      ),
+    );
   }
 
   /// Handle column reorder
@@ -456,38 +620,6 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
   }
 
   Widget _buildTableArea() {
-    if (_data.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.table_chart_outlined,
-              size: 80,
-              color: Colors.grey.shade400,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'No data yet',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey.shade600,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Generate data using the controls on the left',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey.shade500,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
     return Container(
       color: Colors.white,
       child: FlutterTablePlus(
@@ -495,6 +627,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         data: _data,
         sortColumnKey: _currentSortColumn,
         sortDirection: _currentSortDirection,
+        sortCycleOrder: _settings.sortCycleOrder,
         onSort: _settings.sortingEnabled ? _handleSort : null,
         onColumnReorder:
             _settings.columnReorderEnabled ? _handleColumnReorder : null,
@@ -502,8 +635,86 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         selectionMode: _settings.selectionMode,
         selectedRows: _selectedRows,
         onRowSelectionChanged: _handleRowSelection,
+        onCheckboxChanged: _handleRowSelection,
+        onSelectAll: (selectAll) {
+          setState(() {
+            if (selectAll) {
+              _selectedRows = _data.map((row) => row['id'] as String).toSet();
+            } else {
+              _selectedRows = {};
+            }
+          });
+        },
         isEditable: _settings.editingEnabled,
         onCellChanged: _handleCellChanged,
+        onRowSecondaryTapDown: _handleRowSecondaryTapDown,
+        calculateRowHeight: _settings.dynamicRowHeight
+            ? (rowIndex, rowData) {
+                final position = rowData['position']?.toString() ?? '';
+                // Taller rows for longer position titles
+                return position.length > 20 ? 70.0 : null;
+              }
+            : null,
+        dimRowKey: _settings.dimInactiveRows ? 'isActive' : null,
+        invertDimRow: true,
+        noDataWidget: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.inbox_outlined, size: 64, color: Colors.grey.shade400),
+            const SizedBox(height: 12),
+            Text(
+              'No employees found',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey.shade600,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Try generating data or adjusting filters',
+              style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+            ),
+          ],
+        ),
+        hoverButtonBuilder: (rowId, rowData) => Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _hoverActionButton(
+              icon: Icons.visibility,
+              color: Colors.blue,
+              tooltip: 'View',
+              onPressed: () => _showRowDetailDialog(rowData),
+            ),
+            _hoverActionButton(
+              icon: Icons.edit,
+              color: Colors.orange,
+              tooltip: 'Edit',
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                        'Edit "${rowData['name']}" — enable editing in settings to edit cells directly'),
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              },
+            ),
+            _hoverActionButton(
+              icon: Icons.delete,
+              color: Colors.red,
+              tooltip: 'Delete',
+              onPressed: () {
+                setState(() {
+                  _data.removeWhere((row) => row['id'].toString() == rowId);
+                  _selectedRows.remove(rowId);
+                  if (_settings.mergedRowsEnabled) _updateMergedGroups();
+                });
+              },
+            ),
+          ],
+        ),
+        hoverButtonPosition: HoverButtonPosition.right,
         mergedGroups: _settings.mergedRowsEnabled ? _mergedGroups : [],
         theme: _buildTheme(),
       ),

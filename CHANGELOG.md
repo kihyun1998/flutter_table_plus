@@ -15,6 +15,17 @@
     *   Eliminates redundant `TextPainter` allocation/layout/dispose on every rebuild for `TooltipBehavior.onlyTextOverflow`
 *   **FIX**: Added missing `TextPainter.dispose()` in `TableRowHeightCalculator.calculateTextHeight`
     *   Previously leaked native Skia paragraph resources until garbage collection
+*   **FIX**: Fixed settings change detection bug in example playground
+    *   `_handleSettingsChanged` compared new settings against already-overwritten `_settings`, causing merged rows toggle and column rebuilds to silently fail
+*   **EXAMPLE**: Added missing feature demonstrations to playground
+    *   `onRowSecondaryTapDown`: Right-click context menu with View, Select, Delete actions
+    *   `hoverButtonBuilder`: Hover action buttons (View, Edit, Delete) on each row
+    *   `calculateRowHeight`: Dynamic row height toggle in settings
+    *   `dimRowKey` / `invertDimRow`: Dim inactive rows toggle in settings
+    *   `noDataWidget`: Custom empty state widget
+    *   `sortCycleOrder`: ASC First / DESC First dropdown in settings
+    *   `tooltipBehavior`: Always / Never / On Overflow dropdown in settings
+    *   `onSelectAll` / `onCheckboxChanged`: Select-all checkbox and individual checkbox callbacks
 
 ## 1.17.1
 

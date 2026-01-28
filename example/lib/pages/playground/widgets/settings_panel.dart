@@ -22,6 +22,10 @@ class PlaygroundSettings {
   final bool columnReorderEnabled;
   final bool showAlternateRows;
   final bool showDividers;
+  final bool dynamicRowHeight;
+  final bool dimInactiveRows;
+  final SortCycleOrder sortCycleOrder;
+  final TooltipBehavior tooltipBehavior;
 
   const PlaygroundSettings({
     this.rowCount = 100,
@@ -36,6 +40,10 @@ class PlaygroundSettings {
     this.columnReorderEnabled = true,
     this.showAlternateRows = true,
     this.showDividers = true,
+    this.dynamicRowHeight = false,
+    this.dimInactiveRows = false,
+    this.sortCycleOrder = SortCycleOrder.ascendingFirst,
+    this.tooltipBehavior = TooltipBehavior.always,
   });
 
   PlaygroundSettings copyWith({
@@ -51,6 +59,10 @@ class PlaygroundSettings {
     bool? columnReorderEnabled,
     bool? showAlternateRows,
     bool? showDividers,
+    bool? dynamicRowHeight,
+    bool? dimInactiveRows,
+    SortCycleOrder? sortCycleOrder,
+    TooltipBehavior? tooltipBehavior,
   }) {
     return PlaygroundSettings(
       rowCount: rowCount ?? this.rowCount,
@@ -65,6 +77,10 @@ class PlaygroundSettings {
       columnReorderEnabled: columnReorderEnabled ?? this.columnReorderEnabled,
       showAlternateRows: showAlternateRows ?? this.showAlternateRows,
       showDividers: showDividers ?? this.showDividers,
+      dynamicRowHeight: dynamicRowHeight ?? this.dynamicRowHeight,
+      dimInactiveRows: dimInactiveRows ?? this.dimInactiveRows,
+      sortCycleOrder: sortCycleOrder ?? this.sortCycleOrder,
+      tooltipBehavior: tooltipBehavior ?? this.tooltipBehavior,
     );
   }
 }
@@ -370,39 +386,65 @@ class SettingsPanel extends StatelessWidget {
           },
         ),
 
+        _buildSwitchTile(
+          label: 'Dynamic Row Height',
+          value: settings.dynamicRowHeight,
+          onChanged: (value) {
+            onSettingsChanged(settings.copyWith(dynamicRowHeight: value));
+          },
+        ),
+
+        _buildSwitchTile(
+          label: 'Dim Inactive Rows',
+          value: settings.dimInactiveRows,
+          onChanged: (value) {
+            onSettingsChanged(settings.copyWith(dimInactiveRows: value));
+          },
+        ),
+
         const SizedBox(height: 12),
         const Divider(),
         const SizedBox(height: 12),
 
         // Selection mode dropdown
-        Row(
-          children: [
-            const Text(
-              'Selection Mode',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const Spacer(),
-            DropdownButton<SelectionMode>(
-              value: settings.selectionMode,
-              onChanged: (SelectionMode? newValue) {
-                if (newValue != null) {
-                  onSettingsChanged(settings.copyWith(selectionMode: newValue));
-                }
-              },
-              items: SelectionMode.values.map((mode) {
-                return DropdownMenuItem(
-                  value: mode,
-                  child: Text(
-                    mode.name.toUpperCase(),
-                    style: const TextStyle(fontSize: 13),
-                  ),
-                );
-              }).toList(),
-            ),
-          ],
+        _buildDropdownRow<SelectionMode>(
+          label: 'Selection Mode',
+          value: settings.selectionMode,
+          items: SelectionMode.values,
+          itemLabel: (mode) => mode.name.toUpperCase(),
+          onChanged: (value) {
+            onSettingsChanged(settings.copyWith(selectionMode: value));
+          },
+        ),
+        const SizedBox(height: 8),
+
+        // Sort cycle order dropdown
+        _buildDropdownRow<SortCycleOrder>(
+          label: 'Sort Cycle',
+          value: settings.sortCycleOrder,
+          items: SortCycleOrder.values,
+          itemLabel: (order) => order == SortCycleOrder.ascendingFirst
+              ? 'ASC First'
+              : 'DESC First',
+          onChanged: (value) {
+            onSettingsChanged(settings.copyWith(sortCycleOrder: value));
+          },
+        ),
+        const SizedBox(height: 8),
+
+        // Tooltip behavior dropdown
+        _buildDropdownRow<TooltipBehavior>(
+          label: 'Tooltip',
+          value: settings.tooltipBehavior,
+          items: TooltipBehavior.values,
+          itemLabel: (behavior) => switch (behavior) {
+            TooltipBehavior.always => 'Always',
+            TooltipBehavior.never => 'Never',
+            TooltipBehavior.onlyTextOverflow => 'On Overflow',
+          },
+          onChanged: (value) {
+            onSettingsChanged(settings.copyWith(tooltipBehavior: value));
+          },
         ),
       ],
     );
@@ -510,6 +552,42 @@ class SettingsPanel extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildDropdownRow<T>({
+    required String label,
+    required T value,
+    required List<T> items,
+    required String Function(T) itemLabel,
+    required ValueChanged<T> onChanged,
+  }) {
+    return Row(
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const Spacer(),
+        DropdownButton<T>(
+          value: value,
+          onChanged: (T? newValue) {
+            if (newValue != null) onChanged(newValue);
+          },
+          items: items.map((item) {
+            return DropdownMenuItem(
+              value: item,
+              child: Text(
+                itemLabel(item),
+                style: const TextStyle(fontSize: 13),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 

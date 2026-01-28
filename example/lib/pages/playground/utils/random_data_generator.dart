@@ -461,6 +461,7 @@ class RandomDataGenerator {
         'email':
             '${firstName.toLowerCase()}.${lastName.toLowerCase()}@company.com',
         'phone': '+1-555-${_random.nextInt(9000) + 1000}',
+        'isActive': _random.nextDouble() > 0.2, // ~80% active
       });
     }
 

@@ -546,7 +546,6 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
     return totalHeight;
   }
 
-
   /// Calculate the actual width for columns based on available space.
   List<double> _calculateColumnWidths(
       List<TablePlusColumn> columns, double availableWidth) {
@@ -588,8 +587,6 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
 
     return allWidths;
   }
-
-
 
   /// Find the merged group that contains the specified row index.
   MergedRowGroup? _getMergedGroupForRow(int rowIndex) {
@@ -828,8 +825,7 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                       ? theme.scrollbarTheme.opacity
                                       : 0.0)
                                   : theme.scrollbarTheme.opacity,
-                              duration:
-                                  theme.scrollbarTheme.animationDuration,
+                              duration: theme.scrollbarTheme.animationDuration,
                               child: child,
                             );
                           },
@@ -854,12 +850,10 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                   ),
                                   radius: Radius.circular(
                                       theme.scrollbarTheme.radius ??
-                                          theme.scrollbarTheme.trackWidth /
-                                              2),
+                                          theme.scrollbarTheme.trackWidth / 2),
                                   thickness: WidgetStateProperty.all(
                                     theme.scrollbarTheme.thickness ??
-                                        theme.scrollbarTheme.trackWidth *
-                                            0.7,
+                                        theme.scrollbarTheme.trackWidth * 0.7,
                                   ),
                                 ),
                               ),
@@ -900,8 +894,7 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                       ? theme.scrollbarTheme.opacity
                                       : 0.0)
                                   : theme.scrollbarTheme.opacity,
-                              duration:
-                                  theme.scrollbarTheme.animationDuration,
+                              duration: theme.scrollbarTheme.animationDuration,
                               child: child,
                             );
                           },
@@ -926,12 +919,10 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                   ),
                                   radius: Radius.circular(
                                       theme.scrollbarTheme.radius ??
-                                          theme.scrollbarTheme.trackWidth /
-                                              2),
+                                          theme.scrollbarTheme.trackWidth / 2),
                                   thickness: WidgetStateProperty.all(
                                     theme.scrollbarTheme.thickness ??
-                                        theme.scrollbarTheme.trackWidth *
-                                            0.7,
+                                        theme.scrollbarTheme.trackWidth * 0.7,
                                   ),
                                 ),
                               ),
@@ -944,8 +935,7 @@ class _FlutterTablePlusState extends State<FlutterTablePlus> {
                                   scrollDirection: Axis.horizontal,
                                   child: SizedBox(
                                     width: contentWidth,
-                                    height:
-                                        theme.scrollbarTheme.trackWidth,
+                                    height: theme.scrollbarTheme.trackWidth,
                                   ),
                                 ),
                               ),
