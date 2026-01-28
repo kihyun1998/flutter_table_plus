@@ -86,8 +86,7 @@ class MergedRowGroup<T> {
   }
 
   /// Returns the row data for a specific row key from the provided data list.
-  T? getRowData(
-      List<T> allData, String rowKey, String Function(T) rowId) {
+  T? getRowData(List<T> allData, String rowKey, String Function(T) rowId) {
     try {
       return allData.firstWhere((row) => rowId(row) == rowKey);
     } catch (e) {
@@ -96,8 +95,7 @@ class MergedRowGroup<T> {
   }
 
   /// Returns all row data for this group from the provided data list.
-  List<T> getAllRowData(
-      List<T> allData, String Function(T) rowId) {
+  List<T> getAllRowData(List<T> allData, String Function(T) rowId) {
     return rowKeys
         .map((rowKey) => getRowData(allData, rowKey, rowId))
         .where((data) => data != null)

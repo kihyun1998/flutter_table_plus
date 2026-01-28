@@ -378,9 +378,8 @@ class _HeaderCell extends StatelessWidget {
 
       case TooltipBehavior.onlyTextOverflow:
         final padding = theme.padding;
-        final sortIconWidth = column.sortable && onSortClick != null
-            ? 24.0
-            : 0.0;
+        final sortIconWidth =
+            column.sortable && onSortClick != null ? 24.0 : 0.0;
         final availableWidth = width - padding.horizontal - sortIconWidth;
 
         return TextOverflowDetector.willTextOverflowInContext(

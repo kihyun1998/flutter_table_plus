@@ -209,8 +209,7 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
     for (final row in widget.data) {
       final id = widget.rowId(row);
       if (ids.contains(id)) {
-        debugPrint(
-            '⚠️ FlutterTablePlus: Duplicate row ID found: "$id". '
+        debugPrint('⚠️ FlutterTablePlus: Duplicate row ID found: "$id". '
             'Each row must have a unique ID for selection features to work correctly.');
         return;
       }
@@ -529,8 +528,7 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
                                   : LayoutBuilder(
                                       builder: (context, bodyConstraints) {
                                         return SizedBox(
-                                          height: max(
-                                              bodyConstraints.maxHeight,
+                                          height: max(bodyConstraints.maxHeight,
                                               tableDataHeight),
                                           child: TablePlusBody<T>(
                                             columns: orderedColumns,
@@ -546,8 +544,7 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
                                             mergedGroups: widget.mergedGroups,
                                             isDimRow: widget.isDimRow,
                                             isSelectable: widget.isSelectable,
-                                            selectionMode:
-                                                widget.selectionMode,
+                                            selectionMode: widget.selectionMode,
                                             selectedRows: widget.selectedRows,
                                             onRowSelectionChanged:
                                                 widget.onRowSelectionChanged,

@@ -466,8 +466,7 @@ class RandomDataGenerator {
 
     stopwatch.stop();
     // ignore: avoid_print
-    print(
-        '✅ Generated $count employees in ${stopwatch.elapsedMilliseconds}ms');
+    print('✅ Generated $count employees in ${stopwatch.elapsedMilliseconds}ms');
 
     return employees;
   }

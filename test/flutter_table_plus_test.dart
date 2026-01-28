@@ -346,8 +346,7 @@ void main() {
         {'id': '3', 'name': 'Charlie'},
       ];
 
-      final row = group.getRowData(
-          data, '2', (r) => r['id'] as String);
+      final row = group.getRowData(data, '2', (r) => r['id'] as String);
       expect(row?['name'], 'Bob');
     });
 
@@ -364,8 +363,7 @@ void main() {
         {'id': '3', 'name': 'Charlie'},
       ];
 
-      final rows = group.getAllRowData(
-          data, (r) => r['id'] as String);
+      final rows = group.getAllRowData(data, (r) => r['id'] as String);
       expect(rows.length, 2);
       expect(rows[0]['name'], 'Alice');
       expect(rows[1]['name'], 'Charlie');

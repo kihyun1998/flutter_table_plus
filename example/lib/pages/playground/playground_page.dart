@@ -25,6 +25,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
 
   // Data
   List<Employee> _data = [];
+  List<Employee> _originalData = [];
   Map<String, TablePlusColumn<Employee>> _columns = {};
 
   // Performance metrics
@@ -221,6 +222,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
 
     setState(() {
       _data = newData;
+      _originalData = List.of(newData);
       _selectedRows.clear();
       _currentSortColumn = null;
       _currentSortDirection = SortDirection.none;
@@ -279,8 +281,8 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
       _currentSortDirection = direction;
 
       if (direction == SortDirection.none) {
-        // Reset to original order - regenerate
-        _data = RandomDataGenerator.generateEmployees(_settings.rowCount);
+        // Reset to original order from cached copy
+        _data = List.of(_originalData);
       } else {
         // Sort data using the column's valueAccessor
         final column = _columns[columnKey];
@@ -329,8 +331,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
       );
     });
 
-    debugPrint(
-        '🔄 Sorted by $columnKey in ${stopwatch.elapsedMilliseconds}ms');
+    debugPrint('🔄 Sorted by $columnKey in ${stopwatch.elapsedMilliseconds}ms');
   }
 
   /// Handle row selection
@@ -385,8 +386,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
     RenderBox renderBox,
     bool isSelected,
   ) {
-    final overlay =
-        Overlay.of(context).context.findRenderObject() as RenderBox;
+    final overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
     final position = RelativeRect.fromRect(
       Rect.fromPoints(
         renderBox.localToGlobal(details.localPosition, ancestor: overlay),
@@ -691,8 +691,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
                 return employee.position.length > 20 ? 70.0 : null;
               }
             : null,
-        isDimRow:
-            _settings.dimInactiveRows ? (row) => !row.isActive : null,
+        isDimRow: _settings.dimInactiveRows ? (row) => !row.isActive : null,
         noDataWidget: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

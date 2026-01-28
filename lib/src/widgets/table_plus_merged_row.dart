@@ -118,8 +118,7 @@ class TablePlusMergedRow<T> extends TablePlusRowWidget {
   List<int> get originalDataIndices {
     // Convert rowKeys back to indices for compatibility
     return mergeGroup.rowKeys
-        .map((rowKey) =>
-            allData.indexWhere((row) => rowId(row) == rowKey))
+        .map((rowKey) => allData.indexWhere((row) => rowId(row) == rowKey))
         .where((index) => index != -1)
         .toList();
   }
@@ -139,8 +138,7 @@ class _TablePlusMergedRowState<T> extends State<TablePlusMergedRow<T>> {
 
   /// Get the data for a specific row key within the merge group.
   T? _getRowData(String rowKey) {
-    return widget.mergeGroup
-        .getRowData(widget.allData, rowKey, widget.rowId);
+    return widget.mergeGroup.getRowData(widget.allData, rowKey, widget.rowId);
   }
 
   /// Get the correct width for a column based on its key.
@@ -207,8 +205,8 @@ class _TablePlusMergedRowState<T> extends State<TablePlusMergedRow<T>> {
     final isCellEditable = widget.isEditable &&
         column.editable &&
         widget.mergeGroup.isMergedCellEditable(column.key);
-    final spanningDataIndex = widget.allData.indexWhere(
-        (row) => widget.rowId(row) == spanningRowKey);
+    final spanningDataIndex =
+        widget.allData.indexWhere((row) => widget.rowId(row) == spanningRowKey);
     final isCurrentlyEditing = isCellEditable &&
         spanningDataIndex != -1 &&
         widget.isCellEditing?.call(spanningDataIndex, column.key) == true;
@@ -389,8 +387,8 @@ class _TablePlusMergedRowState<T> extends State<TablePlusMergedRow<T>> {
       int rowIndex,
       int columnIndex) {
     final isCellEditable = widget.isEditable && column.editable;
-    final originalIndex = widget.allData
-        .indexWhere((row) => widget.rowId(row) == rowKey);
+    final originalIndex =
+        widget.allData.indexWhere((row) => widget.rowId(row) == rowKey);
     final isCurrentlyEditing = isCellEditable &&
         originalIndex != -1 &&
         widget.isCellEditing?.call(originalIndex, column.key) == true;
@@ -722,8 +720,7 @@ class _TablePlusMergedRowState<T> extends State<TablePlusMergedRow<T>> {
     }
 
     // Get representative row data (first row in the merge group)
-    final representativeData =
-        _getRowData(widget.mergeGroup.rowKeys.first);
+    final representativeData = _getRowData(widget.mergeGroup.rowKeys.first);
 
     if (representativeData == null) return null;
 
