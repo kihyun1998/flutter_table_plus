@@ -1,3 +1,13 @@
+## 1.17.1
+
+*   **FIX**: Fixed scroll controllers being destroyed on every parent rebuild (e.g., hover)
+    *   `didUpdateWidget` now only re-initializes when external controllers actually change
+    *   Previously, mouse enter/exit caused all scroll positions to reset
+*   **FIX**: Improved scroll sync reliability in `SyncedScrollControllers`
+    *   Removed `outOfRange` early-return that broke sync during rapid scrolling
+    *   Removed `> 0.1` threshold that caused scrollbar lag
+    *   Uses `minScrollExtent` instead of hardcoded `0.0` for correct clamping
+
 ## 1.17.0
 
 *   **IMPROVEMENT**: Added `itemExtentBuilder` to `ListView.builder` in `TablePlusBody` for significantly improved scroll performance with large datasets

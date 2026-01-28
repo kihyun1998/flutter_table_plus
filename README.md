@@ -29,7 +29,7 @@ A highly customizable Flutter table widget with rich features for displaying com
 
 ```yaml
 dependencies:
-  flutter_table_plus: ^1.17.0
+  flutter_table_plus: ^1.17.1
 ```
 
 ## Quick Start

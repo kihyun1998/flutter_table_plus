@@ -77,8 +77,19 @@ class _SyncedScrollControllersState extends State<SyncedScrollControllers> {
   @override
   void didUpdateWidget(SyncedScrollControllers oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _disposeOrUnsubscribe();
-    _initControllers();
+    // Only re-initialize when external controllers actually change.
+    // Previously this disposed and recreated ALL controllers on every parent
+    // rebuild (e.g., hover setState), resetting scroll positions.
+    if (widget.scrollController != oldWidget.scrollController ||
+        widget.verticalScrollbarController !=
+            oldWidget.verticalScrollbarController ||
+        widget.horizontalScrollController !=
+            oldWidget.horizontalScrollController ||
+        widget.horizontalScrollbarController !=
+            oldWidget.horizontalScrollbarController) {
+      _disposeOrUnsubscribe();
+      _initControllers();
+    }
   }
 
   @override
@@ -150,26 +161,14 @@ class _SyncedScrollControllersState extends State<SyncedScrollControllers> {
       return;
     }
 
-    // Check if slave position is valid and within bounds
-    if (slave.position.outOfRange || slave.position.maxScrollExtent < 0) {
-      return;
-    }
-
-    // Prevent cascading jumps
     if (_doNotReissueJump[master] == null ||
         _doNotReissueJump[master]! == false) {
       _doNotReissueJump[slave] = true;
-
-      // Calculate target offset, ensuring it's within valid bounds
-      final targetOffset = master.offset.clamp(
-        0.0,
+      final clampedOffset = master.offset.clamp(
+        slave.position.minScrollExtent,
         slave.position.maxScrollExtent,
       );
-
-      // Only jump if there's a significant difference to avoid micro-jumps
-      if ((slave.offset - targetOffset).abs() > 0.1) {
-        slave.jumpTo(targetOffset);
-      }
+      slave.jumpTo(clampedOffset);
     } else {
       _doNotReissueJump[master] = false;
     }
