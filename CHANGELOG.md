@@ -1,3 +1,16 @@
+## 2.0.2
+
+*   **FIX**: Enabled `showCheckboxColumn` property in `TablePlusCheckboxTheme`
+    *   The property was defined but not functional - checkbox column was always shown when `isSelectable: true`
+    *   Now setting `showCheckboxColumn: false` properly hides the checkbox column while preserving row-click selection via `onRowSelectionChanged`
+    *   Useful for tables where selection should work through row clicks only, without a dedicated checkbox column
+*   **EXAMPLE**: Added "Show Checkbox Column" toggle to playground settings panel
+*   **IMPROVEMENT**: Header select-all checkbox now auto-hides when `onSelectAll` is null
+    *   Previously the checkbox was shown but disabled when `onSelectAll` was not provided
+    *   Now the checkbox is completely hidden, providing a cleaner UI for tables without select-all functionality
+    *   Individual row selection via `onRowSelectionChanged` still works independently
+*   **EXAMPLE**: Added "Select All" toggle to playground settings panel
+
 ## 2.0.1
 
 *   **FIX**: Fixed header-body column width misalignment when table width exceeds total column widths

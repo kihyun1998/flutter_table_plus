@@ -311,8 +311,8 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
     final visibleColumns =
         sortedColumns.where((entry) => entry.value.visible).toList();
 
-    // Add selection column at the beginning if selectable
-    if (widget.isSelectable) {
+    // Add selection column at the beginning if selectable and checkbox column is enabled
+    if (widget.isSelectable && widget.theme.checkboxTheme.showCheckboxColumn) {
       visibleColumns.insert(
         0,
         MapEntry(

@@ -674,15 +674,17 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         selectedRows: _selectedRows,
         onRowSelectionChanged: _handleRowSelection,
         onCheckboxChanged: _handleRowSelection,
-        onSelectAll: (selectAll) {
-          setState(() {
-            if (selectAll) {
-              _selectedRows = _data.map((row) => row.id).toSet();
-            } else {
-              _selectedRows = {};
-            }
-          });
-        },
+        onSelectAll: _settings.selectAllEnabled
+            ? (selectAll) {
+                setState(() {
+                  if (selectAll) {
+                    _selectedRows = _data.map((row) => row.id).toSet();
+                  } else {
+                    _selectedRows = {};
+                  }
+                });
+              }
+            : null,
         isEditable: _settings.editingEnabled,
         onCellChanged: _handleCellChanged,
         onRowSecondaryTapDown: _handleRowSecondaryTapDown,
@@ -808,6 +810,9 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         editingCellColor: Colors.yellow.shade100,
         editingBorderColor: Colors.orange.shade400,
         editingBorderWidth: 2.0,
+      ),
+      checkboxTheme: TablePlusCheckboxTheme(
+        showCheckboxColumn: _settings.showCheckboxColumn,
       ),
     );
   }

@@ -24,6 +24,8 @@ class PlaygroundSettings {
   final bool showDividers;
   final bool dynamicRowHeight;
   final bool dimInactiveRows;
+  final bool showCheckboxColumn;
+  final bool selectAllEnabled;
   final SortCycleOrder sortCycleOrder;
   final TooltipBehavior tooltipBehavior;
 
@@ -42,6 +44,8 @@ class PlaygroundSettings {
     this.showDividers = true,
     this.dynamicRowHeight = false,
     this.dimInactiveRows = false,
+    this.showCheckboxColumn = true,
+    this.selectAllEnabled = true,
     this.sortCycleOrder = SortCycleOrder.ascendingFirst,
     this.tooltipBehavior = TooltipBehavior.always,
   });
@@ -61,6 +65,8 @@ class PlaygroundSettings {
     bool? showDividers,
     bool? dynamicRowHeight,
     bool? dimInactiveRows,
+    bool? showCheckboxColumn,
+    bool? selectAllEnabled,
     SortCycleOrder? sortCycleOrder,
     TooltipBehavior? tooltipBehavior,
   }) {
@@ -79,6 +85,8 @@ class PlaygroundSettings {
       showDividers: showDividers ?? this.showDividers,
       dynamicRowHeight: dynamicRowHeight ?? this.dynamicRowHeight,
       dimInactiveRows: dimInactiveRows ?? this.dimInactiveRows,
+      showCheckboxColumn: showCheckboxColumn ?? this.showCheckboxColumn,
+      selectAllEnabled: selectAllEnabled ?? this.selectAllEnabled,
       sortCycleOrder: sortCycleOrder ?? this.sortCycleOrder,
       tooltipBehavior: tooltipBehavior ?? this.tooltipBehavior,
     );
@@ -399,6 +407,22 @@ class SettingsPanel extends StatelessWidget {
           value: settings.dimInactiveRows,
           onChanged: (value) {
             onSettingsChanged(settings.copyWith(dimInactiveRows: value));
+          },
+        ),
+
+        _buildSwitchTile(
+          label: 'Show Checkbox Column',
+          value: settings.showCheckboxColumn,
+          onChanged: (value) {
+            onSettingsChanged(settings.copyWith(showCheckboxColumn: value));
+          },
+        ),
+
+        _buildSwitchTile(
+          label: 'Select All',
+          value: settings.selectAllEnabled,
+          onChanged: (value) {
+            onSettingsChanged(settings.copyWith(selectAllEnabled: value));
           },
         ),
 

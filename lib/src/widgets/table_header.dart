@@ -488,7 +488,7 @@ class _SelectionHeaderCell extends StatelessWidget {
       height: theme.height,
       padding: theme.padding,
       decoration: _buildSelectionCellDecoration(),
-      child: showSelectAllCheckbox
+      child: showSelectAllCheckbox && onSelectAll != null
           ? Center(
               child: SizedBox(
                 width: checkboxTheme.size,
