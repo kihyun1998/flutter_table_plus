@@ -1,3 +1,9 @@
+## 2.3.3
+
+*   **FIX**: `checkboxColumnWidth` below default `minWidth` (50) no longer crashes
+    *   Selection column now sets `minWidth` equal to `checkboxColumnWidth`, preventing `clamp(min > max)` error
+    *   e.g. `checkboxColumnWidth: 45` previously threw `Invalid argument(s): 50.0`
+
 ## 2.3.2
 
 *   **FIX**: Checkbox column no longer expands proportionally with available width

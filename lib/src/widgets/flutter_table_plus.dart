@@ -367,6 +367,7 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
             order: -1,
             valueAccessor: (_) => null,
             width: widget.theme.checkboxTheme.checkboxColumnWidth,
+            minWidth: widget.theme.checkboxTheme.checkboxColumnWidth,
             maxWidth: widget.theme.checkboxTheme.checkboxColumnWidth,
             sortable: false,
           ),
