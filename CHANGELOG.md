@@ -1,3 +1,12 @@
+## 2.1.1
+
+*   **IMPROVEMENT**: Auto-scroll during column resize drag
+    *   When dragging a resize handle near the viewport edge, the table now automatically scrolls in that direction
+    *   Scroll speed is proportional to pointer proximity to the edge — closer means faster
+    *   Column width adjusts in sync with the scroll so the resize handle stays under the pointer
+    *   Works for both left and right edges with a 50px activation zone
+    *   Auto-scroll stops immediately when the pointer moves away from the edge or the drag ends
+
 ## 2.1.0
 
 *   **FEAT**: Added column resizing support
