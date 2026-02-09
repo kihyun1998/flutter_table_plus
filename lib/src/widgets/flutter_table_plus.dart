@@ -31,6 +31,9 @@ class FlutterTablePlus<T> extends StatefulWidget {
     this.onRowSelectionChanged,
     this.onCheckboxChanged,
     this.onSelectAll,
+    this.enableDragSelection = false,
+    this.onDragSelectionUpdate,
+    this.onDragSelectionEnd,
     this.onRowDoubleTap,
     this.onRowSecondaryTapDown,
     this.sortColumnKey,
@@ -91,6 +94,19 @@ class FlutterTablePlus<T> extends StatefulWidget {
 
   /// Callback when the select-all checkbox is toggled.
   final void Function(bool selectAll)? onSelectAll;
+
+  /// Whether drag-to-select is enabled.
+  /// Only works when [isSelectable] is true and [selectionMode] is [SelectionMode.multiple].
+  final bool enableDragSelection;
+
+  /// Callback fired during drag-selection with the set of row IDs in the drag range.
+  /// Only contains IDs from the current drag — the parent decides whether to
+  /// replace or merge with existing [selectedRows].
+  final void Function(Set<String> draggedRowIds)? onDragSelectionUpdate;
+
+  /// Callback fired once when drag-selection ends with the final drag range set.
+  /// If null, [onDragSelectionUpdate] serves as both live and final callback.
+  final void Function(Set<String> draggedRowIds)? onDragSelectionEnd;
 
   /// Callback when a row is double-tapped.
   final void Function(String rowId)? onRowDoubleTap;
@@ -630,6 +646,12 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
                                                 widget.onRowSelectionChanged,
                                             onCheckboxChanged:
                                                 widget.onCheckboxChanged,
+                                            enableDragSelection:
+                                                widget.enableDragSelection,
+                                            onDragSelectionUpdate:
+                                                widget.onDragSelectionUpdate,
+                                            onDragSelectionEnd:
+                                                widget.onDragSelectionEnd,
                                             onRowDoubleTap:
                                                 widget.onRowDoubleTap,
                                             onRowSecondaryTapDown:

@@ -28,6 +28,7 @@ class PlaygroundSettings {
   final bool dimInactiveRows;
   final bool showCheckboxColumn;
   final bool selectAllEnabled;
+  final bool dragSelectionEnabled;
   final SortCycleOrder sortCycleOrder;
   final TooltipBehavior tooltipBehavior;
 
@@ -50,6 +51,7 @@ class PlaygroundSettings {
     this.dimInactiveRows = false,
     this.showCheckboxColumn = true,
     this.selectAllEnabled = true,
+    this.dragSelectionEnabled = false,
     this.sortCycleOrder = SortCycleOrder.ascendingFirst,
     this.tooltipBehavior = TooltipBehavior.always,
   });
@@ -73,6 +75,7 @@ class PlaygroundSettings {
     bool? dimInactiveRows,
     bool? showCheckboxColumn,
     bool? selectAllEnabled,
+    bool? dragSelectionEnabled,
     SortCycleOrder? sortCycleOrder,
     TooltipBehavior? tooltipBehavior,
   }) {
@@ -95,6 +98,7 @@ class PlaygroundSettings {
       dimInactiveRows: dimInactiveRows ?? this.dimInactiveRows,
       showCheckboxColumn: showCheckboxColumn ?? this.showCheckboxColumn,
       selectAllEnabled: selectAllEnabled ?? this.selectAllEnabled,
+      dragSelectionEnabled: dragSelectionEnabled ?? this.dragSelectionEnabled,
       sortCycleOrder: sortCycleOrder ?? this.sortCycleOrder,
       tooltipBehavior: tooltipBehavior ?? this.tooltipBehavior,
     );
@@ -470,6 +474,14 @@ class SettingsPanel extends StatelessWidget {
           value: settings.selectAllEnabled,
           onChanged: (value) {
             onSettingsChanged(settings.copyWith(selectAllEnabled: value));
+          },
+        ),
+
+        _buildSwitchTile(
+          label: 'Drag Selection',
+          value: settings.dragSelectionEnabled,
+          onChanged: (value) {
+            onSettingsChanged(settings.copyWith(dragSelectionEnabled: value));
           },
         ),
 

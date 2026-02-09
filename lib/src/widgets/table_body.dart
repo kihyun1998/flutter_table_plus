@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_table_plus/src/widgets/table_plus_row.dart';
 
@@ -30,6 +32,9 @@ class TablePlusBody<T> extends StatefulWidget {
     this.selectedRows = const <String>{},
     this.onRowSelectionChanged,
     this.onCheckboxChanged,
+    this.enableDragSelection = false,
+    this.onDragSelectionUpdate,
+    this.onDragSelectionEnd,
     this.onRowDoubleTap,
     this.onRowSecondaryTapDown,
     this.isEditable = false,
@@ -87,6 +92,15 @@ class TablePlusBody<T> extends StatefulWidget {
 
   /// Callback when a row's selection state changes via checkbox click.
   final void Function(String rowId, bool isSelected)? onCheckboxChanged;
+
+  /// Whether drag-to-select is enabled.
+  final bool enableDragSelection;
+
+  /// Callback fired during drag-selection with the full set of row IDs to select.
+  final void Function(Set<String> selectedRowIds)? onDragSelectionUpdate;
+
+  /// Callback fired once when drag-selection ends with the final set.
+  final void Function(Set<String> selectedRowIds)? onDragSelectionEnd;
 
   /// Callback when a row is double-tapped.
   final void Function(String rowId)? onRowDoubleTap;
@@ -158,6 +172,21 @@ class _TablePlusBodyState<T> extends State<TablePlusBody<T>> {
 
   /// Cached row heights.
   Map<int, double> _cachedRowHeights = const {};
+
+  // --- Drag selection state ---
+  bool _isDragSelecting = false;
+  int? _dragStartRenderIndex;
+  int? _dragCurrentRenderIndex;
+  Timer? _autoScrollTimer;
+  double? _pointerDownY;
+  double? _lastPointerGlobalY;
+  double _viewportHeight = 0;
+  double _bodyGlobalTop = 0;
+
+  static const double _dragActivationThreshold = 8.0;
+  static const double _autoScrollEdgeZone = 40.0;
+  static const double _autoScrollMaxSpeed = 10.0;
+  static const Duration _autoScrollInterval = Duration(milliseconds: 16);
 
   @override
   void initState() {
@@ -315,6 +344,219 @@ class _TablePlusBodyState<T> extends State<TablePlusBody<T>> {
   }
 
   @override
+  void dispose() {
+    _stopAutoScroll();
+    super.dispose();
+  }
+
+  // --- Drag selection helpers ---
+
+  bool get _isDragSelectionEnabled =>
+      widget.enableDragSelection &&
+      widget.isSelectable &&
+      widget.selectionMode == SelectionMode.multiple &&
+      widget.onDragSelectionUpdate != null;
+
+  /// Convert a local Y coordinate (relative to the ListView's scroll extent)
+  /// into a render index.
+  int? _renderIndexFromLocalY(double localY) {
+    final indices = _cachedRenderableIndices;
+    final itemCount = indices?.length ?? widget.data.length;
+    if (itemCount == 0) return null;
+
+    // Absolute Y = localY + scroll offset
+    final absoluteY = localY + widget.verticalController.offset;
+
+    // Fast path: uniform row heights (no calculateRowHeight, no merged groups)
+    if (widget.calculateRowHeight == null && widget.mergedGroups.isEmpty) {
+      final rowHeight = widget.theme.rowHeight;
+      final idx = (absoluteY / rowHeight).floor();
+      return idx.clamp(0, itemCount - 1);
+    }
+
+    // Slow path: accumulate heights
+    double cumulativeHeight = 0;
+    for (int renderIdx = 0; renderIdx < itemCount; renderIdx++) {
+      final actualIndex = indices?[renderIdx] ?? renderIdx;
+      final group = _getMergedGroupForRow(actualIndex);
+      final double rowHeight;
+      if (group != null) {
+        rowHeight = _getMergedGroupExtent(group);
+      } else {
+        rowHeight = _calculateRowHeight(actualIndex) ?? widget.theme.rowHeight;
+      }
+      cumulativeHeight += rowHeight;
+      if (absoluteY < cumulativeHeight) {
+        return renderIdx;
+      }
+    }
+    return itemCount - 1;
+  }
+
+  /// Collect all row IDs between two render indices (inclusive).
+  Set<String> _collectRowIdsInRange(int startRenderIdx, int endRenderIdx) {
+    final indices = _cachedRenderableIndices;
+    final lo = startRenderIdx < endRenderIdx ? startRenderIdx : endRenderIdx;
+    final hi = startRenderIdx < endRenderIdx ? endRenderIdx : startRenderIdx;
+
+    final result = <String>{};
+    for (int renderIdx = lo; renderIdx <= hi; renderIdx++) {
+      final actualIndex = indices?[renderIdx] ?? renderIdx;
+      if (actualIndex >= widget.data.length) continue;
+
+      final group = _getMergedGroupForRow(actualIndex);
+      if (group != null) {
+        result.add(group.groupId);
+      } else {
+        result.add(widget.rowId(widget.data[actualIndex]));
+      }
+    }
+    return result;
+  }
+
+  /// Fire selection update callback with the drag range IDs only.
+  /// The parent decides whether to union with existing selection or replace.
+  void _updateDragSelection() {
+    if (_dragStartRenderIndex == null || _dragCurrentRenderIndex == null) {
+      return;
+    }
+
+    final dragIds =
+        _collectRowIdsInRange(_dragStartRenderIndex!, _dragCurrentRenderIndex!);
+    widget.onDragSelectionUpdate?.call(dragIds);
+  }
+
+  // --- Auto-scroll ---
+
+  void _startAutoScroll() {
+    if (_autoScrollTimer != null) return;
+    _autoScrollTimer = Timer.periodic(_autoScrollInterval, (_) {
+      _performAutoScroll();
+    });
+  }
+
+  void _stopAutoScroll() {
+    _autoScrollTimer?.cancel();
+    _autoScrollTimer = null;
+  }
+
+  void _performAutoScroll() {
+    final globalY = _lastPointerGlobalY;
+    if (globalY == null) return;
+
+    final localY = globalY - _bodyGlobalTop;
+    double scrollDelta = 0;
+
+    if (localY < _autoScrollEdgeZone) {
+      // Near top edge — scroll up
+      final proximity = (_autoScrollEdgeZone - localY) / _autoScrollEdgeZone;
+      scrollDelta = -_autoScrollMaxSpeed * proximity;
+    } else if (localY > _viewportHeight - _autoScrollEdgeZone) {
+      // Near bottom edge — scroll down
+      final proximity = (localY - (_viewportHeight - _autoScrollEdgeZone)) /
+          _autoScrollEdgeZone;
+      scrollDelta = _autoScrollMaxSpeed * proximity;
+    } else {
+      // Pointer is in the middle — stop auto-scroll
+      _stopAutoScroll();
+      return;
+    }
+
+    final controller = widget.verticalController;
+    if (!controller.hasClients) return;
+    final maxScroll = controller.position.maxScrollExtent;
+    final newOffset = (controller.offset + scrollDelta).clamp(0.0, maxScroll);
+    controller.jumpTo(newOffset);
+
+    // Re-calculate current render index after scroll position change
+    final bodyLocalY = globalY - _bodyGlobalTop;
+    final renderIdx = _renderIndexFromLocalY(bodyLocalY);
+    if (renderIdx != null && renderIdx != _dragCurrentRenderIndex) {
+      _dragCurrentRenderIndex = renderIdx;
+      _updateDragSelection();
+    }
+  }
+
+  // --- Pointer event handlers ---
+
+  void _onPointerDown(PointerDownEvent event) {
+    if (!_isDragSelectionEnabled) return;
+
+    // Capture viewport metrics
+    final renderBox = context.findRenderObject() as RenderBox?;
+    if (renderBox != null) {
+      _viewportHeight = renderBox.size.height;
+      _bodyGlobalTop = renderBox.localToGlobal(Offset.zero).dy;
+    }
+
+    _pointerDownY = event.position.dy;
+    _lastPointerGlobalY = event.position.dy;
+
+    // Pre-calculate start render index
+    final localY = event.position.dy - _bodyGlobalTop;
+    _dragStartRenderIndex = _renderIndexFromLocalY(localY);
+  }
+
+  void _onPointerMove(PointerMoveEvent event) {
+    if (!_isDragSelectionEnabled || _pointerDownY == null) return;
+
+    _lastPointerGlobalY = event.position.dy;
+
+    if (!_isDragSelecting) {
+      // Check threshold
+      final distance = (event.position.dy - _pointerDownY!).abs();
+      if (distance < _dragActivationThreshold) return;
+      _isDragSelecting = true;
+    }
+
+    // Update current render index
+    final localY = event.position.dy - _bodyGlobalTop;
+    final renderIdx = _renderIndexFromLocalY(localY);
+    if (renderIdx != null) {
+      _dragCurrentRenderIndex = renderIdx;
+      _updateDragSelection();
+    }
+
+    // Start/stop auto-scroll based on position
+    final bodyLocalY = event.position.dy - _bodyGlobalTop;
+    if (bodyLocalY < _autoScrollEdgeZone ||
+        bodyLocalY > _viewportHeight - _autoScrollEdgeZone) {
+      _startAutoScroll();
+    } else {
+      _stopAutoScroll();
+    }
+  }
+
+  void _onPointerUp(PointerUpEvent event) {
+    if (_isDragSelecting) {
+      // Fire final callback
+      if (_dragStartRenderIndex != null && _dragCurrentRenderIndex != null) {
+        final dragIds = _collectRowIdsInRange(
+            _dragStartRenderIndex!, _dragCurrentRenderIndex!);
+        if (widget.onDragSelectionEnd != null) {
+          widget.onDragSelectionEnd!(dragIds);
+        } else {
+          widget.onDragSelectionUpdate?.call(dragIds);
+        }
+      }
+    }
+    _resetDragState();
+  }
+
+  void _onPointerCancel(PointerCancelEvent event) {
+    _resetDragState();
+  }
+
+  void _resetDragState() {
+    _stopAutoScroll();
+    _isDragSelecting = false;
+    _dragStartRenderIndex = null;
+    _dragCurrentRenderIndex = null;
+    _pointerDownY = null;
+    _lastPointerGlobalY = null;
+  }
+
+  @override
   Widget build(BuildContext context) {
     if (widget.data.isEmpty) {
       return Container(
@@ -336,7 +578,7 @@ class _TablePlusBodyState<T> extends State<TablePlusBody<T>> {
 
     final indices = _cachedRenderableIndices;
 
-    return ListView.builder(
+    Widget listView = ListView.builder(
       controller: widget.verticalController,
       physics: const ClampingScrollPhysics(),
       itemExtentBuilder: (int index, _) {
@@ -353,6 +595,19 @@ class _TablePlusBodyState<T> extends State<TablePlusBody<T>> {
         return _buildRowWidget(actualIndex, index);
       },
     );
+
+    if (_isDragSelectionEnabled) {
+      listView = Listener(
+        behavior: HitTestBehavior.translucent,
+        onPointerDown: _onPointerDown,
+        onPointerMove: _onPointerMove,
+        onPointerUp: _onPointerUp,
+        onPointerCancel: _onPointerCancel,
+        child: listView,
+      );
+    }
+
+    return listView;
   }
 
   /// Calculate the total extent for a merged group.

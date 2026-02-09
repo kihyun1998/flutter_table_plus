@@ -1,3 +1,14 @@
+## 2.2.0
+
+*   **FEAT**: Drag-to-select rows
+    *   `enableDragSelection` parameter enables mouse drag row selection (Excel/Finder style)
+    *   `onDragSelectionUpdate` callback fires during drag with the dragged range row IDs
+    *   `onDragSelectionEnd` callback fires once when drag ends
+    *   Auto-scroll when dragging near viewport edges (~60fps, speed proportional to edge proximity)
+    *   8px activation threshold prevents conflicts with existing tap/click gestures
+    *   Works with uniform heights (O(1)), dynamic heights, and merged row groups
+    *   Parent controls selection behavior (replace or additive) — consistent with UI-only philosophy
+
 ## 2.1.1
 
 *   **IMPROVEMENT**: Auto-scroll during column resize drag

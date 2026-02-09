@@ -723,6 +723,12 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
                 });
               }
             : null,
+        enableDragSelection: _settings.dragSelectionEnabled,
+        onDragSelectionUpdate: (draggedIds) {
+          setState(() {
+            _selectedRows = draggedIds; // replace pattern (most common)
+          });
+        },
         isEditable: _settings.editingEnabled,
         onCellChanged: _handleCellChanged,
         onRowSecondaryTapDown: _handleRowSecondaryTapDown,
