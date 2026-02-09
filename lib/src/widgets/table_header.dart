@@ -659,8 +659,7 @@ class _ResizableHeaderCellState extends State<_ResizableHeaderCell> {
   void _updateAutoScroll(Offset globalPosition) {
     if (_scrollable == null) return;
 
-    final renderBox =
-        _scrollable!.context.findRenderObject() as RenderBox?;
+    final renderBox = _scrollable!.context.findRenderObject() as RenderBox?;
     if (renderBox == null || !renderBox.hasSize) return;
 
     final viewportLeft = renderBox.localToGlobal(Offset.zero).dx;
