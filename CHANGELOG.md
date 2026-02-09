@@ -1,3 +1,23 @@
+## 2.1.0
+
+*   **FEAT**: Added column resizing support
+    *   New `resizable` parameter on `FlutterTablePlus` to enable drag-to-resize on column header edges
+    *   New `onColumnResized` callback fires once per resize operation with `(String columnKey, double newWidth)` for external persistence
+    *   Resized columns maintain fixed width while remaining columns redistribute proportionally
+    *   Respects per-column `minWidth` and `maxWidth` constraints during drag
+    *   Selection column (`__selection__`) is excluded from resizing
+    *   Works alongside column reordering — resize handle and drag-to-reorder gestures are separated via Stack z-order
+    *   Resize state is automatically cleaned up when columns are added or removed
+*   **FEAT**: Added resize handle theme properties to `TablePlusHeaderTheme`
+    *   `resizeHandleWidth` (default `8.0`) — hit-test area width at the right edge of header cells
+    *   `resizeHandleColor` — indicator line color on hover/drag (defaults to `dividerColor`)
+    *   Both properties available in `copyWith()`
+*   **EXAMPLE**: Added "Column Resize" toggle to playground settings panel
+*   **FIX**: Enforce `minWidth`/`maxWidth` constraints in column width calculation
+    *   Previously `minWidth` and `maxWidth` were only applied during resize drag
+    *   Now all layout calculation paths respect per-column `minWidth` and `maxWidth` via `clamp()`
+    *   No behavior change for normal configurations where `width >= minWidth`
+
 ## 2.0.2
 
 *   **FIX**: Enabled `showCheckboxColumn` property in `TablePlusCheckboxTheme`

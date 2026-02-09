@@ -25,6 +25,9 @@ class TablePlusHeaderTheme {
     this.sortedColumnTextStyle,
     this.sortIcons = SortIcons.defaultIcons,
     this.sortIconSpacing = 4.0,
+    // Resize handle styling
+    this.resizeHandleWidth = 8.0,
+    this.resizeHandleColor,
   });
 
   /// The height of the header row.
@@ -71,6 +74,13 @@ class TablePlusHeaderTheme {
   /// Spacing between the column label and sort icon.
   final double sortIconSpacing;
 
+  /// The hit-test width of the resize handle area at the right edge of header cells.
+  final double resizeHandleWidth;
+
+  /// The color of the resize indicator line shown on hover/drag.
+  /// If null, uses [dividerColor].
+  final Color? resizeHandleColor;
+
   /// Creates a copy of this theme with the given fields replaced with new values.
   TablePlusHeaderTheme copyWith({
     double? height,
@@ -87,6 +97,8 @@ class TablePlusHeaderTheme {
     TextStyle? sortedColumnTextStyle,
     SortIcons? sortIcons,
     double? sortIconSpacing,
+    double? resizeHandleWidth,
+    Color? resizeHandleColor,
   }) {
     return TablePlusHeaderTheme(
       height: height ?? this.height,
@@ -105,6 +117,8 @@ class TablePlusHeaderTheme {
           sortedColumnTextStyle ?? this.sortedColumnTextStyle,
       sortIcons: sortIcons ?? this.sortIcons,
       sortIconSpacing: sortIconSpacing ?? this.sortIconSpacing,
+      resizeHandleWidth: resizeHandleWidth ?? this.resizeHandleWidth,
+      resizeHandleColor: resizeHandleColor ?? this.resizeHandleColor,
     );
   }
 }

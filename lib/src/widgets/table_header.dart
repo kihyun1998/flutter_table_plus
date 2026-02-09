@@ -26,6 +26,9 @@ class TablePlusHeader<T> extends StatefulWidget {
     this.checkboxTheme = const TablePlusCheckboxTheme(),
     this.onSelectAll,
     this.onColumnReorder,
+    this.resizable = false,
+    this.onColumnResize,
+    this.onColumnResizeEnd,
     this.sortColumnKey,
     this.sortDirection = SortDirection.none,
     this.onSort,
@@ -69,6 +72,15 @@ class TablePlusHeader<T> extends StatefulWidget {
 
   /// Callback when columns are reordered.
   final void Function(int oldIndex, int newIndex)? onColumnReorder;
+
+  /// Whether columns can be resized by dragging their header edges.
+  final bool resizable;
+
+  /// Callback during column resize drag with live width updates.
+  final void Function(String columnKey, double newWidth)? onColumnResize;
+
+  /// Callback when column resize drag ends.
+  final void Function(String columnKey, double finalWidth)? onColumnResizeEnd;
 
   /// The key of the currently sorted column.
   final String? sortColumnKey;
@@ -234,8 +246,10 @@ class _TablePlusHeaderState<T> extends State<TablePlusHeader<T>> {
                     : null,
               );
 
+              Widget result = headerCell;
+
               if (widget.onColumnReorder != null) {
-                return Draggable<int>(
+                result = Draggable<int>(
                   data: currentReorderIndex,
                   axis: Axis.horizontal,
                   feedback: Material(
@@ -257,7 +271,23 @@ class _TablePlusHeaderState<T> extends State<TablePlusHeader<T>> {
                 );
               }
 
-              return headerCell;
+              if (widget.resizable) {
+                result = _ResizableHeaderCell(
+                  columnKey: column.key,
+                  width: width,
+                  minWidth: column.minWidth,
+                  maxWidth: column.maxWidth,
+                  height: widget.theme.height,
+                  handleWidth: widget.theme.resizeHandleWidth,
+                  handleColor: widget.theme.resizeHandleColor ??
+                      widget.theme.dividerColor,
+                  onResize: widget.onColumnResize,
+                  onResizeEnd: widget.onColumnResizeEnd,
+                  child: result,
+                );
+              }
+
+              return result;
             });
           }(),
         ],
@@ -521,6 +551,106 @@ class _SelectionHeaderCell extends StatelessWidget {
               ),
             )
           : const SizedBox.shrink(),
+    );
+  }
+}
+
+/// A wrapper widget that adds a resize handle to the right edge of a header cell.
+///
+/// Uses a [Stack] to overlay an invisible hit-test area on the right edge.
+/// On hover, a colored indicator line appears. Horizontal drag gestures
+/// resize the column in real-time.
+class _ResizableHeaderCell extends StatefulWidget {
+  const _ResizableHeaderCell({
+    required this.columnKey,
+    required this.width,
+    required this.minWidth,
+    required this.height,
+    required this.handleWidth,
+    required this.handleColor,
+    required this.child,
+    this.maxWidth,
+    this.onResize,
+    this.onResizeEnd,
+  });
+
+  final String columnKey;
+  final double width;
+  final double minWidth;
+  final double? maxWidth;
+  final double height;
+  final double handleWidth;
+  final Color handleColor;
+  final void Function(String columnKey, double newWidth)? onResize;
+  final void Function(String columnKey, double finalWidth)? onResizeEnd;
+  final Widget child;
+
+  @override
+  State<_ResizableHeaderCell> createState() => _ResizableHeaderCellState();
+}
+
+class _ResizableHeaderCellState extends State<_ResizableHeaderCell> {
+  bool _isHovering = false;
+  bool _isDragging = false;
+  double _dragWidth = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: widget.width,
+      height: widget.height,
+      child: Stack(
+        children: [
+          Positioned.fill(child: widget.child),
+          Positioned(
+            right: 0,
+            top: 0,
+            bottom: 0,
+            width: widget.handleWidth,
+            child: MouseRegion(
+              cursor: SystemMouseCursors.resizeColumn,
+              onEnter: (_) => setState(() => _isHovering = true),
+              onExit: (_) => setState(() => _isHovering = false),
+              child: GestureDetector(
+                onHorizontalDragStart: (details) {
+                  setState(() {
+                    _isDragging = true;
+                    _dragWidth = widget.width;
+                  });
+                },
+                onHorizontalDragUpdate: (details) {
+                  _dragWidth += details.delta.dx;
+                  final clamped = _dragWidth.clamp(
+                    widget.minWidth,
+                    widget.maxWidth ?? double.infinity,
+                  );
+                  widget.onResize?.call(widget.columnKey, clamped);
+                },
+                onHorizontalDragEnd: (details) {
+                  final clamped = _dragWidth.clamp(
+                    widget.minWidth,
+                    widget.maxWidth ?? double.infinity,
+                  );
+                  setState(() => _isDragging = false);
+                  widget.onResizeEnd?.call(widget.columnKey, clamped);
+                },
+                child: Container(
+                  decoration: (_isHovering || _isDragging)
+                      ? BoxDecoration(
+                          border: Border(
+                            right: BorderSide(
+                              color: widget.handleColor,
+                              width: 2.0,
+                            ),
+                          ),
+                        )
+                      : null,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

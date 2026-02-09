@@ -42,6 +42,8 @@ class FlutterTablePlus<T> extends StatefulWidget {
     this.onMergedCellChanged,
     this.onMergedRowExpandToggle,
     this.onColumnReorder,
+    this.resizable = false,
+    this.onColumnResized,
     this.theme = const TablePlusTheme(),
     this.noDataWidget,
     this.calculateRowHeight,
@@ -125,6 +127,15 @@ class FlutterTablePlus<T> extends StatefulWidget {
   /// Callback when columns are reordered.
   final void Function(int oldIndex, int newIndex)? onColumnReorder;
 
+  /// Whether columns can be resized by dragging their header edges.
+  final bool resizable;
+
+  /// Callback when a column resize drag ends.
+  ///
+  /// Called once per resize operation with the column key and final width.
+  /// Use this to persist column widths externally.
+  final void Function(String columnKey, double newWidth)? onColumnResized;
+
   /// The theme configuration for the table.
   final TablePlusTheme theme;
 
@@ -149,6 +160,9 @@ class FlutterTablePlus<T> extends StatefulWidget {
 
 class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
   final ValueNotifier<bool> _isHovered = ValueNotifier<bool>(false);
+
+  /// Column resize state: tracks user-resized widths by column key
+  Map<String, double> _resizedWidths = {};
 
   /// Editing state
   int? _editingRowIndex;
@@ -188,6 +202,9 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
     }
     if (!identical(widget.columns, oldWidget.columns)) {
       _validateColumns();
+      // Clean up resize state for removed columns
+      _resizedWidths.removeWhere(
+          (key, _) => !widget.columns.containsKey(key));
     }
     if (!identical(widget.data, oldWidget.data) ||
         !identical(widget.mergedGroups, oldWidget.mergedGroups) ||
@@ -301,6 +318,18 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
     super.dispose();
   }
 
+  /// Handle live column resize (called during drag).
+  void _handleColumnResize(String columnKey, double newWidth) {
+    setState(() {
+      _resizedWidths[columnKey] = newWidth;
+    });
+  }
+
+  /// Handle column resize end (called once when drag finishes).
+  void _handleColumnResizeEnd(String columnKey, double finalWidth) {
+    widget.onColumnResized?.call(columnKey, finalWidth);
+  }
+
   /// Get ordered columns, with optional selection column prepended.
   List<TablePlusColumn<T>> _getOrderedColumns() {
     // Sort columns by order
@@ -333,34 +362,82 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
   }
 
   /// Calculate column widths based on available space.
+  ///
+  /// When columns have been resized by the user, their widths are fixed.
+  /// Remaining space is distributed proportionally among non-resized columns.
   List<double> _calculateColumnWidths(
       double availableWidth, List<TablePlusColumn<T>> orderedColumns) {
     if (orderedColumns.isEmpty) return [];
 
-    // Calculate the total preferred width of all columns
-    double totalPreferredWidth = 0;
+    // Determine effective width for each column and separate resized vs unresized
+    double resizedTotal = 0;
+    double unresizedPreferredTotal = 0;
+
     for (final column in orderedColumns) {
-      totalPreferredWidth += column.width;
+      final resizedWidth = _resizedWidths[column.key];
+      if (resizedWidth != null) {
+        final clamped = resizedWidth.clamp(
+          column.minWidth,
+          column.maxWidth ?? double.infinity,
+        );
+        resizedTotal += clamped;
+      } else {
+        unresizedPreferredTotal += column.width;
+      }
     }
 
-    // Calculate extra space to distribute
-    final extraSpace = availableWidth - totalPreferredWidth;
+    // If no columns were resized, use original algorithm
+    if (_resizedWidths.isEmpty) {
+      final totalPreferredWidth = unresizedPreferredTotal;
+      final extraSpace = availableWidth - totalPreferredWidth;
 
-    if (extraSpace <= 0) {
-      // Not enough space, use preferred widths (columns will be clipped or scrollable)
-      return orderedColumns.map((col) => col.width).toList();
+      if (extraSpace <= 0) {
+        return orderedColumns
+            .map((col) => col.width.clamp(col.minWidth, col.maxWidth ?? double.infinity))
+            .toList();
+      }
+
+      return orderedColumns.map((column) {
+        final proportion = column.width / totalPreferredWidth;
+        final additionalWidth = extraSpace * proportion;
+        double calculatedWidth = column.width + additionalWidth;
+
+        calculatedWidth = calculatedWidth.clamp(
+          column.minWidth,
+          column.maxWidth ?? double.infinity,
+        );
+
+        return calculatedWidth;
+      }).toList();
     }
 
-    // Distribute extra space proportionally
+    // With resized columns: fixed widths for resized, distribute rest
+    final remainingSpace = availableWidth - resizedTotal;
+    final extraSpace = remainingSpace - unresizedPreferredTotal;
+
     return orderedColumns.map((column) {
-      final proportion = column.width / totalPreferredWidth;
+      final resizedWidth = _resizedWidths[column.key];
+      if (resizedWidth != null) {
+        return resizedWidth.clamp(
+          column.minWidth,
+          column.maxWidth ?? double.infinity,
+        );
+      }
+
+      // Unresized column
+      if (extraSpace <= 0 || unresizedPreferredTotal <= 0) {
+        return column.width.clamp(
+            column.minWidth, column.maxWidth ?? double.infinity);
+      }
+
+      final proportion = column.width / unresizedPreferredTotal;
       final additionalWidth = extraSpace * proportion;
       double calculatedWidth = column.width + additionalWidth;
 
-      // Respect max width constraint
-      if (column.maxWidth != null && calculatedWidth > column.maxWidth!) {
-        calculatedWidth = column.maxWidth!;
-      }
+      calculatedWidth = calculatedWidth.clamp(
+        column.minWidth,
+        column.maxWidth ?? double.infinity,
+      );
 
       return calculatedWidth;
     }).toList();
@@ -515,6 +592,9 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
                               totalRowCount: _cachedTotalRowCount,
                               onSelectAll: widget.onSelectAll,
                               onColumnReorder: widget.onColumnReorder,
+                              resizable: widget.resizable,
+                              onColumnResize: _handleColumnResize,
+                              onColumnResizeEnd: _handleColumnResizeEnd,
                               sortColumnKey: widget.sortColumnKey,
                               sortDirection: widget.sortDirection,
                               onSort: widget.onSort,
