@@ -1,3 +1,9 @@
+## 2.3.2
+
+*   **FIX**: Checkbox column no longer expands proportionally with available width
+    *   Added `maxWidth` constraint equal to `checkboxColumnWidth` on the internal `__selection__` column
+    *   Ensures the selection column stays at its configured fixed width regardless of table size
+
 ## 2.3.1
 
 *   **BREAKING**: Extracted `TablePlusResizeHandleTheme` from flat fields on `TablePlusHeaderTheme`
