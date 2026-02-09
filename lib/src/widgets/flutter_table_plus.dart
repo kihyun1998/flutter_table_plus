@@ -380,74 +380,69 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
   /// Calculate column widths based on available space.
   ///
   /// When columns have been resized by the user, their widths are fixed.
-  /// Remaining space is distributed proportionally among non-resized columns.
+  /// Remaining space is distributed proportionally among flexible columns.
+  /// Columns whose maxWidth == their preferred width are treated as fixed
+  /// and excluded from proportional distribution to prevent space loss.
   List<double> _calculateColumnWidths(
       double availableWidth, List<TablePlusColumn<T>> orderedColumns) {
     if (orderedColumns.isEmpty) return [];
 
-    // Determine effective width for each column and separate resized vs unresized
-    double resizedTotal = 0;
-    double unresizedPreferredTotal = 0;
+    // Classify each column: resized, fixed (maxWidth caps it), or flexible
+    double fixedTotal = 0;
+    double flexiblePreferredTotal = 0;
+    final widths = List<double?>.filled(orderedColumns.length, null);
 
-    for (final column in orderedColumns) {
+    for (int i = 0; i < orderedColumns.length; i++) {
+      final column = orderedColumns[i];
       final resizedWidth = _resizedWidths[column.key];
+
       if (resizedWidth != null) {
+        // User-resized column — lock to resized width
         final clamped = resizedWidth.clamp(
           column.minWidth,
           column.maxWidth ?? double.infinity,
         );
-        resizedTotal += clamped;
+        widths[i] = clamped;
+        fixedTotal += clamped;
+      } else if (column.maxWidth != null && column.width >= column.maxWidth!) {
+        // Column whose preferred width already hits maxWidth — fixed
+        final clamped = column.width.clamp(column.minWidth, column.maxWidth!);
+        widths[i] = clamped;
+        fixedTotal += clamped;
       } else {
-        unresizedPreferredTotal += column.width;
+        // Flexible column — participates in proportional distribution
+        flexiblePreferredTotal += column.width;
       }
     }
 
-    // If no columns were resized, use original algorithm
-    if (_resizedWidths.isEmpty) {
-      final totalPreferredWidth = unresizedPreferredTotal;
-      final extraSpace = availableWidth - totalPreferredWidth;
+    final spaceForFlexible = availableWidth - fixedTotal;
+
+    // Not enough space — give each flexible column its clamped preferred width
+    if (spaceForFlexible <= 0 || flexiblePreferredTotal <= 0) {
+      for (int i = 0; i < orderedColumns.length; i++) {
+        if (widths[i] == null) {
+          final col = orderedColumns[i];
+          widths[i] =
+              col.width.clamp(col.minWidth, col.maxWidth ?? double.infinity);
+        }
+      }
+      return widths.cast<double>();
+    }
+
+    final extraSpace = spaceForFlexible - flexiblePreferredTotal;
+
+    for (int i = 0; i < orderedColumns.length; i++) {
+      if (widths[i] != null) continue; // already fixed
+
+      final column = orderedColumns[i];
 
       if (extraSpace <= 0) {
-        return orderedColumns
-            .map((col) =>
-                col.width.clamp(col.minWidth, col.maxWidth ?? double.infinity))
-            .toList();
-      }
-
-      return orderedColumns.map((column) {
-        final proportion = column.width / totalPreferredWidth;
-        final additionalWidth = extraSpace * proportion;
-        double calculatedWidth = column.width + additionalWidth;
-
-        calculatedWidth = calculatedWidth.clamp(
-          column.minWidth,
-          column.maxWidth ?? double.infinity,
-        );
-
-        return calculatedWidth;
-      }).toList();
-    }
-
-    // With resized columns: fixed widths for resized, distribute rest
-    final remainingSpace = availableWidth - resizedTotal;
-    final extraSpace = remainingSpace - unresizedPreferredTotal;
-
-    return orderedColumns.map((column) {
-      final resizedWidth = _resizedWidths[column.key];
-      if (resizedWidth != null) {
-        return resizedWidth.clamp(
-          column.minWidth,
-          column.maxWidth ?? double.infinity,
-        );
-      }
-
-      // Unresized column
-      if (extraSpace <= 0 || unresizedPreferredTotal <= 0) {
-        return column.width
+        widths[i] = column.width
             .clamp(column.minWidth, column.maxWidth ?? double.infinity);
+        continue;
       }
 
-      final proportion = column.width / unresizedPreferredTotal;
+      final proportion = column.width / flexiblePreferredTotal;
       final additionalWidth = extraSpace * proportion;
       double calculatedWidth = column.width + additionalWidth;
 
@@ -456,8 +451,10 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
         column.maxWidth ?? double.infinity,
       );
 
-      return calculatedWidth;
-    }).toList();
+      widths[i] = calculatedWidth;
+    }
+
+    return widths.cast<double>();
   }
 
   /// Handle starting a cell editing session.

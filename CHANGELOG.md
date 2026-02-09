@@ -3,6 +3,9 @@
 *   **FIX**: Checkbox column no longer expands proportionally with available width
     *   Added `maxWidth` constraint equal to `checkboxColumnWidth` on the internal `__selection__` column
     *   Ensures the selection column stays at its configured fixed width regardless of table size
+*   **FIX**: Fixed-width columns no longer cause space loss in proportional layout
+    *   Columns whose `maxWidth` caps their preferred width are now excluded from proportional distribution
+    *   Remaining space is distributed only among flexible columns, eliminating the right-side gap
 
 ## 2.3.1
 
