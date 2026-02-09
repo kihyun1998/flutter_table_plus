@@ -162,7 +162,7 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
   final ValueNotifier<bool> _isHovered = ValueNotifier<bool>(false);
 
   /// Column resize state: tracks user-resized widths by column key
-  Map<String, double> _resizedWidths = {};
+  final Map<String, double> _resizedWidths = {};
 
   /// Editing state
   int? _editingRowIndex;
@@ -203,8 +203,7 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
     if (!identical(widget.columns, oldWidget.columns)) {
       _validateColumns();
       // Clean up resize state for removed columns
-      _resizedWidths.removeWhere(
-          (key, _) => !widget.columns.containsKey(key));
+      _resizedWidths.removeWhere((key, _) => !widget.columns.containsKey(key));
     }
     if (!identical(widget.data, oldWidget.data) ||
         !identical(widget.mergedGroups, oldWidget.mergedGroups) ||
@@ -393,7 +392,8 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
 
       if (extraSpace <= 0) {
         return orderedColumns
-            .map((col) => col.width.clamp(col.minWidth, col.maxWidth ?? double.infinity))
+            .map((col) =>
+                col.width.clamp(col.minWidth, col.maxWidth ?? double.infinity))
             .toList();
       }
 
@@ -426,8 +426,8 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
 
       // Unresized column
       if (extraSpace <= 0 || unresizedPreferredTotal <= 0) {
-        return column.width.clamp(
-            column.minWidth, column.maxWidth ?? double.infinity);
+        return column.width
+            .clamp(column.minWidth, column.maxWidth ?? double.infinity);
       }
 
       final proportion = column.width / unresizedPreferredTotal;

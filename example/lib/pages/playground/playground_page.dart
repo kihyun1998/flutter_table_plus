@@ -576,8 +576,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
           final col = entry.value;
           final minW = col.minWidth;
           final maxW = col.maxWidth ?? 400.0;
-          final randomWidth =
-              minW + rng.nextDouble() * (maxW - minW);
+          final randomWidth = minW + rng.nextDouble() * (maxW - minW);
           return MapEntry(
             entry.key,
             col.copyWith(width: randomWidth.roundToDouble()),

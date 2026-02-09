@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Flutter Table Plus is a highly customizable and efficient table widget for Flutter that provides synchronized scrolling, theming, sorting, selection, column reordering, and cell editing capabilities. The package is structured as a Flutter library with comprehensive documentation and examples.
+Flutter Table Plus is a highly customizable and efficient table widget for Flutter that provides synchronized scrolling, theming, sorting, selection, column reordering, column resizing, and cell editing capabilities. The package is structured as a Flutter library with comprehensive documentation and examples.
 
 ## Package Philosophy
 
@@ -65,7 +65,7 @@ dart doc .                      # Generate API documentation
 
 - **`lib/flutter_table_plus.dart`**: Main library export file
 - **`lib/src/widgets/flutter_table_plus.dart`**: Main FlutterTablePlus widget implementation
-- **`lib/src/widgets/table_header.dart`**: Header row implementation with sorting and reordering
+- **`lib/src/widgets/table_header.dart`**: Header row implementation with sorting, reordering, and column resizing
 - **`lib/src/widgets/table_body.dart`**: Body rows implementation with selection and editing
 - **`lib/src/widgets/synced_scroll_controllers.dart`**: Synchronized scrolling logic
 - **`lib/src/widgets/custom_ink_well.dart`**: Custom tap handling widget
@@ -99,6 +99,7 @@ dart doc .                      # Generate API documentation
 FlutterTablePlus follows a composition pattern where:
 - Header and body are separate widgets sharing synchronized scroll controllers
 - Column reordering updates the column map and triggers rebuilds
+- Column resizing is managed internally via `_resizedWidths` state map; `onColumnResized` callback notifies externally for persistence
 - Selection state is managed externally and passed down as props
 - Editing state can coexist with selection state
 - Merged row groups are treated as single units for selection and editing operations
@@ -107,14 +108,15 @@ FlutterTablePlus follows a composition pattern where:
 
 1. Columns defined via TableColumnsBuilder or direct Map creation
 2. Data provided as List of Maps with consistent keys matching column keys
-3. User interactions (sort, select, edit, reorder) flow through callback functions
+3. User interactions (sort, select, edit, reorder, resize) flow through callback functions
 4. External state management handles data updates and passes back to widget
 
 ## Important Implementation Details
 
 - **Column Order Management**: Column order is managed by the `order` field in TablePlusColumn. Use TableColumnsBuilder to prevent order conflicts
 - **Selection Requirements**: Selection features require unique row ID field in each row data map (default: 'id', configurable via `rowIdKey` parameter) - duplicate IDs cause unexpected behavior
-- **Null Safety for Features**: Setting `onSort: null` completely hides sort icons and disables sorting. Setting `onColumnReorder: null` disables drag-and-drop
+- **Null Safety for Features**: Setting `onSort: null` completely hides sort icons and disables sorting. Setting `onColumnReorder: null` disables drag-and-drop. Setting `resizable: false` (default) hides resize handles entirely
+- **Column Resizing**: `resizable: true` enables drag-to-resize on header cell right edges. Resize widths are internal layout state (`_resizedWidths`); `onColumnResized` callback fires once on drag end for persistence. Resized columns keep fixed width while unresized columns redistribute proportionally. `minWidth`/`maxWidth` per column are enforced via `clamp()` in all layout calculation paths. Selection column (`__selection__`) is excluded from resizing. Resize handle theming via `TablePlusHeaderTheme.resizeHandleWidth` and `resizeHandleColor`
 - **Coexisting Features**: Selection and editing modes can coexist in the same table simultaneously
 - **Theme Architecture**: Uses nested theme classes (TablePlusTheme > TablePlusHeaderTheme/TablePlusBodyTheme/etc.) for granular control
 - **Custom Cell Rendering**: `cellBuilder` property allows rendering any Flutter widget in cells but can impact performance with large datasets
@@ -122,6 +124,7 @@ FlutterTablePlus follows a composition pattern where:
 - **Tooltip Control**: Fine-grained tooltip behavior control for both cells and headers via `tooltipBehavior` and `headerTooltipBehavior` properties
 - **Merged Rows**: MergedRowGroup functionality allows grouping consecutive rows with configurable merge behavior per column. Supports custom content, selection, and editing within merged cells
 - **Row Hover Implementation**: Currently supports basic hover effects via CustomInkWell.hoverColor. Row widgets extend TablePlusRowWidget (StatelessWidget) making advanced hover features (like button overlays) require architectural changes to support state management
+- **Column Width Constraints**: `minWidth`/`maxWidth` on `TablePlusColumn` are enforced in all `_calculateColumnWidths` paths via `clamp()` — both for resize drag and normal proportional layout distribution
 
 ## Code Patterns & Conventions
 
@@ -134,7 +137,7 @@ FlutterTablePlus follows a composition pattern where:
 ### Widget Composition Pattern
 - Header and body are separate widgets with synchronized scroll controllers
 - State is managed externally and passed down through props
-- Callbacks flow user interactions (sort, select, edit, reorder) back to parent
+- Callbacks flow user interactions (sort, select, edit, reorder, resize) back to parent
 
 ### Performance Considerations
 - Use simple text cells when possible; `cellBuilder` sparingly for complex widgets
