@@ -673,8 +673,10 @@ class _TablePlusMergedRowState<T> extends State<TablePlusMergedRow<T>> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             SizedBox(
-              width: widget.checkboxTheme.size,
-              height: widget.checkboxTheme.size,
+              width: widget.checkboxTheme.tapTargetSize ??
+                  widget.checkboxTheme.size,
+              height: widget.checkboxTheme.tapTargetSize ??
+                  widget.checkboxTheme.size,
               child: Checkbox(
                 value: widget.isSelected,
                 onChanged: (value) => (widget.onCheckboxChanged ??

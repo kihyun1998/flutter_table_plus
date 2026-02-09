@@ -523,8 +523,8 @@ class _SelectionHeaderCell extends StatelessWidget {
       child: showSelectAllCheckbox && onSelectAll != null
           ? Center(
               child: SizedBox(
-                width: checkboxTheme.size,
-                height: checkboxTheme.size,
+                width: checkboxTheme.tapTargetSize ?? checkboxTheme.size,
+                height: checkboxTheme.tapTargetSize ?? checkboxTheme.size,
                 child: Checkbox(
                   value: selectAllState,
                   tristate: true, // Allows indeterminate state

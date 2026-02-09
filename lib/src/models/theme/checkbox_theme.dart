@@ -27,6 +27,7 @@ class TablePlusCheckboxTheme {
 
     // Table-specific properties
     this.size = 18.0,
+    this.tapTargetSize,
     this.showCheckboxColumn = true,
     this.showSelectAllCheckbox = true,
     this.checkboxColumnWidth = 60.0,
@@ -111,6 +112,15 @@ class TablePlusCheckboxTheme {
   /// The size (width and height) of the checkbox in logical pixels.
   final double size;
 
+  /// The size (width and height) of the checkbox tap/hover target area.
+  ///
+  /// When set, the checkbox hit-test area expands to this size while the
+  /// visual checkbox remains at [size]. This makes the checkbox easier to
+  /// click without changing its visual appearance.
+  ///
+  /// If null, defaults to [size] (tap target matches visual size).
+  final double? tapTargetSize;
+
   /// Whether to show the checkbox column in the table.
   ///
   /// If false, rows can only be selected by tapping on the row itself.
@@ -142,6 +152,7 @@ class TablePlusCheckboxTheme {
     VisualDensity? visualDensity,
     double? splashRadius,
     double? size,
+    double? tapTargetSize,
     bool? showCheckboxColumn,
     bool? showSelectAllCheckbox,
     double? checkboxColumnWidth,
@@ -160,6 +171,7 @@ class TablePlusCheckboxTheme {
       visualDensity: visualDensity ?? this.visualDensity,
       splashRadius: splashRadius ?? this.splashRadius,
       size: size ?? this.size,
+      tapTargetSize: tapTargetSize ?? this.tapTargetSize,
       showCheckboxColumn: showCheckboxColumn ?? this.showCheckboxColumn,
       showSelectAllCheckbox:
           showSelectAllCheckbox ?? this.showSelectAllCheckbox,
@@ -174,6 +186,7 @@ class TablePlusCheckboxTheme {
   factory TablePlusCheckboxTheme.material3({
     Color primaryColor = Colors.blue,
     double size = 18.0,
+    double? tapTargetSize,
     bool showCheckboxColumn = true,
     bool showSelectAllCheckbox = true,
     double checkboxColumnWidth = 60.0,
@@ -205,6 +218,7 @@ class TablePlusCheckboxTheme {
       }),
       checkColor: Colors.white,
       size: size,
+      tapTargetSize: tapTargetSize,
       showCheckboxColumn: showCheckboxColumn,
       showSelectAllCheckbox: showSelectAllCheckbox,
       checkboxColumnWidth: checkboxColumnWidth,

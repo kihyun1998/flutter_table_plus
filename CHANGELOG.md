@@ -1,3 +1,11 @@
+## 2.2.1
+
+*   **FEAT**: Added `tapTargetSize` to `TablePlusCheckboxTheme`
+    *   Expands the checkbox tap/hover hit-test area without changing the visual checkbox size
+    *   Configurable in logical pixels (e.g., `tapTargetSize: 40` gives a 40×40 hit area)
+    *   Defaults to `size` when not set — fully backward compatible
+    *   Applied to body rows, header select-all, and merged row checkboxes
+
 ## 2.2.0
 
 *   **FEAT**: Drag-to-select rows

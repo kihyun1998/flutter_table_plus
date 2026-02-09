@@ -27,6 +27,7 @@ class PlaygroundSettings {
   final bool dynamicRowHeight;
   final bool dimInactiveRows;
   final bool showCheckboxColumn;
+  final double checkboxTapTargetSize;
   final bool selectAllEnabled;
   final bool dragSelectionEnabled;
   final SortCycleOrder sortCycleOrder;
@@ -50,6 +51,7 @@ class PlaygroundSettings {
     this.dynamicRowHeight = false,
     this.dimInactiveRows = false,
     this.showCheckboxColumn = true,
+    this.checkboxTapTargetSize = 18.0,
     this.selectAllEnabled = true,
     this.dragSelectionEnabled = false,
     this.sortCycleOrder = SortCycleOrder.ascendingFirst,
@@ -74,6 +76,7 @@ class PlaygroundSettings {
     bool? dynamicRowHeight,
     bool? dimInactiveRows,
     bool? showCheckboxColumn,
+    double? checkboxTapTargetSize,
     bool? selectAllEnabled,
     bool? dragSelectionEnabled,
     SortCycleOrder? sortCycleOrder,
@@ -97,6 +100,8 @@ class PlaygroundSettings {
       dynamicRowHeight: dynamicRowHeight ?? this.dynamicRowHeight,
       dimInactiveRows: dimInactiveRows ?? this.dimInactiveRows,
       showCheckboxColumn: showCheckboxColumn ?? this.showCheckboxColumn,
+      checkboxTapTargetSize:
+          checkboxTapTargetSize ?? this.checkboxTapTargetSize,
       selectAllEnabled: selectAllEnabled ?? this.selectAllEnabled,
       dragSelectionEnabled: dragSelectionEnabled ?? this.dragSelectionEnabled,
       sortCycleOrder: sortCycleOrder ?? this.sortCycleOrder,
@@ -375,6 +380,19 @@ class SettingsPanel extends StatelessWidget {
           unit: 'px',
           onChanged: (value) {
             onSettingsChanged(settings.copyWith(verticalPadding: value));
+          },
+        ),
+        const SizedBox(height: 16),
+
+        // Checkbox tap target size
+        _buildSliderSetting(
+          label: 'Checkbox Tap Size',
+          value: settings.checkboxTapTargetSize,
+          min: 18,
+          max: 56,
+          unit: 'px',
+          onChanged: (value) {
+            onSettingsChanged(settings.copyWith(checkboxTapTargetSize: value));
           },
         ),
       ],

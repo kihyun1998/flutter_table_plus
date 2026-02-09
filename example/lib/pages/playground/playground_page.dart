@@ -346,15 +346,24 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
     debugPrint('🔄 Sorted by $columnKey in ${stopwatch.elapsedMilliseconds}ms');
   }
 
-  /// Handle row selection
+  /// Handle row selection (tile click) — single-select behavior:
+  /// clears existing selection and selects only the clicked row.
   void _handleRowSelection(String rowId, bool isSelected) {
     setState(() {
       if (isSelected) {
-        if (_settings.selectionMode == SelectionMode.single) {
-          _selectedRows = {rowId};
-        } else {
-          _selectedRows.add(rowId);
-        }
+        _selectedRows = {rowId};
+      } else {
+        _selectedRows.remove(rowId);
+      }
+    });
+  }
+
+  /// Handle checkbox click — multi-select toggle behavior:
+  /// toggles the clicked row without affecting other selections.
+  void _handleCheckboxSelection(String rowId, bool isSelected) {
+    setState(() {
+      if (isSelected) {
+        _selectedRows.add(rowId);
       } else {
         _selectedRows.remove(rowId);
       }
@@ -711,7 +720,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         selectionMode: _settings.selectionMode,
         selectedRows: _selectedRows,
         onRowSelectionChanged: _handleRowSelection,
-        onCheckboxChanged: _handleRowSelection,
+        onCheckboxChanged: _handleCheckboxSelection,
         onSelectAll: _settings.selectAllEnabled
             ? (selectAll) {
                 setState(() {
@@ -857,6 +866,12 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
       ),
       checkboxTheme: TablePlusCheckboxTheme(
         showCheckboxColumn: _settings.showCheckboxColumn,
+        tapTargetSize: _settings.checkboxTapTargetSize > 18
+            ? _settings.checkboxTapTargetSize
+            : null,
+        splashRadius: _settings.checkboxTapTargetSize > 18
+            ? _settings.checkboxTapTargetSize / 2
+            : null,
       ),
     );
   }

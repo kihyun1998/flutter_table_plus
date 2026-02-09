@@ -40,8 +40,8 @@ class TablePlusSelectionCell extends StatelessWidget {
       ),
       child: Center(
         child: SizedBox(
-          width: checkboxTheme.size,
-          height: checkboxTheme.size,
+          width: checkboxTheme.tapTargetSize ?? checkboxTheme.size,
+          height: checkboxTheme.tapTargetSize ?? checkboxTheme.size,
           child: Checkbox(
             value: isSelected,
             onChanged:
