@@ -1,10 +1,19 @@
-## 2.2.1
+## 2.3.0
 
 *   **FEAT**: Added `tapTargetSize` to `TablePlusCheckboxTheme`
     *   Expands the checkbox tap/hover hit-test area without changing the visual checkbox size
     *   Configurable in logical pixels (e.g., `tapTargetSize: 40` gives a 40×40 hit area)
     *   Defaults to `size` when not set — fully backward compatible
     *   Applied to body rows, header select-all, and merged row checkboxes
+*   **BREAKING**: Refactored header border/divider into separate theme classes
+    *   Removed `showVerticalDividers`, `showBottomDivider`, `dividerColor`, `dividerThickness` from `TablePlusHeaderTheme`
+    *   Added `TablePlusHeaderBorderTheme` for top/bottom horizontal borders (`show`, `color`, `thickness`)
+    *   Added `TablePlusHeaderDividerTheme` for vertical column dividers with `indent` / `endIndent` support
+    *   New properties: `topBorder` (default hidden), `bottomBorder` (default visible), `verticalDivider` (default visible)
+    *   Vertical dividers now rendered as `Stack` overlay instead of `BoxDecoration.border`, enabling indent control
+*   **FEAT**: Resize handle `indent` / `endIndent` / `thickness` theming
+    *   `resizeHandleThickness` controls the visible indicator line width (default `2.0`)
+    *   `resizeHandleIndent` / `resizeHandleEndIndent` inset the indicator from top/bottom edges
 *   **FIX**: Resize handle now centered on column boundary
     *   Previously the handle was positioned entirely inside the left column (`right: 0`), making it asymmetric
     *   Now uses a header-level `Stack` overlay with `left: cumulativeWidth - handleWidth / 2`, giving equal hit area on both sides of the border

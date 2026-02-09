@@ -34,6 +34,21 @@ class PlaygroundSettings {
   final SortCycleOrder sortCycleOrder;
   final TooltipBehavior tooltipBehavior;
 
+  // Header border/divider settings
+  final bool headerTopBorderShow;
+  final double headerTopBorderThickness;
+  final bool headerBottomBorderShow;
+  final double headerBottomBorderThickness;
+  final bool headerVerticalDividerShow;
+  final double headerVerticalDividerThickness;
+  final double headerVerticalDividerIndent;
+  final double headerVerticalDividerEndIndent;
+
+  // Resize handle settings
+  final double resizeHandleThickness;
+  final double resizeHandleIndent;
+  final double resizeHandleEndIndent;
+
   const PlaygroundSettings({
     this.rowCount = 100,
     this.columnMinWidth = 50.0,
@@ -58,6 +73,17 @@ class PlaygroundSettings {
     this.dragSelectionEnabled = false,
     this.sortCycleOrder = SortCycleOrder.ascendingFirst,
     this.tooltipBehavior = TooltipBehavior.always,
+    this.headerTopBorderShow = true,
+    this.headerTopBorderThickness = 2.0,
+    this.headerBottomBorderShow = true,
+    this.headerBottomBorderThickness = 1.0,
+    this.headerVerticalDividerShow = true,
+    this.headerVerticalDividerThickness = 1.0,
+    this.headerVerticalDividerIndent = 0.0,
+    this.headerVerticalDividerEndIndent = 0.0,
+    this.resizeHandleThickness = 2.0,
+    this.resizeHandleIndent = 0.0,
+    this.resizeHandleEndIndent = 0.0,
   });
 
   PlaygroundSettings copyWith({
@@ -84,6 +110,17 @@ class PlaygroundSettings {
     bool? dragSelectionEnabled,
     SortCycleOrder? sortCycleOrder,
     TooltipBehavior? tooltipBehavior,
+    bool? headerTopBorderShow,
+    double? headerTopBorderThickness,
+    bool? headerBottomBorderShow,
+    double? headerBottomBorderThickness,
+    bool? headerVerticalDividerShow,
+    double? headerVerticalDividerThickness,
+    double? headerVerticalDividerIndent,
+    double? headerVerticalDividerEndIndent,
+    double? resizeHandleThickness,
+    double? resizeHandleIndent,
+    double? resizeHandleEndIndent,
   }) {
     return PlaygroundSettings(
       rowCount: rowCount ?? this.rowCount,
@@ -110,6 +147,26 @@ class PlaygroundSettings {
       dragSelectionEnabled: dragSelectionEnabled ?? this.dragSelectionEnabled,
       sortCycleOrder: sortCycleOrder ?? this.sortCycleOrder,
       tooltipBehavior: tooltipBehavior ?? this.tooltipBehavior,
+      headerTopBorderShow: headerTopBorderShow ?? this.headerTopBorderShow,
+      headerTopBorderThickness:
+          headerTopBorderThickness ?? this.headerTopBorderThickness,
+      headerBottomBorderShow:
+          headerBottomBorderShow ?? this.headerBottomBorderShow,
+      headerBottomBorderThickness:
+          headerBottomBorderThickness ?? this.headerBottomBorderThickness,
+      headerVerticalDividerShow:
+          headerVerticalDividerShow ?? this.headerVerticalDividerShow,
+      headerVerticalDividerThickness:
+          headerVerticalDividerThickness ?? this.headerVerticalDividerThickness,
+      headerVerticalDividerIndent:
+          headerVerticalDividerIndent ?? this.headerVerticalDividerIndent,
+      headerVerticalDividerEndIndent:
+          headerVerticalDividerEndIndent ?? this.headerVerticalDividerEndIndent,
+      resizeHandleThickness:
+          resizeHandleThickness ?? this.resizeHandleThickness,
+      resizeHandleIndent: resizeHandleIndent ?? this.resizeHandleIndent,
+      resizeHandleEndIndent:
+          resizeHandleEndIndent ?? this.resizeHandleEndIndent,
     );
   }
 }
@@ -167,6 +224,10 @@ class SettingsPanel extends StatelessWidget {
             _buildStyleSettings(),
             const SizedBox(height: 24),
 
+            // Header Border/Divider Settings
+            _buildHeaderBorderSettings(),
+            const SizedBox(height: 24),
+
             // Feature Toggles
             _buildFeatureToggles(),
             const SizedBox(height: 24),
@@ -213,7 +274,9 @@ class SettingsPanel extends StatelessWidget {
     return _buildSection(
       title: 'Data Settings',
       icon: Icons.data_array,
-      color: Colors.green,
+      color: Colors.green.shade700,
+      borderColor: Colors.green.shade200,
+      initiallyExpanded: true,
       children: [
         const SizedBox(height: 12),
 
@@ -303,7 +366,8 @@ class SettingsPanel extends StatelessWidget {
     return _buildSection(
       title: 'Style Settings',
       icon: Icons.palette,
-      color: Colors.purple,
+      color: Colors.purple.shade700,
+      borderColor: Colors.purple.shade200,
       children: [
         const SizedBox(height: 12),
 
@@ -403,11 +467,180 @@ class SettingsPanel extends StatelessWidget {
     );
   }
 
+  Widget _buildHeaderBorderSettings() {
+    return _buildSection(
+      title: 'Header Border / Divider',
+      icon: Icons.border_all,
+      color: Colors.teal.shade700,
+      borderColor: Colors.teal.shade200,
+      children: [
+        // --- Top Border ---
+        _buildSwitchTile(
+          label: 'Top Border',
+          value: settings.headerTopBorderShow,
+          onChanged: (value) {
+            onSettingsChanged(settings.copyWith(headerTopBorderShow: value));
+          },
+        ),
+        if (settings.headerTopBorderShow)
+          Padding(
+            padding: const EdgeInsets.only(left: 8),
+            child: _buildSliderSetting(
+              label: 'Thickness',
+              value: settings.headerTopBorderThickness,
+              min: 0.5,
+              max: 6,
+              unit: 'px',
+              onChanged: (value) {
+                onSettingsChanged(
+                    settings.copyWith(headerTopBorderThickness: value));
+              },
+            ),
+          ),
+        const SizedBox(height: 4),
+
+        // --- Bottom Border ---
+        _buildSwitchTile(
+          label: 'Bottom Border',
+          value: settings.headerBottomBorderShow,
+          onChanged: (value) {
+            onSettingsChanged(settings.copyWith(headerBottomBorderShow: value));
+          },
+        ),
+        if (settings.headerBottomBorderShow)
+          Padding(
+            padding: const EdgeInsets.only(left: 8),
+            child: _buildSliderSetting(
+              label: 'Thickness',
+              value: settings.headerBottomBorderThickness,
+              min: 0.5,
+              max: 6,
+              unit: 'px',
+              onChanged: (value) {
+                onSettingsChanged(
+                    settings.copyWith(headerBottomBorderThickness: value));
+              },
+            ),
+          ),
+
+        const Divider(height: 24),
+
+        // --- Vertical Divider ---
+        _buildSwitchTile(
+          label: 'Vertical Divider',
+          value: settings.headerVerticalDividerShow,
+          onChanged: (value) {
+            onSettingsChanged(
+                settings.copyWith(headerVerticalDividerShow: value));
+          },
+        ),
+        if (settings.headerVerticalDividerShow) ...[
+          Padding(
+            padding: const EdgeInsets.only(left: 8),
+            child: _buildSliderSetting(
+              label: 'Thickness',
+              value: settings.headerVerticalDividerThickness,
+              min: 0.5,
+              max: 6,
+              unit: 'px',
+              onChanged: (value) {
+                onSettingsChanged(
+                    settings.copyWith(headerVerticalDividerThickness: value));
+              },
+            ),
+          ),
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.only(left: 8),
+            child: _buildSliderSetting(
+              label: 'Indent (top)',
+              value: settings.headerVerticalDividerIndent,
+              min: 0,
+              max: 24,
+              unit: 'px',
+              onChanged: (value) {
+                onSettingsChanged(
+                    settings.copyWith(headerVerticalDividerIndent: value));
+              },
+            ),
+          ),
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.only(left: 8),
+            child: _buildSliderSetting(
+              label: 'End Indent (bottom)',
+              value: settings.headerVerticalDividerEndIndent,
+              min: 0,
+              max: 24,
+              unit: 'px',
+              onChanged: (value) {
+                onSettingsChanged(
+                    settings.copyWith(headerVerticalDividerEndIndent: value));
+              },
+            ),
+          ),
+        ],
+
+        const Divider(height: 24),
+
+        // --- Resize Handle ---
+        if (settings.resizableEnabled) ...[
+          _buildSliderSetting(
+            label: 'Handle Hit Width',
+            value: settings.resizeHandleWidth,
+            min: 4,
+            max: 24,
+            unit: 'px',
+            onChanged: (value) {
+              onSettingsChanged(settings.copyWith(resizeHandleWidth: value));
+            },
+          ),
+          const SizedBox(height: 8),
+          _buildSliderSetting(
+            label: 'Handle Thickness',
+            value: settings.resizeHandleThickness,
+            min: 1,
+            max: 6,
+            unit: 'px',
+            onChanged: (value) {
+              onSettingsChanged(
+                  settings.copyWith(resizeHandleThickness: value));
+            },
+          ),
+          const SizedBox(height: 8),
+          _buildSliderSetting(
+            label: 'Handle Indent (top)',
+            value: settings.resizeHandleIndent,
+            min: 0,
+            max: 24,
+            unit: 'px',
+            onChanged: (value) {
+              onSettingsChanged(settings.copyWith(resizeHandleIndent: value));
+            },
+          ),
+          const SizedBox(height: 8),
+          _buildSliderSetting(
+            label: 'Handle End Indent',
+            value: settings.resizeHandleEndIndent,
+            min: 0,
+            max: 24,
+            unit: 'px',
+            onChanged: (value) {
+              onSettingsChanged(
+                  settings.copyWith(resizeHandleEndIndent: value));
+            },
+          ),
+        ],
+      ],
+    );
+  }
+
   Widget _buildFeatureToggles() {
     return _buildSection(
       title: 'Feature Toggles',
       icon: Icons.toggle_on,
-      color: Colors.orange,
+      color: Colors.orange.shade700,
+      borderColor: Colors.orange.shade200,
       children: [
         const SizedBox(height: 12),
 
@@ -442,22 +675,6 @@ class SettingsPanel extends StatelessWidget {
             onSettingsChanged(settings.copyWith(resizableEnabled: value));
           },
         ),
-
-        if (settings.resizableEnabled)
-          Padding(
-            padding: const EdgeInsets.only(left: 8, bottom: 4),
-            child: _buildSliderSetting(
-              label: 'Handle Width',
-              value: settings.resizeHandleWidth,
-              min: 4,
-              max: 24,
-              unit: 'px',
-              onChanged: (value) {
-                onSettingsChanged(
-                    settings.copyWith(resizeHandleWidth: value));
-              },
-            ),
-          ),
 
         _buildSwitchTile(
           label: 'Alternate Rows',
@@ -574,35 +791,32 @@ class SettingsPanel extends StatelessWidget {
   Widget _buildSection({
     required String title,
     required IconData icon,
-    required MaterialColor color,
+    required Color color,
+    required Color borderColor,
     required List<Widget> children,
+    bool initiallyExpanded = false,
   }) {
     return Container(
-      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.shade200),
+        border: Border.all(color: borderColor),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: color.shade700, size: 20),
-              const SizedBox(width: 8),
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: color.shade800,
-                ),
-              ),
-            ],
+      clipBehavior: Clip.antiAlias,
+      child: ExpansionTile(
+        tilePadding: const EdgeInsets.symmetric(horizontal: 16),
+        childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        initiallyExpanded: initiallyExpanded,
+        leading: Icon(icon, color: color, size: 20),
+        title: Text(
+          title,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: color,
           ),
-          ...children,
-        ],
+        ),
+        children: children,
       ),
     );
   }

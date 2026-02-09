@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../models/table_column.dart';
 import '../models/theme/checkbox_theme.dart';
-import '../models/theme/header_theme.dart' show TablePlusHeaderTheme;
+import '../models/theme/header_theme.dart';
 import '../models/theme/tooltip_theme.dart' show TablePlusTooltipTheme;
 import '../models/tooltip_behavior.dart';
 import '../utils/text_overflow_detector.dart';
@@ -139,14 +139,26 @@ class _TablePlusHeaderState<T> extends State<TablePlusHeader<T>> {
       return customDecoration;
     }
 
+    final topBorder = widget.theme.topBorder;
+    final bottomBorder = widget.theme.bottomBorder;
+    final hasAnyBorder = topBorder.show || bottomBorder.show;
+
     return BoxDecoration(
       color: widget.theme.backgroundColor,
-      border: widget.theme.showBottomDivider
+      border: hasAnyBorder
           ? Border(
-              bottom: BorderSide(
-                color: widget.theme.dividerColor,
-                width: widget.theme.dividerThickness,
-              ),
+              top: topBorder.show
+                  ? BorderSide(
+                      color: topBorder.color,
+                      width: topBorder.thickness,
+                    )
+                  : BorderSide.none,
+              bottom: bottomBorder.show
+                  ? BorderSide(
+                      color: bottomBorder.color,
+                      width: bottomBorder.thickness,
+                    )
+                  : BorderSide.none,
             )
           : null,
     );
@@ -281,7 +293,7 @@ class _TablePlusHeaderState<T> extends State<TablePlusHeader<T>> {
       double cumulativeWidth = 0;
       final handleWidth = widget.theme.resizeHandleWidth;
       final handleColor =
-          widget.theme.resizeHandleColor ?? widget.theme.dividerColor;
+          widget.theme.resizeHandleColor ?? widget.theme.verticalDivider.color;
 
       for (int i = 0; i < widget.columns.length; i++) {
         final column = widget.columns[i];
@@ -306,6 +318,9 @@ class _TablePlusHeaderState<T> extends State<TablePlusHeader<T>> {
               minWidth: column.minWidth,
               maxWidth: column.maxWidth,
               handleColor: handleColor,
+              handleThickness: widget.theme.resizeHandleThickness,
+              handleIndent: widget.theme.resizeHandleIndent,
+              handleEndIndent: widget.theme.resizeHandleEndIndent,
               onResize: widget.onColumnResize,
               onResizeEnd: widget.onColumnResizeEnd,
             ),
@@ -449,14 +464,6 @@ class _HeaderCell extends StatelessWidget {
 
     return BoxDecoration(
       color: _getBackgroundColor(),
-      border: theme.showVerticalDividers
-          ? Border(
-              right: BorderSide(
-                color: theme.dividerColor,
-                width: theme.dividerThickness,
-              ),
-            )
-          : null,
     );
   }
 
@@ -489,6 +496,25 @@ class _HeaderCell extends StatelessWidget {
         ),
       ),
     );
+
+    // Overlay vertical divider with indent support
+    final divider = theme.verticalDivider;
+    if (divider.show) {
+      content = Stack(
+        children: [
+          content,
+          Positioned(
+            right: 0,
+            top: divider.indent,
+            bottom: divider.endIndent,
+            child: SizedBox(
+              width: divider.thickness,
+              child: ColoredBox(color: divider.color),
+            ),
+          ),
+        ],
+      );
+    }
 
     // Wrap with GestureDetector for sortable columns
     if (column.sortable && onSortClick != null) {
@@ -535,20 +561,12 @@ class _SelectionHeaderCell extends StatelessWidget {
 
     return BoxDecoration(
       color: theme.backgroundColor,
-      border: theme.showVerticalDividers
-          ? Border(
-              right: BorderSide(
-                color: theme.dividerColor,
-                width: theme.dividerThickness,
-              ),
-            )
-          : null,
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    Widget content = Container(
       width: width,
       height: theme.height,
       padding: theme.padding,
@@ -587,6 +605,27 @@ class _SelectionHeaderCell extends StatelessWidget {
             )
           : const SizedBox.shrink(),
     );
+
+    // Overlay vertical divider with indent support
+    final divider = theme.verticalDivider;
+    if (divider.show) {
+      content = Stack(
+        children: [
+          content,
+          Positioned(
+            right: 0,
+            top: divider.indent,
+            bottom: divider.endIndent,
+            child: SizedBox(
+              width: divider.thickness,
+              child: ColoredBox(color: divider.color),
+            ),
+          ),
+        ],
+      );
+    }
+
+    return content;
   }
 }
 
@@ -601,6 +640,9 @@ class _ResizeHandle extends StatefulWidget {
     required this.columnWidth,
     required this.minWidth,
     required this.handleColor,
+    this.handleThickness = 2.0,
+    this.handleIndent = 0.0,
+    this.handleEndIndent = 0.0,
     this.maxWidth,
     this.onResize,
     this.onResizeEnd,
@@ -611,6 +653,9 @@ class _ResizeHandle extends StatefulWidget {
   final double minWidth;
   final double? maxWidth;
   final Color handleColor;
+  final double handleThickness;
+  final double handleIndent;
+  final double handleEndIndent;
   final void Function(String columnKey, double newWidth)? onResize;
   final void Function(String columnKey, double finalWidth)? onResizeEnd;
 
@@ -750,11 +795,17 @@ class _ResizeHandleState extends State<_ResizeHandle> {
           setState(() => _isDragging = false);
         },
         child: (_isHovering || _isDragging)
-            ? Center(
-                child: SizedBox(
-                  width: 2.0,
-                  height: double.infinity,
-                  child: ColoredBox(color: widget.handleColor),
+            ? Padding(
+                padding: EdgeInsets.only(
+                  top: widget.handleIndent,
+                  bottom: widget.handleEndIndent,
+                ),
+                child: Center(
+                  child: SizedBox(
+                    width: widget.handleThickness,
+                    height: double.infinity,
+                    child: ColoredBox(color: widget.handleColor),
+                  ),
                 ),
               )
             : const SizedBox.expand(),

@@ -816,19 +816,26 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
     return TablePlusTheme(
       headerTheme: TablePlusHeaderTheme(
         resizeHandleWidth: _settings.resizeHandleWidth,
+        resizeHandleThickness: _settings.resizeHandleThickness,
+        resizeHandleIndent: _settings.resizeHandleIndent,
+        resizeHandleEndIndent: _settings.resizeHandleEndIndent,
         backgroundColor: Colors.blue.shade50,
-        decoration: BoxDecoration(
-          color: Colors.blue.shade50,
-          border: Border(
-            top: BorderSide(
-              color: Colors.blue.shade200,
-              width: 2.0,
-            ),
-            bottom: BorderSide(
-              color: Colors.grey.shade300,
-              width: 1.0,
-            ),
-          ),
+        topBorder: TablePlusHeaderBorderTheme(
+          show: _settings.headerTopBorderShow,
+          color: Colors.blue.shade200,
+          thickness: _settings.headerTopBorderThickness,
+        ),
+        bottomBorder: TablePlusHeaderBorderTheme(
+          show: _settings.headerBottomBorderShow,
+          color: Colors.grey.shade300,
+          thickness: _settings.headerBottomBorderThickness,
+        ),
+        verticalDivider: TablePlusHeaderDividerTheme(
+          show: _settings.headerVerticalDividerShow,
+          color: Colors.grey.shade300,
+          thickness: _settings.headerVerticalDividerThickness,
+          indent: _settings.headerVerticalDividerIndent,
+          endIndent: _settings.headerVerticalDividerEndIndent,
         ),
         textStyle: TextStyle(
           fontWeight: FontWeight.w600,
