@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
 import 'models/employee.dart';
@@ -55,6 +57,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
     final builder = TableColumnsBuilder<Employee>();
 
     final tooltip = _settings.tooltipBehavior;
+    final minW = _settings.columnMinWidth;
 
     builder.addColumn(
       'avatar',
@@ -64,6 +67,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         order: 0,
         valueAccessor: (row) => row.avatar,
         width: 60,
+        minWidth: minW,
         sortable: false,
         tooltipBehavior: tooltip,
         headerTooltipBehavior: tooltip,
@@ -78,6 +82,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         order: 0,
         valueAccessor: (row) => row.name,
         width: 180,
+        minWidth: minW,
         sortable: _settings.sortingEnabled,
         tooltipBehavior: tooltip,
         headerTooltipBehavior: tooltip,
@@ -92,6 +97,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         order: 0,
         valueAccessor: (row) => row.position,
         width: 200,
+        minWidth: minW,
         sortable: _settings.sortingEnabled,
         editable: _settings.editingEnabled,
         tooltipBehavior: tooltip,
@@ -107,6 +113,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         order: 0,
         valueAccessor: (row) => row.department,
         width: 150,
+        minWidth: minW,
         sortable: _settings.sortingEnabled,
         editable: _settings.editingEnabled,
         tooltipBehavior: tooltip,
@@ -122,6 +129,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         order: 0,
         valueAccessor: (row) => row.salary,
         width: 120,
+        minWidth: minW,
         sortable: _settings.sortingEnabled,
         editable: _settings.editingEnabled,
         tooltipBehavior: tooltip,
@@ -148,6 +156,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         order: 0,
         valueAccessor: (row) => row.performance,
         width: 130,
+        minWidth: minW,
         sortable: _settings.sortingEnabled,
         tooltipBehavior: tooltip,
         headerTooltipBehavior: tooltip,
@@ -181,6 +190,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         order: 0,
         valueAccessor: (row) => row.email,
         width: 220,
+        minWidth: minW,
         sortable: _settings.sortingEnabled,
         tooltipBehavior: tooltip,
         headerTooltipBehavior: tooltip,
@@ -195,6 +205,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         order: 0,
         valueAccessor: (row) => row.phone,
         width: 130,
+        minWidth: minW,
         sortable: _settings.sortingEnabled,
         tooltipBehavior: tooltip,
         headerTooltipBehavior: tooltip,
@@ -255,7 +266,8 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
       final needsColumnRebuild =
           newSettings.sortingEnabled != oldSettings.sortingEnabled ||
               newSettings.editingEnabled != oldSettings.editingEnabled ||
-              newSettings.tooltipBehavior != oldSettings.tooltipBehavior;
+              newSettings.tooltipBehavior != oldSettings.tooltipBehavior ||
+              newSettings.columnMinWidth != oldSettings.columnMinWidth;
 
       if (needsColumnRebuild) {
         _initializeColumns();
@@ -555,6 +567,27 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
     debugPrint('🔄 Reordered column from $oldIndex to $newIndex');
   }
 
+  /// Apply random widths to all columns (simulates restoring saved widths)
+  void _randomizeColumnWidths() {
+    final rng = Random();
+    setState(() {
+      _columns = Map.fromEntries(
+        _columns.entries.map((entry) {
+          final col = entry.value;
+          final minW = col.minWidth;
+          final maxW = col.maxWidth ?? 400.0;
+          final randomWidth =
+              minW + rng.nextDouble() * (maxW - minW);
+          return MapEntry(
+            entry.key,
+            col.copyWith(width: randomWidth.roundToDouble()),
+          );
+        }),
+      );
+    });
+    debugPrint('🎲 Randomized column widths');
+  }
+
   /// Update merged groups (group by department)
   void _updateMergedGroups() {
     if (!_settings.mergedRowsEnabled || _data.isEmpty) {
@@ -643,6 +676,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
             performanceMetrics: _performanceMetrics,
             onSettingsChanged: _handleSettingsChanged,
             onGenerateData: _generateData,
+            onRandomizeWidths: _randomizeColumnWidths,
             isGenerating: _isGenerating,
           ),
 
@@ -669,6 +703,11 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         onSort: _settings.sortingEnabled ? _handleSort : null,
         onColumnReorder:
             _settings.columnReorderEnabled ? _handleColumnReorder : null,
+        resizable: _settings.resizableEnabled,
+        onColumnResized: (columnKey, newWidth) {
+          debugPrint(
+              '↔️ Resized column "$columnKey" to ${newWidth.toStringAsFixed(1)}px');
+        },
         isSelectable: true,
         selectionMode: _settings.selectionMode,
         selectedRows: _selectedRows,

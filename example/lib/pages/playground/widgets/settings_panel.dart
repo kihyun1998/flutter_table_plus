@@ -9,6 +9,7 @@ class PlaygroundSettings {
   final int rowCount;
 
   // Style settings
+  final double columnMinWidth;
   final double rowHeight;
   final double fontSize;
   final double horizontalPadding;
@@ -20,6 +21,7 @@ class PlaygroundSettings {
   final bool editingEnabled;
   final bool mergedRowsEnabled;
   final bool columnReorderEnabled;
+  final bool resizableEnabled;
   final bool showAlternateRows;
   final bool showDividers;
   final bool dynamicRowHeight;
@@ -31,6 +33,7 @@ class PlaygroundSettings {
 
   const PlaygroundSettings({
     this.rowCount = 100,
+    this.columnMinWidth = 50.0,
     this.rowHeight = 50.0,
     this.fontSize = 14.0,
     this.horizontalPadding = 16.0,
@@ -40,6 +43,7 @@ class PlaygroundSettings {
     this.editingEnabled = true,
     this.mergedRowsEnabled = false,
     this.columnReorderEnabled = true,
+    this.resizableEnabled = true,
     this.showAlternateRows = true,
     this.showDividers = true,
     this.dynamicRowHeight = false,
@@ -52,6 +56,7 @@ class PlaygroundSettings {
 
   PlaygroundSettings copyWith({
     int? rowCount,
+    double? columnMinWidth,
     double? rowHeight,
     double? fontSize,
     double? horizontalPadding,
@@ -61,6 +66,7 @@ class PlaygroundSettings {
     bool? editingEnabled,
     bool? mergedRowsEnabled,
     bool? columnReorderEnabled,
+    bool? resizableEnabled,
     bool? showAlternateRows,
     bool? showDividers,
     bool? dynamicRowHeight,
@@ -72,6 +78,7 @@ class PlaygroundSettings {
   }) {
     return PlaygroundSettings(
       rowCount: rowCount ?? this.rowCount,
+      columnMinWidth: columnMinWidth ?? this.columnMinWidth,
       rowHeight: rowHeight ?? this.rowHeight,
       fontSize: fontSize ?? this.fontSize,
       horizontalPadding: horizontalPadding ?? this.horizontalPadding,
@@ -81,6 +88,7 @@ class PlaygroundSettings {
       editingEnabled: editingEnabled ?? this.editingEnabled,
       mergedRowsEnabled: mergedRowsEnabled ?? this.mergedRowsEnabled,
       columnReorderEnabled: columnReorderEnabled ?? this.columnReorderEnabled,
+      resizableEnabled: resizableEnabled ?? this.resizableEnabled,
       showAlternateRows: showAlternateRows ?? this.showAlternateRows,
       showDividers: showDividers ?? this.showDividers,
       dynamicRowHeight: dynamicRowHeight ?? this.dynamicRowHeight,
@@ -105,6 +113,7 @@ class SettingsPanel extends StatelessWidget {
   final PerformanceMetrics performanceMetrics;
   final ValueChanged<PlaygroundSettings> onSettingsChanged;
   final VoidCallback onGenerateData;
+  final VoidCallback? onRandomizeWidths;
   final bool isGenerating;
 
   const SettingsPanel({
@@ -113,6 +122,7 @@ class SettingsPanel extends StatelessWidget {
     required this.performanceMetrics,
     required this.onSettingsChanged,
     required this.onGenerateData,
+    this.onRandomizeWidths,
     this.isGenerating = false,
   });
 
@@ -284,6 +294,35 @@ class SettingsPanel extends StatelessWidget {
       children: [
         const SizedBox(height: 12),
 
+        // Column min width
+        _buildSliderSetting(
+          label: 'Col Min Width',
+          value: settings.columnMinWidth,
+          min: 20,
+          max: 150,
+          unit: 'px',
+          onChanged: (value) {
+            onSettingsChanged(settings.copyWith(columnMinWidth: value));
+          },
+        ),
+        const SizedBox(height: 12),
+
+        // Randomize column widths button
+        if (onRandomizeWidths != null)
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: onRandomizeWidths,
+              icon: const Icon(Icons.shuffle, size: 18),
+              label: const Text('Randomize Column Widths'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.purple.shade700,
+                side: BorderSide(color: Colors.purple.shade300),
+              ),
+            ),
+          ),
+        const SizedBox(height: 16),
+
         // Row height
         _buildSliderSetting(
           label: 'Row Height',
@@ -367,6 +406,14 @@ class SettingsPanel extends StatelessWidget {
           value: settings.columnReorderEnabled,
           onChanged: (value) {
             onSettingsChanged(settings.copyWith(columnReorderEnabled: value));
+          },
+        ),
+
+        _buildSwitchTile(
+          label: 'Column Resize',
+          value: settings.resizableEnabled,
+          onChanged: (value) {
+            onSettingsChanged(settings.copyWith(resizableEnabled: value));
           },
         ),
 
