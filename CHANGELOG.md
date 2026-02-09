@@ -5,6 +5,11 @@
     *   Configurable in logical pixels (e.g., `tapTargetSize: 40` gives a 40×40 hit area)
     *   Defaults to `size` when not set — fully backward compatible
     *   Applied to body rows, header select-all, and merged row checkboxes
+*   **FIX**: Resize handle now centered on column boundary
+    *   Previously the handle was positioned entirely inside the left column (`right: 0`), making it asymmetric
+    *   Now uses a header-level `Stack` overlay with `left: cumulativeWidth - handleWidth / 2`, giving equal hit area on both sides of the border
+    *   Visual indicator line renders at the exact column boundary center
+    *   `ValueKey` per handle ensures stable state across rebuilds and column reorders
 
 ## 2.2.0
 

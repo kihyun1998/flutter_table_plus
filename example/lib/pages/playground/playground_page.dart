@@ -815,6 +815,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
   TablePlusTheme _buildTheme() {
     return TablePlusTheme(
       headerTheme: TablePlusHeaderTheme(
+        resizeHandleWidth: _settings.resizeHandleWidth,
         backgroundColor: Colors.blue.shade50,
         decoration: BoxDecoration(
           color: Colors.blue.shade50,

@@ -22,6 +22,7 @@ class PlaygroundSettings {
   final bool mergedRowsEnabled;
   final bool columnReorderEnabled;
   final bool resizableEnabled;
+  final double resizeHandleWidth;
   final bool showAlternateRows;
   final bool showDividers;
   final bool dynamicRowHeight;
@@ -46,6 +47,7 @@ class PlaygroundSettings {
     this.mergedRowsEnabled = false,
     this.columnReorderEnabled = true,
     this.resizableEnabled = true,
+    this.resizeHandleWidth = 8.0,
     this.showAlternateRows = true,
     this.showDividers = true,
     this.dynamicRowHeight = false,
@@ -71,6 +73,7 @@ class PlaygroundSettings {
     bool? mergedRowsEnabled,
     bool? columnReorderEnabled,
     bool? resizableEnabled,
+    double? resizeHandleWidth,
     bool? showAlternateRows,
     bool? showDividers,
     bool? dynamicRowHeight,
@@ -95,6 +98,7 @@ class PlaygroundSettings {
       mergedRowsEnabled: mergedRowsEnabled ?? this.mergedRowsEnabled,
       columnReorderEnabled: columnReorderEnabled ?? this.columnReorderEnabled,
       resizableEnabled: resizableEnabled ?? this.resizableEnabled,
+      resizeHandleWidth: resizeHandleWidth ?? this.resizeHandleWidth,
       showAlternateRows: showAlternateRows ?? this.showAlternateRows,
       showDividers: showDividers ?? this.showDividers,
       dynamicRowHeight: dynamicRowHeight ?? this.dynamicRowHeight,
@@ -438,6 +442,22 @@ class SettingsPanel extends StatelessWidget {
             onSettingsChanged(settings.copyWith(resizableEnabled: value));
           },
         ),
+
+        if (settings.resizableEnabled)
+          Padding(
+            padding: const EdgeInsets.only(left: 8, bottom: 4),
+            child: _buildSliderSetting(
+              label: 'Handle Width',
+              value: settings.resizeHandleWidth,
+              min: 4,
+              max: 24,
+              unit: 'px',
+              onChanged: (value) {
+                onSettingsChanged(
+                    settings.copyWith(resizeHandleWidth: value));
+              },
+            ),
+          ),
 
         _buildSwitchTile(
           label: 'Alternate Rows',

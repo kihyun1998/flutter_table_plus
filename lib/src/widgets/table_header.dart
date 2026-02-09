@@ -199,101 +199,134 @@ class _TablePlusHeaderState<T> extends State<TablePlusHeader<T>> {
 
   @override
   Widget build(BuildContext context) {
+    Widget content = Row(
+      children: [
+        ...() {
+          int reorderIndex = 0;
+          return widget.columns.asMap().entries.map((entry) {
+            final index = entry.key;
+            final column = entry.value;
+            final width = widget.columnWidths.isNotEmpty
+                ? widget.columnWidths[index]
+                : column.width;
+
+            // Selection column (non-reorderable)
+            if (widget.isSelectable && column.key == '__selection__') {
+              return _SelectionHeaderCell(
+                width: width,
+                theme: widget.theme,
+                selectAllState: _getSelectAllState(),
+                selectedRows: widget.selectedRows,
+                onSelectAll: widget.onSelectAll,
+                checkboxTheme: widget.checkboxTheme,
+                showSelectAllCheckbox:
+                    widget.checkboxTheme.showSelectAllCheckbox,
+              );
+            }
+
+            final currentReorderIndex = reorderIndex;
+            reorderIndex++;
+
+            final headerCell = _HeaderCell(
+              column: column,
+              width: width,
+              theme: widget.theme,
+              tooltipTheme: widget.tooltipTheme,
+              isSorted: widget.sortColumnKey == column.key,
+              sortDirection: widget.sortColumnKey == column.key
+                  ? widget.sortDirection
+                  : SortDirection.none,
+              isReordering: _isReordering,
+              onSortClick: column.sortable &&
+                      widget.onSort != null &&
+                      widget.totalRowCount > 0
+                  ? () => _handleSortClick(column.key)
+                  : null,
+            );
+
+            Widget result = headerCell;
+
+            if (widget.onColumnReorder != null) {
+              result = Draggable<int>(
+                data: currentReorderIndex,
+                axis: Axis.horizontal,
+                feedback: Material(
+                  elevation: 4,
+                  child: headerCell,
+                ),
+                childWhenDragging: Opacity(
+                  opacity: 0.3,
+                  child: headerCell,
+                ),
+                child: DragTarget<int>(
+                  onAcceptWithDetails: (details) {
+                    _handleColumnReorder(details.data, currentReorderIndex);
+                  },
+                  builder: (context, candidateData, rejectedData) {
+                    return headerCell;
+                  },
+                ),
+              );
+            }
+
+            return result;
+          });
+        }(),
+      ],
+    );
+
+    // Overlay resize handles centered on column boundaries
+    if (widget.resizable) {
+      final handles = <Widget>[];
+      double cumulativeWidth = 0;
+      final handleWidth = widget.theme.resizeHandleWidth;
+      final handleColor =
+          widget.theme.resizeHandleColor ?? widget.theme.dividerColor;
+
+      for (int i = 0; i < widget.columns.length; i++) {
+        final column = widget.columns[i];
+        final width = widget.columnWidths.isNotEmpty
+            ? widget.columnWidths[i]
+            : column.width;
+        cumulativeWidth += width;
+
+        // Skip selection column — not resizable
+        if (widget.isSelectable && column.key == '__selection__') continue;
+
+        handles.add(
+          Positioned(
+            key: ValueKey('resize_${column.key}'),
+            left: cumulativeWidth - handleWidth / 2,
+            top: 0,
+            bottom: 0,
+            width: handleWidth,
+            child: _ResizeHandle(
+              columnKey: column.key,
+              columnWidth: width,
+              minWidth: column.minWidth,
+              maxWidth: column.maxWidth,
+              handleColor: handleColor,
+              onResize: widget.onColumnResize,
+              onResizeEnd: widget.onColumnResizeEnd,
+            ),
+          ),
+        );
+      }
+
+      content = Stack(
+        clipBehavior: Clip.none,
+        children: [
+          content,
+          ...handles,
+        ],
+      );
+    }
+
     return Container(
       height: widget.theme.height,
       width: widget.totalWidth,
       decoration: _buildHeaderDecoration(),
-      child: Row(
-        children: [
-          ...() {
-            int reorderIndex = 0;
-            return widget.columns.asMap().entries.map((entry) {
-              final index = entry.key;
-              final column = entry.value;
-              final width = widget.columnWidths.isNotEmpty
-                  ? widget.columnWidths[index]
-                  : column.width;
-
-              // Selection column (non-reorderable)
-              if (widget.isSelectable && column.key == '__selection__') {
-                return _SelectionHeaderCell(
-                  width: width,
-                  theme: widget.theme,
-                  selectAllState: _getSelectAllState(),
-                  selectedRows: widget.selectedRows,
-                  onSelectAll: widget.onSelectAll,
-                  checkboxTheme: widget.checkboxTheme,
-                  showSelectAllCheckbox:
-                      widget.checkboxTheme.showSelectAllCheckbox,
-                );
-              }
-
-              final currentReorderIndex = reorderIndex;
-              reorderIndex++;
-
-              final headerCell = _HeaderCell(
-                column: column,
-                width: width,
-                theme: widget.theme,
-                tooltipTheme: widget.tooltipTheme,
-                isSorted: widget.sortColumnKey == column.key,
-                sortDirection: widget.sortColumnKey == column.key
-                    ? widget.sortDirection
-                    : SortDirection.none,
-                isReordering: _isReordering,
-                onSortClick: column.sortable &&
-                        widget.onSort != null &&
-                        widget.totalRowCount > 0
-                    ? () => _handleSortClick(column.key)
-                    : null,
-              );
-
-              Widget result = headerCell;
-
-              if (widget.onColumnReorder != null) {
-                result = Draggable<int>(
-                  data: currentReorderIndex,
-                  axis: Axis.horizontal,
-                  feedback: Material(
-                    elevation: 4,
-                    child: headerCell,
-                  ),
-                  childWhenDragging: Opacity(
-                    opacity: 0.3,
-                    child: headerCell,
-                  ),
-                  child: DragTarget<int>(
-                    onAcceptWithDetails: (details) {
-                      _handleColumnReorder(details.data, currentReorderIndex);
-                    },
-                    builder: (context, candidateData, rejectedData) {
-                      return headerCell;
-                    },
-                  ),
-                );
-              }
-
-              if (widget.resizable) {
-                result = _ResizableHeaderCell(
-                  columnKey: column.key,
-                  width: width,
-                  minWidth: column.minWidth,
-                  maxWidth: column.maxWidth,
-                  height: widget.theme.height,
-                  handleWidth: widget.theme.resizeHandleWidth,
-                  handleColor: widget.theme.resizeHandleColor ??
-                      widget.theme.dividerColor,
-                  onResize: widget.onColumnResize,
-                  onResizeEnd: widget.onColumnResizeEnd,
-                  child: result,
-                );
-              }
-
-              return result;
-            });
-          }(),
-        ],
-      ),
+      child: content,
     );
   }
 }
@@ -557,41 +590,35 @@ class _SelectionHeaderCell extends StatelessWidget {
   }
 }
 
-/// A wrapper widget that adds a resize handle to the right edge of a header cell.
+/// An overlay resize handle widget centered on a column boundary.
 ///
-/// Uses a [Stack] to overlay an invisible hit-test area on the right edge.
-/// On hover, a colored indicator line appears. Horizontal drag gestures
-/// resize the column in real-time.
-class _ResizableHeaderCell extends StatefulWidget {
-  const _ResizableHeaderCell({
+/// Positioned by the parent [Stack] at each column's right edge.
+/// On hover, a centered indicator line appears. Horizontal drag gestures
+/// resize the column in real-time with auto-scroll support.
+class _ResizeHandle extends StatefulWidget {
+  const _ResizeHandle({
     required this.columnKey,
-    required this.width,
+    required this.columnWidth,
     required this.minWidth,
-    required this.height,
-    required this.handleWidth,
     required this.handleColor,
-    required this.child,
     this.maxWidth,
     this.onResize,
     this.onResizeEnd,
   });
 
   final String columnKey;
-  final double width;
+  final double columnWidth;
   final double minWidth;
   final double? maxWidth;
-  final double height;
-  final double handleWidth;
   final Color handleColor;
   final void Function(String columnKey, double newWidth)? onResize;
   final void Function(String columnKey, double finalWidth)? onResizeEnd;
-  final Widget child;
 
   @override
-  State<_ResizableHeaderCell> createState() => _ResizableHeaderCellState();
+  State<_ResizeHandle> createState() => _ResizeHandleState();
 }
 
-class _ResizableHeaderCellState extends State<_ResizableHeaderCell> {
+class _ResizeHandleState extends State<_ResizeHandle> {
   bool _isHovering = false;
   bool _isDragging = false;
   double _dragWidth = 0;
@@ -685,69 +712,52 @@ class _ResizableHeaderCellState extends State<_ResizableHeaderCell> {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: widget.width,
-      height: widget.height,
-      child: Stack(
-        children: [
-          Positioned.fill(child: widget.child),
-          Positioned(
-            right: 0,
-            top: 0,
-            bottom: 0,
-            width: widget.handleWidth,
-            child: MouseRegion(
-              cursor: SystemMouseCursors.resizeColumn,
-              onEnter: (_) => setState(() => _isHovering = true),
-              onExit: (_) => setState(() => _isHovering = false),
-              child: GestureDetector(
-                onHorizontalDragStart: (details) {
-                  _scrollable = Scrollable.maybeOf(context);
-                  setState(() {
-                    _isDragging = true;
-                    _dragWidth = widget.width;
-                  });
-                },
-                onHorizontalDragUpdate: (details) {
-                  _dragWidth += details.delta.dx;
-                  final clamped = _dragWidth.clamp(
-                    widget.minWidth,
-                    widget.maxWidth ?? double.infinity,
-                  );
-                  widget.onResize?.call(widget.columnKey, clamped);
-                  _updateAutoScroll(details.globalPosition);
-                },
-                onHorizontalDragEnd: (details) {
-                  _stopAutoScroll();
-                  _scrollable = null;
-                  final clamped = _dragWidth.clamp(
-                    widget.minWidth,
-                    widget.maxWidth ?? double.infinity,
-                  );
-                  setState(() => _isDragging = false);
-                  widget.onResizeEnd?.call(widget.columnKey, clamped);
-                },
-                onHorizontalDragCancel: () {
-                  _stopAutoScroll();
-                  _scrollable = null;
-                  setState(() => _isDragging = false);
-                },
-                child: Container(
-                  decoration: (_isHovering || _isDragging)
-                      ? BoxDecoration(
-                          border: Border(
-                            right: BorderSide(
-                              color: widget.handleColor,
-                              width: 2.0,
-                            ),
-                          ),
-                        )
-                      : null,
+    return MouseRegion(
+      cursor: SystemMouseCursors.resizeColumn,
+      onEnter: (_) => setState(() => _isHovering = true),
+      onExit: (_) => setState(() => _isHovering = false),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onHorizontalDragStart: (details) {
+          _scrollable = Scrollable.maybeOf(context);
+          setState(() {
+            _isDragging = true;
+            _dragWidth = widget.columnWidth;
+          });
+        },
+        onHorizontalDragUpdate: (details) {
+          _dragWidth += details.delta.dx;
+          final clamped = _dragWidth.clamp(
+            widget.minWidth,
+            widget.maxWidth ?? double.infinity,
+          );
+          widget.onResize?.call(widget.columnKey, clamped);
+          _updateAutoScroll(details.globalPosition);
+        },
+        onHorizontalDragEnd: (details) {
+          _stopAutoScroll();
+          _scrollable = null;
+          final clamped = _dragWidth.clamp(
+            widget.minWidth,
+            widget.maxWidth ?? double.infinity,
+          );
+          setState(() => _isDragging = false);
+          widget.onResizeEnd?.call(widget.columnKey, clamped);
+        },
+        onHorizontalDragCancel: () {
+          _stopAutoScroll();
+          _scrollable = null;
+          setState(() => _isDragging = false);
+        },
+        child: (_isHovering || _isDragging)
+            ? Center(
+                child: SizedBox(
+                  width: 2.0,
+                  height: double.infinity,
+                  child: ColoredBox(color: widget.handleColor),
                 ),
-              ),
-            ),
-          ),
-        ],
+              )
+            : const SizedBox.expand(),
       ),
     );
   }
