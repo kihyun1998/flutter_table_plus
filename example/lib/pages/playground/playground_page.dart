@@ -815,10 +815,12 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
   TablePlusTheme _buildTheme() {
     return TablePlusTheme(
       headerTheme: TablePlusHeaderTheme(
-        resizeHandleWidth: _settings.resizeHandleWidth,
-        resizeHandleThickness: _settings.resizeHandleThickness,
-        resizeHandleIndent: _settings.resizeHandleIndent,
-        resizeHandleEndIndent: _settings.resizeHandleEndIndent,
+        resizeHandle: TablePlusResizeHandleTheme(
+          width: _settings.resizeHandleWidth,
+          thickness: _settings.resizeHandleThickness,
+          indent: _settings.resizeHandleIndent,
+          endIndent: _settings.resizeHandleEndIndent,
+        ),
         backgroundColor: Colors.blue.shade50,
         topBorder: TablePlusHeaderBorderTheme(
           show: _settings.headerTopBorderShow,

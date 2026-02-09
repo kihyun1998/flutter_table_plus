@@ -81,6 +81,57 @@ class TablePlusHeaderDividerTheme {
   }
 }
 
+/// Theme configuration for the column resize handle in the header.
+///
+/// Controls the appearance of the drag-to-resize indicator shown at
+/// column boundaries when [resizable] is enabled. The [width] defines
+/// the invisible hit-test area, while [thickness], [color], [indent],
+/// and [endIndent] control the visible indicator line.
+class TablePlusResizeHandleTheme {
+  /// Creates a [TablePlusResizeHandleTheme] with the specified styling properties.
+  const TablePlusResizeHandleTheme({
+    this.width = 8.0,
+    this.color,
+    this.thickness = 2.0,
+    this.indent = 0.0,
+    this.endIndent = 0.0,
+  });
+
+  /// The hit-test width of the resize handle area at the right edge of header cells.
+  final double width;
+
+  /// The color of the resize indicator line shown on hover/drag.
+  /// If null, uses [TablePlusHeaderDividerTheme.color] from the header's
+  /// [TablePlusHeaderTheme.verticalDivider].
+  final Color? color;
+
+  /// The thickness of the visible resize indicator line.
+  final double thickness;
+
+  /// The amount of empty space above the visible resize indicator line.
+  final double indent;
+
+  /// The amount of empty space below the visible resize indicator line.
+  final double endIndent;
+
+  /// Creates a copy of this theme with the given fields replaced with new values.
+  TablePlusResizeHandleTheme copyWith({
+    double? width,
+    Color? color,
+    double? thickness,
+    double? indent,
+    double? endIndent,
+  }) {
+    return TablePlusResizeHandleTheme(
+      width: width ?? this.width,
+      color: color ?? this.color,
+      thickness: thickness ?? this.thickness,
+      indent: indent ?? this.indent,
+      endIndent: endIndent ?? this.endIndent,
+    );
+  }
+}
+
 /// Theme configuration for the table header.
 class TablePlusHeaderTheme {
   /// Creates a [TablePlusHeaderTheme] with the specified styling properties.
@@ -104,11 +155,7 @@ class TablePlusHeaderTheme {
     this.sortIcons = SortIcons.defaultIcons,
     this.sortIconSpacing = 4.0,
     // Resize handle styling
-    this.resizeHandleWidth = 8.0,
-    this.resizeHandleColor,
-    this.resizeHandleThickness = 2.0,
-    this.resizeHandleIndent = 0.0,
-    this.resizeHandleEndIndent = 0.0,
+    this.resizeHandle = const TablePlusResizeHandleTheme(),
   });
 
   /// The height of the header row.
@@ -160,21 +207,11 @@ class TablePlusHeaderTheme {
   /// Spacing between the column label and sort icon.
   final double sortIconSpacing;
 
-  /// The hit-test width of the resize handle area at the right edge of header cells.
-  final double resizeHandleWidth;
-
-  /// The color of the resize indicator line shown on hover/drag.
-  /// If null, uses [verticalDivider.color].
-  final Color? resizeHandleColor;
-
-  /// The thickness of the visible resize indicator line.
-  final double resizeHandleThickness;
-
-  /// The amount of empty space above the visible resize indicator line.
-  final double resizeHandleIndent;
-
-  /// The amount of empty space below the visible resize indicator line.
-  final double resizeHandleEndIndent;
+  /// Theme for the column resize handle shown at column boundaries.
+  ///
+  /// Controls the hit-test area width and the visible indicator line styling.
+  /// If [TablePlusResizeHandleTheme.color] is null, uses [verticalDivider.color].
+  final TablePlusResizeHandleTheme resizeHandle;
 
   /// Creates a copy of this theme with the given fields replaced with new values.
   TablePlusHeaderTheme copyWith({
@@ -191,11 +228,7 @@ class TablePlusHeaderTheme {
     TextStyle? sortedColumnTextStyle,
     SortIcons? sortIcons,
     double? sortIconSpacing,
-    double? resizeHandleWidth,
-    Color? resizeHandleColor,
-    double? resizeHandleThickness,
-    double? resizeHandleIndent,
-    double? resizeHandleEndIndent,
+    TablePlusResizeHandleTheme? resizeHandle,
   }) {
     return TablePlusHeaderTheme(
       height: height ?? this.height,
@@ -213,13 +246,7 @@ class TablePlusHeaderTheme {
           sortedColumnTextStyle ?? this.sortedColumnTextStyle,
       sortIcons: sortIcons ?? this.sortIcons,
       sortIconSpacing: sortIconSpacing ?? this.sortIconSpacing,
-      resizeHandleWidth: resizeHandleWidth ?? this.resizeHandleWidth,
-      resizeHandleColor: resizeHandleColor ?? this.resizeHandleColor,
-      resizeHandleThickness:
-          resizeHandleThickness ?? this.resizeHandleThickness,
-      resizeHandleIndent: resizeHandleIndent ?? this.resizeHandleIndent,
-      resizeHandleEndIndent:
-          resizeHandleEndIndent ?? this.resizeHandleEndIndent,
+      resizeHandle: resizeHandle ?? this.resizeHandle,
     );
   }
 }

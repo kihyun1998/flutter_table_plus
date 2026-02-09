@@ -291,9 +291,9 @@ class _TablePlusHeaderState<T> extends State<TablePlusHeader<T>> {
     if (widget.resizable) {
       final handles = <Widget>[];
       double cumulativeWidth = 0;
-      final handleWidth = widget.theme.resizeHandleWidth;
+      final handleWidth = widget.theme.resizeHandle.width;
       final handleColor =
-          widget.theme.resizeHandleColor ?? widget.theme.verticalDivider.color;
+          widget.theme.resizeHandle.color ?? widget.theme.verticalDivider.color;
 
       for (int i = 0; i < widget.columns.length; i++) {
         final column = widget.columns[i];
@@ -318,9 +318,9 @@ class _TablePlusHeaderState<T> extends State<TablePlusHeader<T>> {
               minWidth: column.minWidth,
               maxWidth: column.maxWidth,
               handleColor: handleColor,
-              handleThickness: widget.theme.resizeHandleThickness,
-              handleIndent: widget.theme.resizeHandleIndent,
-              handleEndIndent: widget.theme.resizeHandleEndIndent,
+              handleThickness: widget.theme.resizeHandle.thickness,
+              handleIndent: widget.theme.resizeHandle.indent,
+              handleEndIndent: widget.theme.resizeHandle.endIndent,
               onResize: widget.onColumnResize,
               onResizeEnd: widget.onColumnResizeEnd,
             ),
