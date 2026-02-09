@@ -264,7 +264,18 @@ class _TablePlusHeaderState<T> extends State<TablePlusHeader<T>> {
                 axis: Axis.horizontal,
                 feedback: Material(
                   elevation: 4,
-                  child: headerCell,
+                  child: _HeaderCell(
+                    column: column,
+                    width: width,
+                    theme: widget.theme,
+                    tooltipTheme: widget.tooltipTheme,
+                    isSorted: widget.sortColumnKey == column.key,
+                    sortDirection: widget.sortColumnKey == column.key
+                        ? widget.sortDirection
+                        : SortDirection.none,
+                    isReordering: true,
+                    showDivider: false,
+                  ),
                 ),
                 childWhenDragging: Opacity(
                   opacity: 0.3,
@@ -357,6 +368,7 @@ class _HeaderCell extends StatelessWidget {
     required this.sortDirection,
     required this.isReordering,
     this.onSortClick,
+    this.showDivider = true,
   });
 
   final TablePlusColumn<dynamic> column;
@@ -367,6 +379,10 @@ class _HeaderCell extends StatelessWidget {
   final SortDirection sortDirection;
   final bool isReordering;
   final VoidCallback? onSortClick;
+
+  /// Whether to show the vertical divider on the right edge.
+  /// Set to `false` for drag feedback to avoid rendering the divider on the floating cell.
+  final bool showDivider;
 
   /// Get the sort icon widget for current state
   Widget? _getSortIcon() {
@@ -499,7 +515,7 @@ class _HeaderCell extends StatelessWidget {
 
     // Overlay vertical divider with indent support
     final divider = theme.verticalDivider;
-    if (divider.show) {
+    if (showDivider && divider.show) {
       content = Stack(
         children: [
           content,

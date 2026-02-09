@@ -5,6 +5,9 @@
     *   Added `TablePlusResizeHandleTheme` class with `width`, `color`, `thickness`, `indent`, `endIndent` and `copyWith`
     *   New composed property: `TablePlusHeaderTheme.resizeHandle` (default `const TablePlusResizeHandleTheme()`)
     *   Consistent with existing `TablePlusHeaderBorderTheme` / `TablePlusHeaderDividerTheme` pattern
+*   **FIX**: Hide vertical divider on column reorder drag feedback
+    *   The floating header cell during drag-and-drop reorder no longer renders the right-edge vertical divider
+    *   Added `showDivider` parameter to `_HeaderCell` (default `true`, set to `false` for feedback only)
 
 ## 2.3.0
 
