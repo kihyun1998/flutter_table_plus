@@ -680,6 +680,13 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
                                       },
                                     ),
                             ),
+
+                            // Reserve space for horizontal scrollbar overlay
+                            if (theme.scrollbarTheme.showHorizontal &&
+                                needsHorizontalScroll)
+                              SizedBox(
+                                  height:
+                                      theme.scrollbarTheme.trackWidth),
                           ],
                         ),
                       ),

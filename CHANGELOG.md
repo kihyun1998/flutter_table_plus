@@ -1,3 +1,9 @@
+## 2.3.5
+
+*   **FIX**: Last row no longer obscured by horizontal scrollbar
+    *   Automatically reserves space equal to `scrollbarTheme.trackWidth` when horizontal scrollbar is visible
+    *   No new parameters required — applied internally based on existing scroll/theme conditions
+
 ## 2.3.4
 
 *   **FEAT**: Added `cellTapTogglesCheckbox` to `TablePlusCheckboxTheme` — expands checkbox tap area to the entire selection column cell, preventing accidental single-select when missing the checkbox
