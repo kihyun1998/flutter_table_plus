@@ -1,3 +1,7 @@
+## 2.3.4
+
+*   **FEAT**: Added `cellTapTogglesCheckbox` to `TablePlusCheckboxTheme` — expands checkbox tap area to the entire selection column cell, preventing accidental single-select when missing the checkbox
+
 ## 2.3.3
 
 *   **FIX**: `checkboxColumnWidth` below default `minWidth` (50) no longer crashes

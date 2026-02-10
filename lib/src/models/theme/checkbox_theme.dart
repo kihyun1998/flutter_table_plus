@@ -31,6 +31,7 @@ class TablePlusCheckboxTheme {
     this.showCheckboxColumn = true,
     this.showSelectAllCheckbox = true,
     this.checkboxColumnWidth = 60.0,
+    this.cellTapTogglesCheckbox = false,
   });
 
   // WidgetStateProperty-based styling properties
@@ -138,6 +139,16 @@ class TablePlusCheckboxTheme {
   /// selection checkbox column.
   final double checkboxColumnWidth;
 
+  /// Whether tapping anywhere in the selection column cell toggles the checkbox.
+  ///
+  /// When true, the entire selection column cell becomes tappable and triggers
+  /// the checkbox callback (multi-select). This prevents accidental single-select
+  /// when the user taps near the checkbox but misses it slightly.
+  ///
+  /// When false (default), only the checkbox itself handles taps. Tapping the
+  /// cell area outside the checkbox falls through to the row tap handler.
+  final bool cellTapTogglesCheckbox;
+
   /// Creates a copy of this theme with the given fields replaced by new values.
   TablePlusCheckboxTheme copyWith({
     WidgetStateProperty<Color?>? fillColor,
@@ -156,6 +167,7 @@ class TablePlusCheckboxTheme {
     bool? showCheckboxColumn,
     bool? showSelectAllCheckbox,
     double? checkboxColumnWidth,
+    bool? cellTapTogglesCheckbox,
   }) {
     return TablePlusCheckboxTheme(
       fillColor: fillColor ?? this.fillColor,
@@ -176,6 +188,8 @@ class TablePlusCheckboxTheme {
       showSelectAllCheckbox:
           showSelectAllCheckbox ?? this.showSelectAllCheckbox,
       checkboxColumnWidth: checkboxColumnWidth ?? this.checkboxColumnWidth,
+      cellTapTogglesCheckbox:
+          cellTapTogglesCheckbox ?? this.cellTapTogglesCheckbox,
     );
   }
 
@@ -190,6 +204,7 @@ class TablePlusCheckboxTheme {
     bool showCheckboxColumn = true,
     bool showSelectAllCheckbox = true,
     double checkboxColumnWidth = 60.0,
+    bool cellTapTogglesCheckbox = false,
   }) {
     return TablePlusCheckboxTheme(
       fillColor: WidgetStateProperty.resolveWith((states) {
@@ -224,6 +239,7 @@ class TablePlusCheckboxTheme {
       checkboxColumnWidth: checkboxColumnWidth,
       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
       visualDensity: VisualDensity.compact,
+      cellTapTogglesCheckbox: cellTapTogglesCheckbox,
     );
   }
 }

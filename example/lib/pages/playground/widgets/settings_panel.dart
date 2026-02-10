@@ -31,6 +31,7 @@ class PlaygroundSettings {
   final double checkboxTapTargetSize;
   final bool selectAllEnabled;
   final bool dragSelectionEnabled;
+  final bool cellTapTogglesCheckbox;
   final SortCycleOrder sortCycleOrder;
   final TooltipBehavior tooltipBehavior;
 
@@ -71,6 +72,7 @@ class PlaygroundSettings {
     this.checkboxTapTargetSize = 18.0,
     this.selectAllEnabled = true,
     this.dragSelectionEnabled = false,
+    this.cellTapTogglesCheckbox = false,
     this.sortCycleOrder = SortCycleOrder.ascendingFirst,
     this.tooltipBehavior = TooltipBehavior.always,
     this.headerTopBorderShow = true,
@@ -108,6 +110,7 @@ class PlaygroundSettings {
     double? checkboxTapTargetSize,
     bool? selectAllEnabled,
     bool? dragSelectionEnabled,
+    bool? cellTapTogglesCheckbox,
     SortCycleOrder? sortCycleOrder,
     TooltipBehavior? tooltipBehavior,
     bool? headerTopBorderShow,
@@ -145,6 +148,8 @@ class PlaygroundSettings {
           checkboxTapTargetSize ?? this.checkboxTapTargetSize,
       selectAllEnabled: selectAllEnabled ?? this.selectAllEnabled,
       dragSelectionEnabled: dragSelectionEnabled ?? this.dragSelectionEnabled,
+      cellTapTogglesCheckbox:
+          cellTapTogglesCheckbox ?? this.cellTapTogglesCheckbox,
       sortCycleOrder: sortCycleOrder ?? this.sortCycleOrder,
       tooltipBehavior: tooltipBehavior ?? this.tooltipBehavior,
       headerTopBorderShow: headerTopBorderShow ?? this.headerTopBorderShow,
@@ -737,6 +742,14 @@ class SettingsPanel extends StatelessWidget {
           value: settings.dragSelectionEnabled,
           onChanged: (value) {
             onSettingsChanged(settings.copyWith(dragSelectionEnabled: value));
+          },
+        ),
+
+        _buildSwitchTile(
+          label: 'Cell Tap Toggles Checkbox',
+          value: settings.cellTapTogglesCheckbox,
+          onChanged: (value) {
+            onSettingsChanged(settings.copyWith(cellTapTogglesCheckbox: value));
           },
         ),
 

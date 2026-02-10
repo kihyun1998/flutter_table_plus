@@ -882,6 +882,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         splashRadius: _settings.checkboxTapTargetSize > 18
             ? _settings.checkboxTapTargetSize / 2
             : null,
+        cellTapTogglesCheckbox: _settings.cellTapTogglesCheckbox,
       ),
     );
   }

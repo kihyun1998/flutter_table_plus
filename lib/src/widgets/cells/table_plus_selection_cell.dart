@@ -24,10 +24,46 @@ class TablePlusSelectionCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final checkbox = SizedBox(
+      width: checkboxTheme.tapTargetSize ?? checkboxTheme.size,
+      height: checkboxTheme.tapTargetSize ?? checkboxTheme.size,
+      child: Checkbox(
+        value: isSelected,
+        onChanged: rowId != null ? (value) => onSelectionChanged(rowId!) : null,
+        activeColor: checkboxTheme.fillColor?.resolve({WidgetState.selected}),
+        hoverColor: checkboxTheme.hoverColor,
+        focusColor: checkboxTheme.focusColor,
+        fillColor: checkboxTheme.fillColor,
+        checkColor: checkboxTheme.checkColor,
+        side: checkboxTheme.side,
+        shape: checkboxTheme.shape,
+        mouseCursor: checkboxTheme.mouseCursor,
+        materialTapTargetSize: checkboxTheme.materialTapTargetSize ??
+            MaterialTapTargetSize.shrinkWrap,
+        visualDensity: checkboxTheme.visualDensity ?? VisualDensity.compact,
+        splashRadius: checkboxTheme.splashRadius,
+        overlayColor: checkboxTheme.overlayColor,
+      ),
+    );
+
+    Widget content = Padding(
+      padding: theme.padding,
+      child: Center(child: checkbox),
+    );
+
+    if (checkboxTheme.cellTapTogglesCheckbox) {
+      content = Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: rowId != null ? () => onSelectionChanged(rowId!) : null,
+          child: content,
+        ),
+      );
+    }
+
     return Container(
       width: width,
       height: calculatedHeight ?? theme.rowHeight,
-      padding: theme.padding,
       decoration: BoxDecoration(
         border: theme.showVerticalDividers
             ? Border(
@@ -38,31 +74,7 @@ class TablePlusSelectionCell extends StatelessWidget {
               )
             : null,
       ),
-      child: Center(
-        child: SizedBox(
-          width: checkboxTheme.tapTargetSize ?? checkboxTheme.size,
-          height: checkboxTheme.tapTargetSize ?? checkboxTheme.size,
-          child: Checkbox(
-            value: isSelected,
-            onChanged:
-                rowId != null ? (value) => onSelectionChanged(rowId!) : null,
-            activeColor:
-                checkboxTheme.fillColor?.resolve({WidgetState.selected}),
-            hoverColor: checkboxTheme.hoverColor,
-            focusColor: checkboxTheme.focusColor,
-            fillColor: checkboxTheme.fillColor,
-            checkColor: checkboxTheme.checkColor,
-            side: checkboxTheme.side,
-            shape: checkboxTheme.shape,
-            mouseCursor: checkboxTheme.mouseCursor,
-            materialTapTargetSize: checkboxTheme.materialTapTargetSize ??
-                MaterialTapTargetSize.shrinkWrap,
-            visualDensity: checkboxTheme.visualDensity ?? VisualDensity.compact,
-            splashRadius: checkboxTheme.splashRadius,
-            overlayColor: checkboxTheme.overlayColor,
-          ),
-        ),
-      ),
+      child: content,
     );
   }
 }
