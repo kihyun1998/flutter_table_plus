@@ -35,6 +35,14 @@ class PlaygroundSettings {
   final bool cellTapTogglesCheckbox;
   final SortCycleOrder sortCycleOrder;
   final TooltipBehavior tooltipBehavior;
+  final TooltipBehavior headerTooltipBehavior;
+  final bool tooltipEnabled;
+  final int tooltipWaitDurationMs;
+  final bool showTooltipFormatter;
+  final bool showTooltipBuilder;
+
+  // Font settings
+  final String fontFamily;
 
   // Header border/divider settings
   final bool headerTopBorderShow;
@@ -77,6 +85,12 @@ class PlaygroundSettings {
     this.cellTapTogglesCheckbox = false,
     this.sortCycleOrder = SortCycleOrder.ascendingFirst,
     this.tooltipBehavior = TooltipBehavior.always,
+    this.headerTooltipBehavior = TooltipBehavior.always,
+    this.tooltipEnabled = true,
+    this.tooltipWaitDurationMs = 500,
+    this.showTooltipFormatter = false,
+    this.showTooltipBuilder = false,
+    this.fontFamily = 'default',
     this.headerTopBorderShow = true,
     this.headerTopBorderThickness = 2.0,
     this.headerBottomBorderShow = true,
@@ -116,6 +130,12 @@ class PlaygroundSettings {
     bool? cellTapTogglesCheckbox,
     SortCycleOrder? sortCycleOrder,
     TooltipBehavior? tooltipBehavior,
+    TooltipBehavior? headerTooltipBehavior,
+    bool? tooltipEnabled,
+    int? tooltipWaitDurationMs,
+    bool? showTooltipFormatter,
+    bool? showTooltipBuilder,
+    String? fontFamily,
     bool? headerTopBorderShow,
     double? headerTopBorderThickness,
     bool? headerBottomBorderShow,
@@ -156,6 +176,14 @@ class PlaygroundSettings {
           cellTapTogglesCheckbox ?? this.cellTapTogglesCheckbox,
       sortCycleOrder: sortCycleOrder ?? this.sortCycleOrder,
       tooltipBehavior: tooltipBehavior ?? this.tooltipBehavior,
+      headerTooltipBehavior:
+          headerTooltipBehavior ?? this.headerTooltipBehavior,
+      tooltipEnabled: tooltipEnabled ?? this.tooltipEnabled,
+      tooltipWaitDurationMs:
+          tooltipWaitDurationMs ?? this.tooltipWaitDurationMs,
+      showTooltipFormatter: showTooltipFormatter ?? this.showTooltipFormatter,
+      showTooltipBuilder: showTooltipBuilder ?? this.showTooltipBuilder,
+      fontFamily: fontFamily ?? this.fontFamily,
       headerTopBorderShow: headerTopBorderShow ?? this.headerTopBorderShow,
       headerTopBorderThickness:
           headerTopBorderThickness ?? this.headerTopBorderThickness,
@@ -239,6 +267,10 @@ class SettingsPanel extends StatelessWidget {
 
             // Feature Toggles
             _buildFeatureToggles(),
+            const SizedBox(height: 24),
+
+            // Tooltip Settings
+            _buildTooltipSettings(),
             const SizedBox(height: 24),
 
             // Performance Monitor
@@ -379,6 +411,25 @@ class SettingsPanel extends StatelessWidget {
       borderColor: Colors.purple.shade200,
       children: [
         const SizedBox(height: 12),
+
+        // Font family
+        _buildDropdownRow<String>(
+          label: 'Font Family',
+          value: settings.fontFamily,
+          items: const ['default', 'pretendard', 'notoSansKr', 'inter', 'firaCode'],
+          itemLabel: (font) => switch (font) {
+            'default' => 'Default (Roboto)',
+            'pretendard' => 'Pretendard',
+            'notoSansKr' => 'Noto Sans KR',
+            'inter' => 'Inter',
+            'firaCode' => 'Fira Code',
+            _ => font,
+          },
+          onChanged: (value) {
+            onSettingsChanged(settings.copyWith(fontFamily: value));
+          },
+        ),
+        const SizedBox(height: 16),
 
         // Column min width
         _buildSliderSetting(
@@ -793,22 +844,114 @@ class SettingsPanel extends StatelessWidget {
             onSettingsChanged(settings.copyWith(sortCycleOrder: value));
           },
         ),
-        const SizedBox(height: 8),
+      ],
+    );
+  }
 
-        // Tooltip behavior dropdown
-        _buildDropdownRow<TooltipBehavior>(
-          label: 'Tooltip',
-          value: settings.tooltipBehavior,
-          items: TooltipBehavior.values,
-          itemLabel: (behavior) => switch (behavior) {
-            TooltipBehavior.always => 'Always',
-            TooltipBehavior.never => 'Never',
-            TooltipBehavior.onlyTextOverflow => 'On Overflow',
-          },
+  Widget _buildTooltipSettings() {
+    return _buildSection(
+      title: 'Tooltip Settings',
+      icon: Icons.chat_bubble_outline,
+      color: Colors.indigo.shade700,
+      borderColor: Colors.indigo.shade200,
+      children: [
+        const SizedBox(height: 12),
+
+        // Tooltip enabled toggle
+        _buildSwitchTile(
+          label: 'Tooltip Enabled',
+          value: settings.tooltipEnabled,
           onChanged: (value) {
-            onSettingsChanged(settings.copyWith(tooltipBehavior: value));
+            onSettingsChanged(settings.copyWith(tooltipEnabled: value));
           },
         ),
+
+        if (settings.tooltipEnabled) ...[
+          const SizedBox(height: 8),
+
+          // Cell tooltip behavior
+          _buildDropdownRow<TooltipBehavior>(
+            label: 'Cell Tooltip',
+            value: settings.tooltipBehavior,
+            items: TooltipBehavior.values,
+            itemLabel: (behavior) => switch (behavior) {
+              TooltipBehavior.always => 'Always',
+              TooltipBehavior.never => 'Never',
+              TooltipBehavior.onlyTextOverflow => 'On Overflow',
+            },
+            onChanged: (value) {
+              onSettingsChanged(settings.copyWith(tooltipBehavior: value));
+            },
+          ),
+          const SizedBox(height: 4),
+
+          // Header tooltip behavior
+          _buildDropdownRow<TooltipBehavior>(
+            label: 'Header Tooltip',
+            value: settings.headerTooltipBehavior,
+            items: TooltipBehavior.values,
+            itemLabel: (behavior) => switch (behavior) {
+              TooltipBehavior.always => 'Always',
+              TooltipBehavior.never => 'Never',
+              TooltipBehavior.onlyTextOverflow => 'On Overflow',
+            },
+            onChanged: (value) {
+              onSettingsChanged(
+                  settings.copyWith(headerTooltipBehavior: value));
+            },
+          ),
+
+          const Divider(height: 24),
+
+          // Wait duration slider
+          _buildSliderSetting(
+            label: 'Wait Duration',
+            value: settings.tooltipWaitDurationMs.toDouble(),
+            min: 0,
+            max: 2000,
+            unit: 'ms',
+            onChanged: (value) {
+              onSettingsChanged(
+                  settings.copyWith(tooltipWaitDurationMs: value.round()));
+            },
+          ),
+
+          const Divider(height: 24),
+
+          // Demo: tooltipFormatter
+          _buildSwitchTile(
+            label: 'tooltipFormatter (Email)',
+            value: settings.showTooltipFormatter,
+            onChanged: (value) {
+              onSettingsChanged(settings.copyWith(showTooltipFormatter: value));
+            },
+          ),
+          if (settings.showTooltipFormatter)
+            Padding(
+              padding: const EdgeInsets.only(left: 8, bottom: 4),
+              child: Text(
+                'Email column shows "Send to: {email}" tooltip',
+                style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+              ),
+            ),
+
+          // Demo: tooltipBuilder
+          _buildSwitchTile(
+            label: 'tooltipBuilder (Name)',
+            value: settings.showTooltipBuilder,
+            onChanged: (value) {
+              onSettingsChanged(settings.copyWith(showTooltipBuilder: value));
+            },
+          ),
+          if (settings.showTooltipBuilder)
+            Padding(
+              padding: const EdgeInsets.only(left: 8, bottom: 4),
+              child: Text(
+                'Name column shows rich widget tooltip with employee details',
+                style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+              ),
+            ),
+        ],
       ],
     );
   }

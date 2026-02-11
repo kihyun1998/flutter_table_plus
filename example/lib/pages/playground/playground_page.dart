@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
 import 'models/employee.dart';
 import 'utils/random_data_generator.dart';
@@ -56,7 +57,8 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
   void _initializeColumns() {
     final builder = TableColumnsBuilder<Employee>();
 
-    final tooltip = _settings.tooltipBehavior;
+    final cellTooltip = _settings.tooltipBehavior;
+    final headerTooltip = _settings.headerTooltipBehavior;
     final minW = _settings.columnMinWidth;
 
     builder.addColumn(
@@ -70,8 +72,8 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         minWidth: minW,
         maxWidth: 80,
         sortable: false,
-        tooltipBehavior: tooltip,
-        headerTooltipBehavior: tooltip,
+        tooltipBehavior: cellTooltip,
+        headerTooltipBehavior: headerTooltip,
       ),
     );
 
@@ -85,8 +87,29 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         width: 180,
         minWidth: minW,
         sortable: _settings.sortingEnabled,
-        tooltipBehavior: tooltip,
-        headerTooltipBehavior: tooltip,
+        tooltipBehavior: cellTooltip,
+        headerTooltipBehavior: headerTooltip,
+        tooltipBuilder: _settings.showTooltipBuilder
+            ? (context, employee) => Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      employee.name,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text('${employee.position} - ${employee.department}'),
+                    Text(
+                      '\$${_formatNumber(employee.salary)}',
+                      style: TextStyle(color: Colors.green.shade300),
+                    ),
+                  ],
+                )
+            : null,
       ),
     );
 
@@ -101,8 +124,8 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         minWidth: minW,
         sortable: _settings.sortingEnabled,
         editable: _settings.editingEnabled,
-        tooltipBehavior: tooltip,
-        headerTooltipBehavior: tooltip,
+        tooltipBehavior: cellTooltip,
+        headerTooltipBehavior: headerTooltip,
       ),
     );
 
@@ -117,8 +140,8 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         minWidth: minW,
         sortable: _settings.sortingEnabled,
         editable: _settings.editingEnabled,
-        tooltipBehavior: tooltip,
-        headerTooltipBehavior: tooltip,
+        tooltipBehavior: cellTooltip,
+        headerTooltipBehavior: headerTooltip,
       ),
     );
 
@@ -134,8 +157,8 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         maxWidth: 150,
         sortable: _settings.sortingEnabled,
         editable: _settings.editingEnabled,
-        tooltipBehavior: tooltip,
-        headerTooltipBehavior: tooltip,
+        tooltipBehavior: cellTooltip,
+        headerTooltipBehavior: headerTooltip,
         statefulCellBuilder: (context, employee, isSelected, isDim) {
           return Center(
             child: Text(
@@ -165,8 +188,8 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         minWidth: minW,
         maxWidth: 160,
         sortable: _settings.sortingEnabled,
-        tooltipBehavior: tooltip,
-        headerTooltipBehavior: tooltip,
+        tooltipBehavior: cellTooltip,
+        headerTooltipBehavior: headerTooltip,
         statefulCellBuilder: (context, employee, isSelected, isDim) {
           return Center(
             child: Container(
@@ -202,8 +225,11 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         width: 220,
         minWidth: minW,
         sortable: _settings.sortingEnabled,
-        tooltipBehavior: tooltip,
-        headerTooltipBehavior: tooltip,
+        tooltipBehavior: cellTooltip,
+        headerTooltipBehavior: headerTooltip,
+        tooltipFormatter: _settings.showTooltipFormatter
+            ? (employee) => 'Send to: ${employee.email}'
+            : null,
       ),
     );
 
@@ -218,8 +244,8 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         minWidth: minW,
         maxWidth: 160,
         sortable: _settings.sortingEnabled,
-        tooltipBehavior: tooltip,
-        headerTooltipBehavior: tooltip,
+        tooltipBehavior: cellTooltip,
+        headerTooltipBehavior: headerTooltip,
       ),
     );
 
@@ -278,6 +304,12 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
           newSettings.sortingEnabled != oldSettings.sortingEnabled ||
               newSettings.editingEnabled != oldSettings.editingEnabled ||
               newSettings.tooltipBehavior != oldSettings.tooltipBehavior ||
+              newSettings.headerTooltipBehavior !=
+                  oldSettings.headerTooltipBehavior ||
+              newSettings.showTooltipFormatter !=
+                  oldSettings.showTooltipFormatter ||
+              newSettings.showTooltipBuilder !=
+                  oldSettings.showTooltipBuilder ||
               newSettings.columnMinWidth != oldSettings.columnMinWidth;
 
       if (needsColumnRebuild) {
@@ -828,6 +860,26 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
     );
   }
 
+  TextStyle _fontTextStyle({
+    double? fontSize,
+    Color? color,
+    FontWeight? fontWeight,
+  }) {
+    return switch (_settings.fontFamily) {
+      'pretendard' => TextStyle(
+          fontFamily: 'Pretendard',
+          fontSize: fontSize, color: color, fontWeight: fontWeight),
+      'notoSansKr' => GoogleFonts.notoSansKr(
+          fontSize: fontSize, color: color, fontWeight: fontWeight),
+      'inter' => GoogleFonts.inter(
+          fontSize: fontSize, color: color, fontWeight: fontWeight),
+      'firaCode' => GoogleFonts.firaCode(
+          fontSize: fontSize, color: color, fontWeight: fontWeight),
+      _ =>
+        TextStyle(fontSize: fontSize, color: color, fontWeight: fontWeight),
+    };
+  }
+
   TablePlusTheme _buildTheme() {
     return TablePlusTheme(
       headerTheme: TablePlusHeaderTheme(
@@ -855,7 +907,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
           indent: _settings.headerVerticalDividerIndent,
           endIndent: _settings.headerVerticalDividerEndIndent,
         ),
-        textStyle: TextStyle(
+        textStyle: _fontTextStyle(
           fontWeight: FontWeight.w600,
           color: Colors.blue.shade800,
           fontSize: _settings.fontSize,
@@ -870,7 +922,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         alternateRowColor: _settings.showAlternateRows
             ? Colors.blue.shade50.withValues(alpha: 0.3)
             : null,
-        textStyle: TextStyle(
+        textStyle: _fontTextStyle(
           fontSize: _settings.fontSize,
           color: Colors.black87,
         ),
@@ -899,6 +951,12 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
             ? _settings.checkboxTapTargetSize / 2
             : null,
         cellTapTogglesCheckbox: _settings.cellTapTogglesCheckbox,
+      ),
+      tooltipTheme: TablePlusTooltipTheme(
+        enabled: _settings.tooltipEnabled,
+        waitDuration:
+            Duration(milliseconds: _settings.tooltipWaitDurationMs),
+        textStyle: _fontTextStyle(fontSize: 12, color: Colors.white),
       ),
     );
   }
