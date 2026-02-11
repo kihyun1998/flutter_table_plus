@@ -68,6 +68,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         valueAccessor: (row) => row.avatar,
         width: 60,
         minWidth: minW,
+        maxWidth: 80,
         sortable: false,
         tooltipBehavior: tooltip,
         headerTooltipBehavior: tooltip,
@@ -130,6 +131,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         valueAccessor: (row) => row.salary,
         width: 120,
         minWidth: minW,
+        maxWidth: 150,
         sortable: _settings.sortingEnabled,
         editable: _settings.editingEnabled,
         tooltipBehavior: tooltip,
@@ -161,6 +163,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         valueAccessor: (row) => row.performance,
         width: 130,
         minWidth: minW,
+        maxWidth: 160,
         sortable: _settings.sortingEnabled,
         tooltipBehavior: tooltip,
         headerTooltipBehavior: tooltip,
@@ -213,6 +216,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         valueAccessor: (row) => row.phone,
         width: 130,
         minWidth: minW,
+        maxWidth: 160,
         sortable: _settings.sortingEnabled,
         tooltipBehavior: tooltip,
         headerTooltipBehavior: tooltip,
@@ -278,6 +282,11 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
 
       if (needsColumnRebuild) {
         _initializeColumns();
+      }
+
+      // Clear selection when selection is disabled
+      if (!newSettings.selectionEnabled && oldSettings.selectionEnabled) {
+        _selectedRows.clear();
       }
 
       // Update merged groups if toggle changed
@@ -723,7 +732,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
           debugPrint(
               '↔️ Resized column "$columnKey" to ${newWidth.toStringAsFixed(1)}px');
         },
-        isSelectable: true,
+        isSelectable: _settings.selectionEnabled,
         selectionMode: _settings.selectionMode,
         selectedRows: _selectedRows,
         onRowSelectionChanged: _handleRowSelection,

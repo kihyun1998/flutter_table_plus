@@ -17,6 +17,7 @@ class PlaygroundSettings {
 
   // Feature toggles
   final bool sortingEnabled;
+  final bool selectionEnabled;
   final SelectionMode selectionMode;
   final bool editingEnabled;
   final bool mergedRowsEnabled;
@@ -58,6 +59,7 @@ class PlaygroundSettings {
     this.horizontalPadding = 16.0,
     this.verticalPadding = 12.0,
     this.sortingEnabled = true,
+    this.selectionEnabled = true,
     this.selectionMode = SelectionMode.multiple,
     this.editingEnabled = true,
     this.mergedRowsEnabled = false,
@@ -96,6 +98,7 @@ class PlaygroundSettings {
     double? horizontalPadding,
     double? verticalPadding,
     bool? sortingEnabled,
+    bool? selectionEnabled,
     SelectionMode? selectionMode,
     bool? editingEnabled,
     bool? mergedRowsEnabled,
@@ -133,6 +136,7 @@ class PlaygroundSettings {
       horizontalPadding: horizontalPadding ?? this.horizontalPadding,
       verticalPadding: verticalPadding ?? this.verticalPadding,
       sortingEnabled: sortingEnabled ?? this.sortingEnabled,
+      selectionEnabled: selectionEnabled ?? this.selectionEnabled,
       selectionMode: selectionMode ?? this.selectionMode,
       editingEnabled: editingEnabled ?? this.editingEnabled,
       mergedRowsEnabled: mergedRowsEnabled ?? this.mergedRowsEnabled,
@@ -722,36 +726,44 @@ class SettingsPanel extends StatelessWidget {
         ),
 
         _buildSwitchTile(
-          label: 'Show Checkbox Column',
-          value: settings.showCheckboxColumn,
+          label: 'Selection (Checkbox)',
+          value: settings.selectionEnabled,
           onChanged: (value) {
-            onSettingsChanged(settings.copyWith(showCheckboxColumn: value));
+            onSettingsChanged(settings.copyWith(selectionEnabled: value));
           },
         ),
 
-        _buildSwitchTile(
-          label: 'Select All',
-          value: settings.selectAllEnabled,
-          onChanged: (value) {
-            onSettingsChanged(settings.copyWith(selectAllEnabled: value));
-          },
-        ),
-
-        _buildSwitchTile(
-          label: 'Drag Selection',
-          value: settings.dragSelectionEnabled,
-          onChanged: (value) {
-            onSettingsChanged(settings.copyWith(dragSelectionEnabled: value));
-          },
-        ),
-
-        _buildSwitchTile(
-          label: 'Cell Tap Toggles Checkbox',
-          value: settings.cellTapTogglesCheckbox,
-          onChanged: (value) {
-            onSettingsChanged(settings.copyWith(cellTapTogglesCheckbox: value));
-          },
-        ),
+        if (settings.selectionEnabled) ...[
+          _buildSwitchTile(
+            label: 'Show Checkbox Column',
+            value: settings.showCheckboxColumn,
+            onChanged: (value) {
+              onSettingsChanged(settings.copyWith(showCheckboxColumn: value));
+            },
+          ),
+          _buildSwitchTile(
+            label: 'Select All',
+            value: settings.selectAllEnabled,
+            onChanged: (value) {
+              onSettingsChanged(settings.copyWith(selectAllEnabled: value));
+            },
+          ),
+          _buildSwitchTile(
+            label: 'Drag Selection',
+            value: settings.dragSelectionEnabled,
+            onChanged: (value) {
+              onSettingsChanged(settings.copyWith(dragSelectionEnabled: value));
+            },
+          ),
+          _buildSwitchTile(
+            label: 'Cell Tap Toggles Checkbox',
+            value: settings.cellTapTogglesCheckbox,
+            onChanged: (value) {
+              onSettingsChanged(
+                  settings.copyWith(cellTapTogglesCheckbox: value));
+            },
+          ),
+        ],
 
         const SizedBox(height: 12),
         const Divider(),

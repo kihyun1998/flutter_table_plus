@@ -1,3 +1,9 @@
+## 2.4.1
+
+*   **FIX**: Columns hitting `maxWidth` no longer leave unused space at the end of the table
+    *   Proportional width distribution now uses iterative redistribution — when a flexible column is clamped to `maxWidth`, the excess space is re-distributed to remaining flexible columns
+    *   Guarantees all available width is consumed when uncapped columns exist
+
 ## 2.4.0
 
 *   **FEAT**: Added `statefulCellBuilder` to `TablePlusColumn` — custom cell builder with `isSelected` and `isDim` state
