@@ -466,8 +466,8 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
     final column = widget.columns[columnKey];
     if (column == null || !column.editable) return;
 
-    // Check if column has cellBuilder (can't edit custom cells)
-    if (column.cellBuilder != null) return;
+    // Check if column has custom cell builder (can't edit custom cells)
+    if (column.hasCustomCellBuilder) return;
 
     setState(() {
       // Stop any current editing
@@ -684,9 +684,7 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
                             // Reserve space for horizontal scrollbar overlay
                             if (theme.scrollbarTheme.showHorizontal &&
                                 needsHorizontalScroll)
-                              SizedBox(
-                                  height:
-                                      theme.scrollbarTheme.trackWidth),
+                              SizedBox(height: theme.scrollbarTheme.trackWidth),
                           ],
                         ),
                       ),

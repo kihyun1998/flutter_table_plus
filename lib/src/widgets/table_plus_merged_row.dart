@@ -218,13 +218,14 @@ class _TablePlusMergedRowState<T> extends State<TablePlusMergedRow<T>> {
     } else if (isCurrentlyEditing) {
       content = _buildMergedCellEditingTextField(
           context, column, spanningDataIndex, rowData, mergedHeight);
-    } else if (column.cellBuilder != null && rowData != null) {
+    } else if (column.hasCustomCellBuilder && rowData != null) {
       content = Container(
         alignment: column.alignment,
         padding: widget.theme.padding,
         child: Align(
           alignment: column.alignment,
-          child: column.cellBuilder!(context, rowData),
+          child: column.buildCustomCell(
+              context, rowData, widget.isSelected, widget.isDim),
         ),
       );
     } else {
@@ -398,13 +399,14 @@ class _TablePlusMergedRowState<T> extends State<TablePlusMergedRow<T>> {
     if (isCurrentlyEditing) {
       content = _buildStackedCellEditingTextField(
           context, column, originalIndex, rowData, groupHeight);
-    } else if (column.cellBuilder != null && rowData != null) {
+    } else if (column.hasCustomCellBuilder && rowData != null) {
       content = Container(
         alignment: column.alignment,
         padding: widget.theme.padding,
         child: Align(
           alignment: column.alignment,
-          child: column.cellBuilder!(context, rowData),
+          child: column.buildCustomCell(
+              context, rowData, widget.isSelected, widget.isDim),
         ),
       );
     } else {

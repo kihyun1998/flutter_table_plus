@@ -77,7 +77,7 @@ class TableRowHeightCalculator {
       final column = columns[i];
 
       // Skip columns with custom cell builders (can't calculate height)
-      if (column.cellBuilder != null) continue;
+      if (column.hasCustomCellBuilder) continue;
 
       // Skip if TextOverflow is not visible (no dynamic height needed)
       if (column.textOverflow != TextOverflow.visible) continue;

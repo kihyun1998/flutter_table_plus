@@ -1,3 +1,11 @@
+## 2.4.0
+
+*   **FEAT**: Added `statefulCellBuilder` to `TablePlusColumn` — custom cell builder with `isSelected` and `isDim` state
+    *   Signature: `Widget Function(BuildContext context, T rowData, bool isSelected, bool isDim)`
+    *   Takes precedence over `cellBuilder` when both are provided
+    *   Added `hasCustomCellBuilder` getter and `buildCustomCell()` helper on `TablePlusColumn`
+*   **DEPRECATED**: `cellBuilder` — use `statefulCellBuilder` instead for access to row selection and dim state
+
 ## 2.3.5
 
 *   **FIX**: Last row no longer obscured by horizontal scrollbar

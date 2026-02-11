@@ -125,11 +125,17 @@ class _TablePlusCellState<T> extends State<TablePlusCell<T>> {
 
   /// Build the regular cell content
   Widget _buildRegularCell() {
-    // Use custom cell builder if provided
-    if (widget.column.cellBuilder != null) {
+    // Use custom cell builder if provided (statefulCellBuilder takes precedence)
+    final customCell = widget.column.buildCustomCell(
+      context,
+      widget.rowData,
+      widget.isSelected,
+      widget.isDim,
+    );
+    if (customCell != null) {
       return Align(
         alignment: widget.column.alignment,
-        child: widget.column.cellBuilder!(context, widget.rowData),
+        child: customCell,
       );
     }
 

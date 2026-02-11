@@ -134,13 +134,17 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         editable: _settings.editingEnabled,
         tooltipBehavior: tooltip,
         headerTooltipBehavior: tooltip,
-        cellBuilder: (context, employee) {
+        statefulCellBuilder: (context, employee, isSelected, isDim) {
           return Center(
             child: Text(
               '\$${_formatNumber(employee.salary)}',
               style: TextStyle(
                 fontWeight: FontWeight.w600,
-                color: Colors.green.shade700,
+                color: isSelected
+                    ? Colors.white
+                    : isDim
+                        ? Colors.green.shade300
+                        : Colors.green.shade700,
               ),
             ),
           );
@@ -160,12 +164,15 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         sortable: _settings.sortingEnabled,
         tooltipBehavior: tooltip,
         headerTooltipBehavior: tooltip,
-        cellBuilder: (context, employee) {
+        statefulCellBuilder: (context, employee, isSelected, isDim) {
           return Center(
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: _getPerformanceColor(employee.performance),
+                color: isDim
+                    ? _getPerformanceColor(employee.performance)
+                        .withValues(alpha: 0.5)
+                    : _getPerformanceColor(employee.performance),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
