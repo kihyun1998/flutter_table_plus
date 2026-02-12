@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
 import 'models/employee.dart';
@@ -300,17 +301,16 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
       _settings = newSettings;
 
       // Check if features changed that require column rebuild
-      final needsColumnRebuild =
-          newSettings.sortingEnabled != oldSettings.sortingEnabled ||
-              newSettings.editingEnabled != oldSettings.editingEnabled ||
-              newSettings.tooltipBehavior != oldSettings.tooltipBehavior ||
-              newSettings.headerTooltipBehavior !=
-                  oldSettings.headerTooltipBehavior ||
-              newSettings.showTooltipFormatter !=
-                  oldSettings.showTooltipFormatter ||
-              newSettings.showTooltipBuilder !=
-                  oldSettings.showTooltipBuilder ||
-              newSettings.columnMinWidth != oldSettings.columnMinWidth;
+      final needsColumnRebuild = newSettings.sortingEnabled !=
+              oldSettings.sortingEnabled ||
+          newSettings.editingEnabled != oldSettings.editingEnabled ||
+          newSettings.tooltipBehavior != oldSettings.tooltipBehavior ||
+          newSettings.headerTooltipBehavior !=
+              oldSettings.headerTooltipBehavior ||
+          newSettings.showTooltipFormatter !=
+              oldSettings.showTooltipFormatter ||
+          newSettings.showTooltipBuilder != oldSettings.showTooltipBuilder ||
+          newSettings.columnMinWidth != oldSettings.columnMinWidth;
 
       if (needsColumnRebuild) {
         _initializeColumns();
@@ -868,15 +868,16 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
     return switch (_settings.fontFamily) {
       'pretendard' => TextStyle(
           fontFamily: 'Pretendard',
-          fontSize: fontSize, color: color, fontWeight: fontWeight),
+          fontSize: fontSize,
+          color: color,
+          fontWeight: fontWeight),
       'notoSansKr' => GoogleFonts.notoSansKr(
           fontSize: fontSize, color: color, fontWeight: fontWeight),
       'inter' => GoogleFonts.inter(
           fontSize: fontSize, color: color, fontWeight: fontWeight),
       'firaCode' => GoogleFonts.firaCode(
           fontSize: fontSize, color: color, fontWeight: fontWeight),
-      _ =>
-        TextStyle(fontSize: fontSize, color: color, fontWeight: fontWeight),
+      _ => TextStyle(fontSize: fontSize, color: color, fontWeight: fontWeight),
     };
   }
 
@@ -916,6 +917,36 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
           horizontal: _settings.horizontalPadding,
           vertical: _settings.verticalPadding,
         ),
+        sortIcons: SortIcons(
+          ascending: SvgPicture.asset(
+            'assets/icons/up.svg',
+            width: _settings.sortIconWidth,
+            height: _settings.sortIconWidth,
+            colorFilter: ColorFilter.mode(
+              Colors.blue.shade700,
+              BlendMode.srcIn,
+            ),
+          ),
+          descending: SvgPicture.asset(
+            'assets/icons/down.svg',
+            width: _settings.sortIconWidth,
+            height: _settings.sortIconWidth,
+            colorFilter: ColorFilter.mode(
+              Colors.blue.shade700,
+              BlendMode.srcIn,
+            ),
+          ),
+          unsorted: SvgPicture.asset(
+            'assets/icons/upndown.svg',
+            width: _settings.sortIconWidth,
+            height: _settings.sortIconWidth,
+            colorFilter: const ColorFilter.mode(
+              Colors.grey,
+              BlendMode.srcIn,
+            ),
+          ),
+        ),
+        sortIconWidth: _settings.sortIconWidth,
       ),
       bodyTheme: TablePlusBodyTheme(
         backgroundColor: Colors.white,
@@ -954,8 +985,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
       ),
       tooltipTheme: TablePlusTooltipTheme(
         enabled: _settings.tooltipEnabled,
-        waitDuration:
-            Duration(milliseconds: _settings.tooltipWaitDurationMs),
+        waitDuration: Duration(milliseconds: _settings.tooltipWaitDurationMs),
         textStyle: _fontTextStyle(fontSize: 12, color: Colors.white),
       ),
     );

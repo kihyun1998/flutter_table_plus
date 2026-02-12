@@ -433,9 +433,10 @@ class _HeaderCell extends StatelessWidget {
 
       case TooltipBehavior.onlyTextOverflow:
         final padding = theme.padding;
-        final sortIconWidth =
-            column.sortable && onSortClick != null ? 24.0 : 0.0;
-        final availableWidth = width - padding.horizontal - sortIconWidth;
+        final sortIconArea = _getSortIcon() != null
+            ? theme.sortIconSpacing + theme.sortIconWidth
+            : 0.0;
+        final availableWidth = width - padding.horizontal - sortIconArea;
 
         return TextOverflowDetector.willTextOverflowInContext(
           context: context,
@@ -506,7 +507,7 @@ class _HeaderCell extends StatelessWidget {
             // Sort icon
             if (sortIcon != null) ...[
               SizedBox(width: theme.sortIconSpacing),
-              sortIcon,
+              SizedBox(width: theme.sortIconWidth, child: sortIcon),
             ],
           ],
         ),

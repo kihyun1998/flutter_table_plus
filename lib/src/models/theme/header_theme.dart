@@ -154,6 +154,7 @@ class TablePlusHeaderTheme {
     this.sortedColumnTextStyle,
     this.sortIcons = SortIcons.defaultIcons,
     this.sortIconSpacing = 4.0,
+    this.sortIconWidth = 16.0,
     // Resize handle styling
     this.resizeHandle = const TablePlusResizeHandleTheme(),
   });
@@ -207,6 +208,13 @@ class TablePlusHeaderTheme {
   /// Spacing between the column label and sort icon.
   final double sortIconSpacing;
 
+  /// The width allocated for the sort icon widget.
+  ///
+  /// The sort icon is wrapped in a [SizedBox] of this width to ensure
+  /// consistent layout and accurate tooltip overflow detection.
+  /// Adjust this value when using custom sort icons with a different size.
+  final double sortIconWidth;
+
   /// Theme for the column resize handle shown at column boundaries.
   ///
   /// Controls the hit-test area width and the visible indicator line styling.
@@ -228,6 +236,7 @@ class TablePlusHeaderTheme {
     TextStyle? sortedColumnTextStyle,
     SortIcons? sortIcons,
     double? sortIconSpacing,
+    double? sortIconWidth,
     TablePlusResizeHandleTheme? resizeHandle,
   }) {
     return TablePlusHeaderTheme(
@@ -246,6 +255,7 @@ class TablePlusHeaderTheme {
           sortedColumnTextStyle ?? this.sortedColumnTextStyle,
       sortIcons: sortIcons ?? this.sortIcons,
       sortIconSpacing: sortIconSpacing ?? this.sortIconSpacing,
+      sortIconWidth: sortIconWidth ?? this.sortIconWidth,
       resizeHandle: resizeHandle ?? this.resizeHandle,
     );
   }

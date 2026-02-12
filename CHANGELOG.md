@@ -1,3 +1,11 @@
+## 2.4.2
+
+*   **FEAT**: Added `sortIconWidth` to `TablePlusHeaderTheme` for accurate tooltip overflow detection with custom sort icons
+    *   Sort icon is wrapped in `SizedBox(width: sortIconWidth)` to enforce consistent layout
+    *   Header tooltip calculation uses `sortIconSpacing + sortIconWidth` instead of hardcoded `24.0`
+    *   Tooltip now checks actual icon visibility — no space subtracted when `unsorted` icon is `null`
+    *   Default `16.0` matches built-in `SortIcons.defaultIcons` size
+
 ## 2.4.1
 
 *   **FIX**: Columns hitting `maxWidth` no longer leave unused space at the end of the table

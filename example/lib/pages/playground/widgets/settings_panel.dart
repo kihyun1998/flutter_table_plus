@@ -54,6 +54,9 @@ class PlaygroundSettings {
   final double headerVerticalDividerIndent;
   final double headerVerticalDividerEndIndent;
 
+  // Sort icon settings
+  final double sortIconWidth;
+
   // Resize handle settings
   final double resizeHandleThickness;
   final double resizeHandleIndent;
@@ -99,6 +102,7 @@ class PlaygroundSettings {
     this.headerVerticalDividerThickness = 1.0,
     this.headerVerticalDividerIndent = 0.0,
     this.headerVerticalDividerEndIndent = 0.0,
+    this.sortIconWidth = 14.0,
     this.resizeHandleThickness = 2.0,
     this.resizeHandleIndent = 0.0,
     this.resizeHandleEndIndent = 0.0,
@@ -144,6 +148,7 @@ class PlaygroundSettings {
     double? headerVerticalDividerThickness,
     double? headerVerticalDividerIndent,
     double? headerVerticalDividerEndIndent,
+    double? sortIconWidth,
     double? resizeHandleThickness,
     double? resizeHandleIndent,
     double? resizeHandleEndIndent,
@@ -199,6 +204,7 @@ class PlaygroundSettings {
           headerVerticalDividerIndent ?? this.headerVerticalDividerIndent,
       headerVerticalDividerEndIndent:
           headerVerticalDividerEndIndent ?? this.headerVerticalDividerEndIndent,
+      sortIconWidth: sortIconWidth ?? this.sortIconWidth,
       resizeHandleThickness:
           resizeHandleThickness ?? this.resizeHandleThickness,
       resizeHandleIndent: resizeHandleIndent ?? this.resizeHandleIndent,
@@ -416,7 +422,13 @@ class SettingsPanel extends StatelessWidget {
         _buildDropdownRow<String>(
           label: 'Font Family',
           value: settings.fontFamily,
-          items: const ['default', 'pretendard', 'notoSansKr', 'inter', 'firaCode'],
+          items: const [
+            'default',
+            'pretendard',
+            'notoSansKr',
+            'inter',
+            'firaCode'
+          ],
           itemLabel: (font) => switch (font) {
             'default' => 'Default (Roboto)',
             'pretendard' => 'Pretendard',
@@ -521,6 +533,19 @@ class SettingsPanel extends StatelessWidget {
           unit: 'px',
           onChanged: (value) {
             onSettingsChanged(settings.copyWith(checkboxTapTargetSize: value));
+          },
+        ),
+        const SizedBox(height: 16),
+
+        // Sort icon width
+        _buildSliderSetting(
+          label: 'Sort Icon Width',
+          value: settings.sortIconWidth,
+          min: 8,
+          max: 32,
+          unit: 'px',
+          onChanged: (value) {
+            onSettingsChanged(settings.copyWith(sortIconWidth: value));
           },
         ),
       ],
