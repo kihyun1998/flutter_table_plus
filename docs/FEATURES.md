@@ -10,6 +10,8 @@ Complete guide to all Flutter Table Plus features.
 - [Selection](#selection)
 - [Cell Editing](#cell-editing)
 - [Column Reordering](#column-reordering)
+- [Column Resizing](#column-resizing)
+- [Drag Selection](#drag-selection)
 - [Merged Rows](#merged-rows)
 - [Hover Buttons](#hover-buttons)
 - [Dynamic Row Heights](#dynamic-row-heights)
@@ -271,6 +273,81 @@ onColumnReorder: null,
 
 ---
 
+## Column Resizing
+
+Drag header edges to resize columns with min/max constraints.
+
+```dart
+FlutterTablePlus<User>(
+  resizable: true,
+
+  onColumnResized: (String columnKey, double newWidth) {
+    // Persist the new width
+    setState(() {
+      _columnWidths[columnKey] = newWidth;
+    });
+  },
+
+  // Per-column constraints
+  columns: {
+    'name': TablePlusColumn<User>(
+      key: 'name',
+      label: 'Name',
+      order: 1,
+      valueAccessor: (user) => user.name,
+      width: 150,
+      minWidth: 80,
+      maxWidth: 300,
+    ),
+  },
+)
+```
+
+### Resize Handle Styling
+
+```dart
+TablePlusTheme(
+  headerTheme: TablePlusHeaderTheme(
+    resizeHandle: TablePlusResizeHandleTheme(
+      width: 8.0,        // Hit-test area width
+      thickness: 2.0,    // Visible indicator thickness
+      color: Colors.blue, // Indicator color
+      indent: 4.0,       // Top inset
+      endIndent: 4.0,    // Bottom inset
+    ),
+  ),
+)
+```
+
+---
+
+## Drag Selection
+
+Mouse drag to select row ranges (Excel/Finder style).
+
+```dart
+FlutterTablePlus<User>(
+  isSelectable: true,
+  selectionMode: SelectionMode.multiple,
+  selectedRows: _selectedRowIds,
+  enableDragSelection: true,
+
+  // Live updates during drag
+  onDragSelectionUpdate: (Set<String> draggedRowIds) {
+    setState(() {
+      _selectedRowIds = draggedRowIds;
+    });
+  },
+
+  // Final callback when drag ends (optional)
+  onDragSelectionEnd: (Set<String> draggedRowIds) {
+    // Finalize selection
+  },
+)
+```
+
+---
+
 ## Merged Rows
 
 Group multiple rows with merged cells.
@@ -473,27 +550,31 @@ TablePlusColumn<User>(
 ### Tooltip Behavior
 
 ```dart
-tooltipBehavior: TooltipBehavior.always,         // Always show tooltip
-tooltipBehavior: TooltipBehavior.never,          // Never show
+// Per-column cell tooltip behavior
+tooltipBehavior: TooltipBehavior.always,            // Always show tooltip
+tooltipBehavior: TooltipBehavior.never,             // Never show
 tooltipBehavior: TooltipBehavior.onlyTextOverflow,  // Only when text is truncated
 
-// Also for headers
+// Per-column header tooltip behavior
 headerTooltipBehavior: TooltipBehavior.always,
+headerTooltipBehavior: TooltipBehavior.onlyTextOverflow,
 ```
 
 ### Styling
 
 ```dart
 TablePlusTheme(
-  tooltip: TablePlusTooltipTheme(
+  tooltipTheme: TablePlusTooltipTheme(
     enabled: true,
     waitDuration: Duration(milliseconds: 500),
     showDuration: Duration(seconds: 2),
+    exitDuration: Duration(milliseconds: 100),
     decoration: BoxDecoration(
       color: Colors.black87,
       borderRadius: BorderRadius.circular(4),
     ),
     textStyle: TextStyle(color: Colors.white),
+    verticalOffset: 24.0,
   ),
 )
 ```

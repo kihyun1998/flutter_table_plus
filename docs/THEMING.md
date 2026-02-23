@@ -6,7 +6,7 @@ Complete reference for Flutter Table Plus theming system.
 
 ## Overview
 
-Flutter Table Plus uses a composable theme system with **8 nested theme classes**:
+Flutter Table Plus uses a composable theme system with **7 nested theme classes** (plus 3 header sub-themes):
 
 ```dart
 TablePlusTheme(
@@ -15,7 +15,7 @@ TablePlusTheme(
   checkboxTheme: TablePlusCheckboxTheme(...),
   editableTheme: TablePlusEditableTheme(...),
   scrollbarTheme: TablePlusScrollbarTheme(...),
-  tooltip: TablePlusTooltipTheme(...),
+  tooltipTheme: TablePlusTooltipTheme(...),
   hoverButtonTheme: TablePlusHoverButtonTheme(...),
 )
 ```
@@ -24,7 +24,7 @@ TablePlusTheme(
 
 ## TablePlusHeaderTheme
 
-Styling for the table header row.
+Styling for the table header row. Uses nested sub-theme classes for borders, dividers, and resize handles.
 
 ```dart
 TablePlusHeaderTheme(
@@ -47,7 +47,7 @@ TablePlusHeaderTheme(
   ),
 
   // Padding
-  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+  padding: EdgeInsets.symmetric(horizontal: 16.0),
 
   // Decorations
   decoration: BoxDecoration(
@@ -58,11 +58,10 @@ TablePlusHeaderTheme(
     border: Border(right: BorderSide(color: Colors.grey.shade200)),
   ),
 
-  // Dividers
-  showVerticalDividers: false,
-  showBottomDivider: true,
-  dividerColor: Colors.grey.shade300,
-  dividerThickness: 1.0,
+  // Borders (nested theme classes)
+  topBorder: TablePlusHeaderBorderTheme(show: false),   // hidden by default
+  bottomBorder: TablePlusHeaderBorderTheme(show: true),  // visible by default
+  verticalDivider: TablePlusHeaderDividerTheme(show: true),
 
   // Sort Icons
   sortIcons: SortIcons(
@@ -71,6 +70,50 @@ TablePlusHeaderTheme(
     unsorted: Icon(Icons.unfold_more, size: 16),
   ),
   sortIconSpacing: 4.0,
+  sortIconWidth: 16.0,
+
+  // Resize Handle (nested theme class)
+  resizeHandle: TablePlusResizeHandleTheme(),
+)
+```
+
+### TablePlusHeaderBorderTheme
+
+Controls top and bottom horizontal borders of the header.
+
+```dart
+TablePlusHeaderBorderTheme(
+  show: true,                     // Whether to display this border
+  color: Color(0xFFE0E0E0),      // Border color
+  thickness: 1.0,                 // Border thickness in pixels
+)
+```
+
+### TablePlusHeaderDividerTheme
+
+Controls vertical dividers between header columns.
+
+```dart
+TablePlusHeaderDividerTheme(
+  show: true,                     // Whether to display dividers
+  color: Color(0xFFE0E0E0),      // Divider color
+  thickness: 1.0,                 // Divider thickness
+  indent: 0.0,                   // Top inset
+  endIndent: 0.0,                // Bottom inset
+)
+```
+
+### TablePlusResizeHandleTheme
+
+Controls the column resize drag handle appearance.
+
+```dart
+TablePlusResizeHandleTheme(
+  width: 8.0,          // Invisible hit-test area width
+  color: null,         // Visible indicator color (null = theme default)
+  thickness: 2.0,      // Visible indicator line thickness
+  indent: 0.0,        // Top inset of indicator
+  endIndent: 0.0,     // Bottom inset of indicator
 )
 ```
 
@@ -94,17 +137,17 @@ TablePlusBodyTheme(
   textStyle: TextStyle(fontSize: 14, color: Colors.black87),
 
   // Padding
-  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+  padding: EdgeInsets.symmetric(horizontal: 16.0),
 
   // Dividers
-  dividerColor: Colors.grey.shade200,
+  dividerColor: Color(0xFFE0E0E0),
   dividerThickness: 1.0,
   showHorizontalDividers: true,
-  showVerticalDividers: false,
-  lastRowBorderBehavior: LastRowBorderBehavior.smart,
+  showVerticalDividers: true,
+  lastRowBorderBehavior: LastRowBorderBehavior.never,
 
   // Selection
-  selectedRowColor: Colors.blue.shade100,
+  selectedRowColor: Color(0xFFE3F2FD),
   selectedRowTextStyle: TextStyle(fontWeight: FontWeight.w500),
 
   // Hover Effects (unselected rows)
@@ -132,7 +175,7 @@ TablePlusBodyTheme(
 ### LastRowBorderBehavior
 
 ```dart
-// Never show bottom border on last row
+// Never show bottom border on last row (default)
 LastRowBorderBehavior.never
 
 // Always show bottom border on last row
@@ -151,11 +194,12 @@ Styling for selection checkboxes.
 ```dart
 TablePlusCheckboxTheme(
   // Column visibility
-  showCheckboxColumn: true,
-  showSelectAllCheckbox: true,
+  showCheckboxColumn: true,       // Show/hide entire checkbox column
+  showSelectAllCheckbox: true,    // Show/hide header select-all checkbox
   showRowCheckbox: true,          // false = header checkbox only, no row checkboxes
-  checkboxColumnWidth: 60.0,
-  size: 18.0,
+  checkboxColumnWidth: 60.0,     // Width of checkbox column
+  size: 18.0,                    // Visual checkbox size
+  tapTargetSize: null,           // Hit-test area size (null = same as size)
 
   // Material 3 style (WidgetStateProperty)
   fillColor: WidgetStateProperty.resolveWith((states) {
@@ -180,6 +224,7 @@ TablePlusCheckboxTheme(
   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
   visualDensity: VisualDensity.compact,
   splashRadius: 20.0,
+  cellTapTogglesCheckbox: false,  // true = entire cell area toggles checkbox
 )
 ```
 
@@ -189,6 +234,13 @@ TablePlusCheckboxTheme(
 // Pre-configured Material 3 theme
 TablePlusCheckboxTheme.material3(
   primaryColor: Colors.blue,
+  size: 18.0,
+  tapTargetSize: null,
+  showCheckboxColumn: true,
+  showSelectAllCheckbox: true,
+  showRowCheckbox: true,
+  checkboxColumnWidth: 60.0,
+  cellTapTogglesCheckbox: false,
 )
 ```
 
@@ -213,15 +265,15 @@ TablePlusEditableTheme(
   textAlignVertical: TextAlignVertical.center,
 
   // Padding
-  textFieldPadding: EdgeInsets.symmetric(horizontal: 8),
-  cellContainerPadding: EdgeInsets.all(4),
+  textFieldPadding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+  cellContainerPadding: EdgeInsets.all(8.0),
 
   // Input decoration
-  focusedBorderColor: Colors.blue,
-  enabledBorderColor: Colors.grey,
-  borderRadius: BorderRadius.circular(4),
-  fillColor: Colors.white,
-  filled: true,
+  focusedBorderColor: Colors.blue,     // null = uses editingBorderColor
+  enabledBorderColor: Colors.grey,     // null = lighter editingBorderColor
+  borderRadius: BorderRadius.circular(4),  // null = uses editingBorderRadius
+  fillColor: Colors.white,            // null = uses editingCellColor
+  filled: false,
   isDense: true,
 )
 ```
@@ -241,17 +293,17 @@ TablePlusScrollbarTheme(
 
   // Dimensions
   trackWidth: 12.0,
-  thickness: 8.0,
-  radius: 4.0,
+  thickness: null,   // null = trackWidth * 0.7
+  radius: null,      // null = trackWidth / 2
 
   // Colors
-  thumbColor: Colors.grey.shade400,
-  trackColor: Colors.grey.shade100,
-  trackBorder: Border.all(color: Colors.grey.shade200),
+  thumbColor: Color(0xFF757575),
+  trackColor: Color(0xFFE0E0E0),
+  trackBorder: null,
 
   // Animation
   opacity: 1.0,
-  animationDuration: Duration(milliseconds: 200),
+  animationDuration: Duration(milliseconds: 300),
 )
 ```
 
@@ -272,26 +324,25 @@ TablePlusTooltipTheme(
 
   // Appearance
   decoration: BoxDecoration(
-    color: Colors.black87,
+    color: Color(0xFF424242),
     borderRadius: BorderRadius.circular(4),
-    boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 4)],
   ),
   textStyle: TextStyle(color: Colors.white, fontSize: 12),
-  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+  padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
   margin: EdgeInsets.zero,
 
   // Position
   preferBelow: true,
-  verticalOffset: 16.0,
+  verticalOffset: 24.0,
 
   // Widget tooltips (tooltipBuilder)
   customWrapper: CustomTooltipWrapperTheme(
     maxWidth: 300.0,
     spacingPadding: 8.0,
-    horizontalPadding: 12.0,
-    minSpace: 50.0,
-    minScrollHeight: 100.0,
-    estimatedHeight: 200.0,
+    horizontalPadding: 8.0,
+    minSpace: 100.0,
+    minScrollHeight: 80.0,
+    estimatedHeight: 150.0,
   ),
 )
 ```
@@ -322,11 +373,12 @@ FlutterTablePlus<User>(
         fontWeight: FontWeight.bold,
         color: Colors.indigo.shade900,
       ),
-      decoration: BoxDecoration(
-        color: Colors.indigo.shade50,
-        border: Border(
-          bottom: BorderSide(color: Colors.indigo.shade200, width: 2),
-        ),
+      bottomBorder: TablePlusHeaderBorderTheme(
+        color: Colors.indigo.shade200,
+        thickness: 2,
+      ),
+      verticalDivider: TablePlusHeaderDividerTheme(
+        color: Colors.indigo.shade100,
       ),
     ),
     bodyTheme: TablePlusBodyTheme(
@@ -350,7 +402,7 @@ FlutterTablePlus<User>(
       thumbColor: Colors.indigo.shade300,
       trackColor: Colors.indigo.shade50,
     ),
-    tooltip: TablePlusTooltipTheme(
+    tooltipTheme: TablePlusTooltipTheme(
       decoration: BoxDecoration(
         color: Colors.indigo.shade900,
         borderRadius: BorderRadius.circular(8),
@@ -370,7 +422,8 @@ TablePlusTheme(
   headerTheme: TablePlusHeaderTheme(
     backgroundColor: Color(0xFF1E1E1E),
     textStyle: TextStyle(color: Colors.white70, fontWeight: FontWeight.w600),
-    dividerColor: Colors.grey.shade800,
+    bottomBorder: TablePlusHeaderBorderTheme(color: Colors.grey.shade800),
+    verticalDivider: TablePlusHeaderDividerTheme(color: Colors.grey.shade800),
   ),
   bodyTheme: TablePlusBodyTheme(
     backgroundColor: Color(0xFF121212),

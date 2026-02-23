@@ -347,6 +347,18 @@ onMergedCellChanged: (String groupId, String columnKey, dynamic newValue)  // Sa
 // Context Menu
 onRowSecondaryTapDown: (String rowId, TapDownDetails, RenderBox, bool isSelected)  // Same
 
+// Double Tap
+onRowDoubleTap: (String rowId)  // Same
+
+// Drag Selection (new in v2.2.0)
+enableDragSelection: bool
+onDragSelectionUpdate: (Set<String> draggedRowIds)
+onDragSelectionEnd: (Set<String> draggedRowIds)
+
+// Column Resizing (new in v2.1.0)
+resizable: bool
+onColumnResized: (String columnKey, double newWidth)
+
 // Hover Buttons
 hoverButtonBuilder: (BuildContext context, Map<String, dynamic> rowData)
   ↓
