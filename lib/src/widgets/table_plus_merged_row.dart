@@ -670,50 +670,53 @@ class _TablePlusMergedRowState<T> extends State<TablePlusMergedRow<T>> {
               )
             : null,
       ),
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SizedBox(
-              width: widget.checkboxTheme.tapTargetSize ??
-                  widget.checkboxTheme.size,
-              height: widget.checkboxTheme.tapTargetSize ??
-                  widget.checkboxTheme.size,
-              child: Checkbox(
-                value: widget.isSelected,
-                onChanged: (value) => (widget.onCheckboxChanged ??
-                    widget.onRowSelectionChanged)(widget.mergeGroup.groupId),
-                activeColor: widget.checkboxTheme.fillColor
-                    ?.resolve({WidgetState.selected}),
-                hoverColor: widget.checkboxTheme.hoverColor,
-                focusColor: widget.checkboxTheme.focusColor,
-                fillColor: widget.checkboxTheme.fillColor,
-                checkColor: widget.checkboxTheme.checkColor,
-                side: widget.checkboxTheme.side,
-                shape: widget.checkboxTheme.shape,
-                mouseCursor: widget.checkboxTheme.mouseCursor,
-                materialTapTargetSize:
-                    widget.checkboxTheme.materialTapTargetSize ??
-                        MaterialTapTargetSize.shrinkWrap,
-                visualDensity:
-                    widget.checkboxTheme.visualDensity ?? VisualDensity.compact,
-                splashRadius: widget.checkboxTheme.splashRadius,
-                overlayColor: widget.checkboxTheme.overlayColor,
+      child: widget.checkboxTheme.showRowCheckbox
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: widget.checkboxTheme.tapTargetSize ??
+                        widget.checkboxTheme.size,
+                    height: widget.checkboxTheme.tapTargetSize ??
+                        widget.checkboxTheme.size,
+                    child: Checkbox(
+                      value: widget.isSelected,
+                      onChanged: (value) => (widget.onCheckboxChanged ??
+                              widget.onRowSelectionChanged)(
+                          widget.mergeGroup.groupId),
+                      activeColor: widget.checkboxTheme.fillColor
+                          ?.resolve({WidgetState.selected}),
+                      hoverColor: widget.checkboxTheme.hoverColor,
+                      focusColor: widget.checkboxTheme.focusColor,
+                      fillColor: widget.checkboxTheme.fillColor,
+                      checkColor: widget.checkboxTheme.checkColor,
+                      side: widget.checkboxTheme.side,
+                      shape: widget.checkboxTheme.shape,
+                      mouseCursor: widget.checkboxTheme.mouseCursor,
+                      materialTapTargetSize:
+                          widget.checkboxTheme.materialTapTargetSize ??
+                              MaterialTapTargetSize.shrinkWrap,
+                      visualDensity: widget.checkboxTheme.visualDensity ??
+                          VisualDensity.compact,
+                      splashRadius: widget.checkboxTheme.splashRadius,
+                      overlayColor: widget.checkboxTheme.overlayColor,
+                    ),
+                  ),
+                  if (widget.mergeGroup.rowCount > 1) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      '${widget.mergeGroup.rowCount} rows',
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
+                ],
               ),
-            ),
-            if (widget.mergeGroup.rowCount > 1) ...[
-              const SizedBox(height: 4),
-              Text(
-                '${widget.mergeGroup.rowCount} rows',
-                style: TextStyle(
-                  fontSize: 10,
-                  color: Colors.grey.shade600,
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
+            )
+          : const SizedBox.shrink(),
     );
   }
 

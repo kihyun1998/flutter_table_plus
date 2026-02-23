@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('FlutterTablePlus', () {
@@ -174,12 +174,6 @@ void main() {
           order: 1,
           valueAccessor: (row) => row['status'],
           width: 200,
-          cellBuilder: (context, rowData) {
-            return Container(
-              key: const ValueKey('custom-cell'),
-              child: Text('Custom: ${rowData['status']}'),
-            );
-          },
         ),
       };
 

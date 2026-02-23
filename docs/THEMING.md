@@ -153,6 +153,7 @@ TablePlusCheckboxTheme(
   // Column visibility
   showCheckboxColumn: true,
   showSelectAllCheckbox: true,
+  showRowCheckbox: true,          // false = header checkbox only, no row checkboxes
   checkboxColumnWidth: 60.0,
   size: 18.0,
 

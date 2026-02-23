@@ -229,11 +229,13 @@ TablePlusColumn<User>(
   key: 'salary',
   label: 'Salary',
   valueAccessor: (user) => user.salary,
-  cellBuilder: (context, user) {  // Typed parameter
+  statefulCellBuilder: (context, user, isSelected, isDim) {
     return Text('\$${user.salary}');
   },
 )
 ```
+
+> **Note:** `cellBuilder` was removed in v2.5.0. Use `statefulCellBuilder` which provides additional `isSelected` and `isDim` parameters.
 
 ---
 

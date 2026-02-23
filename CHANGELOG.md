@@ -1,3 +1,13 @@
+## 2.5.0
+
+*   **FEAT**: Added `showRowCheckbox` to `TablePlusCheckboxTheme` — hide individual row checkboxes while keeping the header select-all checkbox
+    *   When `false`, the checkbox column still renders with the header select-all checkbox, but row cells show no checkbox
+    *   Row selection is done via row tap only; defaults to `true` (backward compatible)
+    *   Supported in normal rows, merged rows, and the `material3` factory
+*   **BREAKING**: Removed deprecated `cellBuilder` from `TablePlusColumn`
+    *   Use `statefulCellBuilder` instead — same functionality with additional `isSelected` and `isDim` parameters
+    *   Migration: `cellBuilder: (ctx, row) => ...` → `statefulCellBuilder: (ctx, row, _, _) => ...`
+
 ## 2.4.2
 
 *   **FEAT**: Added `sortIconWidth` to `TablePlusHeaderTheme` for accurate tooltip overflow detection with custom sort icons

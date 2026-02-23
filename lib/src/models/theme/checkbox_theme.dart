@@ -32,6 +32,7 @@ class TablePlusCheckboxTheme {
     this.showSelectAllCheckbox = true,
     this.checkboxColumnWidth = 60.0,
     this.cellTapTogglesCheckbox = false,
+    this.showRowCheckbox = true,
   });
 
   // WidgetStateProperty-based styling properties
@@ -149,6 +150,15 @@ class TablePlusCheckboxTheme {
   /// cell area outside the checkbox falls through to the row tap handler.
   final bool cellTapTogglesCheckbox;
 
+  /// Whether to show checkboxes in individual row cells.
+  ///
+  /// When false, the checkbox column still appears (with the header select-all
+  /// checkbox if [showSelectAllCheckbox] is true), but individual rows will not
+  /// display checkboxes. Row selection is done via row tap only.
+  ///
+  /// Defaults to true.
+  final bool showRowCheckbox;
+
   /// Creates a copy of this theme with the given fields replaced by new values.
   TablePlusCheckboxTheme copyWith({
     WidgetStateProperty<Color?>? fillColor,
@@ -168,6 +178,7 @@ class TablePlusCheckboxTheme {
     bool? showSelectAllCheckbox,
     double? checkboxColumnWidth,
     bool? cellTapTogglesCheckbox,
+    bool? showRowCheckbox,
   }) {
     return TablePlusCheckboxTheme(
       fillColor: fillColor ?? this.fillColor,
@@ -190,6 +201,7 @@ class TablePlusCheckboxTheme {
       checkboxColumnWidth: checkboxColumnWidth ?? this.checkboxColumnWidth,
       cellTapTogglesCheckbox:
           cellTapTogglesCheckbox ?? this.cellTapTogglesCheckbox,
+      showRowCheckbox: showRowCheckbox ?? this.showRowCheckbox,
     );
   }
 
@@ -205,6 +217,7 @@ class TablePlusCheckboxTheme {
     bool showSelectAllCheckbox = true,
     double checkboxColumnWidth = 60.0,
     bool cellTapTogglesCheckbox = false,
+    bool showRowCheckbox = true,
   }) {
     return TablePlusCheckboxTheme(
       fillColor: WidgetStateProperty.resolveWith((states) {
@@ -240,6 +253,7 @@ class TablePlusCheckboxTheme {
       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
       visualDensity: VisualDensity.compact,
       cellTapTogglesCheckbox: cellTapTogglesCheckbox,
+      showRowCheckbox: showRowCheckbox,
     );
   }
 }

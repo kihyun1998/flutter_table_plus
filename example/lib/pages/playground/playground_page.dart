@@ -982,6 +982,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
             ? _settings.checkboxTapTargetSize / 2
             : null,
         cellTapTogglesCheckbox: _settings.cellTapTogglesCheckbox,
+        showRowCheckbox: _settings.showRowCheckbox,
       ),
       tooltipTheme: TablePlusTooltipTheme(
         enabled: _settings.tooltipEnabled,

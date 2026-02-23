@@ -101,9 +101,6 @@ class TablePlusColumn<T> {
     this.sortable = false,
     this.editable = false,
     this.visible = true,
-    @Deprecated(
-        'Use statefulCellBuilder instead for access to isSelected and isDim state')
-    this.cellBuilder,
     this.statefulCellBuilder,
     this.tooltipFormatter,
     this.tooltipBuilder,
@@ -153,21 +150,8 @@ class TablePlusColumn<T> {
   /// Whether this column is visible in the table.
   final bool visible;
 
-  /// Optional custom cell builder for this column.
-  /// If provided, this will be used instead of the default cell rendering.
-  /// The function receives the build context and row data object.
-  ///
-  /// Note: If [editable] is true and [cellBuilder] is provided,
-  /// the cell will not be editable unless the custom builder handles editing.
-  ///
-  /// Deprecated: Use [statefulCellBuilder] instead for access to selection and dim state.
-  @Deprecated(
-      'Use statefulCellBuilder instead for access to isSelected and isDim state')
-  final Widget Function(BuildContext context, T rowData)? cellBuilder;
-
   /// Custom cell builder with access to row selection and dim state.
   /// If provided, this will be used instead of the default cell rendering.
-  /// Takes precedence over the deprecated [cellBuilder].
   ///
   /// The function receives the build context, row data, whether the row is
   /// currently selected, and whether the row is dimmed.
@@ -178,22 +162,15 @@ class TablePlusColumn<T> {
           BuildContext context, T rowData, bool isSelected, bool isDim)?
       statefulCellBuilder;
 
-  /// Whether this column has any custom cell builder ([statefulCellBuilder] or deprecated [cellBuilder]).
-  // ignore: deprecated_member_use_from_same_package
-  bool get hasCustomCellBuilder =>
-      statefulCellBuilder != null || cellBuilder != null;
+  /// Whether this column has a custom cell builder.
+  bool get hasCustomCellBuilder => statefulCellBuilder != null;
 
-  /// Builds a custom cell widget using [statefulCellBuilder] (preferred) or deprecated [cellBuilder].
-  /// Returns null if neither builder is set.
+  /// Builds a custom cell widget using [statefulCellBuilder].
+  /// Returns null if no builder is set.
   Widget? buildCustomCell(
       BuildContext context, T rowData, bool isSelected, bool isDim) {
     if (statefulCellBuilder != null) {
       return statefulCellBuilder!(context, rowData, isSelected, isDim);
-    }
-    // ignore: deprecated_member_use_from_same_package
-    if (cellBuilder != null) {
-      // ignore: deprecated_member_use_from_same_package
-      return cellBuilder!(context, rowData);
     }
     return null;
   }
@@ -221,7 +198,7 @@ class TablePlusColumn<T> {
   /// - [TooltipBehavior.never]: Never show tooltip
   /// - [TooltipBehavior.onlyTextOverflow]: Show tooltip only when text actually overflows
   ///
-  /// Note: For overflow-based tooltips, use cellBuilder to implement custom tooltip logic.
+  /// Note: For overflow-based tooltips, use statefulCellBuilder to implement custom tooltip logic.
   final TooltipBehavior tooltipBehavior;
 
   /// Controls when tooltips should be displayed for this column's header.
@@ -230,7 +207,7 @@ class TablePlusColumn<T> {
   /// - [TooltipBehavior.never]: Never show tooltip
   /// - [TooltipBehavior.onlyTextOverflow]: Show tooltip only when text actually overflows
   ///
-  /// Note: For overflow-based tooltips, use custom header widgets with cellBuilder.
+  /// Note: For overflow-based tooltips, use custom header widgets with statefulCellBuilder.
   final TooltipBehavior headerTooltipBehavior;
 
   /// Creates a copy of this column with the given fields replaced with new values.
@@ -247,8 +224,6 @@ class TablePlusColumn<T> {
     bool? sortable,
     bool? editable,
     bool? visible,
-    @Deprecated('Use statefulCellBuilder instead')
-    Widget Function(BuildContext context, T rowData)? cellBuilder,
     Widget Function(
             BuildContext context, T rowData, bool isSelected, bool isDim)?
         statefulCellBuilder,
@@ -272,8 +247,6 @@ class TablePlusColumn<T> {
       sortable: sortable ?? this.sortable,
       editable: editable ?? this.editable,
       visible: visible ?? this.visible,
-      // ignore: deprecated_member_use_from_same_package
-      cellBuilder: cellBuilder ?? this.cellBuilder,
       statefulCellBuilder: statefulCellBuilder ?? this.statefulCellBuilder,
       tooltipFormatter: tooltipFormatter ?? this.tooltipFormatter,
       tooltipBuilder: tooltipBuilder ?? this.tooltipBuilder,

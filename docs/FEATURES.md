@@ -169,6 +169,16 @@ TablePlusTheme(
 )
 ```
 
+### Header Checkbox Only (No Row Checkboxes)
+
+```dart
+TablePlusTheme(
+  checkboxTheme: TablePlusCheckboxTheme(
+    showRowCheckbox: false,  // Header select-all visible, row checkboxes hidden
+  ),
+)
+```
+
 ---
 
 ## Cell Editing
@@ -214,7 +224,7 @@ FlutterTablePlus<User>(
 - **Enter** to save and exit
 - **Escape** to cancel
 - **Tab** / focus loss auto-saves
-- Cells with `cellBuilder` cannot be edited
+- Cells with `statefulCellBuilder` cannot be edited
 
 ### Styling
 

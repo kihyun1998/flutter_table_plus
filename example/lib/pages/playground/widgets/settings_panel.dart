@@ -33,6 +33,7 @@ class PlaygroundSettings {
   final bool selectAllEnabled;
   final bool dragSelectionEnabled;
   final bool cellTapTogglesCheckbox;
+  final bool showRowCheckbox;
   final SortCycleOrder sortCycleOrder;
   final TooltipBehavior tooltipBehavior;
   final TooltipBehavior headerTooltipBehavior;
@@ -86,6 +87,7 @@ class PlaygroundSettings {
     this.selectAllEnabled = true,
     this.dragSelectionEnabled = false,
     this.cellTapTogglesCheckbox = false,
+    this.showRowCheckbox = true,
     this.sortCycleOrder = SortCycleOrder.ascendingFirst,
     this.tooltipBehavior = TooltipBehavior.always,
     this.headerTooltipBehavior = TooltipBehavior.always,
@@ -132,6 +134,7 @@ class PlaygroundSettings {
     bool? selectAllEnabled,
     bool? dragSelectionEnabled,
     bool? cellTapTogglesCheckbox,
+    bool? showRowCheckbox,
     SortCycleOrder? sortCycleOrder,
     TooltipBehavior? tooltipBehavior,
     TooltipBehavior? headerTooltipBehavior,
@@ -179,6 +182,7 @@ class PlaygroundSettings {
       dragSelectionEnabled: dragSelectionEnabled ?? this.dragSelectionEnabled,
       cellTapTogglesCheckbox:
           cellTapTogglesCheckbox ?? this.cellTapTogglesCheckbox,
+      showRowCheckbox: showRowCheckbox ?? this.showRowCheckbox,
       sortCycleOrder: sortCycleOrder ?? this.sortCycleOrder,
       tooltipBehavior: tooltipBehavior ?? this.tooltipBehavior,
       headerTooltipBehavior:
@@ -837,6 +841,13 @@ class SettingsPanel extends StatelessWidget {
             onChanged: (value) {
               onSettingsChanged(
                   settings.copyWith(cellTapTogglesCheckbox: value));
+            },
+          ),
+          _buildSwitchTile(
+            label: 'Show Row Checkbox',
+            value: settings.showRowCheckbox,
+            onChanged: (value) {
+              onSettingsChanged(settings.copyWith(showRowCheckbox: value));
             },
           ),
         ],
