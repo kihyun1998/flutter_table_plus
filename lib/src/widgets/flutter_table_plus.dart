@@ -54,6 +54,7 @@ class FlutterTablePlus<T> extends StatefulWidget {
     this.hoverButtonBuilder,
     this.hoverButtonPosition = HoverButtonPosition.right,
     this.autoFitColumnWidth,
+    this.stretchLastColumn = false,
   });
 
   /// The column definitions for the table.
@@ -182,6 +183,14 @@ class FlutterTablePlus<T> extends StatefulWidget {
   /// or [TablePlusColumn.cellBuilder] with custom styles, padding, or text
   /// transformations that the default measurement cannot account for.
   final double? Function(String columnKey)? autoFitColumnWidth;
+
+  /// Whether the last column should stretch to fill remaining space
+  /// when all columns have fixed widths (e.g., after auto-fit or manual resize).
+  ///
+  /// When false (default), columns keep their exact widths and empty space
+  /// may appear on the right. When true, the last visible column absorbs
+  /// any leftover space.
+  final bool stretchLastColumn;
 
   @override
   State<FlutterTablePlus<T>> createState() => _FlutterTablePlusState<T>();
@@ -528,56 +537,74 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
               col.width.clamp(col.minWidth, col.maxWidth ?? double.infinity);
         }
       }
-      return widths.cast<double>();
-    }
+    } else {
+      // Iterative redistribution: when a flexible column hits maxWidth,
+      // lock it and redistribute the excess to remaining flexible columns.
+      double remainingSpace = spaceForFlexible;
+      double remainingPreferred = flexiblePreferredTotal;
+      final isFlexible = List<bool>.generate(
+        orderedColumns.length,
+        (i) => widths[i] == null,
+      );
 
-    // Iterative redistribution: when a flexible column hits maxWidth,
-    // lock it and redistribute the excess to remaining flexible columns.
-    double remainingSpace = spaceForFlexible;
-    double remainingPreferred = flexiblePreferredTotal;
-    final isFlexible = List<bool>.generate(
-      orderedColumns.length,
-      (i) => widths[i] == null,
-    );
+      bool changed = true;
+      while (changed) {
+        changed = false;
 
-    bool changed = true;
-    while (changed) {
-      changed = false;
-
-      if (remainingPreferred <= 0 || remainingSpace <= 0) {
-        for (int i = 0; i < orderedColumns.length; i++) {
-          if (!isFlexible[i]) continue;
-          final col = orderedColumns[i];
-          widths[i] =
-              col.width.clamp(col.minWidth, col.maxWidth ?? double.infinity);
-        }
-        break;
-      }
-
-      for (int i = 0; i < orderedColumns.length; i++) {
-        if (!isFlexible[i]) continue;
-        final column = orderedColumns[i];
-        final proportion = column.width / remainingPreferred;
-        final calculatedWidth = remainingSpace * proportion;
-
-        if (column.maxWidth != null && calculatedWidth > column.maxWidth!) {
-          widths[i] = column.maxWidth!;
-          isFlexible[i] = false;
-          remainingSpace -= column.maxWidth!;
-          remainingPreferred -= column.width;
-          changed = true;
+        if (remainingPreferred <= 0 || remainingSpace <= 0) {
+          for (int i = 0; i < orderedColumns.length; i++) {
+            if (!isFlexible[i]) continue;
+            final col = orderedColumns[i];
+            widths[i] =
+                col.width.clamp(col.minWidth, col.maxWidth ?? double.infinity);
+          }
           break;
         }
+
+        for (int i = 0; i < orderedColumns.length; i++) {
+          if (!isFlexible[i]) continue;
+          final column = orderedColumns[i];
+          final proportion = column.width / remainingPreferred;
+          final calculatedWidth = remainingSpace * proportion;
+
+          if (column.maxWidth != null && calculatedWidth > column.maxWidth!) {
+            widths[i] = column.maxWidth!;
+            isFlexible[i] = false;
+            remainingSpace -= column.maxWidth!;
+            remainingPreferred -= column.width;
+            changed = true;
+            break;
+          }
+        }
+      }
+
+      // Final pass: assign remaining flexible columns
+      for (int i = 0; i < orderedColumns.length; i++) {
+        if (widths[i] != null) continue;
+        final column = orderedColumns[i];
+        final proportion = column.width / remainingPreferred;
+        widths[i] = (remainingSpace * proportion)
+            .clamp(column.minWidth, column.maxWidth ?? double.infinity);
       }
     }
 
-    // Final pass: assign remaining flexible columns
-    for (int i = 0; i < orderedColumns.length; i++) {
-      if (widths[i] != null) continue;
-      final column = orderedColumns[i];
-      final proportion = column.width / remainingPreferred;
-      widths[i] = (remainingSpace * proportion)
-          .clamp(column.minWidth, column.maxWidth ?? double.infinity);
+    // stretchLastColumn: absorb any remaining space into the last column
+    if (widget.stretchLastColumn) {
+      final totalUsed = widths.fold(0.0, (sum, w) => sum + (w ?? 0.0));
+      final remaining = availableWidth - totalUsed;
+      if (remaining > 0) {
+        // Find last non-selection column index
+        int lastIdx = -1;
+        for (int i = orderedColumns.length - 1; i >= 0; i--) {
+          if (orderedColumns[i].key != '__selection__') {
+            lastIdx = i;
+            break;
+          }
+        }
+        if (lastIdx >= 0) {
+          widths[lastIdx] = widths[lastIdx]! + remaining;
+        }
+      }
     }
 
     return widths.cast<double>();

@@ -760,6 +760,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         onColumnReorder:
             _settings.columnReorderEnabled ? _handleColumnReorder : null,
         resizable: _settings.resizableEnabled,
+        stretchLastColumn: _settings.stretchLastColumn,
         onColumnResized: (columnKey, newWidth) {
           debugPrint(
               '↔️ Resized column "$columnKey" to ${newWidth.toStringAsFixed(1)}px');

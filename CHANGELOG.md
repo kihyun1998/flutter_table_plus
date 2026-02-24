@@ -1,3 +1,11 @@
+## 2.7.0
+
+*   **FEAT**: Added `stretchLastColumn` parameter to `FlutterTablePlus` — last column absorbs remaining space when all columns have fixed widths
+    *   When `false` (default), columns keep their exact widths and empty space may appear on the right (Windows Explorer behavior)
+    *   When `true`, the last visible column stretches to fill any leftover space after auto-fit or manual resize
+    *   Only activates when remaining space exists; no effect when columns already fill or exceed available width
+    *   Selection column (`__selection__`) is excluded from stretching
+
 ## 2.6.0
 
 *   **FEAT**: Added `autoFitColumnWidth` callback to `FlutterTablePlus` — override default auto-fit measurement for columns with custom cell builders

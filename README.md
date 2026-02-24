@@ -24,6 +24,7 @@ A highly customizable, type-safe Flutter table widget with synchronized scrollin
 | **Column Reordering** | Drag-and-drop columns |
 | **Column Resizing** | Drag header edges to resize columns with min/max constraints |
 | **Auto-Fit Columns** | Double-tap resize handle to auto-fit, with custom override callback |
+| **Stretch Last Column** | Last column fills remaining space when all columns are fixed |
 | **Drag Selection** | Mouse drag to select row ranges with auto-scroll |
 | **Merged Rows** | Group rows with custom merged content |
 | **Hover Buttons** | Action buttons on row hover |
@@ -39,7 +40,7 @@ A highly customizable, type-safe Flutter table widget with synchronized scrollin
 
 ```yaml
 dependencies:
-  flutter_table_plus: ^2.6.0
+  flutter_table_plus: ^2.7.0
 ```
 
 ```bash

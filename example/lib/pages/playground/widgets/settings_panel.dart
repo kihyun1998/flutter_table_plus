@@ -23,6 +23,7 @@ class PlaygroundSettings {
   final bool mergedRowsEnabled;
   final bool columnReorderEnabled;
   final bool resizableEnabled;
+  final bool stretchLastColumn;
   final double resizeHandleWidth;
   final bool showAlternateRows;
   final bool showDividers;
@@ -77,6 +78,7 @@ class PlaygroundSettings {
     this.mergedRowsEnabled = false,
     this.columnReorderEnabled = true,
     this.resizableEnabled = true,
+    this.stretchLastColumn = false,
     this.resizeHandleWidth = 8.0,
     this.showAlternateRows = true,
     this.showDividers = true,
@@ -124,6 +126,7 @@ class PlaygroundSettings {
     bool? mergedRowsEnabled,
     bool? columnReorderEnabled,
     bool? resizableEnabled,
+    bool? stretchLastColumn,
     double? resizeHandleWidth,
     bool? showAlternateRows,
     bool? showDividers,
@@ -170,6 +173,7 @@ class PlaygroundSettings {
       mergedRowsEnabled: mergedRowsEnabled ?? this.mergedRowsEnabled,
       columnReorderEnabled: columnReorderEnabled ?? this.columnReorderEnabled,
       resizableEnabled: resizableEnabled ?? this.resizableEnabled,
+      stretchLastColumn: stretchLastColumn ?? this.stretchLastColumn,
       resizeHandleWidth: resizeHandleWidth ?? this.resizeHandleWidth,
       showAlternateRows: showAlternateRows ?? this.showAlternateRows,
       showDividers: showDividers ?? this.showDividers,
@@ -762,6 +766,14 @@ class SettingsPanel extends StatelessWidget {
           value: settings.resizableEnabled,
           onChanged: (value) {
             onSettingsChanged(settings.copyWith(resizableEnabled: value));
+          },
+        ),
+
+        _buildSwitchTile(
+          label: 'Stretch Last Column',
+          value: settings.stretchLastColumn,
+          onChanged: (value) {
+            onSettingsChanged(settings.copyWith(stretchLastColumn: value));
           },
         ),
 
