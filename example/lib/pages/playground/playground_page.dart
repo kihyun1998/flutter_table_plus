@@ -752,8 +752,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
                 };
                 _tableKey = UniqueKey();
               });
-              debugPrint(
-                  '🎲 Applied random widths (not saved)');
+              debugPrint('🎲 Applied random widths (not saved)');
             },
             onRestoreWidths: () {
               setState(() {

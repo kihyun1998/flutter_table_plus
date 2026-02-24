@@ -303,6 +303,31 @@ FlutterTablePlus<User>(
 )
 ```
 
+### Width Persistence
+
+Save column widths with `onColumnResized` and restore them with `initialResizedWidths`:
+
+```dart
+FlutterTablePlus<User>(
+  resizable: true,
+
+  // Restore saved widths on widget creation.
+  // Columns in this map are treated as fixed (exact pixel width),
+  // just as if the user had manually resized them.
+  initialResizedWidths: prefs.getSavedColumnWidths(),
+
+  // Save each resize to your persistence layer.
+  // Fires on manual drag end and auto-fit double-tap.
+  onColumnResized: (columnKey, newWidth) {
+    prefs.saveColumnWidth(columnKey, newWidth);
+  },
+)
+```
+
+> **Note:** `initialResizedWidths` is only applied once at widget creation (`initState`).
+> Subsequent user resizes override the initial values at runtime.
+> Columns not in the map remain flexible and participate in proportional distribution.
+
 ### Auto-Fit (Double-Tap)
 
 Double-tap a resize handle to auto-fit the column width to its content. By default, the built-in measurement uses `valueAccessor` + body theme `textStyle`.

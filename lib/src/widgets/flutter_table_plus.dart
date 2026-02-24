@@ -543,8 +543,11 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
 
     final spaceForFlexible = availableWidth - fixedTotal;
 
-    // Not enough space — give each flexible column its clamped preferred width
-    if (spaceForFlexible <= 0 || flexiblePreferredTotal <= 0) {
+    // Not enough space for proportional distribution — give preferred widths.
+    // Using `< flexiblePreferredTotal` instead of `<= 0` prevents a
+    // discontinuous jump when the boundary is crossed during window resize.
+    if (spaceForFlexible < flexiblePreferredTotal ||
+        flexiblePreferredTotal <= 0) {
       for (int i = 0; i < orderedColumns.length; i++) {
         if (widths[i] == null) {
           final col = orderedColumns[i];

@@ -216,9 +216,8 @@ class _TablePlusHeaderState<T> extends State<TablePlusHeader<T>> {
   @override
   Widget build(BuildContext context) {
     // Count reorderable columns (non-selection) for trailing drop target
-    final reorderableCount = widget.columns
-        .where((col) => col.key != '__selection__')
-        .length;
+    final reorderableCount =
+        widget.columns.where((col) => col.key != '__selection__').length;
 
     Widget content = Row(
       children: [

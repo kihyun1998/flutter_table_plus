@@ -12,6 +12,10 @@
     *   Columns in this map are treated as fixed (exact pixel width), same as user-resized columns
     *   Only applied once at widget creation; subsequent user resizes override at runtime
     *   Pair with `onColumnResized` to implement full column width persistence
+*   **FIX**: Flexible columns no longer jump in size when window crosses the fixed-total threshold
+    *   Changed proportional distribution condition from `spaceForFlexible <= 0` to `spaceForFlexible < flexiblePreferredTotal`
+    *   Flexible columns keep their preferred width (with horizontal scroll) until enough space exists for proportional expansion
+    *   Ensures smooth, continuous width transitions during window resize
 
 ## 2.6.0
 

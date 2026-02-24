@@ -132,6 +132,28 @@ FlutterTablePlus<User>(
 )
 ```
 
+### 3. Persist Column Widths
+
+Save and restore user-resized column widths across sessions:
+
+```dart
+FlutterTablePlus<User>(
+  columns: columns.build(),
+  data: users,
+  rowId: (user) => user.id,
+  resizable: true,
+
+  // Restore saved widths (applied once on widget creation)
+  initialResizedWidths: savedWidths, // e.g. {'name': 200, 'email': 150}
+
+  // Save widths when user resizes
+  onColumnResized: (columnKey, newWidth) {
+    savedWidths[columnKey] = newWidth;
+    // Persist to DB / SharedPreferences / etc.
+  },
+)
+```
+
 ---
 
 ## 💡 Core Philosophy
