@@ -303,6 +303,43 @@ FlutterTablePlus<User>(
 )
 ```
 
+### Auto-Fit (Double-Tap)
+
+Double-tap a resize handle to auto-fit the column width to its content. By default, the built-in measurement uses `valueAccessor` + body theme `textStyle`.
+
+For columns with `statefulCellBuilder` that use custom styles, padding, or text transformations, override the measurement with `autoFitColumnWidth`:
+
+```dart
+FlutterTablePlus<User>(
+  resizable: true,
+  autoFitColumnWidth: (columnKey) {
+    if (columnKey == 'description') {
+      return TableColumnWidthCalculator.calculateColumnWidth<User>(
+        headerLabel: 'Description',
+        headerTextStyle: myHeaderStyle,
+        data: users,
+        valueAccessor: (user) => user.description.replaceAll('\n', ' '),
+        bodyTextStyle: myCustomBodyStyle,
+        bodyPadding: EdgeInsets.symmetric(horizontal: 24.0),
+        textScaler: MediaQuery.textScalerOf(context),
+      );
+    }
+    return null; // Other columns use default auto-fit
+  },
+)
+```
+
+You can also measure a single text value directly:
+
+```dart
+final width = TableColumnWidthCalculator.measureTextWidth(
+  text: 'Hello World',
+  textStyle: TextStyle(fontSize: 14),
+  padding: EdgeInsets.symmetric(horizontal: 16.0),
+  extraWidth: 24.0, // e.g., icon space
+);
+```
+
 ### Resize Handle Styling
 
 ```dart

@@ -1,3 +1,14 @@
+## 2.6.0
+
+*   **FEAT**: Added `autoFitColumnWidth` callback to `FlutterTablePlus` — override default auto-fit measurement for columns with custom cell builders
+    *   Return a width to override, or `null` to fall back to built-in text measurement
+    *   Useful for `statefulCellBuilder` columns with custom styles, padding, or text transformations
+    *   Result is clamped to per-column `minWidth` / `maxWidth` constraints
+*   **FEAT**: Added `TableColumnWidthCalculator` utility class for external column width measurement
+    *   `measureTextWidth()` — measure a single text string with style, padding, and extra width
+    *   `calculateColumnWidth()` — measure header + all body values and return optimal width
+    *   Follows the same `TextPainter`-based pattern as `TableRowHeightCalculator`
+
 ## 2.5.0
 
 *   **FEAT**: Added `showRowCheckbox` to `TablePlusCheckboxTheme` — hide individual row checkboxes while keeping the header select-all checkbox

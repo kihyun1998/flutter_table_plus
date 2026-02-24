@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
@@ -52,6 +53,7 @@ class FlutterTablePlus<T> extends StatefulWidget {
     this.calculateRowHeight,
     this.hoverButtonBuilder,
     this.hoverButtonPosition = HoverButtonPosition.right,
+    this.autoFitColumnWidth,
   });
 
   /// The column definitions for the table.
@@ -169,6 +171,17 @@ class FlutterTablePlus<T> extends StatefulWidget {
 
   /// The position where hover buttons should be displayed.
   final HoverButtonPosition hoverButtonPosition;
+
+  /// Custom auto-fit width calculator for specific columns.
+  ///
+  /// When provided, this callback is called first during auto-fit (double-tap
+  /// on resize handle). Return a width to override the default measurement,
+  /// or return null to fall back to the built-in text measurement.
+  ///
+  /// This is useful for columns that use [TablePlusColumn.statefulCellBuilder]
+  /// or [TablePlusColumn.cellBuilder] with custom styles, padding, or text
+  /// transformations that the default measurement cannot account for.
+  final double? Function(String columnKey)? autoFitColumnWidth;
 
   @override
   State<FlutterTablePlus<T>> createState() => _FlutterTablePlusState<T>();
@@ -343,6 +356,94 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
   /// Handle column resize end (called once when drag finishes).
   void _handleColumnResizeEnd(String columnKey, double finalWidth) {
     widget.onColumnResized?.call(columnKey, finalWidth);
+  }
+
+  /// Handle auto-fit column width on resize handle double-tap.
+  ///
+  /// If [autoFitColumnWidth] is provided, it is called first. When it returns
+  /// a non-null width, that value is used directly (clamped to column
+  /// constraints). Otherwise, falls back to the built-in [TextPainter]
+  /// measurement of header and body text.
+  void _handleColumnAutoFit(String columnKey) {
+    final column = widget.columns[columnKey];
+    if (column == null) return;
+
+    // External callback override
+    final customWidth = widget.autoFitColumnWidth?.call(columnKey);
+    if (customWidth != null) {
+      final result = customWidth.clamp(
+        column.minWidth,
+        column.maxWidth ?? double.infinity,
+      );
+      setState(() {
+        _resizedWidths[columnKey] = result;
+      });
+      widget.onColumnResized?.call(columnKey, result);
+      return;
+    }
+
+    final headerTheme = widget.theme.headerTheme;
+    final bodyTheme = widget.theme.bodyTheme;
+
+    // Resolve effective text styles by merging with DefaultTextStyle
+    // (inherits fontFamily, letterSpacing, etc. from the Material theme)
+    final defaultStyle = DefaultTextStyle.of(context).style;
+    final resolvedHeaderStyle = defaultStyle.merge(headerTheme.textStyle);
+    final resolvedBodyStyle = defaultStyle.merge(bodyTheme.textStyle);
+    final textScaler = MediaQuery.textScalerOf(context);
+
+    // Measure header text width
+    final headerPainter = TextPainter(
+      text: TextSpan(text: column.label, style: resolvedHeaderStyle),
+      textDirection: ui.TextDirection.ltr,
+      textScaler: textScaler,
+      maxLines: 1,
+    )..layout();
+
+    final bool hasSortIcon = column.sortable && widget.onSort != null;
+    final double sortIconArea = hasSortIcon
+        ? headerTheme.sortIconSpacing + headerTheme.sortIconWidth
+        : 0.0;
+
+    double maxWidth =
+        headerPainter.width + headerTheme.padding.horizontal + sortIconArea;
+
+    // Account for vertical divider border in body cells (right border 0.5px)
+    final double bodyBorderWidth = bodyTheme.showVerticalDividers ? 0.5 : 0.0;
+
+    // Measure body cell widths
+    for (final row in widget.data) {
+      final value = column.valueAccessor(row);
+      final text = value?.toString() ?? '';
+      if (text.isEmpty) continue;
+
+      final bodyPainter = TextPainter(
+        text: TextSpan(text: text, style: resolvedBodyStyle),
+        textDirection: ui.TextDirection.ltr,
+        textScaler: textScaler,
+        maxLines: 1,
+      )..layout();
+
+      final cellWidth =
+          bodyPainter.width + bodyTheme.padding.horizontal + bodyBorderWidth;
+      if (cellWidth > maxWidth) {
+        maxWidth = cellWidth;
+      }
+    }
+
+    // Add a small buffer (1px) to prevent ellipsis from rounding errors
+    maxWidth = (maxWidth + 1.0).ceilToDouble();
+
+    // Clamp to column constraints
+    final result = maxWidth.clamp(
+      column.minWidth,
+      column.maxWidth ?? double.infinity,
+    );
+
+    setState(() {
+      _resizedWidths[columnKey] = result;
+    });
+    widget.onColumnResized?.call(columnKey, result);
   }
 
   /// Get ordered columns, with optional selection column prepended.
@@ -634,6 +735,7 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
                               resizable: widget.resizable,
                               onColumnResize: _handleColumnResize,
                               onColumnResizeEnd: _handleColumnResizeEnd,
+                              onColumnAutoFit: _handleColumnAutoFit,
                               sortColumnKey: widget.sortColumnKey,
                               sortDirection: widget.sortDirection,
                               onSort: widget.onSort,

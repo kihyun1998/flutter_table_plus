@@ -34,6 +34,7 @@ class TablePlusHeader<T> extends StatefulWidget {
     this.sortColumnKey,
     this.sortDirection = SortDirection.none,
     this.onSort,
+    this.onColumnAutoFit,
   });
 
   /// The list of columns to display in the header.
@@ -92,6 +93,9 @@ class TablePlusHeader<T> extends StatefulWidget {
 
   /// Callback when a sortable column header is clicked.
   final void Function(String columnKey, SortDirection direction)? onSort;
+
+  /// Callback when a column resize handle is double-tapped for auto-fit.
+  final void Function(String columnKey)? onColumnAutoFit;
 
   @override
   State<TablePlusHeader<T>> createState() => _TablePlusHeaderState<T>();
@@ -334,6 +338,9 @@ class _TablePlusHeaderState<T> extends State<TablePlusHeader<T>> {
               handleEndIndent: widget.theme.resizeHandle.endIndent,
               onResize: widget.onColumnResize,
               onResizeEnd: widget.onColumnResizeEnd,
+              onDoubleTap: widget.onColumnAutoFit != null
+                  ? () => widget.onColumnAutoFit!(column.key)
+                  : null,
             ),
           ),
         );
@@ -663,6 +670,7 @@ class _ResizeHandle extends StatefulWidget {
     this.maxWidth,
     this.onResize,
     this.onResizeEnd,
+    this.onDoubleTap,
   });
 
   final String columnKey;
@@ -675,6 +683,7 @@ class _ResizeHandle extends StatefulWidget {
   final double handleEndIndent;
   final void Function(String columnKey, double newWidth)? onResize;
   final void Function(String columnKey, double finalWidth)? onResizeEnd;
+  final VoidCallback? onDoubleTap;
 
   @override
   State<_ResizeHandle> createState() => _ResizeHandleState();
@@ -780,6 +789,7 @@ class _ResizeHandleState extends State<_ResizeHandle> {
       onExit: (_) => setState(() => _isHovering = false),
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
+        onDoubleTap: widget.onDoubleTap,
         onHorizontalDragStart: (details) {
           _scrollable = Scrollable.maybeOf(context);
           setState(() {

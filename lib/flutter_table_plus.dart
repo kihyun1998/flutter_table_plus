@@ -38,6 +38,7 @@ export 'src/models/theme/tooltip_theme.dart';
 export 'src/models/tooltip_behavior.dart';
 
 /// Utilities
+export 'src/utils/table_column_width_calculator.dart';
 export 'src/utils/table_row_height_calculator.dart';
 
 /// Widgets
