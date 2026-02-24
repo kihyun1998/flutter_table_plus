@@ -5,6 +5,9 @@
     *   When `true`, the last visible column stretches to fill any leftover space after auto-fit or manual resize
     *   Only activates when remaining space exists; no effect when columns already fill or exceed available width
     *   Selection column (`__selection__`) is excluded from stretching
+*   **FIX**: Column reorder now works when dragging to empty space right of the last column
+    *   Added trailing `DragTarget` in header row to accept drops beyond the last column
+    *   Dropped column moves to the last position, consistent with drag-to-column behavior
 
 ## 2.6.0
 

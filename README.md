@@ -21,7 +21,7 @@ A highly customizable, type-safe Flutter table widget with synchronized scrollin
 | **Sorting** | Multi-state column sorting (ascending ↔ descending ↔ none) |
 | **Selection** | Single or multiple row selection with checkboxes |
 | **Inline Editing** | Click-to-edit cells with auto-save |
-| **Column Reordering** | Drag-and-drop columns |
+| **Column Reordering** | Drag-and-drop columns, drop on empty space to move to last |
 | **Column Resizing** | Drag header edges to resize columns with min/max constraints |
 | **Auto-Fit Columns** | Double-tap resize handle to auto-fit, with custom override callback |
 | **Stretch Last Column** | Last column fills remaining space when all columns are fixed |

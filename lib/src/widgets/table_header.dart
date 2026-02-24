@@ -215,6 +215,11 @@ class _TablePlusHeaderState<T> extends State<TablePlusHeader<T>> {
 
   @override
   Widget build(BuildContext context) {
+    // Count reorderable columns (non-selection) for trailing drop target
+    final reorderableCount = widget.columns
+        .where((col) => col.key != '__selection__')
+        .length;
+
     Widget content = Row(
       children: [
         ...() {
@@ -299,6 +304,20 @@ class _TablePlusHeaderState<T> extends State<TablePlusHeader<T>> {
             return result;
           });
         }(),
+
+        // Trailing drop zone: covers empty space right of the last column.
+        // Dropping here reorders the dragged column to the last position.
+        if (widget.onColumnReorder != null && reorderableCount > 0)
+          Expanded(
+            child: DragTarget<int>(
+              onAcceptWithDetails: (details) {
+                _handleColumnReorder(details.data, reorderableCount - 1);
+              },
+              builder: (context, candidateData, rejectedData) {
+                return SizedBox(height: widget.theme.height);
+              },
+            ),
+          ),
       ],
     );
 
