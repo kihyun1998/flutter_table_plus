@@ -44,6 +44,12 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
   Set<String> _selectedRows = {};
   bool _isGenerating = false;
 
+  // Saved column widths (simulates DB/SharedPreferences persistence)
+  Map<String, double> _savedWidths = {};
+  // Active initial widths passed to initialResizedWidths on table recreation
+  Map<String, double>? _activeInitialWidths;
+  Key _tableKey = UniqueKey();
+
   // Merged rows (if enabled)
   List<MergedRowGroup<Employee>> _mergedGroups = [];
 
@@ -733,6 +739,31 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
             onSettingsChanged: _handleSettingsChanged,
             onGenerateData: _generateData,
             onRandomizeWidths: _randomizeColumnWidths,
+            onRandomSavedWidths: () {
+              final rng = Random();
+              setState(() {
+                _activeInitialWidths = {
+                  for (final entry in _columns.entries)
+                    entry.key: (entry.value.minWidth +
+                            rng.nextDouble() *
+                                ((entry.value.maxWidth ?? 400.0) -
+                                    entry.value.minWidth))
+                        .roundToDouble(),
+                };
+                _tableKey = UniqueKey();
+              });
+              debugPrint(
+                  '🎲 Applied random widths (not saved)');
+            },
+            onRestoreWidths: () {
+              setState(() {
+                _activeInitialWidths = Map.of(_savedWidths);
+                _tableKey = UniqueKey();
+              });
+              debugPrint(
+                  '♻️ Restored saved widths: ${_savedWidths.entries.map((e) => '${e.key}: ${e.value.toStringAsFixed(1)}px').join(', ')}');
+            },
+            hasSavedWidths: _savedWidths.isNotEmpty,
             isGenerating: _isGenerating,
           ),
 
@@ -750,6 +781,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
       margin: const EdgeInsets.all(16),
       color: Colors.white,
       child: FlutterTablePlus<Employee>(
+        key: _tableKey,
         columns: _columns,
         data: _data,
         rowId: (row) => row.id,
@@ -761,7 +793,11 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
             _settings.columnReorderEnabled ? _handleColumnReorder : null,
         resizable: _settings.resizableEnabled,
         stretchLastColumn: _settings.stretchLastColumn,
+        initialResizedWidths: _activeInitialWidths,
         onColumnResized: (columnKey, newWidth) {
+          setState(() {
+            _savedWidths[columnKey] = newWidth;
+          });
           debugPrint(
               '↔️ Resized column "$columnKey" to ${newWidth.toStringAsFixed(1)}px');
         },

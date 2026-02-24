@@ -8,6 +8,10 @@
 *   **FIX**: Column reorder now works when dragging to empty space right of the last column
     *   Added trailing `DragTarget` in header row to accept drops beyond the last column
     *   Dropped column moves to the last position, consistent with drag-to-column behavior
+*   **FEAT**: Added `initialResizedWidths` parameter to `FlutterTablePlus` — restore saved column widths from a previous session
+    *   Columns in this map are treated as fixed (exact pixel width), same as user-resized columns
+    *   Only applied once at widget creation; subsequent user resizes override at runtime
+    *   Pair with `onColumnResized` to implement full column width persistence
 
 ## 2.6.0
 

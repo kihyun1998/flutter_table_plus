@@ -235,6 +235,9 @@ class SettingsPanel extends StatelessWidget {
   final ValueChanged<PlaygroundSettings> onSettingsChanged;
   final VoidCallback onGenerateData;
   final VoidCallback? onRandomizeWidths;
+  final VoidCallback? onRestoreWidths;
+  final VoidCallback? onRandomSavedWidths;
+  final bool hasSavedWidths;
   final bool isGenerating;
 
   const SettingsPanel({
@@ -244,6 +247,9 @@ class SettingsPanel extends StatelessWidget {
     required this.onSettingsChanged,
     required this.onGenerateData,
     this.onRandomizeWidths,
+    this.onRestoreWidths,
+    this.onRandomSavedWidths,
+    this.hasSavedWidths = false,
     this.isGenerating = false,
   });
 
@@ -269,6 +275,47 @@ class SettingsPanel extends StatelessWidget {
 
             // Data Settings
             _buildDataSettings(),
+            const SizedBox(height: 16),
+
+            // Width persistence demo buttons
+            if (onRestoreWidths != null)
+              Row(
+                children: [
+                  Expanded(
+                    child: SizedBox(
+                      height: 44,
+                      child: OutlinedButton.icon(
+                        onPressed: onRandomSavedWidths,
+                        icon: const Icon(Icons.shuffle, size: 18),
+                        label: const Text('Random'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.orange.shade700,
+                          side: BorderSide(color: Colors.orange.shade400),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: SizedBox(
+                      height: 44,
+                      child: OutlinedButton.icon(
+                        onPressed: hasSavedWidths ? onRestoreWidths : null,
+                        icon: const Icon(Icons.restore, size: 18),
+                        label: const Text('Restore'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.orange.shade700,
+                          side: BorderSide(
+                            color: hasSavedWidths
+                                ? Colors.orange.shade400
+                                : Colors.grey.shade300,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             const SizedBox(height: 24),
 
             // Style Settings

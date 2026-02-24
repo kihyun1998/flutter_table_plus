@@ -48,6 +48,7 @@ class FlutterTablePlus<T> extends StatefulWidget {
     this.onColumnReorder,
     this.resizable = false,
     this.onColumnResized,
+    this.initialResizedWidths,
     this.theme = const TablePlusTheme(),
     this.noDataWidget,
     this.calculateRowHeight,
@@ -155,6 +156,17 @@ class FlutterTablePlus<T> extends StatefulWidget {
   /// Use this to persist column widths externally.
   final void Function(String columnKey, double newWidth)? onColumnResized;
 
+  /// Initial column widths to restore from a previous session.
+  ///
+  /// Columns in this map are treated as "resized" (fixed pixel width),
+  /// just as if the user had manually dragged or auto-fitted them.
+  /// Columns not in this map remain flexible and participate in
+  /// proportional distribution.
+  ///
+  /// Only applied once at widget creation (in [initState]).
+  /// Subsequent user resizes override these values at runtime.
+  final Map<String, double>? initialResizedWidths;
+
   /// The theme configuration for the table.
   final TablePlusTheme theme;
 
@@ -223,6 +235,9 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
   @override
   void initState() {
     super.initState();
+    if (widget.initialResizedWidths != null) {
+      _resizedWidths.addAll(widget.initialResizedWidths!);
+    }
     _validateColumns();
     if (widget.data.isNotEmpty) {
       _validateUniqueIds();
