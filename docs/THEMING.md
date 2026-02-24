@@ -228,6 +228,32 @@ TablePlusCheckboxTheme(
 )
 ```
 
+### Disabling Ripple and Hover Effects
+
+If you don't use `splashRadius`, the checkbox still shows default ripple and hover overlay effects. To remove them, set `overlayColor` to transparent for the relevant states:
+
+```dart
+TablePlusCheckboxTheme(
+  overlayColor: WidgetStateProperty.resolveWith((states) {
+    if (states.contains(WidgetState.hovered)) {
+      return Colors.transparent;
+    }
+    if (states.contains(WidgetState.pressed)) {
+      return Colors.transparent;
+    }
+    return null; // Use default for other states
+  }),
+)
+```
+
+To remove all overlay effects at once:
+
+```dart
+TablePlusCheckboxTheme(
+  overlayColor: WidgetStateProperty.all(Colors.transparent),
+)
+```
+
 ### Material 3 Factory
 
 ```dart
