@@ -154,14 +154,16 @@ class _TablePlusCellState<T> extends State<TablePlusCell<T>> {
     if (_shouldShowTooltip(displayValue, textWidget)) {
       // Priority: tooltipBuilder > tooltipFormatter > default
       if (widget.column.tooltipBuilder != null) {
-        // Use custom widget tooltip
-        textWidget = CustomTooltipWrapper(
-          content: widget.column.tooltipBuilder!(context, widget.rowData),
+        // Use custom widget tooltip via tooltipBuilder adapter
+        final rowData = widget.rowData;
+        textWidget = FlutterTooltipPlus(
+          tooltipBuilder: (context) =>
+              widget.column.tooltipBuilder!(context, rowData),
           theme: widget.tooltipTheme,
           child: textWidget,
         );
       } else {
-        // Use text-based tooltip (existing behavior)
+        // Use text-based tooltip
         final tooltipMessage = widget.column.tooltipFormatter != null
             ? widget.column.tooltipFormatter!(widget.rowData)
             : displayValue;

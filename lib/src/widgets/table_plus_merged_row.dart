@@ -15,7 +15,6 @@ import '../utils/text_overflow_detector.dart';
 import 'cells/editable_text_field.dart';
 import 'flutter_tooltip_plus.dart';
 import 'custom_ink_well.dart';
-import 'custom_tooltip_wrapper.dart';
 import 'table_plus_row_widget.dart';
 
 /// A merged table row widget that combines multiple data rows into one visual row.
@@ -627,8 +626,10 @@ class _TablePlusMergedRowState<T> extends State<TablePlusMergedRow<T>> {
   ) {
     if (_shouldShowTooltip(displayValue, column, maxWidth)) {
       if (column.tooltipBuilder != null && rowData != null) {
-        return CustomTooltipWrapper(
-          content: column.tooltipBuilder!(context, rowData),
+        final capturedRowData = rowData;
+        return FlutterTooltipPlus(
+          tooltipBuilder: (context) =>
+              column.tooltipBuilder!(context, capturedRowData),
           theme: widget.tooltipTheme,
           child: textWidget,
         );

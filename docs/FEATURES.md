@@ -630,13 +630,12 @@ TablePlusTheme(
     enabled: true,
     waitDuration: Duration(milliseconds: 500),
     showDuration: Duration(seconds: 2),
-    exitDuration: Duration(milliseconds: 100),
-    decoration: BoxDecoration(
-      color: Colors.black87,
-      borderRadius: BorderRadius.circular(4),
-    ),
+    backgroundColor: Color(0xFF616161),
+    borderRadius: BorderRadius.circular(6),
     textStyle: TextStyle(color: Colors.white),
-    verticalOffset: 24.0,
+    direction: TooltipDirection.bottom,
+    showArrow: true,
+    offset: 8.0,
   ),
 )
 ```

@@ -42,6 +42,10 @@ class PlaygroundSettings {
   final int tooltipWaitDurationMs;
   final bool showTooltipFormatter;
   final bool showTooltipBuilder;
+  final TooltipDirection tooltipDirection;
+  final TooltipAlignment tooltipAlignment;
+  final bool tooltipShowArrow;
+  final double tooltipOffset;
 
   // Font settings
   final String fontFamily;
@@ -97,6 +101,10 @@ class PlaygroundSettings {
     this.tooltipWaitDurationMs = 500,
     this.showTooltipFormatter = false,
     this.showTooltipBuilder = false,
+    this.tooltipDirection = TooltipDirection.bottom,
+    this.tooltipAlignment = TooltipAlignment.center,
+    this.tooltipShowArrow = false,
+    this.tooltipOffset = 8.0,
     this.fontFamily = 'default',
     this.headerTopBorderShow = true,
     this.headerTopBorderThickness = 2.0,
@@ -145,6 +153,10 @@ class PlaygroundSettings {
     int? tooltipWaitDurationMs,
     bool? showTooltipFormatter,
     bool? showTooltipBuilder,
+    TooltipDirection? tooltipDirection,
+    TooltipAlignment? tooltipAlignment,
+    bool? tooltipShowArrow,
+    double? tooltipOffset,
     String? fontFamily,
     bool? headerTopBorderShow,
     double? headerTopBorderThickness,
@@ -196,6 +208,10 @@ class PlaygroundSettings {
           tooltipWaitDurationMs ?? this.tooltipWaitDurationMs,
       showTooltipFormatter: showTooltipFormatter ?? this.showTooltipFormatter,
       showTooltipBuilder: showTooltipBuilder ?? this.showTooltipBuilder,
+      tooltipDirection: tooltipDirection ?? this.tooltipDirection,
+      tooltipAlignment: tooltipAlignment ?? this.tooltipAlignment,
+      tooltipShowArrow: tooltipShowArrow ?? this.tooltipShowArrow,
+      tooltipOffset: tooltipOffset ?? this.tooltipOffset,
       fontFamily: fontFamily ?? this.fontFamily,
       headerTopBorderShow: headerTopBorderShow ?? this.headerTopBorderShow,
       headerTopBorderThickness:
@@ -1008,6 +1024,63 @@ class SettingsPanel extends StatelessWidget {
             onChanged: (value) {
               onSettingsChanged(
                   settings.copyWith(tooltipWaitDurationMs: value.round()));
+            },
+          ),
+
+          const Divider(height: 24),
+
+          // Direction
+          _buildDropdownRow<TooltipDirection>(
+            label: 'Direction',
+            value: settings.tooltipDirection,
+            items: TooltipDirection.values,
+            itemLabel: (d) => switch (d) {
+              TooltipDirection.top => 'Top',
+              TooltipDirection.bottom => 'Bottom',
+              TooltipDirection.left => 'Left',
+              TooltipDirection.right => 'Right',
+            },
+            onChanged: (value) {
+              onSettingsChanged(settings.copyWith(tooltipDirection: value));
+            },
+          ),
+          const SizedBox(height: 4),
+
+          // Alignment
+          _buildDropdownRow<TooltipAlignment>(
+            label: 'Alignment',
+            value: settings.tooltipAlignment,
+            items: TooltipAlignment.values,
+            itemLabel: (a) => switch (a) {
+              TooltipAlignment.start => 'Start',
+              TooltipAlignment.center => 'Center',
+              TooltipAlignment.end => 'End',
+            },
+            onChanged: (value) {
+              onSettingsChanged(settings.copyWith(tooltipAlignment: value));
+            },
+          ),
+          const SizedBox(height: 4),
+
+          // Show Arrow
+          _buildSwitchTile(
+            label: 'Show Arrow',
+            value: settings.tooltipShowArrow,
+            onChanged: (value) {
+              onSettingsChanged(settings.copyWith(tooltipShowArrow: value));
+            },
+          ),
+
+          // Offset slider
+          _buildSliderSetting(
+            label: 'Offset',
+            value: settings.tooltipOffset,
+            min: 0,
+            max: 32,
+            unit: 'px',
+            onChanged: (value) {
+              onSettingsChanged(
+                  settings.copyWith(tooltipOffset: value.roundToDouble()));
             },
           ),
 

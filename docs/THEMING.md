@@ -337,39 +337,43 @@ TablePlusScrollbarTheme(
 
 ## TablePlusTooltipTheme
 
-Styling for text tooltips.
+Styling and behavior for tooltips. Powered by [`just_tooltip`](https://pub.dev/packages/just_tooltip).
 
 ```dart
 TablePlusTooltipTheme(
   enabled: true,
 
-  // Timing
+  // Appearance (mapped to JustTooltipTheme)
+  backgroundColor: Color(0xFF616161),
+  borderRadius: BorderRadius.circular(6),
+  padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+  elevation: 4.0,
+  textStyle: TextStyle(color: Colors.white, fontSize: 12),
+  borderColor: Colors.grey,
+  borderWidth: 1.0,
+
+  // Arrow
+  showArrow: false,
+  arrowBaseWidth: 12.0,
+  arrowLength: 6.0,
+
+  // Position & layout
+  direction: TooltipDirection.bottom,   // top, bottom, left, right
+  alignment: TooltipAlignment.center,   // start, center, end
+  offset: 8.0,
+  crossAxisOffset: 0.0,
+  screenMargin: 8.0,
+
+  // Behavior
   waitDuration: Duration(milliseconds: 500),
   showDuration: Duration(seconds: 2),
-  exitDuration: Duration(milliseconds: 100),
+  enableHover: true,
+  enableTap: false,
+  interactive: true,
 
-  // Appearance
-  decoration: BoxDecoration(
-    color: Color(0xFF424242),
-    borderRadius: BorderRadius.circular(4),
-  ),
-  textStyle: TextStyle(color: Colors.white, fontSize: 12),
-  padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-  margin: EdgeInsets.zero,
-
-  // Position
-  preferBelow: true,
-  verticalOffset: 24.0,
-
-  // Widget tooltips (tooltipBuilder)
-  customWrapper: CustomTooltipWrapperTheme(
-    maxWidth: 300.0,
-    spacingPadding: 8.0,
-    horizontalPadding: 8.0,
-    minSpace: 100.0,
-    minScrollHeight: 80.0,
-    estimatedHeight: 150.0,
-  ),
+  // Animation
+  animation: TooltipAnimation.fade,     // none, fade, scale, slide, fadeScale, fadeSlide, rotation
+  animationDuration: Duration(milliseconds: 150),
 )
 ```
 

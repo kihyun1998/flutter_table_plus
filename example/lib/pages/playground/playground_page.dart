@@ -1021,6 +1021,10 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         enabled: _settings.tooltipEnabled,
         waitDuration: Duration(milliseconds: _settings.tooltipWaitDurationMs),
         textStyle: _fontTextStyle(fontSize: 12, color: Colors.white),
+        direction: _settings.tooltipDirection,
+        alignment: _settings.tooltipAlignment,
+        showArrow: _settings.tooltipShowArrow,
+        offset: _settings.tooltipOffset,
       ),
     );
   }

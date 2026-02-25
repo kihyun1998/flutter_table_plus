@@ -1,3 +1,14 @@
+## 2.8.0
+
+*   **BREAKING**: Migrated tooltip system from custom implementation to [`just_tooltip`](https://pub.dev/packages/just_tooltip) package
+    *   Removed `CustomTooltipWrapper` widget and `CustomTooltipWrapperTheme` class
+    *   Removed `decoration`, `margin`, `preferBelow`, `verticalOffset`, `exitDuration`, `customWrapper` from `TablePlusTooltipTheme`
+    *   Added `just_tooltip`-based properties: `backgroundColor`, `borderRadius`, `elevation`, `boxShadow`, `borderColor`, `borderWidth`, `showArrow`, `arrowBaseWidth`, `arrowLength`, `arrowPositionRatio`
+    *   Added layout/behavior properties: `direction`, `alignment`, `offset`, `crossAxisOffset`, `screenMargin`, `enableTap`, `enableHover`, `interactive`, `animation`, `animationCurve`, `fadeBegin`, `scaleBegin`, `slideOffset`, `rotationBegin`, `animationDuration`, `hideOnEmptyMessage`
+    *   `FlutterTooltipPlus` now accepts both `message` (String?) and `tooltipBuilder` (WidgetBuilder?) — unified text and widget tooltips
+    *   Added `toJustTooltipTheme()` helper on `TablePlusTooltipTheme`
+    *   Re-exported `TooltipDirection`, `TooltipAlignment`, `TooltipAnimation` from `just_tooltip`
+
 ## 2.7.1
 
 *   **FIX**: `initialResizedWidths` now reacts to runtime changes via `didUpdateWidget`

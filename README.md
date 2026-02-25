@@ -32,7 +32,7 @@ A highly customizable, type-safe Flutter table widget with synchronized scrollin
 | **Smart Tooltips** | Text or widget-based tooltips |
 | **Dim Rows** | Style inactive rows differently |
 | **Deep Theming** | 8 nested theme classes for complete customization |
-| **Zero Dependencies** | Pure Flutter implementation |
+| **Minimal Dependencies** | Only [`just_tooltip`](https://pub.dev/packages/just_tooltip) for rich tooltip support |
 
 ---
 
@@ -40,7 +40,7 @@ A highly customizable, type-safe Flutter table widget with synchronized scrollin
 
 ```yaml
 dependencies:
-  flutter_table_plus: ^2.7.1
+  flutter_table_plus: ^2.8.0
 ```
 
 ```bash
