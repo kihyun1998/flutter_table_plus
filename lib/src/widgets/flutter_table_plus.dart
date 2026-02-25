@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../models/hover_button_position.dart';
@@ -257,6 +258,13 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
       _validateColumns();
       // Clean up resize state for removed columns
       _resizedWidths.removeWhere((key, _) => !widget.columns.containsKey(key));
+    }
+    if (!mapEquals(
+        widget.initialResizedWidths, oldWidget.initialResizedWidths)) {
+      _resizedWidths.clear();
+      if (widget.initialResizedWidths != null) {
+        _resizedWidths.addAll(widget.initialResizedWidths!);
+      }
     }
     if (!identical(widget.data, oldWidget.data) ||
         !identical(widget.mergedGroups, oldWidget.mergedGroups) ||

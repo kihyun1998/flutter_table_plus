@@ -40,7 +40,7 @@ A highly customizable, type-safe Flutter table widget with synchronized scrollin
 
 ```yaml
 dependencies:
-  flutter_table_plus: ^2.7.0
+  flutter_table_plus: ^2.7.1
 ```
 
 ```bash
@@ -143,7 +143,7 @@ FlutterTablePlus<User>(
   rowId: (user) => user.id,
   resizable: true,
 
-  // Restore saved widths (applied once on widget creation)
+  // Restore saved widths (reacts to changes — safe with Riverpod watch)
   initialResizedWidths: savedWidths, // e.g. {'name': 200, 'email': 150}
 
   // Save widths when user resizes

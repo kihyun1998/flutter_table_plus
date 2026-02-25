@@ -1,3 +1,10 @@
+## 2.7.1
+
+*   **FIX**: `initialResizedWidths` now reacts to runtime changes via `didUpdateWidget`
+    *   Previously only applied once at widget creation (`initState`); switching data contexts (e.g., different servers) kept stale resize widths
+    *   Uses `mapEquals` for value-based comparison — avoids unnecessary resets when state management (Riverpod, Provider, etc.) rebuilds pass an equivalent map
+    *   Widget no longer needs a `Key` swap to apply new initial widths
+
 ## 2.7.0
 
 *   **FEAT**: Added `stretchLastColumn` parameter to `FlutterTablePlus` — last column absorbs remaining space when all columns have fixed widths

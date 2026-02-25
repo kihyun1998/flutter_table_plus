@@ -2,12 +2,13 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
+import 'package:google_fonts/google_fonts.dart';
+
 import 'models/employee.dart';
 import 'utils/random_data_generator.dart';
-import 'widgets/settings_panel.dart';
 import 'widgets/performance_monitor.dart';
+import 'widgets/settings_panel.dart';
 
 /// Interactive playground for testing FlutterTablePlus
 ///
@@ -45,10 +46,9 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
   bool _isGenerating = false;
 
   // Saved column widths (simulates DB/SharedPreferences persistence)
-  Map<String, double> _savedWidths = {};
-  // Active initial widths passed to initialResizedWidths on table recreation
+  final Map<String, double> _savedWidths = {};
+  // Active initial widths passed to initialResizedWidths
   Map<String, double>? _activeInitialWidths;
-  Key _tableKey = UniqueKey();
 
   // Merged rows (if enabled)
   List<MergedRowGroup<Employee>> _mergedGroups = [];
@@ -750,14 +750,12 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
                                     entry.value.minWidth))
                         .roundToDouble(),
                 };
-                _tableKey = UniqueKey();
               });
               debugPrint('🎲 Applied random widths (not saved)');
             },
             onRestoreWidths: () {
               setState(() {
                 _activeInitialWidths = Map.of(_savedWidths);
-                _tableKey = UniqueKey();
               });
               debugPrint(
                   '♻️ Restored saved widths: ${_savedWidths.entries.map((e) => '${e.key}: ${e.value.toStringAsFixed(1)}px').join(', ')}');
@@ -780,7 +778,6 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
       margin: const EdgeInsets.all(16),
       color: Colors.white,
       child: FlutterTablePlus<Employee>(
-        key: _tableKey,
         columns: _columns,
         data: _data,
         rowId: (row) => row.id,
