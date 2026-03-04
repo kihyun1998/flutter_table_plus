@@ -107,6 +107,13 @@ class TablePlusTooltipTheme {
   final TooltipDirection direction;
 
   /// The cross-axis alignment of the tooltip relative to the child.
+  ///
+  /// Available values: [TooltipAlignment.start], [TooltipAlignment.center],
+  /// [TooltipAlignment.end], [TooltipAlignment.startTargetCenter],
+  /// [TooltipAlignment.endTargetCenter].
+  ///
+  /// The `startTargetCenter` and `endTargetCenter` alignments position the
+  /// arrow to dynamically point toward the center of the target widget.
   final TooltipAlignment alignment;
 
   /// The gap between the child widget and the tooltip.

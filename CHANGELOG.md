@@ -1,3 +1,8 @@
+## 2.8.1
+
+*   Bumped `just_tooltip` dependency to `^0.2.5`
+    *   Supports new `TooltipAlignment.startTargetCenter` and `TooltipAlignment.endTargetCenter` values — arrow dynamically points toward the center of the target widget
+
 ## 2.8.0
 
 *   **BREAKING**: Migrated tooltip system from custom implementation to [`just_tooltip`](https://pub.dev/packages/just_tooltip) package

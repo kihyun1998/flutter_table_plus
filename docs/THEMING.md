@@ -359,7 +359,7 @@ TablePlusTooltipTheme(
 
   // Position & layout
   direction: TooltipDirection.bottom,   // top, bottom, left, right
-  alignment: TooltipAlignment.center,   // start, center, end
+  alignment: TooltipAlignment.center,   // start, center, end, startTargetCenter, endTargetCenter
   offset: 8.0,
   crossAxisOffset: 0.0,
   screenMargin: 8.0,
