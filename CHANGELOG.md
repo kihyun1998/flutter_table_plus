@@ -8,6 +8,9 @@
     *   Replaced 5 identical inline `Border(right: BorderSide(...))` blocks with single getter calls
 *   **REFACTOR**: Moved `_shouldShowBottomBorder` logic to `TablePlusBodyTheme.shouldShowBottomBorder()`
     *   Removed identical private methods from `_TablePlusRowState` and `_TablePlusMergedRowState`
+*   **REFACTOR**: Consolidated hover button positioning logic into `HoverButtonPosition.buildPositioned()`
+    *   Added `buildPositioned()` method to `HoverButtonPosition` enum
+    *   Replaced identical switch-case blocks (~25 lines each) in `TablePlusRow` and `TablePlusMergedRow` with single method calls
 *   No API or behavioral changes — all appearance and functionality remain identical
 
 ## 2.8.1

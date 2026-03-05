@@ -687,32 +687,10 @@ class _TablePlusMergedRowState<T> extends State<TablePlusMergedRow<T>> {
       return null;
     }
 
-    switch (widget.hoverButtonPosition) {
-      case HoverButtonPosition.left:
-        return Positioned(
-          left: widget.hoverButtonTheme?.horizontalOffset ?? 8.0,
-          top: 0,
-          bottom: 0,
-          child: Center(
-            child: buttonWidget,
-          ),
-        );
-      case HoverButtonPosition.center:
-        return Positioned.fill(
-          child: Center(
-            child: buttonWidget,
-          ),
-        );
-      case HoverButtonPosition.right:
-        return Positioned(
-          right: widget.hoverButtonTheme?.horizontalOffset ?? 8.0,
-          top: 0,
-          bottom: 0,
-          child: Center(
-            child: buttonWidget,
-          ),
-        );
-    }
+    return widget.hoverButtonPosition.buildPositioned(
+      child: buttonWidget,
+      horizontalOffset: widget.hoverButtonTheme?.horizontalOffset ?? 8.0,
+    );
   }
 
   @override

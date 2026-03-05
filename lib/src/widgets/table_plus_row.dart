@@ -191,36 +191,10 @@ class _TablePlusRowState<T> extends State<TablePlusRow<T>> {
       }
 
       if (buttonWidget != null) {
-        // Position the buttons based on hoverButtonPosition
-        switch (widget.hoverButtonPosition) {
-          case HoverButtonPosition.left:
-            hoverButtons = Positioned(
-              left: widget.hoverButtonTheme?.horizontalOffset ?? 8.0,
-              top: 0,
-              bottom: 0,
-              child: Center(
-                child: buttonWidget,
-              ),
-            );
-            break;
-          case HoverButtonPosition.center:
-            hoverButtons = Positioned.fill(
-              child: Center(
-                child: buttonWidget,
-              ),
-            );
-            break;
-          case HoverButtonPosition.right:
-            hoverButtons = Positioned(
-              right: widget.hoverButtonTheme?.horizontalOffset ?? 8.0,
-              top: 0,
-              bottom: 0,
-              child: Center(
-                child: buttonWidget,
-              ),
-            );
-            break;
-        }
+        hoverButtons = widget.hoverButtonPosition.buildPositioned(
+          child: buttonWidget,
+          horizontalOffset: widget.hoverButtonTheme?.horizontalOffset ?? 8.0,
+        );
       }
     }
 
