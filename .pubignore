@@ -1,5 +1,14 @@
 *.exe
-.codeignore
-CODE.md
+
 todo.md
 CLAUDE.md
+build/
+example/build/
+example/windows/
+example/linux/
+example/android/
+example/ios/
+example/assets/
+docs/
+documentation/
+.github/
