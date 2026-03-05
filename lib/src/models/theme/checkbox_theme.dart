@@ -205,6 +205,39 @@ class TablePlusCheckboxTheme {
     );
   }
 
+  /// Builds a [Checkbox] widget with all theme properties applied.
+  ///
+  /// This eliminates the need to manually pass every theme property at each
+  /// call site. Use [tristate] for the select-all header checkbox.
+  Widget buildCheckbox({
+    required bool? value,
+    required ValueChanged<bool?>? onChanged,
+    bool tristate = false,
+  }) {
+    return SizedBox(
+      width: tapTargetSize ?? size,
+      height: tapTargetSize ?? size,
+      child: Checkbox(
+        value: value,
+        tristate: tristate,
+        onChanged: onChanged,
+        activeColor: fillColor?.resolve({WidgetState.selected}),
+        hoverColor: hoverColor,
+        focusColor: focusColor,
+        fillColor: fillColor,
+        checkColor: checkColor,
+        side: side,
+        shape: shape,
+        mouseCursor: mouseCursor,
+        materialTapTargetSize:
+            materialTapTargetSize ?? MaterialTapTargetSize.shrinkWrap,
+        visualDensity: visualDensity ?? VisualDensity.compact,
+        splashRadius: splashRadius,
+        overlayColor: overlayColor,
+      ),
+    );
+  }
+
   /// Creates a Material 3 compliant checkbox theme with state-aware colors.
   ///
   /// This factory constructor provides a modern checkbox theme that follows

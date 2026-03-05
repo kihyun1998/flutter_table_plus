@@ -615,34 +615,13 @@ class _SelectionHeaderCell extends StatelessWidget {
       decoration: _buildSelectionCellDecoration(),
       child: showSelectAllCheckbox && onSelectAll != null
           ? Center(
-              child: SizedBox(
-                width: checkboxTheme.tapTargetSize ?? checkboxTheme.size,
-                height: checkboxTheme.tapTargetSize ?? checkboxTheme.size,
-                child: Checkbox(
-                  value: selectAllState,
-                  tristate: true, // Allows indeterminate state
-                  onChanged: onSelectAll != null
-                      ? (value) {
-                          final shouldSelectAll = selectedRows.isEmpty;
-                          onSelectAll!(shouldSelectAll);
-                        }
-                      : null,
-                  activeColor:
-                      checkboxTheme.fillColor?.resolve({WidgetState.selected}),
-                  hoverColor: checkboxTheme.hoverColor,
-                  focusColor: checkboxTheme.focusColor,
-                  fillColor: checkboxTheme.fillColor,
-                  checkColor: checkboxTheme.checkColor,
-                  side: checkboxTheme.side,
-                  shape: checkboxTheme.shape,
-                  mouseCursor: checkboxTheme.mouseCursor,
-                  materialTapTargetSize: checkboxTheme.materialTapTargetSize ??
-                      MaterialTapTargetSize.shrinkWrap,
-                  visualDensity:
-                      checkboxTheme.visualDensity ?? VisualDensity.compact,
-                  splashRadius: checkboxTheme.splashRadius,
-                  overlayColor: checkboxTheme.overlayColor,
-                ),
+              child: checkboxTheme.buildCheckbox(
+                value: selectAllState,
+                tristate: true,
+                onChanged: (value) {
+                  final shouldSelectAll = selectedRows.isEmpty;
+                  onSelectAll!(shouldSelectAll);
+                },
               ),
             )
           : const SizedBox.shrink(),

@@ -1,3 +1,10 @@
+## 2.8.2
+
+*   **REFACTOR**: Deduplicated checkbox creation across header, body, and merged row widgets
+    *   Added `buildCheckbox()` helper method to `TablePlusCheckboxTheme` — builds a fully-themed `Checkbox` widget in one call
+    *   Replaced 3 identical inline `Checkbox(...)` blocks (~47 lines) with `checkboxTheme.buildCheckbox()` calls
+    *   No API or behavioral changes — checkbox appearance and functionality remain identical
+
 ## 2.8.1
 
 *   Bumped `just_tooltip` dependency to `^0.2.5`
