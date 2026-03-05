@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import '../models/hover_button_position.dart';
 import '../models/merged_row_group.dart';
 import '../models/table_column.dart';
+import '../models/theme/scrollbar_theme.dart' show TablePlusScrollbarTheme;
 import '../models/theme/theme.dart' show TablePlusTheme;
 import 'synced_scroll_controllers.dart';
 import 'table_body.dart';
@@ -706,6 +707,75 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
     return null;
   }
 
+  /// Build a themed scrollbar track widget for the given [axis].
+  ///
+  /// Shared by vertical and horizontal scrollbar overlays to avoid
+  /// duplicating the ValueListenableBuilder / AnimatedOpacity / Theme /
+  /// Scrollbar widget tree.
+  Widget _buildScrollbarTrack({
+    required BuildContext context,
+    required TablePlusScrollbarTheme scrollbarTheme,
+    required ScrollController controller,
+    required Axis axis,
+    required double contentExtent,
+  }) {
+    final trackWidth = scrollbarTheme.trackWidth;
+    final isVertical = axis == Axis.vertical;
+
+    return ValueListenableBuilder<bool>(
+      valueListenable: _isHovered,
+      builder: (context, isHovered, child) {
+        return AnimatedOpacity(
+          opacity: scrollbarTheme.hoverOnly
+              ? (isHovered ? scrollbarTheme.opacity : 0.0)
+              : scrollbarTheme.opacity,
+          duration: scrollbarTheme.animationDuration,
+          child: child,
+        );
+      },
+      child: Container(
+        width: isVertical ? trackWidth : null,
+        height: isVertical ? null : trackWidth,
+        decoration: BoxDecoration(
+          color: scrollbarTheme.trackColor,
+          border: scrollbarTheme.trackBorder,
+          borderRadius: BorderRadius.circular(
+            scrollbarTheme.radius ?? trackWidth / 2,
+          ),
+        ),
+        child: Theme(
+          data: Theme.of(context).copyWith(
+            scrollbarTheme: ScrollbarThemeData(
+              thumbColor: WidgetStateProperty.all(
+                scrollbarTheme.thumbColor,
+              ),
+              trackColor: WidgetStateProperty.all(
+                Colors.transparent,
+              ),
+              radius: Radius.circular(scrollbarTheme.radius ?? trackWidth / 2),
+              thickness: WidgetStateProperty.all(
+                scrollbarTheme.thickness ?? trackWidth * 0.7,
+              ),
+            ),
+          ),
+          child: Scrollbar(
+            controller: controller,
+            thumbVisibility: true,
+            trackVisibility: false,
+            child: SingleChildScrollView(
+              controller: controller,
+              scrollDirection: axis,
+              child: SizedBox(
+                width: isVertical ? trackWidth : contentExtent,
+                height: isVertical ? contentExtent : trackWidth,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // Get ordered columns
@@ -879,65 +949,15 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
                                 needsHorizontalScroll)
                             ? theme.scrollbarTheme.trackWidth
                             : 0,
-                        child: ValueListenableBuilder<bool>(
-                          valueListenable: _isHovered,
-                          builder: (context, isHovered, child) {
-                            return AnimatedOpacity(
-                              opacity: theme.scrollbarTheme.hoverOnly
-                                  ? (isHovered
-                                      ? theme.scrollbarTheme.opacity
-                                      : 0.0)
-                                  : theme.scrollbarTheme.opacity,
-                              duration: theme.scrollbarTheme.animationDuration,
-                              child: child,
-                            );
-                          },
-                          child: Container(
-                            width: theme.scrollbarTheme.trackWidth,
-                            decoration: BoxDecoration(
-                              color: theme.scrollbarTheme.trackColor,
-                              border: theme.scrollbarTheme.trackBorder,
-                              borderRadius: BorderRadius.circular(
-                                theme.scrollbarTheme.radius ??
-                                    theme.scrollbarTheme.trackWidth / 2,
-                              ),
-                            ),
-                            child: Theme(
-                              data: Theme.of(context).copyWith(
-                                scrollbarTheme: ScrollbarThemeData(
-                                  thumbColor: WidgetStateProperty.all(
-                                    theme.scrollbarTheme.thumbColor,
-                                  ),
-                                  trackColor: WidgetStateProperty.all(
-                                    Colors.transparent,
-                                  ),
-                                  radius: Radius.circular(
-                                      theme.scrollbarTheme.radius ??
-                                          theme.scrollbarTheme.trackWidth / 2),
-                                  thickness: WidgetStateProperty.all(
-                                    theme.scrollbarTheme.thickness ??
-                                        theme.scrollbarTheme.trackWidth * 0.7,
-                                  ),
-                                ),
-                              ),
-                              child: Scrollbar(
-                                controller: verticalScrollbarController,
-                                thumbVisibility: true,
-                                trackVisibility: false,
-                                child: SingleChildScrollView(
-                                  controller: verticalScrollbarController,
-                                  scrollDirection: Axis.vertical,
-                                  child: SizedBox(
-                                    height: needsHorizontalScroll
-                                        ? tableDataHeight -
-                                            theme.scrollbarTheme.trackWidth
-                                        : tableDataHeight,
-                                    width: theme.scrollbarTheme.trackWidth,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
+                        child: _buildScrollbarTrack(
+                          context: context,
+                          scrollbarTheme: theme.scrollbarTheme,
+                          controller: verticalScrollbarController,
+                          axis: Axis.vertical,
+                          contentExtent: needsHorizontalScroll
+                              ? tableDataHeight -
+                                  theme.scrollbarTheme.trackWidth
+                              : tableDataHeight,
                         ),
                       ),
 
@@ -948,62 +968,12 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
                         left: 0,
                         right: 0,
                         bottom: 0,
-                        child: ValueListenableBuilder<bool>(
-                          valueListenable: _isHovered,
-                          builder: (context, isHovered, child) {
-                            return AnimatedOpacity(
-                              opacity: theme.scrollbarTheme.hoverOnly
-                                  ? (isHovered
-                                      ? theme.scrollbarTheme.opacity
-                                      : 0.0)
-                                  : theme.scrollbarTheme.opacity,
-                              duration: theme.scrollbarTheme.animationDuration,
-                              child: child,
-                            );
-                          },
-                          child: Container(
-                            height: theme.scrollbarTheme.trackWidth,
-                            decoration: BoxDecoration(
-                              color: theme.scrollbarTheme.trackColor,
-                              border: theme.scrollbarTheme.trackBorder,
-                              borderRadius: BorderRadius.circular(
-                                theme.scrollbarTheme.radius ??
-                                    theme.scrollbarTheme.trackWidth / 2,
-                              ),
-                            ),
-                            child: Theme(
-                              data: Theme.of(context).copyWith(
-                                scrollbarTheme: ScrollbarThemeData(
-                                  thumbColor: WidgetStateProperty.all(
-                                    theme.scrollbarTheme.thumbColor,
-                                  ),
-                                  trackColor: WidgetStateProperty.all(
-                                    Colors.transparent,
-                                  ),
-                                  radius: Radius.circular(
-                                      theme.scrollbarTheme.radius ??
-                                          theme.scrollbarTheme.trackWidth / 2),
-                                  thickness: WidgetStateProperty.all(
-                                    theme.scrollbarTheme.thickness ??
-                                        theme.scrollbarTheme.trackWidth * 0.7,
-                                  ),
-                                ),
-                              ),
-                              child: Scrollbar(
-                                controller: horizontalScrollbarController,
-                                thumbVisibility: true,
-                                trackVisibility: false,
-                                child: SingleChildScrollView(
-                                  controller: horizontalScrollbarController,
-                                  scrollDirection: Axis.horizontal,
-                                  child: SizedBox(
-                                    width: contentWidth,
-                                    height: theme.scrollbarTheme.trackWidth,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
+                        child: _buildScrollbarTrack(
+                          context: context,
+                          scrollbarTheme: theme.scrollbarTheme,
+                          controller: horizontalScrollbarController,
+                          axis: Axis.horizontal,
+                          contentExtent: contentWidth,
                         ),
                       ),
                   ],
