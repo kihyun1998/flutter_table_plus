@@ -260,14 +260,7 @@ class _TablePlusMergedRowState<T> extends State<TablePlusMergedRow<T>> {
             width: width,
             height: mergedHeight,
             decoration: BoxDecoration(
-              border: widget.theme.showVerticalDividers
-                  ? Border(
-                      right: BorderSide(
-                        color: widget.theme.dividerColor.withValues(alpha: 0.5),
-                        width: 0.5,
-                      ),
-                    )
-                  : null,
+              border: widget.theme.verticalDividerBorder,
               color: Colors.transparent,
             ),
             child: content,
@@ -279,14 +272,7 @@ class _TablePlusMergedRowState<T> extends State<TablePlusMergedRow<T>> {
         width: width,
         height: mergedHeight,
         decoration: BoxDecoration(
-          border: widget.theme.showVerticalDividers
-              ? Border(
-                  right: BorderSide(
-                    color: widget.theme.dividerColor.withValues(alpha: 0.5),
-                    width: 0.5,
-                  ),
-                )
-              : null,
+          border: widget.theme.verticalDividerBorder,
         ),
         child: content,
       );
@@ -662,14 +648,7 @@ class _TablePlusMergedRowState<T> extends State<TablePlusMergedRow<T>> {
       width: width,
       height: mergedHeight,
       decoration: BoxDecoration(
-        border: widget.theme.showVerticalDividers
-            ? Border(
-                right: BorderSide(
-                  color: widget.theme.dividerColor.withValues(alpha: 0.5),
-                  width: 0.5,
-                ),
-              )
-            : null,
+        border: widget.theme.verticalDividerBorder,
       ),
       child: widget.checkboxTheme.showRowCheckbox
           ? Center(

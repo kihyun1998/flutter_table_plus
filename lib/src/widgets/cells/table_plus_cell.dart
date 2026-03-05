@@ -194,14 +194,7 @@ class _TablePlusCellState<T> extends State<TablePlusCell<T>> {
     // Only apply cell-level styling when not editing
     if (!widget.isCellEditing) {
       // Apply normal vertical divider if needed
-      if (widget.theme.showVerticalDividers) {
-        border = Border(
-          right: BorderSide(
-            color: widget.theme.dividerColor.withValues(alpha: 0.5),
-            width: 0.5,
-          ),
-        );
-      }
+      border = widget.theme.verticalDividerBorder;
     }
 
     Widget cellContent = Container(

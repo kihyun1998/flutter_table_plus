@@ -55,14 +55,7 @@ class TablePlusSelectionCell extends StatelessWidget {
       width: width,
       height: calculatedHeight ?? theme.rowHeight,
       decoration: BoxDecoration(
-        border: theme.showVerticalDividers
-            ? Border(
-                right: BorderSide(
-                  color: theme.dividerColor.withValues(alpha: 0.5),
-                  width: 0.5,
-                ),
-              )
-            : null,
+        border: theme.verticalDividerBorder,
       ),
       child: content,
     );

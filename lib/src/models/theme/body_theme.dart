@@ -152,6 +152,24 @@ class TablePlusBodyTheme {
   /// Defaults to 500 milliseconds.
   final Duration doubleClickTime;
 
+  /// The right [BorderSide] for vertical column dividers between cells.
+  ///
+  /// Returns [BorderSide.none] when [showVerticalDividers] is false.
+  /// Used to compose [Border] objects that include other sides (e.g. bottom).
+  BorderSide get verticalDividerSide => showVerticalDividers
+      ? BorderSide(
+          color: dividerColor.withValues(alpha: 0.5),
+          width: 0.5,
+        )
+      : BorderSide.none;
+
+  /// A right-only [Border] for vertical column dividers, or null when disabled.
+  ///
+  /// Convenience getter for the common case where only the right border is
+  /// needed (most regular and merged cells).
+  Border? get verticalDividerBorder =>
+      showVerticalDividers ? Border(right: verticalDividerSide) : null;
+
   /// Creates a copy of this theme with the given fields replaced with new values.
   TablePlusBodyTheme copyWith({
     double? rowHeight,

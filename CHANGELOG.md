@@ -3,7 +3,10 @@
 *   **REFACTOR**: Deduplicated checkbox creation across header, body, and merged row widgets
     *   Added `buildCheckbox()` helper method to `TablePlusCheckboxTheme` — builds a fully-themed `Checkbox` widget in one call
     *   Replaced 3 identical inline `Checkbox(...)` blocks (~47 lines) with `checkboxTheme.buildCheckbox()` calls
-    *   No API or behavioral changes — checkbox appearance and functionality remain identical
+*   **REFACTOR**: Deduplicated vertical divider border creation across cell widgets
+    *   Added `verticalDividerSide` and `verticalDividerBorder` getters to `TablePlusBodyTheme`
+    *   Replaced 5 identical inline `Border(right: BorderSide(...))` blocks with single getter calls
+*   No API or behavioral changes — all appearance and functionality remain identical
 
 ## 2.8.1
 
