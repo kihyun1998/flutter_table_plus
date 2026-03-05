@@ -6,6 +6,8 @@
 *   **REFACTOR**: Deduplicated vertical divider border creation across cell widgets
     *   Added `verticalDividerSide` and `verticalDividerBorder` getters to `TablePlusBodyTheme`
     *   Replaced 5 identical inline `Border(right: BorderSide(...))` blocks with single getter calls
+*   **REFACTOR**: Moved `_shouldShowBottomBorder` logic to `TablePlusBodyTheme.shouldShowBottomBorder()`
+    *   Removed identical private methods from `_TablePlusRowState` and `_TablePlusMergedRowState`
 *   No API or behavioral changes — all appearance and functionality remain identical
 
 ## 2.8.1

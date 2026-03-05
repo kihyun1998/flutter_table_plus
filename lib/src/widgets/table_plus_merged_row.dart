@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../flutter_table_plus.dart'
-    show LastRowBorderBehavior, HoverButtonPosition;
+import '../../flutter_table_plus.dart' show HoverButtonPosition;
 import '../models/merged_row_group.dart';
 import '../models/table_column.dart';
 import '../models/theme/body_theme.dart' show TablePlusBodyTheme;
@@ -152,21 +151,6 @@ class _TablePlusMergedRowState<T> extends State<TablePlusMergedRow<T>> {
     }
 
     return column.width;
-  }
-
-  /// Determines whether to show a bottom border for the merged row.
-  bool _shouldShowBottomBorder(bool isLastRow, TablePlusBodyTheme theme) {
-    if (!theme.showHorizontalDividers) return false;
-    if (!isLastRow) return true;
-
-    switch (theme.lastRowBorderBehavior) {
-      case LastRowBorderBehavior.never:
-        return false;
-      case LastRowBorderBehavior.always:
-        return true;
-      case LastRowBorderBehavior.smart:
-        return !widget.needsVerticalScroll;
-    }
   }
 
   /// Handle merged cell value change.
@@ -428,7 +412,9 @@ class _TablePlusMergedRowState<T> extends State<TablePlusMergedRow<T>> {
                     width: 1,
                   )
                 : BorderSide.none,
-            bottom: _shouldShowBottomBorder(widget.isLastRow, widget.theme)
+            bottom: widget.theme.shouldShowBottomBorder(
+                    isLastRow: widget.isLastRow,
+                    needsVerticalScroll: widget.needsVerticalScroll)
                 ? BorderSide(
                     color: widget.theme.dividerColor.withValues(alpha: 0.3),
                     width: 1,
@@ -456,14 +442,15 @@ class _TablePlusMergedRowState<T> extends State<TablePlusMergedRow<T>> {
                           width: 1,
                         )
                       : BorderSide.none,
-                  bottom:
-                      _shouldShowBottomBorder(widget.isLastRow, widget.theme)
-                          ? BorderSide(
-                              color: widget.theme.dividerColor
-                                  .withValues(alpha: 0.3),
-                              width: 1,
-                            )
-                          : BorderSide.none,
+                  bottom: widget.theme.shouldShowBottomBorder(
+                          isLastRow: widget.isLastRow,
+                          needsVerticalScroll: widget.needsVerticalScroll)
+                      ? BorderSide(
+                          color:
+                              widget.theme.dividerColor.withValues(alpha: 0.3),
+                          width: 1,
+                        )
+                      : BorderSide.none,
                 ),
               ),
               child: content,
@@ -511,7 +498,9 @@ class _TablePlusMergedRowState<T> extends State<TablePlusMergedRow<T>> {
               color: widget.theme.dividerColor.withValues(alpha: 0.3),
               width: 0.5,
             ),
-            bottom: _shouldShowBottomBorder(widget.isLastRow, widget.theme)
+            bottom: widget.theme.shouldShowBottomBorder(
+                    isLastRow: widget.isLastRow,
+                    needsVerticalScroll: widget.needsVerticalScroll)
                 ? BorderSide(
                     color: widget.theme.dividerColor.withValues(alpha: 0.3),
                     width: 1,
@@ -737,7 +726,9 @@ class _TablePlusMergedRowState<T> extends State<TablePlusMergedRow<T>> {
         color: (widget.isSelectable && !widget.isEditable)
             ? Colors.transparent
             : widget.backgroundColor,
-        border: _shouldShowBottomBorder(widget.isLastRow, widget.theme)
+        border: widget.theme.shouldShowBottomBorder(
+                isLastRow: widget.isLastRow,
+                needsVerticalScroll: widget.needsVerticalScroll)
             ? Border(
                 bottom: BorderSide(
                   color: widget.theme.dividerColor,

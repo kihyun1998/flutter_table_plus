@@ -96,29 +96,6 @@ class TablePlusRow<T> extends TablePlusRowWidget {
 class _TablePlusRowState<T> extends State<TablePlusRow<T>> {
   bool _isHovered = false;
 
-  /// Determines whether to show a bottom border for this row.
-  ///
-  /// Takes into account the row position (last vs non-last) and the theme's
-  /// [LastRowBorderBehavior] setting to decide if a border should be shown.
-  bool _shouldShowBottomBorder(bool isLastRow, TablePlusBodyTheme theme) {
-    // Don't show any borders if horizontal dividers are disabled
-    if (!theme.showHorizontalDividers) return false;
-
-    // Always show border for non-last rows
-    if (!isLastRow) return true;
-
-    // For last row, check the border behavior setting
-    switch (theme.lastRowBorderBehavior) {
-      case LastRowBorderBehavior.never:
-        return false;
-      case LastRowBorderBehavior.always:
-        return true;
-      case LastRowBorderBehavior.smart:
-        // Show border only when there's no vertical scroll
-        return !widget.needsVerticalScroll;
-    }
-  }
-
   /// Handle row tap for selection.
   /// Only works when not in editable mode.
   void _handleRowTap() {
@@ -144,7 +121,9 @@ class _TablePlusRowState<T> extends State<TablePlusRow<T>> {
             (widget.isSelectable && !widget.isEditable && widget.rowId != null)
                 ? Colors.transparent
                 : widget.backgroundColor,
-        border: _shouldShowBottomBorder(widget.isLastRow, widget.theme)
+        border: widget.theme.shouldShowBottomBorder(
+                isLastRow: widget.isLastRow,
+                needsVerticalScroll: widget.needsVerticalScroll)
             ? Border(
                 bottom: BorderSide(
                   color: widget.theme.dividerColor,

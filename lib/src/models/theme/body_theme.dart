@@ -152,6 +152,27 @@ class TablePlusBodyTheme {
   /// Defaults to 500 milliseconds.
   final Duration doubleClickTime;
 
+  /// Whether a bottom border should be shown for a row.
+  ///
+  /// Takes into account the row position and [lastRowBorderBehavior] setting.
+  /// [needsVerticalScroll] is only used when behavior is [LastRowBorderBehavior.smart].
+  bool shouldShowBottomBorder({
+    required bool isLastRow,
+    required bool needsVerticalScroll,
+  }) {
+    if (!showHorizontalDividers) return false;
+    if (!isLastRow) return true;
+
+    switch (lastRowBorderBehavior) {
+      case LastRowBorderBehavior.never:
+        return false;
+      case LastRowBorderBehavior.always:
+        return true;
+      case LastRowBorderBehavior.smart:
+        return !needsVerticalScroll;
+    }
+  }
+
   /// The right [BorderSide] for vertical column dividers between cells.
   ///
   /// Returns [BorderSide.none] when [showVerticalDividers] is false.
