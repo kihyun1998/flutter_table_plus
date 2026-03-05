@@ -718,16 +718,18 @@ class _TablePlusMergedRowState<T> extends State<TablePlusMergedRow<T>> {
       child: Row(
         children: [
           if (widget.isSelectable) _buildSelectionCell()!,
-          ...List.generate(
-            widget.columns.where((col) => col.key != '__selection__').length,
-            (index) {
-              final nonSelectionColumns = widget.columns
-                  .where((col) => col.key != '__selection__')
-                  .toList();
-              final column = nonSelectionColumns[index];
-              return _buildCell(context, index, column);
-            },
-          ),
+          ...() {
+            final nonSelectionColumns = widget.columns
+                .where((col) => col.key != '__selection__')
+                .toList();
+            return List.generate(
+              nonSelectionColumns.length,
+              (index) {
+                final column = nonSelectionColumns[index];
+                return _buildCell(context, index, column);
+              },
+            );
+          }(),
         ],
       ),
     );

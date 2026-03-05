@@ -326,11 +326,7 @@ class _TablePlusBodyState<T> extends State<TablePlusBody<T>> {
   /// Handle selection toggle for regular rows.
   void _handleRegularRowSelectionToggle(
       String rowId, bool isCurrentlySelected) {
-    if (widget.selectionMode == SelectionMode.single) {
-      widget.onRowSelectionChanged!(rowId, !isCurrentlySelected);
-    } else {
-      widget.onRowSelectionChanged!(rowId, !isCurrentlySelected);
-    }
+    widget.onRowSelectionChanged!(rowId, !isCurrentlySelected);
   }
 
   /// Find merged group by group ID.

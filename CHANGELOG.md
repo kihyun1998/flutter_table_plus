@@ -11,6 +11,8 @@
 *   **REFACTOR**: Consolidated hover button positioning logic into `HoverButtonPosition.buildPositioned()`
     *   Added `buildPositioned()` method to `HoverButtonPosition` enum
     *   Replaced identical switch-case blocks (~25 lines each) in `TablePlusRow` and `TablePlusMergedRow` with single method calls
+*   **REFACTOR**: Removed dead if/else branch in `_handleRegularRowSelectionToggle` — both branches were identical
+*   **REFACTOR**: Moved `nonSelectionColumns` filtering outside `List.generate` loop in `TablePlusMergedRow` to avoid redundant per-iteration computation
 *   No API or behavioral changes — all appearance and functionality remain identical
 
 ## 2.8.1
