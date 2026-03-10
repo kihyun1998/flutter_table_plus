@@ -1055,6 +1055,8 @@ class SettingsPanel extends StatelessWidget {
               TooltipAlignment.start => 'Start',
               TooltipAlignment.center => 'Center',
               TooltipAlignment.end => 'End',
+              TooltipAlignment.startTargetCenter => 'Start Target Center',
+              TooltipAlignment.endTargetCenter => 'End Target Center',
             },
             onChanged: (value) {
               onSettingsChanged(settings.copyWith(tooltipAlignment: value));
