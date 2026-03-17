@@ -52,6 +52,19 @@ class TablePlusScrollbarTheme {
   /// The animation duration for scrollbar appearance.
   final Duration animationDuration;
 
+  /// Returns a new [TablePlusScrollbarTheme] with dimensional values scaled by [factor].
+  ///
+  /// Scales: trackWidth, thickness, radius.
+  /// Does NOT scale: colors, opacity, booleans, durations.
+  TablePlusScrollbarTheme scaledBy(double factor) {
+    if (factor == 1.0) return this;
+    return copyWith(
+      trackWidth: trackWidth * factor,
+      thickness: thickness != null ? thickness! * factor : null,
+      radius: radius != null ? radius! * factor : null,
+    );
+  }
+
   /// Creates a copy of this theme with the given fields replaced with new values.
   TablePlusScrollbarTheme copyWith({
     bool? showVertical,

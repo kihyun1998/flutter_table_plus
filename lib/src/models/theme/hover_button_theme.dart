@@ -9,6 +9,12 @@ class TablePlusHoverButtonTheme {
   /// This controls how far the buttons are positioned from the left or right edge of the row.
   final double horizontalOffset;
 
+  /// Returns a new [TablePlusHoverButtonTheme] with dimensional values scaled by [factor].
+  TablePlusHoverButtonTheme scaledBy(double factor) {
+    if (factor == 1.0) return this;
+    return copyWith(horizontalOffset: horizontalOffset * factor);
+  }
+
   /// Creates a copy of this theme with the given fields replaced with new values.
   TablePlusHoverButtonTheme copyWith({
     double? horizontalOffset,

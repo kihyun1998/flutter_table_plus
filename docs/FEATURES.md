@@ -19,6 +19,7 @@ Complete guide to all Flutter Table Plus features.
 - [Dim Rows](#dim-rows)
 - [Empty State](#empty-state)
 - [Context Menu (Right-Click)](#context-menu)
+- [Scale / Zoom](#scale--zoom)
 
 ---
 
@@ -746,3 +747,81 @@ FlutterTablePlus<User>(
   ),
 )
 ```
+
+---
+
+## Scale / Zoom
+
+Scale the entire table by a factor — all dimensions (column widths, row heights, font sizes, padding, icons) are multiplied.
+
+### Basic Usage
+
+```dart
+double _scale = 1.0;
+
+FlutterTablePlus<User>(
+  columns: columns,
+  data: users,
+  rowId: (user) => user.id,
+  scale: _scale,
+)
+```
+
+### Ctrl+Wheel Zoom
+
+Provide `onScaleChanged` to enable Ctrl+wheel (Cmd+wheel on macOS) zoom with automatic scroll prevention.
+
+```dart
+FlutterTablePlus<User>(
+  columns: columns,
+  data: users,
+  rowId: (user) => user.id,
+  scale: _scale,
+  onScaleChanged: (newScale) {
+    setState(() {
+      _scale = newScale.clamp(0.5, 3.0);  // You control the limits
+    });
+  },
+  scaleStep: 0.05,  // Increment per wheel tick (default 0.05)
+)
+```
+
+When `onScaleChanged` is non-null:
+- Ctrl+wheel events are intercepted internally
+- Scrolling is blocked via custom `ScrollPhysics` (`shouldAcceptUserOffset` returns `false` when Ctrl is held)
+- Scroll positions are automatically corrected to keep the same content visible
+
+### What Gets Scaled
+
+| Scaled | Not Scaled |
+|--------|------------|
+| Row height | Scrollbar (UI chrome) |
+| Column widths | Colors, booleans |
+| Font sizes | Border/divider thickness |
+| Padding | Tooltip (overlay) |
+| Sort icon size (via FittedBox) | Duration values |
+| Resize handle | |
+| Checkbox hit area | |
+
+### Column Width Persistence
+
+Resized widths are stored in **logical (unscaled) units**. The `onColumnResized` callback always reports logical widths, and `initialResizedWidths` expects logical widths. This means saved widths work correctly regardless of the current scale.
+
+```dart
+FlutterTablePlus<User>(
+  scale: _scale,
+  resizable: true,
+  initialResizedWidths: savedWidths,  // Logical units — scale-independent
+  onColumnResized: (columnKey, newWidth) {
+    // newWidth is in logical units, safe to persist
+    savedWidths[columnKey] = newWidth;
+  },
+)
+```
+
+### Notes
+
+- `scale` must be greater than zero (`assert(scale > 0)`)
+- No min/max is enforced by the library — the caller clamps in `onScaleChanged`
+- Material `Checkbox` widget does not visually scale (controlled by `materialTapTargetSize` / `visualDensity`); only its hit-test area scales
+- Custom sort icons are automatically scaled via `FittedBox` to match the scaled `sortIconWidth`

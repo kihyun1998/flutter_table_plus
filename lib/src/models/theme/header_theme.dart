@@ -221,6 +221,33 @@ class TablePlusHeaderTheme {
   /// If [TablePlusResizeHandleTheme.color] is null, uses [verticalDivider.color].
   final TablePlusResizeHandleTheme resizeHandle;
 
+  /// Returns a new [TablePlusHeaderTheme] with dimensional values scaled by [factor].
+  ///
+  /// Scales: height, textStyle fontSize, padding, sortIconSpacing, sortIconWidth, resizeHandle.
+  /// Does NOT scale: colors, borders, divider themes, decorations.
+  TablePlusHeaderTheme scaledBy(double factor) {
+    if (factor == 1.0) return this;
+    return copyWith(
+      height: height * factor,
+      textStyle: textStyle.copyWith(
+        fontSize: (textStyle.fontSize ?? 14) * factor,
+      ),
+      sortedColumnTextStyle: sortedColumnTextStyle?.copyWith(
+        fontSize: (sortedColumnTextStyle!.fontSize ?? 14) * factor,
+      ),
+      padding: padding * factor,
+      sortIconSpacing: sortIconSpacing * factor,
+      sortIconWidth: sortIconWidth * factor,
+      resizeHandle: TablePlusResizeHandleTheme(
+        width: resizeHandle.width * factor,
+        color: resizeHandle.color,
+        thickness: resizeHandle.thickness,
+        indent: resizeHandle.indent * factor,
+        endIndent: resizeHandle.endIndent * factor,
+      ),
+    );
+  }
+
   /// Creates a copy of this theme with the given fields replaced with new values.
   TablePlusHeaderTheme copyWith({
     double? height,

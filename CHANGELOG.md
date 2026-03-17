@@ -1,3 +1,25 @@
+## 2.9.0
+
+*   **FEAT**: Added `scale` parameter to `FlutterTablePlus` — zoom in/out by scaling all table dimensions
+    *   Multiplies column widths, row heights, font sizes, padding, and icon sizes by the scale factor
+    *   Default `1.0` (100%); no upper limit enforced — caller is responsible for clamping
+    *   `assert(scale > 0)` prevents division-by-zero crashes
+    *   Scroll positions are automatically adjusted when scale changes so that the same content remains visible
+    *   Resized column widths are stored in logical (unscaled) units — survive scale changes and `onColumnResized` reports logical widths
+*   **FEAT**: Added `onScaleChanged` callback — enables Ctrl+wheel (Cmd+wheel on macOS) zoom with scroll prevention
+    *   When non-null, the library intercepts Ctrl+wheel events and calls the callback with the proposed new scale
+    *   Uses `_ScaleBlockingScrollPhysics` internally: overrides `shouldAcceptUserOffset()` to return `false` when Ctrl is held, preventing `Scrollable` from registering a scroll handler — **no scroll contamination**
+    *   Pre-scale scroll offsets are saved as a backup for position correction in `didUpdateWidget`
+    *   `scaleStep` parameter controls the increment per wheel tick (default `0.05`)
+*   **FEAT**: Added `scaledBy(double factor)` method to all theme classes
+    *   `TablePlusTheme`, `TablePlusHeaderTheme`, `TablePlusBodyTheme`, `TablePlusCheckboxTheme`, `TablePlusEditableTheme`, `TablePlusScrollbarTheme`, `TablePlusHoverButtonTheme`
+    *   Returns a new instance with dimensional values (heights, font sizes, padding, icon sizes) scaled by the factor
+    *   Colors, booleans, durations, and border thickness are intentionally **not** scaled
+    *   Scrollbar theme and tooltip theme are excluded from scaling (UI chrome, overlay)
+    *   Short-circuits with `return this` when `factor == 1.0`
+*   **IMPROVEMENT**: Sort icons now wrapped in `FittedBox` — custom sort icon widgets scale correctly with `sortIconWidth`
+*   **IMPROVEMENT**: Body `_cachedRowHeights` cleared when scale changes to prevent stale height values
+
 ## 2.8.2
 
 *   **REFACTOR**: Deduplicated checkbox creation across header, body, and merged row widgets

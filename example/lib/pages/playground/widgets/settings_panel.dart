@@ -68,6 +68,9 @@ class PlaygroundSettings {
   final double resizeHandleIndent;
   final double resizeHandleEndIndent;
 
+  // Scale / zoom
+  final double scale;
+
   const PlaygroundSettings({
     this.rowCount = 100,
     this.columnMinWidth = 50.0,
@@ -118,6 +121,7 @@ class PlaygroundSettings {
     this.resizeHandleThickness = 2.0,
     this.resizeHandleIndent = 0.0,
     this.resizeHandleEndIndent = 0.0,
+    this.scale = 1.0,
   });
 
   PlaygroundSettings copyWith({
@@ -170,6 +174,7 @@ class PlaygroundSettings {
     double? resizeHandleThickness,
     double? resizeHandleIndent,
     double? resizeHandleEndIndent,
+    double? scale,
   }) {
     return PlaygroundSettings(
       rowCount: rowCount ?? this.rowCount,
@@ -234,6 +239,7 @@ class PlaygroundSettings {
       resizeHandleIndent: resizeHandleIndent ?? this.resizeHandleIndent,
       resizeHandleEndIndent:
           resizeHandleEndIndent ?? this.resizeHandleEndIndent,
+      scale: scale ?? this.scale,
     );
   }
 }
@@ -513,6 +519,34 @@ class SettingsPanel extends StatelessWidget {
           },
         ),
         const SizedBox(height: 16),
+
+        // Scale (zoom)
+        _buildSliderSetting(
+          label: 'Scale',
+          value: settings.scale,
+          min: 0.25,
+          max: 3.0,
+          unit: 'x',
+          decimalPlaces: 2,
+          onChanged: (value) {
+            onSettingsChanged(settings.copyWith(scale: value));
+          },
+        ),
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton(
+            onPressed: () {
+              onSettingsChanged(settings.copyWith(scale: 1.0));
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.purple.shade700,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              minimumSize: const Size(0, 28),
+            ),
+            child: const Text('Reset (1.0x)', style: TextStyle(fontSize: 11)),
+          ),
+        ),
+        const SizedBox(height: 12),
 
         // Column min width
         _buildSliderSetting(
@@ -1166,7 +1200,11 @@ class SettingsPanel extends StatelessWidget {
     required double max,
     required String unit,
     required ValueChanged<double> onChanged,
+    int decimalPlaces = 0,
   }) {
+    final displayValue = decimalPlaces > 0
+        ? value.toStringAsFixed(decimalPlaces)
+        : '${value.round()}';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1181,7 +1219,7 @@ class SettingsPanel extends StatelessWidget {
               ),
             ),
             Text(
-              '${value.round()}$unit',
+              '$displayValue$unit',
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.bold,
@@ -1194,7 +1232,7 @@ class SettingsPanel extends StatelessWidget {
           value: value,
           min: min,
           max: max,
-          divisions: ((max - min) / 2).round(),
+          divisions: ((max - min) / (decimalPlaces > 0 ? 0.05 : 2)).round(),
           onChanged: onChanged,
         ),
       ],

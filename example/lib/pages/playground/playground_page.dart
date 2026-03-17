@@ -706,6 +706,28 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         foregroundColor: Colors.white,
         elevation: 2,
         actions: [
+          // Scale indicator
+          if (_settings.scale != 1.0)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Center(
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    '${(_settings.scale * 100).round()}%',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ),
           // Performance indicator in app bar
           if (_data.isNotEmpty)
             Padding(
@@ -888,6 +910,14 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         ),
         hoverButtonPosition: HoverButtonPosition.right,
         mergedGroups: _settings.mergedRowsEnabled ? _mergedGroups : [],
+        scale: _settings.scale,
+        onScaleChanged: (newScale) {
+          setState(() {
+            _settings = _settings.copyWith(
+              scale: newScale.clamp(0.25, 3.0),
+            );
+          });
+        },
         theme: _buildTheme(),
       ),
     );

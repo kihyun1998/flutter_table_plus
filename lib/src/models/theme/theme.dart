@@ -40,6 +40,23 @@ class TablePlusTheme {
   /// Theme configuration for hover buttons.
   final TablePlusHoverButtonTheme hoverButtonTheme;
 
+  /// Returns a new [TablePlusTheme] with all dimensional values scaled by [factor].
+  ///
+  /// Delegates to each sub-theme's `scaledBy` method.
+  /// Tooltip theme is NOT scaled (renders in overlay, outside table viewport).
+  TablePlusTheme scaledBy(double factor) {
+    if (factor == 1.0) return this;
+    return TablePlusTheme(
+      headerTheme: headerTheme.scaledBy(factor),
+      bodyTheme: bodyTheme.scaledBy(factor),
+      scrollbarTheme: scrollbarTheme,
+      checkboxTheme: checkboxTheme.scaledBy(factor),
+      editableTheme: editableTheme.scaledBy(factor),
+      tooltipTheme: tooltipTheme,
+      hoverButtonTheme: hoverButtonTheme.scaledBy(factor),
+    );
+  }
+
   /// Creates a copy of this theme with the given fields replaced with new values.
   TablePlusTheme copyWith({
     TablePlusHeaderTheme? headerTheme,

@@ -8,19 +8,17 @@ Flutter Table Plus is a highly customizable and efficient table widget for Flutt
 
 ## Package Philosophy
 
-Flutter Table Plus follows a **"UI-only, data-agnostic"** philosophy. This package intentionally does NOT manage your data or state. Instead, it provides powerful widgets and helper utilities that work seamlessly with any data management approach you prefer.
+Flutter Table Plus follows a **"UI-only, data-agnostic"** philosophy. The package does not manage your data or state, but actively provides convenience utilities and sensible defaults to minimize boilerplate.
 
 ### Core Principles
 
-1. **No Data Management**: The package never stores, mutates, or manages your table data internally. All data operations (sorting, filtering, pagination, etc.) remain under your complete control.
+1. **No Data Management**: The package does not store or mutate your table data internally. Data operations (sorting, filtering, pagination, etc.) remain under your control.
 
-2. **Callback-Driven**: User interactions (sort clicks, selections, edits) are communicated back to you through callbacks. You decide how to handle these interactions in your application.
+2. **Callback-Driven**: User interactions (sort clicks, selections, edits) are communicated back through callbacks. You decide how to handle them.
 
-3. **State Management Agnostic**: Works equally well with setState, Provider, Riverpod, Bloc, or any other state management solution. The choice is yours.
+3. **Convenience First**: Where common patterns exist (gesture detection, delta normalization, etc.), the package provides ready-to-use utility widgets and helpers with sensible defaults. Users can always opt out and implement their own logic.
 
-4. **Maximum Flexibility**: By not making assumptions about your data structure or business logic, the package can adapt to diverse use cases - from simple static tables to complex enterprise data grids.
-
-This philosophy ensures that Flutter Table Plus remains a lightweight, focused UI component that enhances rather than constrains your application architecture.
+4. **State Management Agnostic**: Works equally well with setState, Provider, Riverpod, Bloc, or any other state management solution.
 
 ## Environment Notes
 

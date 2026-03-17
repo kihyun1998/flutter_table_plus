@@ -47,6 +47,8 @@ class TablePlusBody<T> extends StatefulWidget {
     this.onMergedCellChanged,
     this.onMergedRowExpandToggle,
     this.calculateRowHeight,
+    this.scale = 1.0,
+    this.scrollPhysics = const ClampingScrollPhysics(),
     this.needsVerticalScroll = false,
     this.hoverButtonBuilder,
     this.hoverButtonPosition = HoverButtonPosition.right,
@@ -141,6 +143,16 @@ class TablePlusBody<T> extends StatefulWidget {
   /// Callback to calculate the height of a specific row.
   final double? Function(int rowIndex, T rowData)? calculateRowHeight;
 
+  /// The scale factor applied to row heights from [calculateRowHeight].
+  ///
+  /// When [calculateRowHeight] returns a value, it is multiplied by [scale].
+  /// The fallback height from [TablePlusBodyTheme.rowHeight] is already
+  /// pre-scaled by the parent, so only the callback result needs scaling.
+  final double scale;
+
+  /// The scroll physics for the vertical [ListView].
+  final ScrollPhysics scrollPhysics;
+
   /// Builder function to create custom hover buttons for each row.
   final Widget? Function(String rowId, T rowData)? hoverButtonBuilder;
 
@@ -200,6 +212,9 @@ class _TablePlusBodyState<T> extends State<TablePlusBody<T>> {
     if (!identical(widget.data, oldWidget.data) ||
         !identical(widget.mergedGroups, oldWidget.mergedGroups)) {
       _rebuildCaches();
+    } else if (widget.scale != oldWidget.scale) {
+      // Clear cached row heights when scale changes
+      _cachedRowHeights = {};
     }
   }
 
@@ -576,7 +591,7 @@ class _TablePlusBodyState<T> extends State<TablePlusBody<T>> {
 
     Widget listView = ListView.builder(
       controller: widget.verticalController,
-      physics: const ClampingScrollPhysics(),
+      physics: widget.scrollPhysics,
       itemExtentBuilder: (int index, _) {
         final actualIndex = indices?[index] ?? index;
         final group = _getMergedGroupForRow(actualIndex);
@@ -624,6 +639,8 @@ class _TablePlusBodyState<T> extends State<TablePlusBody<T>> {
   }
 
   /// Calculate the height for a specific row, with caching.
+  ///
+  /// The returned value is already scaled by [widget.scale].
   double? _calculateRowHeight(int index) {
     if (widget.calculateRowHeight == null || index >= widget.data.length) {
       return null;
@@ -632,9 +649,11 @@ class _TablePlusBodyState<T> extends State<TablePlusBody<T>> {
     if (cached != null) return cached;
     final height = widget.calculateRowHeight!(index, widget.data[index]);
     if (height != null) {
-      _cachedRowHeights[index] = height;
+      final scaled = height * widget.scale;
+      _cachedRowHeights[index] = scaled;
+      return scaled;
     }
-    return height;
+    return null;
   }
 
   /// Build a row widget for the given index.

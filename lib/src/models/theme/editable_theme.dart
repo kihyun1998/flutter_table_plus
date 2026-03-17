@@ -79,6 +79,25 @@ class TablePlusEditableTheme {
   /// Whether the text field should use dense layout.
   final bool isDense;
 
+  /// Returns a new [TablePlusEditableTheme] with dimensional values scaled by [factor].
+  ///
+  /// Scales: textStyle fontSize, hintStyle fontSize, padding, borderWidth.
+  /// Does NOT scale: colors, border radius, booleans.
+  TablePlusEditableTheme scaledBy(double factor) {
+    if (factor == 1.0) return this;
+    return copyWith(
+      editingTextStyle: editingTextStyle.copyWith(
+        fontSize: (editingTextStyle.fontSize ?? 14) * factor,
+      ),
+      hintStyle: hintStyle?.copyWith(
+        fontSize: (hintStyle!.fontSize ?? 14) * factor,
+      ),
+      editingBorderWidth: editingBorderWidth * factor,
+      textFieldPadding: textFieldPadding * factor,
+      cellContainerPadding: cellContainerPadding * factor,
+    );
+  }
+
   /// Creates a copy of this theme with the given fields replaced with new values.
   TablePlusEditableTheme copyWith({
     Color? editingCellColor,

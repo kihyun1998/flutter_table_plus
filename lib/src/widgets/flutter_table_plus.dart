@@ -2,7 +2,9 @@ import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../models/hover_button_position.dart';
 import '../models/merged_row_group.dart';
@@ -58,7 +60,10 @@ class FlutterTablePlus<T> extends StatefulWidget {
     this.hoverButtonPosition = HoverButtonPosition.right,
     this.autoFitColumnWidth,
     this.stretchLastColumn = false,
-  });
+    this.scale = 1.0,
+    this.onScaleChanged,
+    this.scaleStep = 0.05,
+  }) : assert(scale > 0, 'scale must be greater than zero');
 
   /// The column definitions for the table.
   ///
@@ -206,6 +211,40 @@ class FlutterTablePlus<T> extends StatefulWidget {
   /// any leftover space.
   final bool stretchLastColumn;
 
+  /// The scale factor applied to all table dimensions (widths, heights,
+  /// font sizes, padding, icons).
+  ///
+  /// Defaults to `1.0` (100%). A value of `1.5` enlarges everything by 50%,
+  /// `0.75` shrinks it by 25%, etc.
+  ///
+  /// Must be greater than zero. No upper limit is enforced — the caller is
+  /// responsible for clamping the value to a sensible range.
+  ///
+  /// Scroll positions are automatically adjusted when [scale] changes so
+  /// that the same content remains visible.
+  final double scale;
+
+  /// Callback fired when the user Ctrl+scrolls (or Cmd+scrolls on macOS)
+  /// over the table, requesting a scale change.
+  ///
+  /// When non-null, the library intercepts Ctrl+wheel events internally,
+  /// saves scroll positions **before** the wheel event can contaminate them,
+  /// and calls this callback with the proposed new scale value.
+  ///
+  /// The caller should update [scale] in response:
+  /// ```dart
+  /// onScaleChanged: (newScale) {
+  ///   setState(() => _scale = newScale.clamp(0.5, 3.0));
+  /// },
+  /// ```
+  ///
+  /// When null, Ctrl+wheel events are not intercepted and scroll normally.
+  final ValueChanged<double>? onScaleChanged;
+
+  /// The amount [scale] changes per mouse wheel tick when [onScaleChanged]
+  /// is active. Defaults to `0.05`.
+  final double scaleStep;
+
   @override
   State<FlutterTablePlus<T>> createState() => _FlutterTablePlusState<T>();
 }
@@ -233,6 +272,16 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
 
   /// Cached total row count (merged groups count as 1)
   int _cachedTotalRowCount = 0;
+
+  /// References to scroll controllers for scale-change position correction
+  ScrollController? _verticalScrollController;
+  ScrollController? _horizontalScrollController;
+
+  /// Pre-scale scroll offsets saved before a scale change triggers an
+  /// unwanted scroll (e.g. Ctrl+wheel fires both zoom and scroll).
+  /// Used to restore the correct position after scale correction.
+  double? _preScaleVerticalOffset;
+  double? _preScaleHorizontalOffset;
 
   @override
   void initState() {
@@ -269,8 +318,41 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
     }
     if (!identical(widget.data, oldWidget.data) ||
         !identical(widget.mergedGroups, oldWidget.mergedGroups) ||
-        !identical(widget.calculateRowHeight, oldWidget.calculateRowHeight)) {
+        !identical(widget.calculateRowHeight, oldWidget.calculateRowHeight) ||
+        widget.scale != oldWidget.scale) {
       _rebuildCaches();
+    }
+    // Correct scroll positions when scale changes.
+    //
+    // We use pre-scale offsets (saved before the scroll event contaminates
+    // the position) when available, falling back to the current offset.
+    // This prevents Ctrl+wheel from simultaneously zooming AND scrolling.
+    if (widget.scale != oldWidget.scale) {
+      final ratio = widget.scale / oldWidget.scale;
+      final savedV = _preScaleVerticalOffset;
+      final savedH = _preScaleHorizontalOffset;
+      _preScaleVerticalOffset = null;
+      _preScaleHorizontalOffset = null;
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        if (_verticalScrollController?.hasClients == true) {
+          final baseOffset =
+              savedV ?? _verticalScrollController!.offset;
+          _verticalScrollController!.jumpTo((baseOffset * ratio).clamp(
+            0.0,
+            _verticalScrollController!.position.maxScrollExtent,
+          ));
+        }
+        if (_horizontalScrollController?.hasClients == true) {
+          final baseOffset =
+              savedH ?? _horizontalScrollController!.offset;
+          _horizontalScrollController!.jumpTo((baseOffset * ratio).clamp(
+            0.0,
+            _horizontalScrollController!.position.maxScrollExtent,
+          ));
+        }
+      });
     }
   }
 
@@ -348,13 +430,15 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
     return _rowIdToMergedGroup[rowKey];
   }
 
-  /// Get the height for an individual row.
+  /// Get the height for an individual row (scaled by [widget.scale]).
   double _getRowHeight(int index) {
-    return widget.calculateRowHeight?.call(index, widget.data[index]) ??
-        widget.theme.bodyTheme.rowHeight;
+    final baseHeight =
+        widget.calculateRowHeight?.call(index, widget.data[index]) ??
+            widget.theme.bodyTheme.rowHeight;
+    return baseHeight * widget.scale;
   }
 
-  /// Calculate the total height for a merged row group.
+  /// Calculate the total height for a merged row group (scaled by [widget.scale]).
   double _getMergedRowHeight(MergedRowGroup<T> mergeGroup) {
     double totalHeight = 0;
     for (final rowKey in mergeGroup.rowKeys) {
@@ -366,7 +450,7 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
 
     // Add summary row height if expandable and expanded
     if (mergeGroup.isExpandable && mergeGroup.isExpanded) {
-      totalHeight += widget.theme.bodyTheme.rowHeight;
+      totalHeight += widget.theme.bodyTheme.rowHeight * widget.scale;
     }
 
     return totalHeight;
@@ -380,15 +464,20 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
   }
 
   /// Handle live column resize (called during drag).
+  ///
+  /// The [newWidth] arrives in scaled pixels; we store it in logical
+  /// (unscaled) units so that resized widths survive scale changes.
   void _handleColumnResize(String columnKey, double newWidth) {
     setState(() {
-      _resizedWidths[columnKey] = newWidth;
+      _resizedWidths[columnKey] = newWidth / widget.scale;
     });
   }
 
   /// Handle column resize end (called once when drag finishes).
+  ///
+  /// Reports the width in logical (unscaled) units to the caller.
   void _handleColumnResizeEnd(String columnKey, double finalWidth) {
-    widget.onColumnResized?.call(columnKey, finalWidth);
+    widget.onColumnResized?.call(columnKey, finalWidth / widget.scale);
   }
 
   /// Handle auto-fit column width on resize handle double-tap.
@@ -401,7 +490,7 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
     final column = widget.columns[columnKey];
     if (column == null) return;
 
-    // External callback override
+    // External callback override — returns logical (unscaled) width
     final customWidth = widget.autoFitColumnWidth?.call(columnKey);
     if (customWidth != null) {
       final result = customWidth.clamp(
@@ -415,8 +504,10 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
       return;
     }
 
-    final headerTheme = widget.theme.headerTheme;
-    final bodyTheme = widget.theme.bodyTheme;
+    // Use scaled theme for accurate text measurement at current scale
+    final scale = widget.scale;
+    final headerTheme = widget.theme.headerTheme.scaledBy(scale);
+    final bodyTheme = widget.theme.bodyTheme.scaledBy(scale);
 
     // Resolve effective text styles by merging with DefaultTextStyle
     // (inherits fontFamily, letterSpacing, etc. from the Material theme)
@@ -467,16 +558,17 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
     // Add a small buffer (1px) to prevent ellipsis from rounding errors
     maxWidth = (maxWidth + 1.0).ceilToDouble();
 
-    // Clamp to column constraints
+    // Clamp to scaled column constraints, then unscale for storage
     final result = maxWidth.clamp(
-      column.minWidth,
-      column.maxWidth ?? double.infinity,
+      column.minWidth * scale,
+      (column.maxWidth ?? double.infinity) * scale,
     );
+    final logicalResult = result / scale;
 
     setState(() {
-      _resizedWidths[columnKey] = result;
+      _resizedWidths[columnKey] = logicalResult;
     });
-    widget.onColumnResized?.call(columnKey, result);
+    widget.onColumnResized?.call(columnKey, logicalResult);
   }
 
   /// Get ordered columns, with optional selection column prepended.
@@ -785,16 +877,20 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
       return const SizedBox.shrink();
     }
 
-    final theme = widget.theme;
+    final scale = widget.scale;
+    final theme = scale != 1.0 ? widget.theme.scaledBy(scale) : widget.theme;
 
     return LayoutBuilder(
       builder: (context, constraints) {
         final double availableHeight = constraints.maxHeight;
         final double availableWidth = constraints.maxWidth;
 
-        // Calculate column widths
+        // Calculate column widths in logical space, then scale to pixels.
+        // This preserves the proportional distribution logic unchanged.
+        final logicalWidths =
+            _calculateColumnWidths(availableWidth / scale, orderedColumns);
         final columnWidths =
-            _calculateColumnWidths(availableWidth, orderedColumns);
+            logicalWidths.map((w) => w * scale).toList();
 
         final totalColumnWidth =
             columnWidths.fold(0.0, (sum, width) => sum + width);
@@ -817,12 +913,20 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
             horizontalScrollController,
             horizontalScrollbarController,
           ) {
+            // Capture controller references for scale-change scroll correction
+            _verticalScrollController = verticalScrollController;
+            _horizontalScrollController = horizontalScrollController;
+
             // Determine if scrolling is needed
             final bool needsVerticalScroll =
                 totalContentHeight > availableHeight;
             final bool needsHorizontalScroll = contentWidth > availableWidth;
 
-            return MouseRegion(
+            return Listener(
+              onPointerSignal: widget.onScaleChanged != null
+                  ? _handlePointerSignalForScale
+                  : null,
+              child: MouseRegion(
               onEnter: (_) => _isHovered.value = true,
               onExit: (_) => _isHovered.value = false,
               child: ScrollConfiguration(
@@ -835,7 +939,9 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
                     SingleChildScrollView(
                       controller: horizontalScrollController,
                       scrollDirection: Axis.horizontal,
-                      physics: const ClampingScrollPhysics(),
+                      physics: widget.onScaleChanged != null
+                          ? const _ScaleBlockingScrollPhysics()
+                          : const ClampingScrollPhysics(),
                       child: SizedBox(
                         width: contentWidth,
                         child: Column(
@@ -916,6 +1022,10 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
                                                 widget.onMergedRowExpandToggle,
                                             calculateRowHeight:
                                                 widget.calculateRowHeight,
+                                            scale: scale,
+                                            scrollPhysics: widget.onScaleChanged != null
+                                                ? const _ScaleBlockingScrollPhysics()
+                                                : const ClampingScrollPhysics(),
                                             needsVerticalScroll:
                                                 needsVerticalScroll,
                                             hoverButtonBuilder:
@@ -979,10 +1089,58 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
                   ],
                 ),
               ),
+            ),
             );
           },
         );
       },
     );
+  }
+
+  /// Intercept Ctrl+wheel (or Cmd+wheel on macOS) to change scale.
+  ///
+  /// Saves current scroll offsets **before** the scroll event can contaminate
+  /// them, then calls [onScaleChanged] with the proposed new value.
+  ///
+  /// The actual scroll prevention is handled by [_ScaleBlockingScrollPhysics]
+  /// which returns `false` from [shouldAcceptUserOffset] when Ctrl is held,
+  /// preventing the [Scrollable] from registering a scroll handler at all.
+  void _handlePointerSignalForScale(PointerSignalEvent event) {
+    if (event is PointerScrollEvent &&
+        HardwareKeyboard.instance.isControlPressed) {
+      // Save offsets for scroll correction in didUpdateWidget
+      _preScaleVerticalOffset = _verticalScrollController?.hasClients == true
+          ? _verticalScrollController!.offset
+          : null;
+      _preScaleHorizontalOffset = _horizontalScrollController?.hasClients == true
+          ? _horizontalScrollController!.offset
+          : null;
+
+      final delta = event.scrollDelta.dy > 0
+          ? -widget.scaleStep
+          : widget.scaleStep;
+      widget.onScaleChanged!(widget.scale + delta);
+    }
+  }
+}
+
+/// [ScrollPhysics] that blocks scrolling while Ctrl (or Cmd) is held.
+///
+/// When [HardwareKeyboard.instance.isControlPressed] is true,
+/// [shouldAcceptUserOffset] returns `false`, which prevents [Scrollable]
+/// from registering a scroll handler for [PointerScrollEvent].
+/// This allows Ctrl+wheel to be used exclusively for scale changes.
+class _ScaleBlockingScrollPhysics extends ClampingScrollPhysics {
+  const _ScaleBlockingScrollPhysics({super.parent});
+
+  @override
+  _ScaleBlockingScrollPhysics applyTo(ScrollPhysics? ancestor) {
+    return _ScaleBlockingScrollPhysics(parent: buildParent(ancestor));
+  }
+
+  @override
+  bool shouldAcceptUserOffset(ScrollMetrics position) {
+    if (HardwareKeyboard.instance.isControlPressed) return false;
+    return super.shouldAcceptUserOffset(position);
   }
 }

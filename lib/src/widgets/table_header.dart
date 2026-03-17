@@ -529,10 +529,13 @@ class _HeaderCell extends StatelessWidget {
               child: _buildHeaderText(context, textStyle),
             ),
 
-            // Sort icon
+            // Sort icon (FittedBox scales custom icons to match sortIconWidth)
             if (sortIcon != null) ...[
               SizedBox(width: theme.sortIconSpacing),
-              SizedBox(width: theme.sortIconWidth, child: sortIcon),
+              SizedBox(
+                width: theme.sortIconWidth,
+                child: FittedBox(child: sortIcon),
+              ),
             ],
           ],
         ),

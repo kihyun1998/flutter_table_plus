@@ -159,6 +159,25 @@ class TablePlusCheckboxTheme {
   /// Defaults to true.
   final bool showRowCheckbox;
 
+  /// Returns a new [TablePlusCheckboxTheme] with dimensional values scaled by [factor].
+  ///
+  /// Scales: size, tapTargetSize, checkboxColumnWidth, splashRadius.
+  /// Does NOT scale: colors, shapes, booleans.
+  ///
+  /// Note: The Material [Checkbox] widget's visual rendering size is
+  /// controlled by [materialTapTargetSize] and [visualDensity], not by
+  /// the [SizedBox] wrapper. Scaling [size] and [tapTargetSize] adjusts the
+  /// hit-test area but may not visually enlarge the checkbox itself.
+  TablePlusCheckboxTheme scaledBy(double factor) {
+    if (factor == 1.0) return this;
+    return copyWith(
+      size: size * factor,
+      tapTargetSize: tapTargetSize != null ? tapTargetSize! * factor : null,
+      checkboxColumnWidth: checkboxColumnWidth * factor,
+      splashRadius: splashRadius != null ? splashRadius! * factor : null,
+    );
+  }
+
   /// Creates a copy of this theme with the given fields replaced by new values.
   TablePlusCheckboxTheme copyWith({
     WidgetStateProperty<Color?>? fillColor,

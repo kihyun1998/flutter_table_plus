@@ -305,4 +305,25 @@ class TablePlusBodyTheme {
       return textStyle;
     }
   }
+
+  /// Returns a new [TablePlusBodyTheme] with dimensional values scaled by [factor].
+  ///
+  /// Scales: rowHeight, textStyle fontSize, padding.
+  /// Does NOT scale: colors, divider thickness, booleans, durations.
+  TablePlusBodyTheme scaledBy(double factor) {
+    if (factor == 1.0) return this;
+    return copyWith(
+      rowHeight: rowHeight * factor,
+      textStyle: textStyle.copyWith(
+        fontSize: (textStyle.fontSize ?? 14) * factor,
+      ),
+      selectedRowTextStyle: selectedRowTextStyle?.copyWith(
+        fontSize: (selectedRowTextStyle!.fontSize ?? 14) * factor,
+      ),
+      dimRowTextStyle: dimRowTextStyle?.copyWith(
+        fontSize: (dimRowTextStyle!.fontSize ?? 14) * factor,
+      ),
+      padding: padding * factor,
+    );
+  }
 }
