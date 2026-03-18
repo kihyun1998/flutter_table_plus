@@ -1,3 +1,11 @@
+## 2.9.1
+
+*   **FEAT**: Added `blockCtrlScroll` parameter to `FlutterTablePlus` — independently control whether Ctrl+wheel (Cmd+wheel on macOS) scrolling is blocked
+    *   When `true`, Ctrl+wheel events are consumed and do not scroll the table
+    *   When `false`, Ctrl+wheel scrolls normally even if `onScaleChanged` is set
+    *   Defaults to `null` — automatically follows `onScaleChanged` (blocked when non-null, allowed when null), preserving existing behavior
+    *   Enables use cases where Ctrl+scroll blocking is desired without zoom, or zoom without scroll blocking
+
 ## 2.9.0
 
 *   **FEAT**: Added `scale` parameter to `FlutterTablePlus` — zoom in/out by scaling all table dimensions

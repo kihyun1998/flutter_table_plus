@@ -63,6 +63,7 @@ class FlutterTablePlus<T> extends StatefulWidget {
     this.scale = 1.0,
     this.onScaleChanged,
     this.scaleStep = 0.05,
+    this.blockCtrlScroll,
   }) : assert(scale > 0, 'scale must be greater than zero');
 
   /// The column definitions for the table.
@@ -245,11 +246,25 @@ class FlutterTablePlus<T> extends StatefulWidget {
   /// is active. Defaults to `0.05`.
   final double scaleStep;
 
+  /// Whether to block normal scrolling while Ctrl (or Cmd on macOS) is held.
+  ///
+  /// When `true`, Ctrl+wheel events are consumed for scale changes only and
+  /// do not scroll the table. When `false`, Ctrl+wheel scrolls normally
+  /// even if [onScaleChanged] is set.
+  ///
+  /// Defaults to `null`, which follows [onScaleChanged]: blocking is enabled
+  /// when [onScaleChanged] is non-null, and disabled otherwise.
+  final bool? blockCtrlScroll;
+
   @override
   State<FlutterTablePlus<T>> createState() => _FlutterTablePlusState<T>();
 }
 
 class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
+  /// Whether Ctrl+wheel scrolling should be blocked.
+  bool get _blockCtrlScroll =>
+      widget.blockCtrlScroll ?? (widget.onScaleChanged != null);
+
   final ValueNotifier<bool> _isHovered = ValueNotifier<bool>(false);
 
   /// Column resize state: tracks user-resized widths by column key
@@ -920,9 +935,8 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
             final bool needsHorizontalScroll = contentWidth > availableWidth;
 
             return Listener(
-              onPointerSignal: widget.onScaleChanged != null
-                  ? _handlePointerSignalForScale
-                  : null,
+              onPointerSignal:
+                  _blockCtrlScroll ? _handlePointerSignalForScale : null,
               child: MouseRegion(
                 onEnter: (_) => _isHovered.value = true,
                 onExit: (_) => _isHovered.value = false,
@@ -936,7 +950,7 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
                       SingleChildScrollView(
                         controller: horizontalScrollController,
                         scrollDirection: Axis.horizontal,
-                        physics: widget.onScaleChanged != null
+                        physics: _blockCtrlScroll
                             ? const _ScaleBlockingScrollPhysics()
                             : const ClampingScrollPhysics(),
                         child: SizedBox(
@@ -1112,18 +1126,23 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
   void _handlePointerSignalForScale(PointerSignalEvent event) {
     if (event is PointerScrollEvent &&
         HardwareKeyboard.instance.isControlPressed) {
-      // Save offsets for scroll correction in didUpdateWidget
-      _preScaleVerticalOffset = _verticalScrollController?.hasClients == true
-          ? _verticalScrollController!.offset
-          : null;
-      _preScaleHorizontalOffset =
-          _horizontalScrollController?.hasClients == true
-              ? _horizontalScrollController!.offset
-              : null;
+      if (widget.onScaleChanged != null) {
+        // Save offsets for scroll correction in didUpdateWidget
+        _preScaleVerticalOffset = _verticalScrollController?.hasClients == true
+            ? _verticalScrollController!.offset
+            : null;
+        _preScaleHorizontalOffset =
+            _horizontalScrollController?.hasClients == true
+                ? _horizontalScrollController!.offset
+                : null;
 
-      final delta =
-          event.scrollDelta.dy > 0 ? -widget.scaleStep : widget.scaleStep;
-      widget.onScaleChanged!(widget.scale + delta);
+        final delta =
+            event.scrollDelta.dy > 0 ? -widget.scaleStep : widget.scaleStep;
+        widget.onScaleChanged!(widget.scale + delta);
+      }
+      // When onScaleChanged is null but blockCtrlScroll is true,
+      // the event is still consumed (via _ScaleBlockingScrollPhysics)
+      // to prevent Ctrl+wheel from scrolling.
     }
   }
 }

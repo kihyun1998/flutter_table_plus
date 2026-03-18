@@ -31,7 +31,7 @@ A highly customizable, type-safe Flutter table widget with synchronized scrollin
 | **Dynamic Row Heights** | Support for variable height rows |
 | **Smart Tooltips** | Text or widget-based tooltips |
 | **Dim Rows** | Style inactive rows differently |
-| **Scale / Zoom** | Ctrl+wheel zoom with scroll-safe physics and automatic position correction |
+| **Scale / Zoom** | Ctrl+wheel zoom with scroll-safe physics, automatic position correction, and optional `blockCtrlScroll` control |
 | **Deep Theming** | 8 nested theme classes for complete customization |
 | **Minimal Dependencies** | Only [`just_tooltip`](https://pub.dev/packages/just_tooltip) for rich tooltip support |
 
@@ -41,7 +41,7 @@ A highly customizable, type-safe Flutter table widget with synchronized scrollin
 
 ```yaml
 dependencies:
-  flutter_table_plus: ^2.9.0
+  flutter_table_plus: ^2.9.1
 ```
 
 ```bash

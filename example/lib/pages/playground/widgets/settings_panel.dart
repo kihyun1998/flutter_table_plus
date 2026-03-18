@@ -70,6 +70,7 @@ class PlaygroundSettings {
 
   // Scale / zoom
   final double scale;
+  final bool blockCtrlScroll;
 
   const PlaygroundSettings({
     this.rowCount = 100,
@@ -122,6 +123,7 @@ class PlaygroundSettings {
     this.resizeHandleIndent = 0.0,
     this.resizeHandleEndIndent = 0.0,
     this.scale = 1.0,
+    this.blockCtrlScroll = true,
   });
 
   PlaygroundSettings copyWith({
@@ -175,6 +177,7 @@ class PlaygroundSettings {
     double? resizeHandleIndent,
     double? resizeHandleEndIndent,
     double? scale,
+    bool? blockCtrlScroll,
   }) {
     return PlaygroundSettings(
       rowCount: rowCount ?? this.rowCount,
@@ -240,6 +243,7 @@ class PlaygroundSettings {
       resizeHandleEndIndent:
           resizeHandleEndIndent ?? this.resizeHandleEndIndent,
       scale: scale ?? this.scale,
+      blockCtrlScroll: blockCtrlScroll ?? this.blockCtrlScroll,
     );
   }
 }
@@ -545,6 +549,13 @@ class SettingsPanel extends StatelessWidget {
             ),
             child: const Text('Reset (1.0x)', style: TextStyle(fontSize: 11)),
           ),
+        ),
+        _buildSwitchTile(
+          label: 'Block Ctrl+Scroll',
+          value: settings.blockCtrlScroll,
+          onChanged: (value) {
+            onSettingsChanged(settings.copyWith(blockCtrlScroll: value));
+          },
         ),
         const SizedBox(height: 12),
 

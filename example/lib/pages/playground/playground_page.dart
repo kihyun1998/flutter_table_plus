@@ -911,6 +911,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         hoverButtonPosition: HoverButtonPosition.right,
         mergedGroups: _settings.mergedRowsEnabled ? _mergedGroups : [],
         scale: _settings.scale,
+        blockCtrlScroll: _settings.blockCtrlScroll,
         onScaleChanged: (newScale) {
           setState(() {
             _settings = _settings.copyWith(
