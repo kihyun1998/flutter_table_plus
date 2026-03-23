@@ -41,6 +41,10 @@ export 'src/models/tooltip_behavior.dart';
 export 'src/utils/table_column_width_calculator.dart';
 export 'src/utils/table_row_height_calculator.dart';
 
+/// Re-export flutter_checkbox types for convenience
+export 'package:flutter_checkbox/flutter_checkbox.dart'
+    show FlutterCheckbox, CheckboxStyle, CheckboxShape;
+
 /// Re-export just_tooltip types for convenience
 export 'package:just_tooltip/just_tooltip.dart'
     show TooltipDirection, TooltipAlignment, TooltipAnimation;

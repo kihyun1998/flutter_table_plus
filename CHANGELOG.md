@@ -1,3 +1,19 @@
+## 2.10.0
+
+*   **BREAKING**: Replaced Material `Checkbox` with [`flutter_checkbox`](https://pub.dev/packages/flutter_checkbox) package
+    *   `TablePlusCheckboxTheme` now uses a single `CheckboxStyle style` property instead of individual Material properties
+    *   Removed: `fillColor`, `overlayColor`, `checkColor`, `focusColor`, `hoverColor`, `side`, `shape`, `materialTapTargetSize`, `visualDensity`, `splashRadius`, `size`, `tapTargetSize`
+    *   Added: `style` (`CheckboxStyle`) — controls all visual aspects (colors, shape, size, border, hover ring, animations)
+    *   `buildCheckbox()` now creates `FlutterCheckbox` with CustomPainter rendering for crisp display at any size
+    *   `scaledBy()` uses `CheckboxStyle.scale` for accurate visual scaling (previously SizedBox-only scaling)
+    *   Renamed `material3()` factory → `colored()` factory
+    *   Re-exported `FlutterCheckbox`, `CheckboxStyle`, `CheckboxShape` from main library for convenience
+*   **Migration**:
+    *   `TablePlusCheckboxTheme(fillColor: ..., checkColor: ..., size: 18)` → `TablePlusCheckboxTheme(style: CheckboxStyle(activeColor: ..., checkColor: ..., size: 18))`
+    *   `tapTargetSize` → `CheckboxStyle(hoverRingPadding: ...)`
+    *   `splashRadius` → removed (hover ring replaces ripple effect)
+    *   Table-specific properties (`showCheckboxColumn`, `showSelectAllCheckbox`, `checkboxColumnWidth`, `cellTapTogglesCheckbox`, `showRowCheckbox`) remain unchanged
+
 ## 2.9.1
 
 *   **FEAT**: Added `blockCtrlScroll` parameter to `FlutterTablePlus` — independently control whether Ctrl+wheel (Cmd+wheel on macOS) scrolling is blocked

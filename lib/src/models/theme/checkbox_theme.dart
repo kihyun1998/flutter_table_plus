@@ -1,33 +1,19 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_checkbox/flutter_checkbox.dart';
 
 /// Theme configuration for table checkboxes.
 ///
-/// This class provides comprehensive styling options for checkboxes used in
-/// table selection functionality, supporting both the latest Flutter Material 3
-/// design system with WidgetStateProperty and legacy single-color properties.
+/// This class provides styling options for checkboxes used in table selection
+/// functionality, powered by the [FlutterCheckbox] package for crisp
+/// CustomPainter rendering, smooth animations, and hover ring support.
 class TablePlusCheckboxTheme {
   /// Creates a [TablePlusCheckboxTheme] with the specified styling properties.
+  ///
+  /// The [style] parameter controls all visual aspects of the checkbox
+  /// (colors, shape, size, animations) via [CheckboxStyle].
   const TablePlusCheckboxTheme({
-    // WidgetStateProperty-based styling (recommended)
-    this.fillColor,
-    this.overlayColor,
-
-    // Traditional single-color properties
-    this.checkColor,
-    this.focusColor,
-    this.hoverColor,
-
-    // Shape and behavior
-    this.side,
-    this.shape,
+    this.style = const CheckboxStyle(size: 18),
     this.mouseCursor,
-    this.materialTapTargetSize,
-    this.visualDensity,
-    this.splashRadius,
-
-    // Table-specific properties
-    this.size = 18.0,
-    this.tapTargetSize,
     this.showCheckboxColumn = true,
     this.showSelectAllCheckbox = true,
     this.checkboxColumnWidth = 60.0,
@@ -35,93 +21,27 @@ class TablePlusCheckboxTheme {
     this.showRowCheckbox = true,
   });
 
-  // WidgetStateProperty-based styling properties
-
-  /// The fill color of the checkbox using WidgetStateProperty.
+  /// The visual styling configuration for checkboxes.
   ///
-  /// This provides state-aware styling for the checkbox background/fill color
-  /// in different interaction states (pressed, hovered, focused, selected, etc.).
+  /// Controls colors, shape, size, border, hover ring, and animations.
+  /// See [CheckboxStyle] for all available options.
   ///
   /// Example:
   /// ```dart
-  /// fillColor: WidgetStateProperty.resolveWith((states) {
-  ///   if (states.contains(WidgetState.selected)) {
-  ///     return Colors.blue;
-  ///   }
-  ///   if (states.contains(WidgetState.hovered)) {
-  ///     return Colors.blue.withValues(alpha: 0.8);
-  ///   }
-  ///   return Colors.grey;
-  /// })
+  /// style: CheckboxStyle(
+  ///   size: 20,
+  ///   activeColor: Colors.blue,
+  ///   checkColor: Colors.white,
+  ///   borderColor: Colors.grey,
+  ///   shape: CheckboxShape.circle,
+  ///   hoverRingPadding: 4,
+  /// )
   /// ```
-  final WidgetStateProperty<Color?>? fillColor;
-
-  /// The overlay color of the checkbox using WidgetStateProperty.
-  ///
-  /// This controls the color of the checkbox overlay (ripple effect) in different
-  /// interaction states (hovered, pressed, focused).
-  final WidgetStateProperty<Color?>? overlayColor;
-
-  // Traditional single-color properties
-
-  /// The color of the check mark/icon inside the checkbox.
-  /// If null, uses the default Material check color.
-  final Color? checkColor;
-
-  /// The color of the checkbox when it receives keyboard focus.
-  /// If null, uses the default Material focus color.
-  final Color? focusColor;
-
-  /// The color of the checkbox when it's hovered over with a mouse.
-  /// If null, uses the default Material hover color.
-  final Color? hoverColor;
-
-  // Shape and behavior properties
-
-  /// The border side of the checkbox.
-  ///
-  /// Use this to control border color and width.
-  /// If null, uses the default Material border styling.
-  final BorderSide? side;
-
-  /// The shape of the checkbox.
-  ///
-  /// If null, uses the default Material checkbox shape (rounded rectangle).
-  final OutlinedBorder? shape;
+  final CheckboxStyle style;
 
   /// The cursor to display when hovering over the checkbox.
   /// If null, uses the default system cursor.
   final MouseCursor? mouseCursor;
-
-  /// Configures the minimum size of the checkbox touch target.
-  ///
-  /// If null, defaults to the Material Design guidelines.
-  /// Use [MaterialTapTargetSize.shrinkWrap] for more compact layouts.
-  final MaterialTapTargetSize? materialTapTargetSize;
-
-  /// Defines how compact the checkbox's layout will be.
-  ///
-  /// Use [VisualDensity.compact] for tighter spacing in dense layouts.
-  final VisualDensity? visualDensity;
-
-  /// The splash radius of the checkbox ripple effect.
-  ///
-  /// If null, uses the default Material splash radius.
-  final double? splashRadius;
-
-  // Table-specific properties
-
-  /// The size (width and height) of the checkbox in logical pixels.
-  final double size;
-
-  /// The size (width and height) of the checkbox tap/hover target area.
-  ///
-  /// When set, the checkbox hit-test area expands to this size while the
-  /// visual checkbox remains at [size]. This makes the checkbox easier to
-  /// click without changing its visual appearance.
-  ///
-  /// If null, defaults to [size] (tap target matches visual size).
-  final double? tapTargetSize;
 
   /// Whether to show the checkbox column in the table.
   ///
@@ -161,38 +81,38 @@ class TablePlusCheckboxTheme {
 
   /// Returns a new [TablePlusCheckboxTheme] with dimensional values scaled by [factor].
   ///
-  /// Scales: size, tapTargetSize, checkboxColumnWidth, splashRadius.
-  /// Does NOT scale: colors, shapes, booleans.
-  ///
-  /// Note: The Material [Checkbox] widget's visual rendering size is
-  /// controlled by [materialTapTargetSize] and [visualDensity], not by
-  /// the [SizedBox] wrapper. Scaling [size] and [tapTargetSize] adjusts the
-  /// hit-test area but may not visually enlarge the checkbox itself.
+  /// Uses [CheckboxStyle.scale] to uniformly scale the checkbox rendering.
+  /// Also scales [checkboxColumnWidth] for consistent table layout.
   TablePlusCheckboxTheme scaledBy(double factor) {
     if (factor == 1.0) return this;
     return copyWith(
-      size: size * factor,
-      tapTargetSize: tapTargetSize != null ? tapTargetSize! * factor : null,
+      style: CheckboxStyle(
+        shape: style.shape,
+        size: style.size,
+        scale: style.scale * factor,
+        activeColor: style.activeColor,
+        checkColor: style.checkColor,
+        borderColor: style.borderColor,
+        inactiveColor: style.inactiveColor,
+        borderWidth: style.borderWidth,
+        borderRadius: style.borderRadius,
+        checkStrokeWidth: style.checkStrokeWidth,
+        hoverRingPadding: style.hoverRingPadding,
+        hoverRingShape: style.hoverRingShape,
+        hoverRingBorderRadius: style.hoverRingBorderRadius,
+        animationDuration: style.animationDuration,
+        animationCurve: style.animationCurve,
+        morphDuration: style.morphDuration,
+        morphCurve: style.morphCurve,
+      ),
       checkboxColumnWidth: checkboxColumnWidth * factor,
-      splashRadius: splashRadius != null ? splashRadius! * factor : null,
     );
   }
 
   /// Creates a copy of this theme with the given fields replaced by new values.
   TablePlusCheckboxTheme copyWith({
-    WidgetStateProperty<Color?>? fillColor,
-    WidgetStateProperty<Color?>? overlayColor,
-    Color? checkColor,
-    Color? focusColor,
-    Color? hoverColor,
-    BorderSide? side,
-    OutlinedBorder? shape,
+    CheckboxStyle? style,
     MouseCursor? mouseCursor,
-    MaterialTapTargetSize? materialTapTargetSize,
-    VisualDensity? visualDensity,
-    double? splashRadius,
-    double? size,
-    double? tapTargetSize,
     bool? showCheckboxColumn,
     bool? showSelectAllCheckbox,
     double? checkboxColumnWidth,
@@ -200,20 +120,8 @@ class TablePlusCheckboxTheme {
     bool? showRowCheckbox,
   }) {
     return TablePlusCheckboxTheme(
-      fillColor: fillColor ?? this.fillColor,
-      overlayColor: overlayColor ?? this.overlayColor,
-      checkColor: checkColor ?? this.checkColor,
-      focusColor: focusColor ?? this.focusColor,
-      hoverColor: hoverColor ?? this.hoverColor,
-      side: side ?? this.side,
-      shape: shape ?? this.shape,
+      style: style ?? this.style,
       mouseCursor: mouseCursor ?? this.mouseCursor,
-      materialTapTargetSize:
-          materialTapTargetSize ?? this.materialTapTargetSize,
-      visualDensity: visualDensity ?? this.visualDensity,
-      splashRadius: splashRadius ?? this.splashRadius,
-      size: size ?? this.size,
-      tapTargetSize: tapTargetSize ?? this.tapTargetSize,
       showCheckboxColumn: showCheckboxColumn ?? this.showCheckboxColumn,
       showSelectAllCheckbox:
           showSelectAllCheckbox ?? this.showSelectAllCheckbox,
@@ -224,7 +132,7 @@ class TablePlusCheckboxTheme {
     );
   }
 
-  /// Builds a [Checkbox] widget with all theme properties applied.
+  /// Builds a [FlutterCheckbox] widget with all theme properties applied.
   ///
   /// This eliminates the need to manually pass every theme property at each
   /// call site. Use [tristate] for the select-all header checkbox.
@@ -233,38 +141,25 @@ class TablePlusCheckboxTheme {
     required ValueChanged<bool?>? onChanged,
     bool tristate = false,
   }) {
-    return SizedBox(
-      width: tapTargetSize ?? size,
-      height: tapTargetSize ?? size,
-      child: Checkbox(
-        value: value,
-        tristate: tristate,
-        onChanged: onChanged,
-        activeColor: fillColor?.resolve({WidgetState.selected}),
-        hoverColor: hoverColor,
-        focusColor: focusColor,
-        fillColor: fillColor,
-        checkColor: checkColor,
-        side: side,
-        shape: shape,
-        mouseCursor: mouseCursor,
-        materialTapTargetSize:
-            materialTapTargetSize ?? MaterialTapTargetSize.shrinkWrap,
-        visualDensity: visualDensity ?? VisualDensity.compact,
-        splashRadius: splashRadius,
-        overlayColor: overlayColor,
-      ),
+    return FlutterCheckbox(
+      value: value,
+      onChanged: onChanged,
+      tristate: tristate,
+      style: style,
+      enabled: onChanged != null,
+      mouseCursor: mouseCursor,
     );
   }
 
-  /// Creates a Material 3 compliant checkbox theme with state-aware colors.
+  /// Creates a checkbox theme with the specified primary color.
   ///
-  /// This factory constructor provides a modern checkbox theme that follows
-  /// Material 3 design guidelines with proper state handling.
-  factory TablePlusCheckboxTheme.material3({
-    Color primaryColor = Colors.blue,
-    double size = 18.0,
-    double? tapTargetSize,
+  /// This factory constructor provides a convenient way to create a
+  /// consistently styled checkbox theme with minimal configuration.
+  factory TablePlusCheckboxTheme.colored({
+    Color? activeColor,
+    Color? checkColor,
+    Color? borderColor,
+    double size = 18,
     bool showCheckboxColumn = true,
     bool showSelectAllCheckbox = true,
     double checkboxColumnWidth = 60.0,
@@ -272,38 +167,15 @@ class TablePlusCheckboxTheme {
     bool showRowCheckbox = true,
   }) {
     return TablePlusCheckboxTheme(
-      fillColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.selected)) {
-          if (states.contains(WidgetState.disabled)) {
-            return primaryColor.withValues(alpha: 0.38);
-          }
-          return primaryColor;
-        }
-        if (states.contains(WidgetState.disabled)) {
-          return Colors.transparent;
-        }
-        return Colors.transparent;
-      }),
-      overlayColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.pressed)) {
-          return primaryColor.withValues(alpha: 0.12);
-        }
-        if (states.contains(WidgetState.hovered)) {
-          return primaryColor.withValues(alpha: 0.08);
-        }
-        if (states.contains(WidgetState.focused)) {
-          return primaryColor.withValues(alpha: 0.12);
-        }
-        return Colors.transparent;
-      }),
-      checkColor: Colors.white,
-      size: size,
-      tapTargetSize: tapTargetSize,
+      style: CheckboxStyle(
+        size: size,
+        activeColor: activeColor,
+        checkColor: checkColor,
+        borderColor: borderColor,
+      ),
       showCheckboxColumn: showCheckboxColumn,
       showSelectAllCheckbox: showSelectAllCheckbox,
       checkboxColumnWidth: checkboxColumnWidth,
-      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      visualDensity: VisualDensity.compact,
       cellTapTogglesCheckbox: cellTapTogglesCheckbox,
       showRowCheckbox: showRowCheckbox,
     );

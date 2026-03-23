@@ -1039,12 +1039,12 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
       ),
       checkboxTheme: TablePlusCheckboxTheme(
         showCheckboxColumn: _settings.showCheckboxColumn,
-        tapTargetSize: _settings.checkboxTapTargetSize > 18
-            ? _settings.checkboxTapTargetSize
-            : null,
-        splashRadius: _settings.checkboxTapTargetSize > 18
-            ? _settings.checkboxTapTargetSize / 2
-            : null,
+        style: CheckboxStyle(
+          size: 18,
+          hoverRingPadding: _settings.checkboxTapTargetSize > 18
+              ? (_settings.checkboxTapTargetSize - 18) / 2
+              : 0,
+        ),
         cellTapTogglesCheckbox: _settings.cellTapTogglesCheckbox,
         showRowCheckbox: _settings.showRowCheckbox,
       ),
