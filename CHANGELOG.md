@@ -1,6 +1,7 @@
-## 2.10.1
+## 2.11.0
 
-*   **FIX**: Use platform-aware modifier key check — Ctrl on Windows/Linux, Cmd on macOS — to fix Cmd+scroll zoom not working on macOS
+*   **BREAKING**: Rename `blockCtrlScroll` → `blockModifierScroll` to accurately reflect platform-aware behavior (Ctrl on Windows/Linux, Cmd on macOS)
+*   **FIX**: Use platform-aware modifier key check to fix Cmd+scroll zoom not working on macOS
 *   **FEAT**: Export `isScaleModifierPressed()` helper for library consumers implementing custom Ctrl/Cmd + scroll zoom
 
 ## 2.10.0
@@ -21,7 +22,7 @@
 
 ## 2.9.1
 
-*   **FEAT**: Added `blockCtrlScroll` parameter to `FlutterTablePlus` — independently control whether Ctrl+wheel (Cmd+wheel on macOS) scrolling is blocked
+*   **FEAT**: Added `blockModifierScroll` parameter to `FlutterTablePlus` — independently control whether Ctrl+wheel (Cmd+wheel on macOS) scrolling is blocked
     *   When `true`, Ctrl+wheel events are consumed and do not scroll the table
     *   When `false`, Ctrl+wheel scrolls normally even if `onScaleChanged` is set
     *   Defaults to `null` — automatically follows `onScaleChanged` (blocked when non-null, allowed when null), preserving existing behavior
