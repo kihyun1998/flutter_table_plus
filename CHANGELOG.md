@@ -1,3 +1,8 @@
+## 2.10.1
+
+*   **FIX**: Use platform-aware modifier key check — Ctrl on Windows/Linux, Cmd on macOS — to fix Cmd+scroll zoom not working on macOS
+*   **FEAT**: Export `isScaleModifierPressed()` helper for library consumers implementing custom Ctrl/Cmd + scroll zoom
+
 ## 2.10.0
 
 *   **BREAKING**: Replaced Material `Checkbox` with [`flutter_checkbox`](https://pub.dev/packages/flutter_checkbox) package

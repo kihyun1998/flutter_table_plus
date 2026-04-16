@@ -1124,8 +1124,7 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
   /// which returns `false` from [shouldAcceptUserOffset] when Ctrl is held,
   /// preventing the [Scrollable] from registering a scroll handler at all.
   void _handlePointerSignalForScale(PointerSignalEvent event) {
-    if (event is PointerScrollEvent &&
-        HardwareKeyboard.instance.isControlPressed) {
+    if (event is PointerScrollEvent && isScaleModifierPressed()) {
       if (widget.onScaleChanged != null) {
         // Save offsets for scroll correction in didUpdateWidget
         _preScaleVerticalOffset = _verticalScrollController?.hasClients == true
@@ -1147,12 +1146,23 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
   }
 }
 
-/// [ScrollPhysics] that blocks scrolling while Ctrl (or Cmd) is held.
+/// Whether the platform-appropriate modifier key (Ctrl on Windows/Linux,
+/// Cmd on macOS) is currently pressed.
 ///
-/// When [HardwareKeyboard.instance.isControlPressed] is true,
-/// [shouldAcceptUserOffset] returns `false`, which prevents [Scrollable]
-/// from registering a scroll handler for [PointerScrollEvent].
-/// This allows Ctrl+wheel to be used exclusively for scale changes.
+/// On Windows/Linux only [HardwareKeyboard.instance.isControlPressed] is
+/// checked — this avoids the "sticky Windows-key" bug where pressing the
+/// Windows key sets [isMetaPressed] to `true` but the subsequent key-up is
+/// never delivered to the Flutter app, leaving the flag stuck.
+bool isScaleModifierPressed() {
+  if (defaultTargetPlatform == TargetPlatform.macOS) {
+    return HardwareKeyboard.instance.isMetaPressed;
+  }
+  return HardwareKeyboard.instance.isControlPressed;
+}
+
+/// [ScrollPhysics] that blocks scrolling while the scale-modifier key
+/// (Ctrl on Windows/Linux, Cmd on macOS) is pressed, allowing those events
+/// to be used for zoom/scale instead.
 class _ScaleBlockingScrollPhysics extends ClampingScrollPhysics {
   const _ScaleBlockingScrollPhysics({super.parent});
 
@@ -1163,7 +1173,7 @@ class _ScaleBlockingScrollPhysics extends ClampingScrollPhysics {
 
   @override
   bool shouldAcceptUserOffset(ScrollMetrics position) {
-    if (HardwareKeyboard.instance.isControlPressed) return false;
+    if (isScaleModifierPressed()) return false;
     return super.shouldAcceptUserOffset(position);
   }
 }
