@@ -370,6 +370,11 @@ class _TablePlusBodyState<T> extends State<TablePlusBody<T>> {
 
   /// Convert a local Y coordinate (relative to the ListView's scroll extent)
   /// into a render index.
+  ///
+  /// Returns null when the coordinate falls outside the actual row area
+  /// (above the first row or below the last row). Callers rely on this
+  /// signal to keep drag selection sticky at the last valid row instead of
+  /// snapping to a row the pointer never crossed.
   int? _renderIndexFromLocalY(double localY) {
     final indices = _cachedRenderableIndices;
     final itemCount = indices?.length ?? widget.data.length;
@@ -378,11 +383,14 @@ class _TablePlusBodyState<T> extends State<TablePlusBody<T>> {
     // Absolute Y = localY + scroll offset
     final absoluteY = localY + widget.verticalController.offset;
 
+    if (absoluteY < 0) return null;
+
     // Fast path: uniform row heights (no calculateRowHeight, no merged groups)
     if (widget.calculateRowHeight == null && widget.mergedGroups.isEmpty) {
       final rowHeight = widget.theme.rowHeight;
       final idx = (absoluteY / rowHeight).floor();
-      return idx.clamp(0, itemCount - 1);
+      if (idx >= itemCount) return null;
+      return idx;
     }
 
     // Slow path: accumulate heights
@@ -401,7 +409,7 @@ class _TablePlusBodyState<T> extends State<TablePlusBody<T>> {
         return renderIdx;
       }
     }
-    return itemCount - 1;
+    return null;
   }
 
   /// Collect all row IDs between two render indices (inclusive).
@@ -510,6 +518,10 @@ class _TablePlusBodyState<T> extends State<TablePlusBody<T>> {
 
   void _onPointerMove(PointerMoveEvent event) {
     if (!_isDragSelectionEnabled || _pointerDownY == null) return;
+
+    // Pointer-down landed in the empty area below the last row — do not
+    // activate drag, otherwise we would coerce the selection to the last row.
+    if (_dragStartRenderIndex == null) return;
 
     _lastPointerGlobalY = event.position.dy;
 

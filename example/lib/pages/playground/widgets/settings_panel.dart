@@ -438,10 +438,10 @@ class SettingsPanel extends StatelessWidget {
         ),
         const SizedBox(height: 12),
 
-        // Logarithmic slider (10 to 100,000)
+        // Logarithmic slider (5 to 100,000)
         _buildLogSlider(
           value: settings.rowCount.toDouble(),
-          min: 10,
+          min: 5,
           max: 100000,
           onChanged: (value) {
             onSettingsChanged(settings.copyWith(rowCount: value.round()));
@@ -449,11 +449,13 @@ class SettingsPanel extends StatelessWidget {
         ),
         const SizedBox(height: 16),
 
-        // Quick select buttons
+        // Quick select buttons. The "5" preset leaves a large empty area
+        // below the last row, useful for testing drag-selection edge cases.
         Wrap(
           spacing: 8,
           runSpacing: 8,
           children: [
+            _buildQuickButton('5', 5),
             _buildQuickButton('100', 100),
             _buildQuickButton('1K', 1000),
             _buildQuickButton('10K', 10000),
