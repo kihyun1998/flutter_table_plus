@@ -41,7 +41,7 @@ A highly customizable, type-safe Flutter table widget with synchronized scrollin
 
 ```yaml
 dependencies:
-  flutter_table_plus: ^2.11.0
+  flutter_table_plus: ^2.11.1
 ```
 
 ```bash

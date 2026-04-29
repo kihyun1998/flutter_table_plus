@@ -195,6 +195,14 @@ class _TablePlusBodyState<T> extends State<TablePlusBody<T>> {
   double _viewportHeight = 0;
   double _bodyGlobalTop = 0;
 
+  /// Whether pointer-down landed in the empty area below the last row.
+  /// (Above-data pointer-down is unreachable because the header occludes
+  /// hit testing.) When true, returning to that same below-data empty
+  /// area during the drag releases the lazy anchor so the selection
+  /// collapses, mirroring OS marquee behavior. Crossing above row 1 into
+  /// the header area instead preserves the sticky range.
+  bool _dragStartedFromEmpty = false;
+
   static const double _dragActivationThreshold = 8.0;
   static const double _autoScrollEdgeZone = 40.0;
   static const double _autoScrollMaxSpeed = 10.0;
@@ -514,16 +522,24 @@ class _TablePlusBodyState<T> extends State<TablePlusBody<T>> {
     // Pre-calculate start render index
     final localY = event.position.dy - _bodyGlobalTop;
     _dragStartRenderIndex = _renderIndexFromLocalY(localY);
+    _dragStartedFromEmpty = _dragStartRenderIndex == null;
   }
 
   void _onPointerMove(PointerMoveEvent event) {
     if (!_isDragSelectionEnabled || _pointerDownY == null) return;
 
-    // Pointer-down landed in the empty area below the last row — do not
-    // activate drag, otherwise we would coerce the selection to the last row.
-    if (_dragStartRenderIndex == null) return;
-
     _lastPointerGlobalY = event.position.dy;
+
+    // Lazy activation: when pointer-down lands in the empty area below the
+    // last row, defer establishing the anchor until the pointer first crosses
+    // into a real row. This lets the user start a drag from the empty area
+    // while still avoiding selecting any row that was never crossed.
+    if (_dragStartRenderIndex == null) {
+      final localY = event.position.dy - _bodyGlobalTop;
+      final renderIdx = _renderIndexFromLocalY(localY);
+      if (renderIdx == null) return;
+      _dragStartRenderIndex = renderIdx;
+    }
 
     if (!_isDragSelecting) {
       // Check threshold
@@ -538,6 +554,20 @@ class _TablePlusBodyState<T> extends State<TablePlusBody<T>> {
     if (renderIdx != null) {
       _dragCurrentRenderIndex = renderIdx;
       _updateDragSelection();
+    } else if (_dragStartedFromEmpty) {
+      // Pointer-down can only land in the empty area below the data
+      // (the header occludes hit testing above), so a release should
+      // only fire when the pointer is back below the data. If the
+      // pointer instead moved above row 1 (e.g. dragging up into the
+      // header area after sweeping through every row), preserve the
+      // sticky range — the user is still expressing a selection, just
+      // outside the body bounds.
+      final absoluteY = localY + widget.verticalController.offset;
+      if (absoluteY >= 0) {
+        _dragStartRenderIndex = null;
+        _dragCurrentRenderIndex = null;
+        widget.onDragSelectionUpdate?.call(<String>{});
+      }
     }
 
     // Start/stop auto-scroll based on position
@@ -577,6 +607,7 @@ class _TablePlusBodyState<T> extends State<TablePlusBody<T>> {
     _dragCurrentRenderIndex = null;
     _pointerDownY = null;
     _lastPointerGlobalY = null;
+    _dragStartedFromEmpty = false;
   }
 
   @override

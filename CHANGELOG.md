@@ -1,3 +1,12 @@
+## 2.11.1
+
+*   **FIX**: Drag selection no longer snaps to the last row when the pointer is in the empty area below the data
+    *   `_renderIndexFromLocalY` now returns `null` for coordinates outside the actual row area (above the first row or below the last); callers' existing null-guards activate sticky behavior at the last reached row instead of clamping to a row the pointer never crossed
+    *   Lazy activation: when pointer-down lands in the empty area below the last row, the drag anchor is deferred until the pointer first crosses into a real row — starting a drag from the empty area and moving into rows still works, but a drag confined to empty space no longer selects anything
+    *   Side-aware release: when a drag started from the below-data empty area and the pointer returns to that same area, the lazy anchor is released and the selection collapses (mirroring OS marquee behavior in Finder/Explorer). Re-entering a row lazy-activates a fresh anchor. Crossing instead above row 1 into the header area preserves the sticky range, so sweeping up through every row and continuing past the header keeps the full selection intact
+    *   Sticky preservation for in-row starts: when a drag started inside the rows moves past the last row into empty space (or above row 1 into the header area), the selection freezes at the last reached row instead of being coerced to the boundary
+*   **EXAMPLE**: Added `5` quick preset to the playground for testing small-data drag-selection scenarios (logarithmic slider lower bound: `10` → `5`)
+
 ## 2.11.0
 
 *   **BREAKING**: Rename `blockCtrlScroll` → `blockModifierScroll` to accurately reflect platform-aware behavior (Ctrl on Windows/Linux, Cmd on macOS)
