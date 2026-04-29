@@ -1,5 +1,6 @@
 import 'body_theme.dart' show TablePlusBodyTheme;
 import 'checkbox_theme.dart' show TablePlusCheckboxTheme;
+import 'drag_selection_theme.dart' show TablePlusDragSelectionTheme;
 import 'editable_theme.dart' show TablePlusEditableTheme;
 import 'header_theme.dart' show TablePlusHeaderTheme;
 import 'hover_button_theme.dart' show TablePlusHoverButtonTheme;
@@ -17,6 +18,7 @@ class TablePlusTheme {
     this.editableTheme = const TablePlusEditableTheme(),
     this.tooltipTheme = const TablePlusTooltipTheme(),
     this.hoverButtonTheme = const TablePlusHoverButtonTheme(),
+    this.dragSelectionTheme = const TablePlusDragSelectionTheme(),
   });
 
   /// Theme configuration for the table header.
@@ -40,6 +42,9 @@ class TablePlusTheme {
   /// Theme configuration for hover buttons.
   final TablePlusHoverButtonTheme hoverButtonTheme;
 
+  /// Theme configuration for the drag-selection rubber band rectangle.
+  final TablePlusDragSelectionTheme dragSelectionTheme;
+
   /// Returns a new [TablePlusTheme] with all dimensional values scaled by [factor].
   ///
   /// Delegates to each sub-theme's `scaledBy` method.
@@ -54,6 +59,7 @@ class TablePlusTheme {
       editableTheme: editableTheme.scaledBy(factor),
       tooltipTheme: tooltipTheme,
       hoverButtonTheme: hoverButtonTheme.scaledBy(factor),
+      dragSelectionTheme: dragSelectionTheme.scaledBy(factor),
     );
   }
 
@@ -66,6 +72,7 @@ class TablePlusTheme {
     TablePlusEditableTheme? editableTheme,
     TablePlusTooltipTheme? tooltipTheme,
     TablePlusHoverButtonTheme? hoverButtonTheme,
+    TablePlusDragSelectionTheme? dragSelectionTheme,
   }) {
     return TablePlusTheme(
       headerTheme: headerTheme ?? this.headerTheme,
@@ -75,6 +82,7 @@ class TablePlusTheme {
       editableTheme: editableTheme ?? this.editableTheme,
       tooltipTheme: tooltipTheme ?? this.tooltipTheme,
       hoverButtonTheme: hoverButtonTheme ?? this.hoverButtonTheme,
+      dragSelectionTheme: dragSelectionTheme ?? this.dragSelectionTheme,
     );
   }
 

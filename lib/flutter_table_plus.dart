@@ -29,6 +29,7 @@ export 'src/models/table_columns_builder.dart';
 /// Theme
 export 'src/models/theme/body_theme.dart';
 export 'src/models/theme/checkbox_theme.dart';
+export 'src/models/theme/drag_selection_theme.dart';
 export 'src/models/theme/editable_theme.dart';
 export 'src/models/theme/header_theme.dart';
 export 'src/models/theme/hover_button_theme.dart';

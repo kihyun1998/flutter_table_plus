@@ -1,5 +1,12 @@
-## 2.11.1
+## 2.12.0
 
+*   **FEAT**: Rubber band rectangle for drag selection (Finder/Explorer-style marquee)
+    *   When `enableDragSelection` is true, a translucent rectangle is now drawn from the pointer-down position to the current pointer position while the drag is active, providing immediate visual feedback for the selection range
+    *   The rectangle is decoupled from anchor establishment: it appears as soon as the activation threshold is passed, even when the drag stays entirely inside empty space (no row anchor yet) or when the pointer crosses back above row 1 into the header area
+    *   Content-anchored rectangle: the origin is fixed to the underlying content rather than the viewport, so auto-scroll causes the rectangle to grow visually — matching OS marquee conventions
+    *   New `TablePlusDragSelectionTheme` (composed into `TablePlusTheme.dragSelectionTheme`) with `show`, `fillColor`, `borderColor`, `borderWidth`, `borderRadius`. Default `show: true`; set to `false` to keep drag-selection logic without the visual cue
+    *   `borderWidth` participates in `TablePlusTheme.scaledBy()`; colors and `borderRadius` are intentionally not scaled
+    *   Re-exported from the main library for convenient theming
 *   **FIX**: Drag selection no longer snaps to the last row when the pointer is in the empty area below the data
     *   `_renderIndexFromLocalY` now returns `null` for coordinates outside the actual row area (above the first row or below the last); callers' existing null-guards activate sticky behavior at the last reached row instead of clamping to a row the pointer never crossed
     *   Lazy activation: when pointer-down lands in the empty area below the last row, the drag anchor is deferred until the pointer first crosses into a real row — starting a drag from the empty area and moving into rows still works, but a drag confined to empty space no longer selects anything

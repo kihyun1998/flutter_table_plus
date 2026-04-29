@@ -9,6 +9,8 @@ import '../models/merged_row_group.dart';
 import '../models/table_column.dart';
 import '../models/theme/body_theme.dart' show TablePlusBodyTheme;
 import '../models/theme/checkbox_theme.dart';
+import '../models/theme/drag_selection_theme.dart'
+    show TablePlusDragSelectionTheme;
 import '../models/theme/editable_theme.dart' show TablePlusEditableTheme;
 import '../models/theme/tooltip_theme.dart' show TablePlusTooltipTheme;
 import 'table_plus_merged_row.dart';
@@ -35,6 +37,7 @@ class TablePlusBody<T> extends StatefulWidget {
     this.enableDragSelection = false,
     this.onDragSelectionUpdate,
     this.onDragSelectionEnd,
+    this.dragSelectionTheme = const TablePlusDragSelectionTheme(),
     this.onRowDoubleTap,
     this.onRowSecondaryTapDown,
     this.isEditable = false,
@@ -103,6 +106,9 @@ class TablePlusBody<T> extends StatefulWidget {
 
   /// Callback fired once when drag-selection ends with the final set.
   final void Function(Set<String> selectedRowIds)? onDragSelectionEnd;
+
+  /// Theme for the rubber band rectangle drawn during drag selection.
+  final TablePlusDragSelectionTheme dragSelectionTheme;
 
   /// Callback when a row is double-tapped.
   final void Function(String rowId)? onRowDoubleTap;
@@ -202,6 +208,20 @@ class _TablePlusBodyState<T> extends State<TablePlusBody<T>> {
   /// collapses, mirroring OS marquee behavior. Crossing above row 1 into
   /// the header area instead preserves the sticky range.
   bool _dragStartedFromEmpty = false;
+
+  // --- Rubber band rectangle state (visual only) ---
+  /// Body-local pointer position at pointer-down. Used as the rectangle's
+  /// origin point.
+  Offset? _pointerDownLocal;
+
+  /// Body-local pointer position on the latest move. Used as the rectangle's
+  /// current corner. Triggers a rebuild via setState when changed.
+  Offset? _currentPointerLocal;
+
+  /// Scroll offset captured at pointer-down. Used to translate the origin
+  /// into viewport coordinates as the list scrolls (content-anchored
+  /// rectangle), so the visible rectangle grows when auto-scroll engages.
+  double _dragStartScrollOffset = 0;
 
   static const double _dragActivationThreshold = 8.0;
   static const double _autoScrollEdgeZone = 40.0;
@@ -491,8 +511,13 @@ class _TablePlusBodyState<T> extends State<TablePlusBody<T>> {
 
     final controller = widget.verticalController;
     if (!controller.hasClients) return;
+    // Snapshot the offset once — reading controller.offset multiple times
+    // can race with rebuild cycles where ScrollPosition is briefly
+    // re-attached and reports a transient zero, blocking auto-scroll.
+    final prevOffset = controller.offset;
     final maxScroll = controller.position.maxScrollExtent;
-    final newOffset = (controller.offset + scrollDelta).clamp(0.0, maxScroll);
+    final newOffset = (prevOffset + scrollDelta).clamp(0.0, maxScroll);
+    if (newOffset == prevOffset) return;
     controller.jumpTo(newOffset);
 
     // Re-calculate current render index after scroll position change
@@ -502,6 +527,11 @@ class _TablePlusBodyState<T> extends State<TablePlusBody<T>> {
       _dragCurrentRenderIndex = renderIdx;
       _updateDragSelection();
     }
+
+    // Trigger rebuild so the content-anchored rubber band rectangle grows
+    // (or shrinks) with the new scroll offset. Without this the overlay
+    // stays stale until the next pointer move.
+    if (mounted) setState(() {});
   }
 
   // --- Pointer event handlers ---
@@ -518,6 +548,11 @@ class _TablePlusBodyState<T> extends State<TablePlusBody<T>> {
 
     _pointerDownY = event.position.dy;
     _lastPointerGlobalY = event.position.dy;
+    _pointerDownLocal = event.localPosition;
+    _currentPointerLocal = event.localPosition;
+    _dragStartScrollOffset = widget.verticalController.hasClients
+        ? widget.verticalController.offset
+        : 0;
 
     // Pre-calculate start render index
     final localY = event.position.dy - _bodyGlobalTop;
@@ -530,47 +565,56 @@ class _TablePlusBodyState<T> extends State<TablePlusBody<T>> {
 
     _lastPointerGlobalY = event.position.dy;
 
-    // Lazy activation: when pointer-down lands in the empty area below the
-    // last row, defer establishing the anchor until the pointer first crosses
-    // into a real row. This lets the user start a drag from the empty area
-    // while still avoiding selecting any row that was never crossed.
-    if (_dragStartRenderIndex == null) {
-      final localY = event.position.dy - _bodyGlobalTop;
-      final renderIdx = _renderIndexFromLocalY(localY);
-      if (renderIdx == null) return;
-      _dragStartRenderIndex = renderIdx;
-    }
-
+    // 1. Threshold gate — independent of anchor. The user's intent to
+    //    drag is established by movement distance alone; whether the
+    //    pointer has touched a row yet is a separate concern.
     if (!_isDragSelecting) {
-      // Check threshold
       final distance = (event.position.dy - _pointerDownY!).abs();
       if (distance < _dragActivationThreshold) return;
       _isDragSelecting = true;
     }
 
-    // Update current render index
+    // 2. Track body-local pointer for the rubber band overlay —
+    //    independent of anchor so the rectangle stays visible even when
+    //    the drag is entirely confined to empty space.
+    if (mounted && _currentPointerLocal != event.localPosition) {
+      setState(() {
+        _currentPointerLocal = event.localPosition;
+      });
+    }
+
+    // 3. Resolve the current render index once for both anchor and
+    //    selection logic.
     final localY = event.position.dy - _bodyGlobalTop;
     final renderIdx = _renderIndexFromLocalY(localY);
-    if (renderIdx != null) {
-      _dragCurrentRenderIndex = renderIdx;
-      _updateDragSelection();
-    } else if (_dragStartedFromEmpty) {
-      // Pointer-down can only land in the empty area below the data
-      // (the header occludes hit testing above), so a release should
-      // only fire when the pointer is back below the data. If the
-      // pointer instead moved above row 1 (e.g. dragging up into the
-      // header area after sweeping through every row), preserve the
-      // sticky range — the user is still expressing a selection, just
-      // outside the body bounds.
-      final absoluteY = localY + widget.verticalController.offset;
-      if (absoluteY >= 0) {
-        _dragStartRenderIndex = null;
-        _dragCurrentRenderIndex = null;
-        widget.onDragSelectionUpdate?.call(<String>{});
+
+    // Lazy anchor: first crossing into a real row sets the start. If we
+    // are still in empty space, fall through — selection logic will be
+    // skipped this frame, but the rubber band continues to update.
+    if (_dragStartRenderIndex == null && renderIdx != null) {
+      _dragStartRenderIndex = renderIdx;
+    }
+
+    // 4. Selection update — only meaningful when the anchor exists.
+    if (_dragStartRenderIndex != null) {
+      if (renderIdx != null) {
+        _dragCurrentRenderIndex = renderIdx;
+        _updateDragSelection();
+      } else if (_dragStartedFromEmpty) {
+        // Pointer-down can only land in the empty area below the data
+        // (the header occludes hit testing above), so a release fires
+        // only when the pointer is back below the data. Above-data
+        // movement (header area) preserves the sticky range.
+        final absoluteY = localY + widget.verticalController.offset;
+        if (absoluteY >= 0) {
+          _dragStartRenderIndex = null;
+          _dragCurrentRenderIndex = null;
+          widget.onDragSelectionUpdate?.call(<String>{});
+        }
       }
     }
 
-    // Start/stop auto-scroll based on position
+    // 5. Auto-scroll
     final bodyLocalY = event.position.dy - _bodyGlobalTop;
     if (bodyLocalY < _autoScrollEdgeZone ||
         bodyLocalY > _viewportHeight - _autoScrollEdgeZone) {
@@ -602,12 +646,17 @@ class _TablePlusBodyState<T> extends State<TablePlusBody<T>> {
 
   void _resetDragState() {
     _stopAutoScroll();
+    final hadRubberBand = _pointerDownLocal != null;
     _isDragSelecting = false;
     _dragStartRenderIndex = null;
     _dragCurrentRenderIndex = null;
     _pointerDownY = null;
     _lastPointerGlobalY = null;
     _dragStartedFromEmpty = false;
+    _pointerDownLocal = null;
+    _currentPointerLocal = null;
+    _dragStartScrollOffset = 0;
+    if (hadRubberBand && mounted) setState(() {});
   }
 
   @override
@@ -651,17 +700,71 @@ class _TablePlusBodyState<T> extends State<TablePlusBody<T>> {
     );
 
     if (_isDragSelectionEnabled) {
+      final rubberBand = _buildRubberBand();
+      // Always wrap in Stack when drag selection is enabled. Switching
+      // Listener.child between `ListView` and `Stack(...)` based on rubber
+      // band visibility would change the runtimeType of that slot at the
+      // moment the drag activates, forcing Flutter to deactivate the old
+      // ListView element and mount a fresh one. The new ListView attaches
+      // a brand-new ScrollPosition that starts at `initialScrollOffset` (0),
+      // wiping the user's scroll position. By keeping the Stack constant,
+      // the ListView element stays in slot 0 and its ScrollPosition is
+      // preserved across drag activation.
       listView = Listener(
         behavior: HitTestBehavior.translucent,
         onPointerDown: _onPointerDown,
         onPointerMove: _onPointerMove,
         onPointerUp: _onPointerUp,
         onPointerCancel: _onPointerCancel,
-        child: listView,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            listView,
+            if (rubberBand != null) IgnorePointer(child: rubberBand),
+          ],
+        ),
       );
     }
 
     return listView;
+  }
+
+  /// Builds the rubber band rectangle overlay shown during drag selection.
+  ///
+  /// Returns null when no rectangle should be drawn (drag inactive, theme
+  /// disabled, or coordinates not yet captured). The rectangle is content-
+  /// anchored: its origin shifts with scroll so auto-scroll causes the
+  /// visible rectangle to grow, mirroring OS marquee selection.
+  Widget? _buildRubberBand() {
+    final theme = widget.dragSelectionTheme;
+    if (!theme.show) return null;
+    if (!_isDragSelecting) return null;
+    final downLocal = _pointerDownLocal;
+    final currentLocal = _currentPointerLocal;
+    if (downLocal == null || currentLocal == null) return null;
+
+    // Translate the origin into the current viewport's coordinates by
+    // subtracting the scroll delta since pointer-down. This makes the
+    // rectangle's anchor follow the underlying content as the list scrolls.
+    final scrollDelta = (widget.verticalController.hasClients
+            ? widget.verticalController.offset
+            : 0) -
+        _dragStartScrollOffset;
+    final originY = downLocal.dy - scrollDelta;
+    final rect = Rect.fromPoints(
+      Offset(downLocal.dx, originY),
+      currentLocal,
+    );
+
+    return CustomPaint(
+      painter: _RubberBandPainter(
+        rect: rect,
+        fillColor: theme.fillColor,
+        borderColor: theme.borderColor,
+        borderWidth: theme.borderWidth,
+        borderRadius: theme.borderRadius,
+      ),
+    );
   }
 
   /// Calculate the total extent for a merged group.
@@ -822,5 +925,55 @@ class _TablePlusBodyState<T> extends State<TablePlusBody<T>> {
       hoverButtonTheme: widget.hoverButtonTheme,
       isDim: isDimmed,
     );
+  }
+}
+
+/// Paints the rubber band rectangle for drag selection.
+class _RubberBandPainter extends CustomPainter {
+  _RubberBandPainter({
+    required this.rect,
+    required this.fillColor,
+    required this.borderColor,
+    required this.borderWidth,
+    required this.borderRadius,
+  });
+
+  final Rect rect;
+  final Color fillColor;
+  final Color borderColor;
+  final double borderWidth;
+  final BorderRadius borderRadius;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (rect.isEmpty) return;
+    final clipped = rect.intersect(Offset.zero & size);
+    if (clipped.isEmpty) return;
+
+    final fillPaint = Paint()
+      ..color = fillColor
+      ..style = PaintingStyle.fill;
+    final borderPaint = Paint()
+      ..color = borderColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = borderWidth;
+
+    if (borderRadius == BorderRadius.zero) {
+      canvas.drawRect(clipped, fillPaint);
+      if (borderWidth > 0) canvas.drawRect(clipped, borderPaint);
+    } else {
+      final rrect = borderRadius.toRRect(clipped);
+      canvas.drawRRect(rrect, fillPaint);
+      if (borderWidth > 0) canvas.drawRRect(rrect, borderPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _RubberBandPainter old) {
+    return old.rect != rect ||
+        old.fillColor != fillColor ||
+        old.borderColor != borderColor ||
+        old.borderWidth != borderWidth ||
+        old.borderRadius != borderRadius;
   }
 }
