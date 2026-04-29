@@ -1,5 +1,13 @@
 ## 2.12.0
 
+*   **FEAT**: Horizontal auto-scroll during drag selection
+    *   When the table is wider than its viewport (`SingleChildScrollView` is scrollable horizontally), dragging the pointer near the left or right edge of the visible viewport now scrolls the table horizontally at proximity-proportional speed, mirroring the existing vertical auto-scroll
+    *   Edge detection runs in *visible-viewport* coordinates (uses `horizontalController.position.viewportDimension`), not body-local coordinates, so the edge zone tracks the user's actual visible area
+    *   Both axes can scroll simultaneously when the pointer is in a corner (e.g., bottom-right)
+    *   The rubber band rectangle is content-anchored on both axes — horizontal scrolling makes the rectangle's origin track the underlying content, just like vertical
+    *   `TablePlusBody` accepts an optional `horizontalController` parameter; passing `null` disables the horizontal axis and preserves the previous vertical-only behavior
+    *   Horizontal proximity is clamped to `[0, 1]` so dragging the pointer far past the visible viewport edge does not overshoot the configured max speed (the vertical axis retains its original feel)
+    *   Pointer-position staleness during horizontal auto-scroll is corrected arithmetically (using the captured pointer-down body offset plus the accumulated horizontal scroll delta) rather than re-reading `localToGlobal`, which would race with the layout pipeline post-`jumpTo` and report stale coordinates
 *   **FEAT**: Rubber band rectangle for drag selection (Finder/Explorer-style marquee)
     *   When `enableDragSelection` is true, a translucent rectangle is now drawn from the pointer-down position to the current pointer position while the drag is active, providing immediate visual feedback for the selection range
     *   The rectangle is decoupled from anchor establishment: it appears as soon as the activation threshold is passed, even when the drag stays entirely inside empty space (no row anchor yet) or when the pointer crosses back above row 1 into the header area

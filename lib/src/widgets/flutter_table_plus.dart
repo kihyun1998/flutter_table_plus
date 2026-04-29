@@ -1023,6 +1023,8 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
                                                   widget.onDragSelectionEnd,
                                               dragSelectionTheme:
                                                   theme.dragSelectionTheme,
+                                              horizontalController:
+                                                  horizontalScrollController,
                                               onRowDoubleTap:
                                                   widget.onRowDoubleTap,
                                               onRowSecondaryTapDown:
