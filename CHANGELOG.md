@@ -4,10 +4,9 @@
     *   When the table is wider than its viewport (`SingleChildScrollView` is scrollable horizontally), dragging the pointer near the left or right edge of the visible viewport now scrolls the table horizontally at proximity-proportional speed, mirroring the existing vertical auto-scroll
     *   Edge detection runs in *visible-viewport* coordinates (uses `horizontalController.position.viewportDimension`), not body-local coordinates, so the edge zone tracks the user's actual visible area
     *   Both axes can scroll simultaneously when the pointer is in a corner (e.g., bottom-right)
-    *   The rubber band rectangle is content-anchored on both axes — horizontal scrolling makes the rectangle's origin track the underlying content, just like vertical
-    *   `TablePlusBody` accepts an optional `horizontalController` parameter; passing `null` disables the horizontal axis and preserves the previous vertical-only behavior
+    *   The rubber band rectangle is content-anchored on both axes — its origin tracks the underlying content via the symmetric `downLocal − hDelta/vDelta` formula, so scrolling on either axis grows the rectangle visually
     *   Horizontal proximity is clamped to `[0, 1]` so dragging the pointer far past the visible viewport edge does not overshoot the configured max speed (the vertical axis retains its original feel)
-    *   Pointer-position staleness during horizontal auto-scroll is corrected arithmetically (using the captured pointer-down body offset plus the accumulated horizontal scroll delta) rather than re-reading `localToGlobal`, which would race with the layout pipeline post-`jumpTo` and report stale coordinates
+    *   The drag-selection `Listener` sits at the body's *viewport* level (outside the body's horizontal `Scrollable`), so its `event.localPosition` is viewport-local on both axes — there is no "body slid in screen" compensation to maintain. As a consequence, the auto-scroll engine progresses cleanly to `maxScrollExtent` while the pointer is held in an edge zone, instead of stalling once accumulated horizontal scroll delta would have pushed a stale captured origin out of the zone
 *   **FEAT**: Rubber band rectangle for drag selection (Finder/Explorer-style marquee)
     *   When `enableDragSelection` is true, a translucent rectangle is now drawn from the pointer-down position to the current pointer position while the drag is active, providing immediate visual feedback for the selection range
     *   The rectangle is decoupled from anchor establishment: it appears as soon as the activation threshold is passed, even when the drag stays entirely inside empty space (no row anchor yet) or when the pointer crosses back above row 1 into the header area
@@ -21,6 +20,11 @@
     *   Side-aware release: when a drag started from the below-data empty area and the pointer returns to that same area, the lazy anchor is released and the selection collapses (mirroring OS marquee behavior in Finder/Explorer). Re-entering a row lazy-activates a fresh anchor. Crossing instead above row 1 into the header area preserves the sticky range, so sweeping up through every row and continuing past the header keeps the full selection intact
     *   Sticky preservation for in-row starts: when a drag started inside the rows moves past the last row into empty space (or above row 1 into the header area), the selection freezes at the last reached row instead of being coerced to the boundary
 *   **EXAMPLE**: Added `5` quick preset to the playground for testing small-data drag-selection scenarios (logarithmic slider lower bound: `10` → `5`)
+*   **INTERNAL**: Drag-selection coordinate model unified to a single viewport-local frame
+    *   Header and body now use independent horizontal `SingleChildScrollView`s synced via a shared-controller pattern (`SyncedScrollControllers` adds a 5th controller slot for the header). The header is `NeverScrollableScrollPhysics` — body is the master input source
+    *   `TablePlusBody` is a pure row renderer; drag-selection state, pointer handlers, auto-scroll engine, and rubber band painter all live in `_FlutterTablePlusState`. `TablePlusBodyState` exposes `renderIndexAtLocalY` and `rowIdsBetween` for the parent's lookup needs (accessed via `GlobalKey<TablePlusBodyState<T>>`)
+    *   Single-axis auto-scroll engine extracted (`_performAxisAutoScroll`); per-axis wrappers now differ only in coordinate source and a `clampProximity` flag. Vertical retains its historical >1 acceleration past the edge zone; horizontal still caps at `maxSpeed`
+*   **TEST**: Added `test/drag_selection_test.dart` with 8 widget tests covering basic drag, threshold gating, sticky range at empty/header boundaries, vertical / horizontal / dual-axis auto-scroll, and merged-group traversal
 
 ## 2.11.0
 

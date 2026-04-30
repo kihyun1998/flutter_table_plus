@@ -64,7 +64,7 @@ dart doc .                      # Generate API documentation
 - **`lib/flutter_table_plus.dart`**: Main library export file
 - **`lib/src/widgets/flutter_table_plus.dart`**: Main FlutterTablePlus widget implementation
 - **`lib/src/widgets/table_header.dart`**: Header row implementation with sorting, reordering, and column resizing
-- **`lib/src/widgets/table_body.dart`**: Body rows implementation with selection and editing
+- **`lib/src/widgets/table_body.dart`**: Body rows `ListView` — a pure row renderer. Exposes `renderIndexAtLocalY` and `rowIdsBetween` (via a public `TablePlusBodyState`, accessed by the parent through `GlobalKey`) so drag-selection logic in the parent can resolve coordinates to row IDs without owning the body's caches
 - **`lib/src/widgets/synced_scroll_controllers.dart`**: Synchronized scrolling logic
 - **`lib/src/widgets/custom_ink_well.dart`**: Custom tap handling widget
 - **`lib/src/widgets/table_plus_merged_row.dart`**: Merged row rendering widget for grouped data display
@@ -86,16 +86,18 @@ dart doc .                      # Generate API documentation
 
 1. **Map-based Data Structure**: Tables use `List<Map<String, dynamic>>` for row data, requiring unique row ID fields for selection features (default: 'id', configurable via `rowIdKey`)
 2. **Builder Pattern**: TableColumnsBuilder prevents order conflicts and manages column ordering automatically
-3. **Synchronized Scrolling**: Custom scroll controller synchronization between header and body
+3. **Synchronized Scrolling**: Header and body each have their own horizontal `SingleChildScrollView`; `SyncedScrollControllers` synchronizes them through a shared-controller pattern (the body is the user-input master, the header uses `NeverScrollableScrollPhysics` and is driven by the body's position). The horizontal scrollbar is a third sync target. Vertical scroll lives inside the body's `ListView`
 4. **Merged Row Groups**: MergedRowGroup system for visually combining multiple data rows with configurable merge behavior per column
 5. **Theme Composition**: Nested theme classes (TablePlusTheme, TablePlusHeaderTheme, etc.) for granular styling control
 6. **State Management Ready**: Designed to work with state management solutions like Riverpod (see documentation/RIVERPOD_GENERATOR_GUIDE.md)
 7. **Row Widget Polymorphism**: TablePlusRowWidget abstract class enables different row types (_TablePlusRow for normal rows, TablePlusMergedRow for grouped rows) with consistent ListView.builder interface
+8. **Drag Selection (single coordinate frame)**: Drag-selection state lives at `_FlutterTablePlusState`, not in the body. A `Listener` wraps the body's horizontal `Scrollable` from the *outside*, so its `RenderBox` is stationary in screen — `event.localPosition` is therefore viewport-local on both axes. Coordinate state is encapsulated in `_DragCoordinator`; the rubber band's origin is content-anchored via the symmetric `downLocal − hDelta/vDelta` formula on both axes
 
 ### Widget Lifecycle
 
 FlutterTablePlus follows a composition pattern where:
-- Header and body are separate widgets sharing synchronized scroll controllers
+- Header and body are separate widgets, each with its own horizontal `SingleChildScrollView`; `SyncedScrollControllers` keeps their positions aligned
+- Drag selection lives at `_FlutterTablePlusState` via a viewport-level `Listener`; the body is queried for row-index lookups through `GlobalKey<TablePlusBodyState<T>>`
 - Column reordering updates the column map and triggers rebuilds
 - Column resizing is managed internally via `_resizedWidths` state map; `onColumnResized` callback notifies externally for persistence
 - Selection state is managed externally and passed down as props
@@ -123,6 +125,7 @@ FlutterTablePlus follows a composition pattern where:
 - **Merged Rows**: MergedRowGroup functionality allows grouping consecutive rows with configurable merge behavior per column. Supports custom content, selection, and editing within merged cells
 - **Row Hover Implementation**: Currently supports basic hover effects via CustomInkWell.hoverColor. Row widgets extend TablePlusRowWidget (StatelessWidget) making advanced hover features (like button overlays) require architectural changes to support state management
 - **Column Width Constraints**: `minWidth`/`maxWidth` on `TablePlusColumn` are enforced in all `_calculateColumnWidths` paths via `clamp()` — both for resize drag and normal proportional layout distribution
+- **Drag Selection Coordinate Model**: All drag-selection coordinates live in a single viewport-local reference frame. The `Listener` is placed at the body's viewport (outside the body's horizontal `SingleChildScrollView`), so `event.localPosition` is viewport-local on both axes — eliminating the asymmetry that previously existed when the body slid horizontally under a stale captured screen origin. Auto-scroll edge zones, the rubber band rectangle, and content-anchored origin (`downLocal − hDelta/vDelta`) all use this single frame. State is held in `_DragCoordinator`; row-index lookups are routed to the body through `GlobalKey<TablePlusBodyState<T>>`
 
 ## Code Patterns & Conventions
 
@@ -133,7 +136,7 @@ FlutterTablePlus follows a composition pattern where:
 - Merged rows: MergedRowGroup requires valid `rowKeys` that correspond to the unique identifier field (`rowIdKey`) in the data list
 
 ### Widget Composition Pattern
-- Header and body are separate widgets with synchronized scroll controllers
+- Header and body are separate widgets with independent horizontal `Scrollable`s synchronized through a shared `SyncedScrollControllers` instance
 - State is managed externally and passed down through props
 - Callbacks flow user interactions (sort, select, edit, reorder, resize) back to parent
 
