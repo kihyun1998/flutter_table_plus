@@ -7,8 +7,6 @@ import '../models/merged_row_group.dart';
 import '../models/table_column.dart';
 import '../models/theme/body_theme.dart' show TablePlusBodyTheme;
 import '../models/theme/checkbox_theme.dart';
-import '../models/theme/drag_selection_theme.dart'
-    show TablePlusDragSelectionTheme;
 import '../models/theme/editable_theme.dart' show TablePlusEditableTheme;
 import '../models/theme/tooltip_theme.dart' show TablePlusTooltipTheme;
 import 'table_plus_merged_row.dart';
@@ -32,11 +30,6 @@ class TablePlusBody<T> extends StatefulWidget {
     this.selectedRows = const <String>{},
     this.onRowSelectionChanged,
     this.onCheckboxChanged,
-    this.enableDragSelection = false,
-    this.onDragSelectionUpdate,
-    this.onDragSelectionEnd,
-    this.dragSelectionTheme = const TablePlusDragSelectionTheme(),
-    this.horizontalController,
     this.onRowDoubleTap,
     this.onRowSecondaryTapDown,
     this.isEditable = false,
@@ -96,24 +89,6 @@ class TablePlusBody<T> extends StatefulWidget {
 
   /// Callback when a row's selection state changes via checkbox click.
   final void Function(String rowId, bool isSelected)? onCheckboxChanged;
-
-  /// Whether drag-to-select is enabled.
-  final bool enableDragSelection;
-
-  /// Callback fired during drag-selection with the full set of row IDs to select.
-  final void Function(Set<String> selectedRowIds)? onDragSelectionUpdate;
-
-  /// Callback fired once when drag-selection ends with the final set.
-  final void Function(Set<String> selectedRowIds)? onDragSelectionEnd;
-
-  /// Theme for the rubber band rectangle drawn during drag selection.
-  final TablePlusDragSelectionTheme dragSelectionTheme;
-
-  /// Optional horizontal scroll controller for the parent SingleChildScrollView
-  /// that wraps header + body. When provided, drag-selection auto-scroll
-  /// also operates on the horizontal axis (edge zones at the left/right of
-  /// the visible viewport).
-  final ScrollController? horizontalController;
 
   /// Callback when a row is double-tapped.
   final void Function(String rowId)? onRowDoubleTap;
@@ -355,13 +330,6 @@ class TablePlusBodyState<T> extends State<TablePlusBody<T>> {
   }
 
   // --- Public API for drag selection (driven by parent FlutterTablePlus) ---
-
-  /// True when this widget's configuration permits drag-to-select.
-  bool get isDragSelectionEnabled =>
-      widget.enableDragSelection &&
-      widget.isSelectable &&
-      widget.selectionMode == SelectionMode.multiple &&
-      widget.onDragSelectionUpdate != null;
 
   /// Resolve a Y coordinate (in this body's local space, which equals
   /// viewport-local Y for vertical purposes) into a render index, or

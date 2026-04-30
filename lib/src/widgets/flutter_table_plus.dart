@@ -1041,12 +1041,6 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
                           onRowSelectionChanged:
                               widget.onRowSelectionChanged,
                           onCheckboxChanged: widget.onCheckboxChanged,
-                          enableDragSelection: widget.enableDragSelection,
-                          onDragSelectionUpdate:
-                              widget.onDragSelectionUpdate,
-                          onDragSelectionEnd: widget.onDragSelectionEnd,
-                          dragSelectionTheme: theme.dragSelectionTheme,
-                          horizontalController: horizontalScrollController,
                           onRowDoubleTap: widget.onRowDoubleTap,
                           onRowSecondaryTapDown:
                               widget.onRowSecondaryTapDown,
