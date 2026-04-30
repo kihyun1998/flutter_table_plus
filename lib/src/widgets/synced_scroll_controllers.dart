@@ -15,7 +15,12 @@ class SyncedScrollControllers extends StatefulWidget {
   ///   If not provided, an internal controller will be created.
   /// [verticalScrollbarController]: An optional external [ScrollController] for the vertical scrollbar.
   ///   If not provided, an internal controller will be created.
-  /// [horizontalScrollController]: An optional external [ScrollController] for the main horizontal scrollable area.
+  /// [horizontalScrollController]: An optional external [ScrollController] for the body's horizontal scrollable area.
+  ///   This controller is the master input source for horizontal scrolling.
+  ///   If not provided, an internal controller will be created.
+  /// [horizontalHeaderController]: An optional external [ScrollController] for the header's horizontal scrollable area.
+  ///   The header is expected to have `physics: NeverScrollableScrollPhysics()` so that this controller is
+  ///   driven exclusively by [horizontalScrollController]'s position changes (one-way sync).
   ///   If not provided, an internal controller will be created.
   /// [horizontalScrollbarController]: An optional external [ScrollController] for the horizontal scrollbar.
   ///   If not provided, an internal controller will be created.
@@ -23,8 +28,9 @@ class SyncedScrollControllers extends StatefulWidget {
   /// The `builder` function provides the following controllers:
   /// - `verticalDataController`: The primary controller for vertical scrolling of data.
   /// - `verticalScrollbarController`: The controller for the vertical scrollbar.
-  /// - `horizontalMainController`: The primary controller for horizontal scrolling (shared by header and data).
-  /// - `horizontalScrollbarController`: The controller for the horizontal scrollbar.
+  /// - `horizontalBodyController`: The primary controller for horizontal scrolling of the body — receives user input.
+  /// - `horizontalHeaderController`: The header's horizontal controller — slaved to the body controller.
+  /// - `horizontalScrollbarController`: The controller for the horizontal scrollbar — bidirectionally synced with the body controller.
   const SyncedScrollControllers({
     super.key,
     required this.builder,
@@ -32,11 +38,13 @@ class SyncedScrollControllers extends StatefulWidget {
     this.verticalScrollbarController,
     this.horizontalScrollbarController,
     this.horizontalScrollController,
+    this.horizontalHeaderController,
   });
 
   final ScrollController? scrollController;
   final ScrollController? verticalScrollbarController;
   final ScrollController? horizontalScrollController;
+  final ScrollController? horizontalHeaderController;
   final ScrollController? horizontalScrollbarController;
 
   /// A builder function that provides the synchronized [ScrollController]s.
@@ -44,14 +52,16 @@ class SyncedScrollControllers extends StatefulWidget {
   /// [context]: The build context.
   /// [verticalDataController]: The primary controller for vertical scrolling of data.
   /// [verticalScrollbarController]: The controller for the vertical scrollbar.
-  /// [horizontalMainController]: The primary controller for horizontal scrolling (shared by header and data).
-  /// [horizontalScrollbarController]: The controller for the horizontal scrollbar.
+  /// [horizontalBodyController]: The primary controller for horizontal scrolling of the body (master).
+  /// [horizontalScrollbarController]: The controller for the horizontal scrollbar (bidirectional sync).
+  /// [horizontalHeaderController]: The header's horizontal controller (one-way sync from body).
   final Widget Function(
     BuildContext context,
     ScrollController verticalDataController,
     ScrollController verticalScrollbarController,
-    ScrollController horizontalMainController,
+    ScrollController horizontalBodyController,
     ScrollController horizontalScrollbarController,
+    ScrollController horizontalHeaderController,
   ) builder;
 
   @override
@@ -62,8 +72,9 @@ class SyncedScrollControllers extends StatefulWidget {
 class _SyncedScrollControllersState extends State<SyncedScrollControllers> {
   ScrollController? _sc11; // 메인 수직 (Scrollable Area 용)
   late ScrollController _sc12; // 수직 스크롤바
-  ScrollController? _sc21; // 메인 수평 (헤더 & 데이터 공통)
+  ScrollController? _sc21; // 메인 수평 (body — master)
   late ScrollController _sc22; // 수평 스크롤바
+  late ScrollController _sc23; // 수평 헤더 (body의 slave)
 
   // 각 컨트롤러에 대한 리스너들을 명확하게 관리하기 위한 Map
   final Map<ScrollController, VoidCallback> _listenersMap = {};
@@ -85,6 +96,8 @@ class _SyncedScrollControllersState extends State<SyncedScrollControllers> {
             oldWidget.verticalScrollbarController ||
         widget.horizontalScrollController !=
             oldWidget.horizontalScrollController ||
+        widget.horizontalHeaderController !=
+            oldWidget.horizontalHeaderController ||
         widget.horizontalScrollbarController !=
             oldWidget.horizontalScrollbarController) {
       _disposeOrUnsubscribe();
@@ -104,7 +117,7 @@ class _SyncedScrollControllersState extends State<SyncedScrollControllers> {
     // 수직 스크롤 컨트롤러 (메인, Scrollable Area 용)
     _sc11 = widget.scrollController ?? ScrollController();
 
-    // 수평 스크롤 컨트롤러 (메인, 헤더와 데이터 영역의 가로 스크롤 공통)
+    // 수평 스크롤 컨트롤러 (body — master input source for horizontal scroll)
     _sc21 = widget.horizontalScrollController ?? ScrollController();
 
     // 수직 스크롤바 컨트롤러
@@ -123,9 +136,18 @@ class _SyncedScrollControllersState extends State<SyncedScrollControllers> {
               : 0.0,
         );
 
+    // 수평 헤더 컨트롤러 (slave — body의 master 위치를 따라감)
+    _sc23 = widget.horizontalHeaderController ??
+        ScrollController(
+          initialScrollOffset: _sc21!.hasClients && _sc21!.positions.isNotEmpty
+              ? _sc21!.offset
+              : 0.0,
+        );
+
     // 각 쌍의 컨트롤러를 동기화합니다.
     _syncScrollControllers(_sc11!, _sc12);
     _syncScrollControllers(_sc21!, _sc22);
+    _syncScrollControllers(_sc21!, _sc23);
   }
 
   void _disposeOrUnsubscribe() {
@@ -140,6 +162,7 @@ class _SyncedScrollControllersState extends State<SyncedScrollControllers> {
     if (widget.horizontalScrollController == null) _sc21?.dispose();
     if (widget.verticalScrollbarController == null) _sc12.dispose();
     if (widget.horizontalScrollbarController == null) _sc22.dispose();
+    if (widget.horizontalHeaderController == null) _sc23.dispose();
   }
 
   final Map<ScrollController, bool> _doNotReissueJump = {};
@@ -181,5 +204,6 @@ class _SyncedScrollControllersState extends State<SyncedScrollControllers> {
         _sc12,
         _sc21!,
         _sc22,
+        _sc23,
       );
 }
