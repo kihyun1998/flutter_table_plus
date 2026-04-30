@@ -609,4 +609,3 @@ class TablePlusBodyState<T> extends State<TablePlusBody<T>> {
     );
   }
 }
-

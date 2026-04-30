@@ -94,8 +94,7 @@ Future<_DragHarness> _pumpDragTable(
                 bodyTheme: TablePlusBodyTheme(rowHeight: rowHeight),
                 headerTheme: TablePlusHeaderTheme(height: headerHeight),
               ),
-              onDragSelectionUpdate: (ids) =>
-                  harness.updates.add(Set.of(ids)),
+              onDragSelectionUpdate: (ids) => harness.updates.add(Set.of(ids)),
               onDragSelectionEnd: (ids) => harness.ends.add(Set.of(ids)),
             ),
           ),
@@ -244,7 +243,8 @@ void main() {
   });
 
   group('Drag selection — auto-scroll', () {
-    testWidgets('vertical auto-scroll extends selection beyond initial viewport',
+    testWidgets(
+        'vertical auto-scroll extends selection beyond initial viewport',
         (tester) async {
       // Many rows, short viewport — only ~5 rows visible initially.
       final h = await _pumpDragTable(
@@ -269,7 +269,8 @@ void main() {
       // After auto-scrolling for ~1.6s at maxSpeed 10px/16ms ≈ up to ~600px,
       // many more rows than the initial ~4 should be in the selection.
       expect(h.ends.last.length, greaterThan(8),
-          reason: 'vertical auto-scroll should extend selection past initial viewport');
+          reason:
+              'vertical auto-scroll should extend selection past initial viewport');
       expect(h.ends.last.contains('0'), isTrue);
     });
 

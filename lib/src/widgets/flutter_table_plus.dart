@@ -1021,8 +1021,7 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
                 : LayoutBuilder(
                     builder: (context, bodyConstraints) {
                       return SizedBox(
-                        height: max(
-                            bodyConstraints.maxHeight, tableDataHeight),
+                        height: max(bodyConstraints.maxHeight, tableDataHeight),
                         child: TablePlusBody<T>(
                           key: _bodyKey,
                           columns: orderedColumns,
@@ -1039,12 +1038,10 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
                           isSelectable: widget.isSelectable,
                           selectionMode: widget.selectionMode,
                           selectedRows: widget.selectedRows,
-                          onRowSelectionChanged:
-                              widget.onRowSelectionChanged,
+                          onRowSelectionChanged: widget.onRowSelectionChanged,
                           onCheckboxChanged: widget.onCheckboxChanged,
                           onRowDoubleTap: widget.onRowDoubleTap,
-                          onRowSecondaryTapDown:
-                              widget.onRowSecondaryTapDown,
+                          onRowSecondaryTapDown: widget.onRowSecondaryTapDown,
                           isEditable: widget.isEditable,
                           isCellEditing: _isCellEditing,
                           getCellController: _getCellController,
@@ -1102,8 +1099,7 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
                     fit: StackFit.expand,
                     children: [
                       bodyScrollable,
-                      if (rubberBand != null)
-                        IgnorePointer(child: rubberBand),
+                      if (rubberBand != null) IgnorePointer(child: rubberBand),
                     ],
                   ),
                 );
@@ -1258,8 +1254,7 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
     }
 
     // 2. Track viewport-local pointer for the rubber band overlay.
-    if (mounted &&
-        _coordinator.currentPointerLocal != event.localPosition) {
+    if (mounted && _coordinator.currentPointerLocal != event.localPosition) {
       setState(() {
         _coordinator.currentPointerLocal = event.localPosition;
       });
@@ -1436,9 +1431,8 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
       if (clampProximity) proximity = proximity.clamp(0.0, 1.0);
       scrollDelta = -maxSpeed * proximity;
     } else if (axisLocalPos > viewportSize - _autoScrollEdgeZone) {
-      var proximity =
-          (axisLocalPos - (viewportSize - _autoScrollEdgeZone)) /
-              _autoScrollEdgeZone;
+      var proximity = (axisLocalPos - (viewportSize - _autoScrollEdgeZone)) /
+          _autoScrollEdgeZone;
       if (clampProximity) proximity = proximity.clamp(0.0, 1.0);
       scrollDelta = maxSpeed * proximity;
     } else {
