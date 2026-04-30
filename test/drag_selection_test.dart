@@ -344,11 +344,13 @@ void main() {
       final scrolledX = initialC0X - laterC0X;
       expect(scrolledX, greaterThan(100),
           reason: 'horizontal auto-scroll should progress in dual-axis drag');
-      // Vertical progression: rows beyond the initial visible window must
-      // now be rendered. rowCount 50, ~4 visible initially → r10 reaching
-      // visibility implies ≥ 6 rows of vertical scroll progress.
-      expect(find.text('r10c0'), findsOneWidget,
-          reason: 'vertical auto-scroll should progress past row 10');
+      // Vertical progression: row 0 should have scrolled out of view far
+      // enough that the lazy ListView disposed its widget. (Asserting an
+      // exact visible row would be fragile because the unmount window
+      // depends on viewport size and exact scroll position.)
+      expect(find.text('r0c0'), findsNothing,
+          reason: 'vertical auto-scroll should advance past the initial '
+              'viewport in a dual-axis drag');
     });
   });
 

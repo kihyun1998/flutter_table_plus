@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 import 'dart:ui' as ui;
 
@@ -298,6 +299,46 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
   double? _preScaleVerticalOffset;
   double? _preScaleHorizontalOffset;
 
+  // --- Drag selection state ---
+  //
+  // Lives at the table level (not inside [TablePlusBody]) because the
+  // [Listener] sits at the body's *viewport* — outside the horizontal
+  // SingleChildScrollView — so all pointer coordinates arrive in a single
+  // viewport-local reference frame. This eliminates the asymmetry that
+  // existed when the body slid horizontally under a stale captured origin.
+
+  /// GlobalKey to reach the body's lookup helpers (renderIndex/rowIds).
+  final GlobalKey<TablePlusBodyState<T>> _bodyKey =
+      GlobalKey<TablePlusBodyState<T>>();
+
+  /// All positional state for an in-flight drag — viewport-local pointer
+  /// positions, captured scroll offsets, viewport dimensions.
+  final _DragCoordinator _coordinator = _DragCoordinator();
+
+  bool _isDragSelecting = false;
+  int? _dragStartRenderIndex;
+  int? _dragCurrentRenderIndex;
+  Timer? _autoScrollTimer;
+
+  /// Whether pointer-down landed in the empty area below the last row.
+  /// (Above-data pointer-down is unreachable because the header occludes
+  /// hit testing.) When true, returning to that same below-data empty
+  /// area during the drag releases the lazy anchor so the selection
+  /// collapses, mirroring OS marquee behavior. Crossing above row 1 into
+  /// the header area instead preserves the sticky range.
+  bool _dragStartedFromEmpty = false;
+
+  static const double _dragActivationThreshold = 8.0;
+  static const double _autoScrollEdgeZone = 40.0;
+  static const double _autoScrollMaxSpeed = 10.0;
+  static const Duration _autoScrollInterval = Duration(milliseconds: 16);
+
+  bool get _isDragSelectionEnabled =>
+      widget.enableDragSelection &&
+      widget.isSelectable &&
+      widget.selectionMode == SelectionMode.multiple &&
+      widget.onDragSelectionUpdate != null;
+
   @override
   void initState() {
     super.initState();
@@ -471,6 +512,7 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
 
   @override
   void dispose() {
+    _stopAutoScroll();
     _isHovered.dispose();
     _cellController?.dispose();
     super.dispose();
@@ -981,6 +1023,7 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
                         height: max(
                             bodyConstraints.maxHeight, tableDataHeight),
                         child: TablePlusBody<T>(
+                          key: _bodyKey,
                           columns: orderedColumns,
                           data: widget.data,
                           columnWidths: columnWidths,
@@ -1029,7 +1072,7 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
                     },
                   );
 
-            final bodySliver = SingleChildScrollView(
+            final bodyScrollable = SingleChildScrollView(
               controller: horizontalScrollController,
               scrollDirection: Axis.horizontal,
               physics: _blockModifierScroll
@@ -1039,6 +1082,37 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
                 width: contentWidth,
                 child: bodyContent,
               ),
+            );
+
+            // Drag selection lives at the table level — the Listener wraps
+            // the body's horizontal Scrollable so its RenderBox is
+            // stationary in screen on both axes (the body scrolls *inside*
+            // it). Rubber band paint also uses this RenderBox's local
+            // coords, so origin/end stay in a single reference frame.
+            final bodySliver = Builder(
+              builder: (innerCtx) {
+                _viewportContext = innerCtx;
+                final rubberBand = _buildRubberBand();
+                return Listener(
+                  behavior: HitTestBehavior.translucent,
+                  onPointerDown:
+                      _isDragSelectionEnabled ? _onDragPointerDown : null,
+                  onPointerMove:
+                      _isDragSelectionEnabled ? _onDragPointerMove : null,
+                  onPointerUp:
+                      _isDragSelectionEnabled ? _onDragPointerUp : null,
+                  onPointerCancel:
+                      _isDragSelectionEnabled ? _onDragPointerCancel : null,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      bodyScrollable,
+                      if (rubberBand != null)
+                        IgnorePointer(child: rubberBand),
+                    ],
+                  ),
+                );
+              },
             );
 
             return Listener(
@@ -1146,6 +1220,429 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
       // the event is still consumed (via _ScaleBlockingScrollPhysics)
       // to prevent Ctrl+wheel from scrolling.
     }
+  }
+
+  // --- Drag-selection: pointer handlers ---
+
+  void _onDragPointerDown(PointerDownEvent event) {
+    if (!_isDragSelectionEnabled) return;
+
+    // event.localPosition is local to the Listener's RenderBox, which sits
+    // *outside* the body's horizontal SingleChildScrollView and therefore
+    // does not slide horizontally. localPosition is therefore the
+    // viewport-local pointer coordinate on both axes.
+    _coordinator.capture(
+      renderBox: _viewportBox(),
+      event: event,
+      verticalScrollOffset: _verticalScrollController?.hasClients == true
+          ? _verticalScrollController!.offset
+          : 0,
+      horizontalScrollOffset: _horizontalScrollController?.hasClients == true
+          ? _horizontalScrollController!.offset
+          : 0,
+    );
+
+    final body = _bodyKey.currentState;
+    final localY = event.localPosition.dy;
+    _dragStartRenderIndex = body?.renderIndexAtLocalY(localY);
+    _dragStartedFromEmpty = _dragStartRenderIndex == null;
+  }
+
+  void _onDragPointerMove(PointerMoveEvent event) {
+    if (!_isDragSelectionEnabled || !_coordinator.isCaptured) return;
+
+    // 1. Threshold gate.
+    if (!_isDragSelecting) {
+      final distance =
+          (event.position.dy - _coordinator.pointerDownGlobalY).abs();
+      if (distance < _dragActivationThreshold) {
+        _coordinator.currentPointerLocal = event.localPosition;
+        return;
+      }
+      _isDragSelecting = true;
+    }
+
+    // 2. Track viewport-local pointer for the rubber band overlay.
+    if (mounted &&
+        _coordinator.currentPointerLocal != event.localPosition) {
+      setState(() {
+        _coordinator.currentPointerLocal = event.localPosition;
+      });
+    }
+
+    // 3. Resolve the current render index.
+    final body = _bodyKey.currentState;
+    final localY = event.localPosition.dy;
+    final renderIdx = body?.renderIndexAtLocalY(localY);
+
+    // Lazy anchor: first crossing into a real row sets the start.
+    if (_dragStartRenderIndex == null && renderIdx != null) {
+      _dragStartRenderIndex = renderIdx;
+    }
+
+    // 4. Selection update — only meaningful when the anchor exists.
+    if (_dragStartRenderIndex != null) {
+      if (renderIdx != null) {
+        _dragCurrentRenderIndex = renderIdx;
+        _emitDragSelection();
+      } else if (_dragStartedFromEmpty) {
+        // Pointer-down can only land in the empty area below the data
+        // (the header occludes hit testing above), so a release fires
+        // only when the pointer is back below the data. Above-data
+        // movement (header area) preserves the sticky range.
+        final vOffset = _verticalScrollController?.hasClients == true
+            ? _verticalScrollController!.offset
+            : 0;
+        final absoluteY = localY + vOffset;
+        if (absoluteY >= 0) {
+          _dragStartRenderIndex = null;
+          _dragCurrentRenderIndex = null;
+          widget.onDragSelectionUpdate?.call(<String>{});
+        }
+      }
+    }
+
+    // 5. Auto-scroll edge detection — both axes evaluated against the
+    //    same viewport-local pointer position.
+    final inVertEdge = _coordinator.inEdgeZone(
+      localPos: event.localPosition.dy,
+      viewportSize: _coordinator.viewportHeight,
+      zone: _autoScrollEdgeZone,
+    );
+    final inHorizEdge = _coordinator.inEdgeZone(
+      localPos: event.localPosition.dx,
+      viewportSize: _coordinator.viewportWidth,
+      zone: _autoScrollEdgeZone,
+    );
+    if (inVertEdge || inHorizEdge) {
+      _startAutoScroll();
+    } else {
+      _stopAutoScroll();
+    }
+  }
+
+  void _onDragPointerUp(PointerUpEvent event) {
+    if (_isDragSelecting) {
+      if (_dragStartRenderIndex != null && _dragCurrentRenderIndex != null) {
+        final body = _bodyKey.currentState;
+        final dragIds = body?.rowIdsBetween(
+              _dragStartRenderIndex!,
+              _dragCurrentRenderIndex!,
+            ) ??
+            const <String>{};
+        if (widget.onDragSelectionEnd != null) {
+          widget.onDragSelectionEnd!(dragIds);
+        } else {
+          widget.onDragSelectionUpdate?.call(dragIds);
+        }
+      }
+    }
+    _resetDragState();
+  }
+
+  void _onDragPointerCancel(PointerCancelEvent event) {
+    _resetDragState();
+  }
+
+  void _resetDragState() {
+    _stopAutoScroll();
+    final hadRubberBand = _coordinator.pointerDownLocal != null;
+    _isDragSelecting = false;
+    _dragStartRenderIndex = null;
+    _dragCurrentRenderIndex = null;
+    _dragStartedFromEmpty = false;
+    _coordinator.reset();
+    if (hadRubberBand && mounted) setState(() {});
+  }
+
+  /// Emit the current drag selection range to the host via callback.
+  void _emitDragSelection() {
+    if (_dragStartRenderIndex == null || _dragCurrentRenderIndex == null) {
+      return;
+    }
+    final body = _bodyKey.currentState;
+    if (body == null) return;
+    final dragIds = body.rowIdsBetween(
+      _dragStartRenderIndex!,
+      _dragCurrentRenderIndex!,
+    );
+    widget.onDragSelectionUpdate?.call(dragIds);
+  }
+
+  /// Returns the viewport (Listener) RenderBox via [_bodyKey]'s ancestor
+  /// chain. The Listener wraps the body's horizontal SingleChildScrollView,
+  /// so its size is the body's viewport size on both axes.
+  RenderBox? _viewportBox() {
+    final ctx = _viewportContext;
+    return ctx?.findRenderObject() as RenderBox?;
+  }
+
+  /// Updated by the build method to point at the Listener element. Used by
+  /// [_viewportBox] without requiring another GlobalKey.
+  BuildContext? _viewportContext;
+
+  // --- Drag-selection: auto-scroll engine ---
+
+  void _startAutoScroll() {
+    if (_autoScrollTimer != null) return;
+    _autoScrollTimer = Timer.periodic(_autoScrollInterval, (_) {
+      _performAutoScroll();
+    });
+  }
+
+  void _stopAutoScroll() {
+    _autoScrollTimer?.cancel();
+    _autoScrollTimer = null;
+  }
+
+  void _performAutoScroll() {
+    final didScrollV = _performVerticalAutoScroll();
+    final didScrollH = _performHorizontalAutoScroll();
+    if (!didScrollV && !didScrollH) {
+      _stopAutoScroll();
+      return;
+    }
+    // After vertical scrolls, rows under the (stationary) pointer change —
+    // refresh the current render index. Horizontal scrolls don't shift
+    // rows since rows span the full content width.
+    if (didScrollV) {
+      final pos = _coordinator.currentPointerLocal;
+      final body = _bodyKey.currentState;
+      if (pos != null && body != null) {
+        final renderIdx = body.renderIndexAtLocalY(pos.dy);
+        if (renderIdx != null && renderIdx != _dragCurrentRenderIndex) {
+          _dragCurrentRenderIndex = renderIdx;
+          _emitDragSelection();
+        }
+      }
+    }
+    // Trigger a rebuild so the rubber band tracks the new scroll offsets.
+    if (mounted) setState(() {});
+  }
+
+  /// Single-axis auto-scroll engine. [axisLocalPos] is the pointer's
+  /// position relative to the axis's viewport, in viewport-local pixels.
+  /// [clampProximity] caps the proximity scalar to `[0, 1]` so scroll
+  /// speed never exceeds [_autoScrollMaxSpeed]. Vertical historically
+  /// allowed proximity > 1 when the pointer was past the edge zone,
+  /// preserved here as `clampProximity: false`.
+  bool _performAxisAutoScroll({
+    required ScrollController controller,
+    required double axisLocalPos,
+    required double viewportSize,
+    required bool clampProximity,
+  }) {
+    double scrollDelta = 0;
+    if (axisLocalPos < _autoScrollEdgeZone) {
+      var proximity =
+          (_autoScrollEdgeZone - axisLocalPos) / _autoScrollEdgeZone;
+      if (clampProximity) proximity = proximity.clamp(0.0, 1.0);
+      scrollDelta = -_autoScrollMaxSpeed * proximity;
+    } else if (axisLocalPos > viewportSize - _autoScrollEdgeZone) {
+      var proximity =
+          (axisLocalPos - (viewportSize - _autoScrollEdgeZone)) /
+              _autoScrollEdgeZone;
+      if (clampProximity) proximity = proximity.clamp(0.0, 1.0);
+      scrollDelta = _autoScrollMaxSpeed * proximity;
+    } else {
+      return false;
+    }
+    if (!controller.hasClients) return false;
+    final prevOffset = controller.offset;
+    final maxScroll = controller.position.maxScrollExtent;
+    final newOffset = (prevOffset + scrollDelta).clamp(0.0, maxScroll);
+    if (newOffset == prevOffset) return false;
+    controller.jumpTo(newOffset);
+    return true;
+  }
+
+  bool _performVerticalAutoScroll() {
+    final pos = _coordinator.currentPointerLocal;
+    final controller = _verticalScrollController;
+    if (pos == null || controller == null) return false;
+    return _performAxisAutoScroll(
+      controller: controller,
+      axisLocalPos: pos.dy,
+      viewportSize: _coordinator.viewportHeight,
+      clampProximity: false,
+    );
+  }
+
+  bool _performHorizontalAutoScroll() {
+    final pos = _coordinator.currentPointerLocal;
+    final controller = _horizontalScrollController;
+    if (pos == null || controller == null || !controller.hasClients) {
+      return false;
+    }
+    return _performAxisAutoScroll(
+      controller: controller,
+      axisLocalPos: pos.dx,
+      viewportSize: _coordinator.viewportWidth,
+      clampProximity: true,
+    );
+  }
+
+  // --- Drag-selection: rubber band ---
+
+  /// Builds the rubber band rectangle overlay shown during drag selection,
+  /// drawn in viewport-local coordinates. The origin is content-anchored
+  /// on *both* axes — as either scroll axis advances, the origin in
+  /// viewport space slides by the matching scroll delta so the rectangle
+  /// stays visually pinned to the cell where the drag started.
+  Widget? _buildRubberBand() {
+    final theme = widget.theme.dragSelectionTheme;
+    if (!theme.show) return null;
+    if (!_isDragSelecting) return null;
+    final downLocal = _coordinator.pointerDownLocal;
+    final currentLocal = _coordinator.currentPointerLocal;
+    if (downLocal == null || currentLocal == null) return null;
+
+    final vDelta = (_verticalScrollController?.hasClients == true
+            ? _verticalScrollController!.offset
+            : 0) -
+        _coordinator.startVerticalScrollOffset;
+    final hDelta = (_horizontalScrollController?.hasClients == true
+            ? _horizontalScrollController!.offset
+            : 0) -
+        _coordinator.startHorizontalScrollOffset;
+    final origin = Offset(downLocal.dx - hDelta, downLocal.dy - vDelta);
+    final rect = Rect.fromPoints(origin, currentLocal);
+
+    return CustomPaint(
+      painter: _RubberBandPainter(
+        rect: rect,
+        fillColor: theme.fillColor,
+        borderColor: theme.borderColor,
+        borderWidth: theme.borderWidth,
+        borderRadius: theme.borderRadius,
+      ),
+    );
+  }
+}
+
+/// Holds the viewport-local coordinate state for an in-flight drag.
+///
+/// All positions live in the same reference frame — the body's viewport
+/// (the Listener's RenderBox). The body's horizontal scroll happens
+/// *inside* this frame (via the body-level SingleChildScrollView), so
+/// pointer coordinates do not need any conversion after capture.
+class _DragCoordinator {
+  /// Pointer's screen-space Y at drag start. Only used for the activation
+  /// threshold check (which is in screen space because [PointerEvent.position]
+  /// is the only stable cross-frame reference for a tiny initial jitter).
+  double pointerDownGlobalY = 0;
+
+  /// Vertical scroll controller offset captured at drag start.
+  double startVerticalScrollOffset = 0;
+
+  /// Horizontal scroll controller offset captured at drag start.
+  double startHorizontalScrollOffset = 0;
+
+  /// Viewport width at drag start. Treated as constant for the duration
+  /// of a drag.
+  double viewportWidth = 0;
+
+  /// Viewport height at drag start. Treated as constant for the duration
+  /// of a drag.
+  double viewportHeight = 0;
+
+  /// Pointer's viewport-local position at drag start (rubber band anchor).
+  Offset? pointerDownLocal;
+
+  /// Pointer's viewport-local position on the most recent move (rubber
+  /// band tracking corner; also used by the auto-scroll loop because
+  /// pointer events do not fire during pure auto-scroll).
+  Offset? currentPointerLocal;
+
+  /// True when the coordinator holds a captured drag origin.
+  bool get isCaptured => pointerDownLocal != null;
+
+  /// Capture all coordinate state at pointer-down. [renderBox] is the
+  /// Listener's RenderBox; its size gives the viewport dimensions.
+  void capture({
+    required RenderBox? renderBox,
+    required PointerDownEvent event,
+    required double verticalScrollOffset,
+    required double horizontalScrollOffset,
+  }) {
+    if (renderBox != null) {
+      viewportWidth = renderBox.size.width;
+      viewportHeight = renderBox.size.height;
+    }
+    pointerDownGlobalY = event.position.dy;
+    pointerDownLocal = event.localPosition;
+    currentPointerLocal = event.localPosition;
+    startVerticalScrollOffset = verticalScrollOffset;
+    startHorizontalScrollOffset = horizontalScrollOffset;
+  }
+
+  void reset() {
+    pointerDownGlobalY = 0;
+    startVerticalScrollOffset = 0;
+    startHorizontalScrollOffset = 0;
+    viewportWidth = 0;
+    viewportHeight = 0;
+    pointerDownLocal = null;
+    currentPointerLocal = null;
+  }
+
+  /// True when [localPos] falls within either the leading or trailing
+  /// edge zone of size [zone] inside a viewport of size [viewportSize].
+  bool inEdgeZone({
+    required double localPos,
+    required double viewportSize,
+    required double zone,
+  }) =>
+      localPos < zone || localPos > viewportSize - zone;
+}
+
+/// Paints the rubber band rectangle for drag selection.
+class _RubberBandPainter extends CustomPainter {
+  _RubberBandPainter({
+    required this.rect,
+    required this.fillColor,
+    required this.borderColor,
+    required this.borderWidth,
+    required this.borderRadius,
+  });
+
+  final Rect rect;
+  final Color fillColor;
+  final Color borderColor;
+  final double borderWidth;
+  final BorderRadius borderRadius;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (rect.isEmpty) return;
+    final clipped = rect.intersect(Offset.zero & size);
+    if (clipped.isEmpty) return;
+
+    final fillPaint = Paint()
+      ..color = fillColor
+      ..style = PaintingStyle.fill;
+    final borderPaint = Paint()
+      ..color = borderColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = borderWidth;
+
+    if (borderRadius == BorderRadius.zero) {
+      canvas.drawRect(clipped, fillPaint);
+      if (borderWidth > 0) canvas.drawRect(clipped, borderPaint);
+    } else {
+      final rrect = borderRadius.toRRect(clipped);
+      canvas.drawRRect(rrect, fillPaint);
+      if (borderWidth > 0) canvas.drawRRect(rrect, borderPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _RubberBandPainter old) {
+    return old.rect != rect ||
+        old.fillColor != fillColor ||
+        old.borderColor != borderColor ||
+        old.borderWidth != borderWidth ||
+        old.borderRadius != borderRadius;
   }
 }
 
