@@ -330,7 +330,8 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
 
   static const double _dragActivationThreshold = 8.0;
   static const double _autoScrollEdgeZone = 40.0;
-  static const double _autoScrollMaxSpeed = 10.0;
+  static const double _autoScrollMaxSpeedVertical = 10.0;
+  static const double _autoScrollMaxSpeedHorizontal = 40.0;
   static const Duration _autoScrollInterval = Duration(milliseconds: 16);
 
   bool get _isDragSelectionEnabled =>
@@ -1416,28 +1417,30 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
 
   /// Single-axis auto-scroll engine. [axisLocalPos] is the pointer's
   /// position relative to the axis's viewport, in viewport-local pixels.
+  /// [maxSpeed] is the per-tick scroll cap before [clampProximity] applies.
   /// [clampProximity] caps the proximity scalar to `[0, 1]` so scroll
-  /// speed never exceeds [_autoScrollMaxSpeed]. Vertical historically
-  /// allowed proximity > 1 when the pointer was past the edge zone,
-  /// preserved here as `clampProximity: false`.
+  /// speed never exceeds [maxSpeed]. Vertical historically allowed
+  /// proximity > 1 when the pointer was past the edge zone, preserved
+  /// here as `clampProximity: false`.
   bool _performAxisAutoScroll({
     required ScrollController controller,
     required double axisLocalPos,
     required double viewportSize,
     required bool clampProximity,
+    required double maxSpeed,
   }) {
     double scrollDelta = 0;
     if (axisLocalPos < _autoScrollEdgeZone) {
       var proximity =
           (_autoScrollEdgeZone - axisLocalPos) / _autoScrollEdgeZone;
       if (clampProximity) proximity = proximity.clamp(0.0, 1.0);
-      scrollDelta = -_autoScrollMaxSpeed * proximity;
+      scrollDelta = -maxSpeed * proximity;
     } else if (axisLocalPos > viewportSize - _autoScrollEdgeZone) {
       var proximity =
           (axisLocalPos - (viewportSize - _autoScrollEdgeZone)) /
               _autoScrollEdgeZone;
       if (clampProximity) proximity = proximity.clamp(0.0, 1.0);
-      scrollDelta = _autoScrollMaxSpeed * proximity;
+      scrollDelta = maxSpeed * proximity;
     } else {
       return false;
     }
@@ -1459,6 +1462,7 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
       axisLocalPos: pos.dy,
       viewportSize: _coordinator.viewportHeight,
       clampProximity: false,
+      maxSpeed: _autoScrollMaxSpeedVertical,
     );
   }
 
@@ -1473,6 +1477,7 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
       axisLocalPos: pos.dx,
       viewportSize: _coordinator.viewportWidth,
       clampProximity: true,
+      maxSpeed: _autoScrollMaxSpeedHorizontal,
     );
   }
 
