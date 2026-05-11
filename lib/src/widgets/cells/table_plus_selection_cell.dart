@@ -43,9 +43,8 @@ class TablePlusSelectionCell extends StatelessWidget {
           color: Colors.transparent,
           child: InkWell(
             onTap: rowId != null ? () => onSelectionChanged(rowId!) : null,
-            mouseCursor: rowId != null
-                ? SystemMouseCursors.click
-                : MouseCursor.defer,
+            mouseCursor:
+                rowId != null ? SystemMouseCursors.click : MouseCursor.defer,
             child: content,
           ),
         );
