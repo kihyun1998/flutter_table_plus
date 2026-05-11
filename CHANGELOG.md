@@ -1,3 +1,10 @@
+## 2.12.1
+
+*   **FIX**: Explicitly set `mouseCursor: SystemMouseCursors.click` on interactive `InkWell` widgets so the pointing-hand cursor appears reliably on recent Flutter versions
+    *   `CustomInkWell` (used by row and merged-row selection) now resolves to `SystemMouseCursors.click` when `onTap` or `onDoubleTap` is provided, and to `MouseCursor.defer` otherwise — `defer` leaves the cursor decision to an ancestor `MouseRegion` (e.g., resize handles) instead of stomping it with `basic`
+    *   `TablePlusSelectionCell`'s checkbox-cell `InkWell` mirrors the same pattern, guarded on `rowId != null`
+    *   Previously, the wrapped `InkWell` relied on the implicit `WidgetStateMouseCursor.clickable` default, which no longer flips to `click` in all configurations after recent Flutter cursor-resolution changes
+
 ## 2.12.0
 
 *   **FEAT**: Horizontal auto-scroll during drag selection

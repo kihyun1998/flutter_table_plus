@@ -109,6 +109,9 @@ class _CustomInkWellState extends State<CustomInkWell> {
                   widget.onSecondaryTapDown!(details, renderBox);
                 }
               : null,
+          mouseCursor: (widget.onTap != null || widget.onDoubleTap != null)
+              ? SystemMouseCursors.click
+              : MouseCursor.defer,
           splashColor: widget.splashColor,
           highlightColor: widget.highlightColor,
           hoverColor: widget.hoverColor,
