@@ -1,3 +1,7 @@
+## 2.12.2
+
+*   **CHORE**: Bump `flutter_checkbox` dependency `^0.2.0` → `^0.2.1`
+
 ## 2.12.1
 
 *   **FIX**: Explicitly set `mouseCursor: SystemMouseCursors.click` on interactive `InkWell` widgets so the pointing-hand cursor appears reliably on recent Flutter versions
