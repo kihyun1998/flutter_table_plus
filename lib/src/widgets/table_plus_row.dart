@@ -4,6 +4,8 @@ import 'package:flutter_table_plus/src/widgets/cells/table_plus_cell.dart';
 import 'package:flutter_table_plus/src/widgets/cells/table_plus_selection_cell.dart';
 import 'package:flutter_table_plus/src/widgets/table_plus_row_widget.dart';
 
+import 'package:flutter_table_plus/src/utils/column_width_access.dart';
+
 /// A single table row widget.
 class TablePlusRow<T> extends TablePlusRowWidget {
   const TablePlusRow({
@@ -135,9 +137,7 @@ class _TablePlusRowState<T> extends State<TablePlusRow<T>> {
       child: Row(
         children: List.generate(widget.columns.length, (index) {
           final column = widget.columns[index];
-          final width = widget.columnWidths.isNotEmpty
-              ? widget.columnWidths[index]
-              : column.width;
+          final width = widget.columnWidths.widthAt(index, column);
 
           // Special handling for selection column
           if (widget.isSelectable && column.key == '__selection__') {

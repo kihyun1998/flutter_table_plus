@@ -6,6 +6,7 @@ import '../models/table_column.dart';
 import '../models/theme/checkbox_theme.dart';
 import '../models/theme/header_theme.dart';
 import '../models/theme/tooltip_theme.dart' show TablePlusTooltipTheme;
+import '../utils/column_width_access.dart';
 import 'table_header_cell.dart';
 import 'table_resize_handle.dart';
 
@@ -225,9 +226,7 @@ class _TablePlusHeaderState<T> extends State<TablePlusHeader<T>> {
           return widget.columns.asMap().entries.map((entry) {
             final index = entry.key;
             final column = entry.value;
-            final width = widget.columnWidths.isNotEmpty
-                ? widget.columnWidths[index]
-                : column.width;
+            final width = widget.columnWidths.widthAt(index, column);
 
             // Selection column (non-reorderable)
             if (widget.isSelectable && column.key == '__selection__') {
@@ -329,9 +328,7 @@ class _TablePlusHeaderState<T> extends State<TablePlusHeader<T>> {
 
       for (int i = 0; i < widget.columns.length; i++) {
         final column = widget.columns[i];
-        final width = widget.columnWidths.isNotEmpty
-            ? widget.columnWidths[i]
-            : column.width;
+        final width = widget.columnWidths.widthAt(i, column);
         cumulativeWidth += width;
 
         // Skip selection column — not resizable

@@ -10,6 +10,7 @@ import '../models/theme/editable_theme.dart' show TablePlusEditableTheme;
 import '../models/theme/hover_button_theme.dart' show TablePlusHoverButtonTheme;
 import '../models/theme/tooltip_theme.dart' show TablePlusTooltipTheme;
 import '../models/tooltip_behavior.dart';
+import '../utils/column_width_access.dart';
 import '../utils/text_overflow_detector.dart';
 import 'cells/editable_text_field.dart';
 import 'flutter_tooltip_plus.dart';
@@ -143,14 +144,7 @@ class _TablePlusMergedRowState<T> extends State<TablePlusMergedRow<T>> {
   double _getColumnWidth(TablePlusColumn<T> column) {
     final actualIndex =
         widget.columns.indexWhere((col) => col.key == column.key);
-
-    if (actualIndex != -1 &&
-        actualIndex < widget.columnWidths.length &&
-        widget.columnWidths.isNotEmpty) {
-      return widget.columnWidths[actualIndex];
-    }
-
-    return column.width;
+    return widget.columnWidths.widthAt(actualIndex, column);
   }
 
   /// Handle merged cell value change.
@@ -628,8 +622,8 @@ class _TablePlusMergedRowState<T> extends State<TablePlusMergedRow<T>> {
   Widget? _buildSelectionCell() {
     if (!widget.isSelectable) return null;
 
-    final width =
-        widget.columnWidths.isNotEmpty ? widget.columnWidths[0] : 50.0;
+    // The selection column is injected at index 0 when selectable.
+    final width = widget.columnWidths.widthAt(0, widget.columns.first);
     final mergedHeight = widget.calculatedHeight ??
         (widget.theme.rowHeight * widget.mergeGroup.effectiveRowCount);
 
