@@ -68,11 +68,14 @@ class TablePlusMergedRow<T> extends TablePlusRowWidget {
   final Color backgroundColor;
   @override
   final bool isLastRow;
+  @override
   final bool isSelectable;
   final SelectionMode selectionMode;
   final bool isSelected;
+  @override
   final void Function(String rowId) onRowSelectionChanged;
   final void Function(String rowId)? onCheckboxChanged;
+  @override
   final bool isEditable;
   final TablePlusEditableTheme editableTheme;
   final TablePlusTooltipTheme tooltipTheme;
@@ -111,6 +114,9 @@ class TablePlusMergedRow<T> extends TablePlusRowWidget {
 
   // Implementation of TablePlusRowWidget abstract methods
   @override
+  String? get selectionId => mergeGroup.groupId;
+
+  @override
   int get effectiveRowCount => 1; // Visually appears as one row
 
   @override
@@ -125,15 +131,6 @@ class TablePlusMergedRow<T> extends TablePlusRowWidget {
 
 class _TablePlusMergedRowState<T> extends State<TablePlusMergedRow<T>> {
   bool _isHovered = false;
-
-  /// Handle row tap for selection.
-  void _handleRowTap() {
-    if (widget.isEditable) return;
-    if (!widget.isSelectable) return;
-
-    // For both single and multiple selection modes, toggle the selection
-    widget.onRowSelectionChanged(widget.mergeGroup.groupId);
-  }
 
   /// Get the data for a specific row key within the merge group.
   T? _getRowData(String rowKey) {
@@ -746,7 +743,7 @@ class _TablePlusMergedRowState<T> extends State<TablePlusMergedRow<T>> {
     if (widget.isSelectable && !widget.isEditable) {
       return CustomInkWell(
         key: ValueKey(widget.mergeGroup.groupId),
-        onTap: _handleRowTap,
+        onTap: widget.handleSelectionTap,
         onDoubleTap: () =>
             widget.onRowDoubleTap?.call(widget.mergeGroup.groupId),
         onSecondaryTapDown: (details, renderBox) => widget.onRowSecondaryTapDown

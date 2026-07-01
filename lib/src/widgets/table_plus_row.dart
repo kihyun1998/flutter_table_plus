@@ -51,11 +51,14 @@ class TablePlusRow<T> extends TablePlusRowWidget {
   final Color backgroundColor;
   @override
   final bool isLastRow;
+  @override
   final bool isSelectable;
   final SelectionMode selectionMode;
   final bool isSelected;
+  @override
   final void Function(String rowId) onRowSelectionChanged;
   final void Function(String rowId)? onCheckboxChanged;
+  @override
   final bool isEditable;
   final TablePlusEditableTheme editableTheme;
   final TablePlusTooltipTheme tooltipTheme;
@@ -86,6 +89,9 @@ class TablePlusRow<T> extends TablePlusRowWidget {
 
   // Implementation of TablePlusRowWidget abstract methods
   @override
+  String? get selectionId => rowId;
+
+  @override
   int get effectiveRowCount => 1;
 
   @override
@@ -97,22 +103,6 @@ class TablePlusRow<T> extends TablePlusRowWidget {
 
 class _TablePlusRowState<T> extends State<TablePlusRow<T>> {
   bool _isHovered = false;
-
-  /// Handle row tap for selection.
-  /// Only works when not in editable mode.
-  void _handleRowTap() {
-    if (widget.isEditable) return; // No row selection in editable mode
-    if (!widget.isSelectable || widget.rowId == null) return;
-
-    if (widget.selectionMode == SelectionMode.single) {
-      // For single selection mode, toggle the selection
-      // If already selected, deselect it; if not selected, select it
-      widget.onRowSelectionChanged(widget.rowId!);
-    } else {
-      // For multiple selection mode, toggle the selection
-      widget.onRowSelectionChanged(widget.rowId!);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -217,7 +207,7 @@ class _TablePlusRowState<T> extends State<TablePlusRow<T>> {
     if (widget.isSelectable && !widget.isEditable && widget.rowId != null) {
       return CustomInkWell(
         key: ValueKey(widget.rowId),
-        onTap: _handleRowTap,
+        onTap: widget.handleSelectionTap,
         onDoubleTap: () {
           widget.onRowDoubleTap?.call(widget.rowId!);
         },

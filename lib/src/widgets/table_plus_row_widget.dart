@@ -28,4 +28,28 @@ abstract class TablePlusRowWidget extends StatefulWidget {
   /// The background color for this row.
   /// Can vary based on selection state, alternating colors, etc.
   Color get backgroundColor;
+
+  /// Whether the table is in cell-editing mode (row selection is suppressed).
+  bool get isEditable;
+
+  /// Whether row selection is enabled.
+  bool get isSelectable;
+
+  /// The identifier this row toggles when tapped for selection: the row id for
+  /// a normal row, the group id for a merged row. `null` when the row has no
+  /// stable id (selection is then a no-op).
+  String? get selectionId;
+
+  /// Invoked with [selectionId] to toggle this row's selection.
+  void Function(String id) get onRowSelectionChanged;
+
+  /// Shared row-tap selection gating for every row type. A tap selects only
+  /// when selection is enabled, the table is not editing, and the row has an
+  /// id — otherwise it is a no-op.
+  void handleSelectionTap() {
+    if (isEditable || !isSelectable) return;
+    final id = selectionId;
+    if (id == null) return;
+    onRowSelectionChanged(id);
+  }
 }
