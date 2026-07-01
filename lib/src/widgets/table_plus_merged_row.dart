@@ -11,6 +11,7 @@ import '../models/theme/hover_button_theme.dart' show TablePlusHoverButtonTheme;
 import '../models/theme/tooltip_theme.dart' show TablePlusTooltipTheme;
 import '../models/tooltip_behavior.dart';
 import '../utils/column_width_access.dart';
+import 'row_decoration.dart';
 import 'row_hover_button.dart';
 import '../utils/text_overflow_detector.dart';
 import 'cells/editable_text_field.dart';
@@ -666,20 +667,12 @@ class _TablePlusMergedRowState<T> extends State<TablePlusMergedRow<T>> {
 
     Widget rowContent = Container(
       height: mergedHeight,
-      decoration: BoxDecoration(
-        color: (widget.isSelectable && !widget.isEditable)
-            ? Colors.transparent
-            : widget.backgroundColor,
-        border: widget.theme.shouldShowBottomBorder(
-                isLastRow: widget.isLastRow,
-                needsVerticalScroll: widget.needsVerticalScroll)
-            ? Border(
-                bottom: BorderSide(
-                  color: widget.theme.dividerColor,
-                  width: widget.theme.dividerThickness,
-                ),
-              )
-            : null,
+      decoration: rowDecoration(
+        selectionTransparent: widget.isSelectable && !widget.isEditable,
+        backgroundColor: widget.backgroundColor,
+        theme: widget.theme,
+        isLastRow: widget.isLastRow,
+        needsVerticalScroll: widget.needsVerticalScroll,
       ),
       child: Row(
         children: [

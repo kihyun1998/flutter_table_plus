@@ -5,6 +5,7 @@ import 'package:flutter_table_plus/src/widgets/cells/table_plus_selection_cell.d
 import 'package:flutter_table_plus/src/widgets/table_plus_row_widget.dart';
 
 import 'package:flutter_table_plus/src/utils/column_width_access.dart';
+import 'package:flutter_table_plus/src/widgets/row_decoration.dart';
 import 'package:flutter_table_plus/src/widgets/row_hover_button.dart';
 import 'package:flutter_table_plus/src/widgets/row_interaction_shell.dart';
 
@@ -110,21 +111,13 @@ class _TablePlusRowState<T> extends State<TablePlusRow<T>> {
   Widget build(BuildContext context) {
     Widget rowContent = Container(
       height: widget.calculatedHeight ?? widget.theme.rowHeight,
-      decoration: BoxDecoration(
-        color:
-            (widget.isSelectable && !widget.isEditable && widget.rowId != null)
-                ? Colors.transparent
-                : widget.backgroundColor,
-        border: widget.theme.shouldShowBottomBorder(
-                isLastRow: widget.isLastRow,
-                needsVerticalScroll: widget.needsVerticalScroll)
-            ? Border(
-                bottom: BorderSide(
-                  color: widget.theme.dividerColor,
-                  width: widget.theme.dividerThickness,
-                ),
-              )
-            : null,
+      decoration: rowDecoration(
+        selectionTransparent:
+            widget.isSelectable && !widget.isEditable && widget.rowId != null,
+        backgroundColor: widget.backgroundColor,
+        theme: widget.theme,
+        isLastRow: widget.isLastRow,
+        needsVerticalScroll: widget.needsVerticalScroll,
       ),
       child: Row(
         children: List.generate(widget.columns.length, (index) {
