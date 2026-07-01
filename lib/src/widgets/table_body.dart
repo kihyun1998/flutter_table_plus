@@ -10,6 +10,7 @@ import '../models/theme/checkbox_theme.dart';
 import '../models/theme/editable_theme.dart' show TablePlusEditableTheme;
 import '../models/theme/tooltip_theme.dart' show TablePlusTooltipTheme;
 import 'row_locator.dart';
+import 'row_lookup.dart';
 import 'table_plus_merged_row.dart';
 import 'table_plus_row_widget.dart';
 
@@ -168,11 +169,10 @@ class TablePlusBodyState<T> extends State<TablePlusBody<T>>
   /// Cached renderable indices — recomputed only when data or mergedGroups change.
   List<int>? _cachedRenderableIndices;
 
-  /// Cached lookup: rowKey → MergedRowGroup for O(1) access.
-  Map<String, MergedRowGroup<T>> _rowKeyToGroup = const {};
-
-  /// Cached lookup: rowKey → data index for O(1) access.
-  Map<String, int> _rowKeyToIndex = const {};
+  /// Shared home for the row→index / row→group derivation (rebuilt on data or
+  /// mergedGroups change). The renderable-index list and height cache below are
+  /// this widget's own consumers and are kept separate.
+  late RowLookup<T> _rowLookup;
 
   /// Cached row heights.
   Map<int, double> _cachedRowHeights = const {};
@@ -200,20 +200,12 @@ class TablePlusBodyState<T> extends State<TablePlusBody<T>>
     final data = widget.data;
     final mergedGroups = widget.mergedGroups;
 
-    // Build rowKey → index map
-    final rowKeyToIndex = <String, int>{};
-    for (int i = 0; i < data.length; i++) {
-      final key = widget.rowId(data[i]);
-      rowKeyToIndex[key] = i;
-    }
-
-    // Build rowKey → group map
-    final rowKeyToGroup = <String, MergedRowGroup<T>>{};
-    for (final group in mergedGroups) {
-      for (final rowKey in group.rowKeys) {
-        rowKeyToGroup[rowKey] = group;
-      }
-    }
+    // Derive the shared row→index / row→group facts once for this snapshot.
+    _rowLookup = RowLookup<T>.build(
+      data: data,
+      mergedGroups: mergedGroups,
+      rowId: widget.rowId,
+    );
 
     // Build renderable indices only when merged groups exist
     if (mergedGroups.isEmpty) {
@@ -226,16 +218,16 @@ class TablePlusBodyState<T> extends State<TablePlusBody<T>>
         if (processedIndices.contains(i)) continue;
 
         final rowKey = widget.rowId(data[i]);
-        final group = rowKeyToGroup[rowKey];
+        final group = _rowLookup.groupOf(rowKey);
 
         if (group != null) {
           final firstRowKey = group.rowKeys.first;
-          final firstRowIndex = rowKeyToIndex[firstRowKey];
+          final firstRowIndex = _rowLookup.indexOf(firstRowKey);
           if (firstRowIndex == i) {
             renderableIndices.add(i);
           }
           for (final gRowKey in group.rowKeys) {
-            final idx = rowKeyToIndex[gRowKey];
+            final idx = _rowLookup.indexOf(gRowKey);
             if (idx != null) {
               processedIndices.add(idx);
             }
@@ -249,8 +241,6 @@ class TablePlusBodyState<T> extends State<TablePlusBody<T>>
       _cachedRenderableIndices = renderableIndices;
     }
 
-    _rowKeyToGroup = rowKeyToGroup;
-    _rowKeyToIndex = rowKeyToIndex;
     _cachedRowHeights = {};
   }
 
@@ -272,11 +262,8 @@ class TablePlusBodyState<T> extends State<TablePlusBody<T>>
   }
 
   /// Find the merged group that contains the specified row index.
-  MergedRowGroup<T>? _getMergedGroupForRow(int rowIndex) {
-    if (rowIndex >= widget.data.length) return null;
-    final rowKey = widget.rowId(widget.data[rowIndex]);
-    return _rowKeyToGroup[rowKey];
-  }
+  MergedRowGroup<T>? _getMergedGroupForRow(int rowIndex) =>
+      _rowLookup.groupForRowIndex(rowIndex);
 
   /// Handle row selection toggle via row click.
   void _handleRowSelectionToggle(String rowId) {
@@ -456,7 +443,7 @@ class TablePlusBodyState<T> extends State<TablePlusBody<T>>
   double _getMergedGroupExtent(MergedRowGroup<T> group) {
     double total = 0;
     for (final rowKey in group.rowKeys) {
-      final rowIndex = _rowKeyToIndex[rowKey];
+      final rowIndex = _rowLookup.indexOf(rowKey);
       if (rowIndex != null) {
         total += _calculateRowHeight(rowIndex) ?? widget.theme.rowHeight;
       } else {
@@ -493,7 +480,7 @@ class TablePlusBodyState<T> extends State<TablePlusBody<T>>
 
     if (mergeGroup != null) {
       final firstRowKey = mergeGroup.rowKeys.first;
-      final firstRowIndex = _rowKeyToIndex[firstRowKey];
+      final firstRowIndex = _rowLookup.indexOf(firstRowKey);
       if (firstRowIndex != null && firstRowIndex == index) {
         final isSelected = widget.selectedRows.contains(mergeGroup.groupId);
         final firstRowData = widget.data[firstRowIndex];
@@ -506,7 +493,7 @@ class TablePlusBodyState<T> extends State<TablePlusBody<T>>
           double totalHeight = 0;
 
           for (final rowKey in mergeGroup.rowKeys) {
-            final rowIndex = _rowKeyToIndex[rowKey];
+            final rowIndex = _rowLookup.indexOf(rowKey);
             if (rowIndex != null) {
               final height = _calculateRowHeight(rowIndex);
               if (height != null) {
@@ -532,7 +519,7 @@ class TablePlusBodyState<T> extends State<TablePlusBody<T>>
         }
 
         final lastRowKey = mergeGroup.rowKeys.last;
-        final lastRowIndex = _rowKeyToIndex[lastRowKey];
+        final lastRowIndex = _rowLookup.indexOf(lastRowKey);
         final isLastRow = lastRowIndex == widget.data.length - 1;
 
         return TablePlusMergedRow<T>(

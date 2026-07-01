@@ -13,6 +13,7 @@ import '../models/theme/scrollbar_theme.dart' show TablePlusScrollbarTheme;
 import '../models/theme/theme.dart' show TablePlusTheme;
 import 'cell_edit_session.dart';
 import 'drag_selection_controller.dart';
+import 'row_lookup.dart';
 import 'synced_scroll_controllers.dart';
 import 'table_body.dart';
 import 'table_header.dart';
@@ -277,11 +278,10 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
   /// apart, and re-pins itself by id when [widget.data] changes.
   CellEditSession<T>? _editSession;
 
-  /// Cached rowId → data index lookup for O(1) access
-  Map<String, int> _rowIdToIndex = {};
-
-  /// Cached rowId → MergedRowGroup lookup for O(1) access
-  Map<String, MergedRowGroup<T>> _rowIdToMergedGroup = {};
+  /// Single home for the row→index / row→group derivation, shared in spirit
+  /// with the body (each builds its own from the same snapshot). Rebuilt
+  /// whenever the data or merged groups change.
+  late RowLookup<T> _rowLookup;
 
   /// Cached total data height
   double _cachedTotalDataHeight = 0;
@@ -443,20 +443,12 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
 
   /// Rebuild cached values for total height, row count, and lookup maps.
   void _rebuildCaches() {
-    // Build rowId → index lookup
-    _rowIdToIndex = {};
-    for (int i = 0; i < widget.data.length; i++) {
-      final key = widget.rowId(widget.data[i]);
-      _rowIdToIndex[key] = i;
-    }
-
-    // Build rowId → MergedRowGroup lookup
-    _rowIdToMergedGroup = {};
-    for (final group in widget.mergedGroups) {
-      for (final rowKey in group.rowKeys) {
-        _rowIdToMergedGroup[rowKey] = group;
-      }
-    }
+    // Derive the shared row→index / row→group facts once for this snapshot.
+    _rowLookup = RowLookup<T>.build(
+      data: widget.data,
+      mergedGroups: widget.mergedGroups,
+      rowId: widget.rowId,
+    );
 
     // Calculate total height and row count in a single pass
     double totalHeight = 0;
@@ -471,7 +463,7 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
         totalHeight += _getMergedRowHeight(mergeGroup);
         totalCount++;
         for (final rowKey in mergeGroup.rowKeys) {
-          final rowIndex = _rowIdToIndex[rowKey];
+          final rowIndex = _rowLookup.indexOf(rowKey);
           if (rowIndex != null) {
             processedIndices.add(rowIndex);
           }
@@ -488,11 +480,8 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
   }
 
   /// Find the merged group that contains the specified row index.
-  MergedRowGroup<T>? _getMergedGroupForRow(int rowIndex) {
-    if (rowIndex >= widget.data.length) return null;
-    final rowKey = widget.rowId(widget.data[rowIndex]);
-    return _rowIdToMergedGroup[rowKey];
-  }
+  MergedRowGroup<T>? _getMergedGroupForRow(int rowIndex) =>
+      _rowLookup.groupForRowIndex(rowIndex);
 
   /// Get the height for an individual row (scaled by [widget.scale]).
   double _getRowHeight(int index) {
@@ -506,7 +495,7 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
   double _getMergedRowHeight(MergedRowGroup<T> mergeGroup) {
     double totalHeight = 0;
     for (final rowKey in mergeGroup.rowKeys) {
-      final rowIndex = _rowIdToIndex[rowKey];
+      final rowIndex = _rowLookup.indexOf(rowKey);
       if (rowIndex != null) {
         totalHeight += _getRowHeight(rowIndex);
       }
