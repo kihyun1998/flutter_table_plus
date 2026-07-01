@@ -11,6 +11,7 @@ import '../models/merged_row_group.dart';
 import '../models/table_column.dart';
 import '../models/theme/scrollbar_theme.dart' show TablePlusScrollbarTheme;
 import '../models/theme/theme.dart' show TablePlusTheme;
+import 'cell_edit_session.dart';
 import 'drag_selection_controller.dart';
 import 'synced_scroll_controllers.dart';
 import 'table_body.dart';
@@ -271,15 +272,10 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
   /// Column resize state: tracks user-resized widths by column key
   final Map<String, double> _resizedWidths = {};
 
-  /// Editing state
-  int? _editingRowIndex;
-
-  /// The id of the row being edited, captured at edit start so the edit can be
-  /// re-pinned to the same row (not a stale index) when [widget.data] changes.
-  String? _editingRowId;
-  String? _editingColumnKey;
-  TextEditingController? _cellController;
-  dynamic _originalCellValue;
+  /// The in-progress cell edit, or null when not editing. Bundles the row id,
+  /// index, column key, original value, and controller so they can't drift
+  /// apart, and re-pins itself by id when [widget.data] changes.
+  CellEditSession<T>? _editSession;
 
   /// Cached rowId → data index lookup for O(1) access
   Map<String, int> _rowIdToIndex = {};
@@ -528,7 +524,7 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
   void dispose() {
     _dragController.dispose();
     _isHovered.dispose();
-    _cellController?.dispose();
+    _editSession?.dispose();
     super.dispose();
   }
 
@@ -810,90 +806,64 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
     if (column.hasCustomCellBuilder) return;
 
     setState(() {
-      // Stop any current editing
+      // End any current edit (keeps its controller for deferred disposal),
+      // then dispose it now that a fresh edit is replacing it.
       _stopEditing(save: true);
+      _editSession?.dispose();
 
-      // Start editing the new cell
-      _editingRowIndex = rowIndex;
-      _editingRowId = widget.rowId(widget.data[rowIndex]);
-      _editingColumnKey = columnKey;
-
-      // Get the current cell value
-      _originalCellValue = column.valueAccessor(widget.data[rowIndex]);
-
-      // Create a controller with the current value
-      _cellController?.dispose();
-      _cellController = TextEditingController(
-        text: _originalCellValue?.toString() ?? '',
+      _editSession = CellEditSession<T>(
+        rowId: widget.rowId(widget.data[rowIndex]),
+        columnKey: columnKey,
+        originalValue: column.valueAccessor(widget.data[rowIndex]),
+        rowIndex: rowIndex,
       );
     });
   }
 
-  /// Stop editing and optionally save the value.
+  /// Stop editing and optionally save the value. The session's controller is
+  /// kept for deferred disposal (on the next edit or widget dispose) so the
+  /// still-mounted editing field never references a disposed controller.
   void _stopEditing({required bool save}) {
-    if (_editingRowIndex == null || _editingColumnKey == null) return;
+    final session = _editSession;
+    if (session == null || !session.isActive) return;
 
-    if (save && widget.onCellChanged != null && _cellController != null) {
-      final newValue = _cellController!.text;
-      final oldValue = _originalCellValue?.toString() ?? '';
-
-      if (newValue != oldValue) {
-        widget.onCellChanged!(
-          widget.data[_editingRowIndex!],
-          _editingColumnKey!,
-          _editingRowIndex!,
-          _originalCellValue,
-          newValue,
-        );
-      }
+    if (save && widget.onCellChanged != null && session.isDirty) {
+      widget.onCellChanged!(
+        widget.data[session.rowIndex],
+        session.columnKey,
+        session.rowIndex,
+        session.originalValue,
+        session.currentText,
+      );
     }
 
-    setState(() {
-      _editingRowIndex = null;
-      _editingRowId = null;
-      _editingColumnKey = null;
-      _originalCellValue = null;
-      // Don't dispose the controller here, it will be disposed on next cell tap or widget dispose
-    });
+    setState(() => session.end());
   }
 
-  /// After [widget.data] changes, keep an in-progress edit pinned to its row
-  /// by id: update the now-stale index, or cancel the edit (disposing the
-  /// controller) when the edited row no longer exists. Without this, a later
-  /// commit reads `widget.data[_editingRowIndex]` against the new list and
-  /// writes to the wrong row — or throws RangeError if the list shrank.
+  /// After [widget.data] changes, keep an in-progress edit pinned to its row by
+  /// id via [CellEditSession.repin]: update the now-stale index, or cancel the
+  /// edit (disposing the controller) when the edited row no longer exists.
+  /// Without this, a later commit reads `widget.data[rowIndex]` against the new
+  /// list and writes to the wrong row — or throws RangeError if the list shrank.
   void _reconcileEditingAfterDataChange() {
-    final id = _editingRowId;
-    if (id == null) return;
-    final newIndex = widget.data.indexWhere((row) => widget.rowId(row) == id);
-    if (newIndex == -1) {
-      _cancelEditing();
-    } else {
-      _editingRowIndex = newIndex;
+    final session = _editSession;
+    if (session == null || !session.isActive) return;
+    if (!session.repin(widget.data, widget.rowId)) {
+      session.dispose();
+      _editSession = null;
     }
-  }
-
-  /// Cancel the current edit without saving, releasing its controller.
-  void _cancelEditing() {
-    _cellController?.dispose();
-    _cellController = null;
-    _editingRowIndex = null;
-    _editingRowId = null;
-    _editingColumnKey = null;
-    _originalCellValue = null;
   }
 
   /// Check if a specific cell is being edited.
   bool _isCellEditing(int rowIndex, String columnKey) {
-    return _editingRowIndex == rowIndex && _editingColumnKey == columnKey;
+    return _editSession?.isEditing(rowIndex, columnKey) ?? false;
   }
 
   /// Get the controller for a cell being edited.
   TextEditingController? _getCellController(int rowIndex, String columnKey) {
-    if (_isCellEditing(rowIndex, columnKey)) {
-      return _cellController;
-    }
-    return null;
+    return _isCellEditing(rowIndex, columnKey)
+        ? _editSession!.controller
+        : null;
   }
 
   /// Build a themed scrollbar track widget for the given [axis].
