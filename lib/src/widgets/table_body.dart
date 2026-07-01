@@ -475,7 +475,7 @@ class TablePlusBodyState<T> extends State<TablePlusBody<T>>
   }
 
   /// Build a row widget for the given index.
-  TablePlusRowWidget _buildRowWidget(int index, int renderIndex) {
+  TablePlusRowWidget<T> _buildRowWidget(int index, int renderIndex) {
     final mergeGroup = _getMergedGroupForRow(index);
 
     if (mergeGroup != null) {

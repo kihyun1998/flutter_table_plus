@@ -12,15 +12,13 @@ import '../models/theme/tooltip_theme.dart' show TablePlusTooltipTheme;
 import '../utils/column_width_access.dart';
 import '../utils/tooltip_resolver.dart';
 import 'row_decoration.dart';
-import 'row_hover_button.dart';
 import '../utils/text_overflow_detector.dart';
 import 'cells/editable_text_field.dart';
-import 'row_interaction_shell.dart';
 import 'tooltip_wrapper.dart';
 import 'table_plus_row_widget.dart';
 
 /// A merged table row widget that combines multiple data rows into one visual row.
-class TablePlusMergedRow<T> extends TablePlusRowWidget {
+class TablePlusMergedRow<T> extends TablePlusRowWidget<T> {
   const TablePlusMergedRow({
     super.key,
     required this.mergeGroup,
@@ -64,6 +62,7 @@ class TablePlusMergedRow<T> extends TablePlusRowWidget {
   final List<T> allData;
   final List<TablePlusColumn<T>> columns;
   final List<double> columnWidths;
+  @override
   final TablePlusBodyTheme theme;
   final String Function(T) rowId;
   @override
@@ -73,6 +72,7 @@ class TablePlusMergedRow<T> extends TablePlusRowWidget {
   @override
   final bool isSelectable;
   final SelectionMode selectionMode;
+  @override
   final bool isSelected;
   @override
   final void Function(String rowId) onRowSelectionChanged;
@@ -86,7 +86,9 @@ class TablePlusMergedRow<T> extends TablePlusRowWidget {
       getCellController;
   final void Function(int rowIndex, String columnKey)? onCellTap;
   final void Function({required bool save})? onStopEditing;
+  @override
   final void Function(String rowId)? onRowDoubleTap;
+  @override
   final void Function(String rowId, TapDownDetails details, RenderBox renderBox,
       bool isSelected)? onRowSecondaryTapDown;
   final void Function(String groupId, String columnKey, dynamic newValue)?
@@ -102,16 +104,20 @@ class TablePlusMergedRow<T> extends TablePlusRowWidget {
   final bool needsVerticalScroll;
 
   /// Builder function for creating custom hover buttons.
+  @override
   final Widget? Function(String rowId, T rowData)? hoverButtonBuilder;
 
   /// The position where hover buttons should be displayed.
+  @override
   final HoverButtonPosition hoverButtonPosition;
 
   /// Theme configuration for hover buttons.
+  @override
   final TablePlusHoverButtonTheme? hoverButtonTheme;
   final TablePlusCheckboxTheme checkboxTheme;
 
   /// Whether this row is a dim row.
+  @override
   final bool isDim;
 
   // Implementation of TablePlusRowWidget abstract methods
@@ -131,8 +137,10 @@ class TablePlusMergedRow<T> extends TablePlusRowWidget {
   }
 }
 
-class _TablePlusMergedRowState<T> extends State<TablePlusMergedRow<T>> {
-  bool _isHovered = false;
+class _TablePlusMergedRowState<T>
+    extends TablePlusRowStateBase<TablePlusMergedRow<T>, T> {
+  @override
+  T? get hoverData => _getRowData(widget.mergeGroup.rowKeys.first);
 
   /// Get the data for a specific row key within the merge group.
   T? _getRowData(String rowKey) {
@@ -633,14 +641,14 @@ class _TablePlusMergedRowState<T> extends State<TablePlusMergedRow<T>> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget buildRowContent(BuildContext context) {
     final mergedHeight = widget.calculatedHeight ??
         (widget.theme.rowHeight * widget.mergeGroup.effectiveRowCount);
 
-    Widget rowContent = Container(
+    return Container(
       height: mergedHeight,
       decoration: rowDecoration(
-        selectionTransparent: widget.isSelectable && !widget.isEditable,
+        selectionTransparent: widget.enableSelectionInk,
         backgroundColor: widget.backgroundColor,
         theme: widget.theme,
         isLastRow: widget.isLastRow,
@@ -663,36 +671,6 @@ class _TablePlusMergedRowState<T> extends State<TablePlusMergedRow<T>> {
           }(),
         ],
       ),
-    );
-
-    final hoverButtons = buildRowHoverButton<T>(
-      isHovered: _isHovered,
-      builder: widget.hoverButtonBuilder,
-      id: widget.mergeGroup.groupId,
-      data: _getRowData(widget.mergeGroup.rowKeys.first),
-      position: widget.hoverButtonPosition,
-      horizontalOffset: widget.hoverButtonTheme?.horizontalOffset ?? 8.0,
-    );
-
-    return RowInteractionShell(
-      rowContent: rowContent,
-      hoverButtons: hoverButtons,
-      onHoverChanged: (v) => setState(() => _isHovered = v),
-      enableSelectionInk: widget.isSelectable && !widget.isEditable,
-      inkKey: ValueKey(widget.mergeGroup.groupId),
-      onTap: widget.handleSelectionTap,
-      onDoubleTap: () => widget.onRowDoubleTap?.call(widget.mergeGroup.groupId),
-      onSecondaryTapDown: (details, renderBox) => widget.onRowSecondaryTapDown
-          ?.call(
-              widget.mergeGroup.groupId, details, renderBox, widget.isSelected),
-      doubleClickTime: widget.theme.doubleClickTime,
-      backgroundColor: widget.backgroundColor,
-      hoverColor:
-          widget.theme.getEffectiveHoverColor(widget.isSelected, widget.isDim),
-      splashColor:
-          widget.theme.getEffectiveSplashColor(widget.isSelected, widget.isDim),
-      highlightColor: widget.theme
-          .getEffectiveHighlightColor(widget.isSelected, widget.isDim),
     );
   }
 }

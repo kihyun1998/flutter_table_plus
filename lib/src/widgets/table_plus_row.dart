@@ -6,11 +6,9 @@ import 'package:flutter_table_plus/src/widgets/table_plus_row_widget.dart';
 
 import 'package:flutter_table_plus/src/utils/column_width_access.dart';
 import 'package:flutter_table_plus/src/widgets/row_decoration.dart';
-import 'package:flutter_table_plus/src/widgets/row_hover_button.dart';
-import 'package:flutter_table_plus/src/widgets/row_interaction_shell.dart';
 
 /// A single table row widget.
-class TablePlusRow<T> extends TablePlusRowWidget {
+class TablePlusRow<T> extends TablePlusRowWidget<T> {
   const TablePlusRow({
     super.key,
     required this.rowIndex,
@@ -49,6 +47,7 @@ class TablePlusRow<T> extends TablePlusRowWidget {
   final String? rowId;
   final List<TablePlusColumn<T>> columns;
   final List<double> columnWidths;
+  @override
   final TablePlusBodyTheme theme;
   @override
   final Color backgroundColor;
@@ -57,6 +56,7 @@ class TablePlusRow<T> extends TablePlusRowWidget {
   @override
   final bool isSelectable;
   final SelectionMode selectionMode;
+  @override
   final bool isSelected;
   @override
   final void Function(String rowId) onRowSelectionChanged;
@@ -70,7 +70,9 @@ class TablePlusRow<T> extends TablePlusRowWidget {
       getCellController;
   final void Function(int rowIndex, String columnKey)? onCellTap;
   final void Function({required bool save})? onStopEditing;
+  @override
   final void Function(String rowId)? onRowDoubleTap;
+  @override
   final void Function(String rowId, TapDownDetails details, RenderBox renderBox,
       bool isSelected)? onRowSecondaryTapDown;
   @override
@@ -78,16 +80,20 @@ class TablePlusRow<T> extends TablePlusRowWidget {
   final bool needsVerticalScroll;
 
   /// Builder function to create custom hover buttons for this row.
+  @override
   final Widget? Function(String rowId, T rowData)? hoverButtonBuilder;
 
   /// The position where hover buttons should be displayed.
+  @override
   final HoverButtonPosition hoverButtonPosition;
 
   /// Theme configuration for hover buttons.
+  @override
   final TablePlusHoverButtonTheme? hoverButtonTheme;
   final TablePlusCheckboxTheme checkboxTheme;
 
   /// Whether this row is a dim row.
+  @override
   final bool isDim;
 
   // Implementation of TablePlusRowWidget abstract methods
@@ -104,16 +110,16 @@ class TablePlusRow<T> extends TablePlusRowWidget {
   State<TablePlusRow<T>> createState() => _TablePlusRowState<T>();
 }
 
-class _TablePlusRowState<T> extends State<TablePlusRow<T>> {
-  bool _isHovered = false;
+class _TablePlusRowState<T> extends TablePlusRowStateBase<TablePlusRow<T>, T> {
+  @override
+  T? get hoverData => widget.rowData;
 
   @override
-  Widget build(BuildContext context) {
-    Widget rowContent = Container(
+  Widget buildRowContent(BuildContext context) {
+    return Container(
       height: widget.calculatedHeight ?? widget.theme.rowHeight,
       decoration: rowDecoration(
-        selectionTransparent:
-            widget.isSelectable && !widget.isEditable && widget.rowId != null,
+        selectionTransparent: widget.enableSelectionInk,
         backgroundColor: widget.backgroundColor,
         theme: widget.theme,
         isLastRow: widget.isLastRow,
@@ -162,36 +168,6 @@ class _TablePlusRowState<T> extends State<TablePlusRow<T>> {
           );
         }),
       ),
-    );
-
-    final hoverButtons = buildRowHoverButton<T>(
-      isHovered: _isHovered,
-      builder: widget.hoverButtonBuilder,
-      id: widget.rowId,
-      data: widget.rowData,
-      position: widget.hoverButtonPosition,
-      horizontalOffset: widget.hoverButtonTheme?.horizontalOffset ?? 8.0,
-    );
-
-    return RowInteractionShell(
-      rowContent: rowContent,
-      hoverButtons: hoverButtons,
-      onHoverChanged: (v) => setState(() => _isHovered = v),
-      enableSelectionInk:
-          widget.isSelectable && !widget.isEditable && widget.rowId != null,
-      inkKey: ValueKey(widget.rowId),
-      onTap: widget.handleSelectionTap,
-      onDoubleTap: () => widget.onRowDoubleTap?.call(widget.rowId!),
-      onSecondaryTapDown: (details, renderBox) => widget.onRowSecondaryTapDown
-          ?.call(widget.rowId!, details, renderBox, widget.isSelected),
-      doubleClickTime: widget.theme.doubleClickTime,
-      backgroundColor: widget.backgroundColor,
-      hoverColor:
-          widget.theme.getEffectiveHoverColor(widget.isSelected, widget.isDim),
-      splashColor:
-          widget.theme.getEffectiveSplashColor(widget.isSelected, widget.isDim),
-      highlightColor: widget.theme
-          .getEffectiveHighlightColor(widget.isSelected, widget.isDim),
     );
   }
 }

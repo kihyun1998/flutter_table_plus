@@ -34,6 +34,10 @@ Future<void> _pumpTable(
   List<MergedRowGroup<Map<String, dynamic>>> mergedGroups = const [],
   void Function(String rowId, bool selected)? onRowSelectionChanged,
   Widget? Function(String rowId, Map<String, dynamic> data)? hoverButtonBuilder,
+  void Function(String rowId)? onRowDoubleTap,
+  void Function(String rowId, TapDownDetails details, RenderBox renderBox,
+          bool isSelected)?
+      onRowSecondaryTapDown,
 }) async {
   await tester.pumpWidget(
     frame(
@@ -45,11 +49,19 @@ Future<void> _pumpTable(
         mergedGroups: mergedGroups,
         onRowSelectionChanged: onRowSelectionChanged,
         hoverButtonBuilder: hoverButtonBuilder,
+        onRowDoubleTap: onRowDoubleTap,
+        onRowSecondaryTapDown: onRowSecondaryTapDown,
       ),
     ),
   );
   await tester.pumpAndSettle();
 }
+
+const _mergedGroup = MergedRowGroup<Map<String, dynamic>>(
+  groupId: 'g1',
+  rowKeys: ['1', '2'],
+  mergeConfig: {},
+);
 
 Widget _scaffold(Widget child) => MaterialApp(home: Scaffold(body: child));
 
@@ -118,5 +130,81 @@ void main() {
 
     expect(find.text('HOVER-g1'), findsOneWidget,
         reason: 'merged row hover button is built with the group id');
+  });
+
+  testWidgets('double-tapping a normal row routes the row id', (tester) async {
+    String? doubleTapped;
+    await _pumpTable(
+      tester,
+      frame: _scaffold,
+      onRowDoubleTap: (rowId) => doubleTapped = rowId,
+    );
+
+    await tester.tap(find.text('Carol'));
+    await tester.pump(const Duration(milliseconds: 50));
+    await tester.tap(find.text('Carol'));
+    await tester.pumpAndSettle();
+
+    expect(doubleTapped, '3');
+  });
+
+  testWidgets('double-tapping a merged row routes the group id',
+      (tester) async {
+    String? doubleTapped;
+    await _pumpTable(
+      tester,
+      frame: _scaffold,
+      mergedGroups: const [_mergedGroup],
+      onRowDoubleTap: (rowId) => doubleTapped = rowId,
+    );
+
+    await tester.tap(find.text('Alice'));
+    await tester.pump(const Duration(milliseconds: 50));
+    await tester.tap(find.text('Alice'));
+    await tester.pumpAndSettle();
+
+    expect(doubleTapped, 'g1',
+        reason: 'a merged row double-tap routes its group id');
+  });
+
+  testWidgets('right-clicking a normal row routes the row id', (tester) async {
+    String? secondaryId;
+    await _pumpTable(
+      tester,
+      frame: _scaffold,
+      onRowSecondaryTapDown: (rowId, _, __, ___) => secondaryId = rowId,
+    );
+
+    final gesture = await tester.startGesture(
+      tester.getCenter(find.text('Bob')),
+      kind: PointerDeviceKind.mouse,
+      buttons: kSecondaryMouseButton,
+    );
+    await gesture.up();
+    await tester.pumpAndSettle();
+
+    expect(secondaryId, '2');
+  });
+
+  testWidgets('right-clicking a merged row routes the group id',
+      (tester) async {
+    String? secondaryId;
+    await _pumpTable(
+      tester,
+      frame: _scaffold,
+      mergedGroups: const [_mergedGroup],
+      onRowSecondaryTapDown: (rowId, _, __, ___) => secondaryId = rowId,
+    );
+
+    final gesture = await tester.startGesture(
+      tester.getCenter(find.text('Alice')),
+      kind: PointerDeviceKind.mouse,
+      buttons: kSecondaryMouseButton,
+    );
+    await gesture.up();
+    await tester.pumpAndSettle();
+
+    expect(secondaryId, 'g1',
+        reason: 'a merged row right-click routes its group id');
   });
 }

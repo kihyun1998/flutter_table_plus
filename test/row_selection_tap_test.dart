@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_table_plus/flutter_table_plus.dart';
 import 'package:flutter_table_plus/src/widgets/table_plus_row_widget.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// A minimal concrete [TablePlusRowWidget] exposing only the selection-tap
 /// inputs, so the shared gating logic can be exercised without pumping a row.
-class _TestRow extends TablePlusRowWidget {
+/// The build-only getters are inert stubs — this double's state never renders
+/// through [TablePlusRowStateBase].
+class _TestRow extends TablePlusRowWidget<Object> {
   const _TestRow({
     required this.isEditable,
     required this.isSelectable,
@@ -31,6 +34,25 @@ class _TestRow extends TablePlusRowWidget {
   bool get isLastRow => false;
   @override
   Color get backgroundColor => const Color(0xFF000000);
+
+  // Inert build-only stubs (never exercised by these unit tests).
+  @override
+  TablePlusBodyTheme get theme => const TablePlusBodyTheme();
+  @override
+  bool get isSelected => false;
+  @override
+  bool get isDim => false;
+  @override
+  Widget? Function(String, Object)? get hoverButtonBuilder => null;
+  @override
+  HoverButtonPosition get hoverButtonPosition => HoverButtonPosition.right;
+  @override
+  TablePlusHoverButtonTheme? get hoverButtonTheme => null;
+  @override
+  void Function(String)? get onRowDoubleTap => null;
+  @override
+  void Function(String, TapDownDetails, RenderBox, bool)?
+      get onRowSecondaryTapDown => null;
 
   @override
   State<_TestRow> createState() => _TestRowState();
