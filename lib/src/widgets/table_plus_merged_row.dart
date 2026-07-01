@@ -15,7 +15,7 @@ import 'row_hover_button.dart';
 import '../utils/text_overflow_detector.dart';
 import 'cells/editable_text_field.dart';
 import 'flutter_tooltip_plus.dart';
-import 'custom_ink_well.dart';
+import 'row_interaction_shell.dart';
 import 'table_plus_row_widget.dart';
 
 /// A merged table row widget that combines multiple data rows into one visual row.
@@ -709,40 +709,25 @@ class _TablePlusMergedRowState<T> extends State<TablePlusMergedRow<T>> {
       horizontalOffset: widget.hoverButtonTheme?.horizontalOffset ?? 8.0,
     );
 
-    Widget stackedContent = Stack(
-      children: [
-        rowContent,
-        if (hoverButtons != null) hoverButtons,
-      ],
+    return RowInteractionShell(
+      rowContent: rowContent,
+      hoverButtons: hoverButtons,
+      onHoverChanged: (v) => setState(() => _isHovered = v),
+      enableSelectionInk: widget.isSelectable && !widget.isEditable,
+      inkKey: ValueKey(widget.mergeGroup.groupId),
+      onTap: widget.handleSelectionTap,
+      onDoubleTap: () => widget.onRowDoubleTap?.call(widget.mergeGroup.groupId),
+      onSecondaryTapDown: (details, renderBox) => widget.onRowSecondaryTapDown
+          ?.call(
+              widget.mergeGroup.groupId, details, renderBox, widget.isSelected),
+      doubleClickTime: widget.theme.doubleClickTime,
+      backgroundColor: widget.backgroundColor,
+      hoverColor:
+          widget.theme.getEffectiveHoverColor(widget.isSelected, widget.isDim),
+      splashColor:
+          widget.theme.getEffectiveSplashColor(widget.isSelected, widget.isDim),
+      highlightColor: widget.theme
+          .getEffectiveHighlightColor(widget.isSelected, widget.isDim),
     );
-
-    Widget hoveredContent = MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: stackedContent,
-    );
-
-    if (widget.isSelectable && !widget.isEditable) {
-      return CustomInkWell(
-        key: ValueKey(widget.mergeGroup.groupId),
-        onTap: widget.handleSelectionTap,
-        onDoubleTap: () =>
-            widget.onRowDoubleTap?.call(widget.mergeGroup.groupId),
-        onSecondaryTapDown: (details, renderBox) => widget.onRowSecondaryTapDown
-            ?.call(widget.mergeGroup.groupId, details, renderBox,
-                widget.isSelected),
-        doubleClickTime: widget.theme.doubleClickTime,
-        backgroundColor: widget.backgroundColor,
-        hoverColor: widget.theme
-            .getEffectiveHoverColor(widget.isSelected, widget.isDim),
-        splashColor: widget.theme
-            .getEffectiveSplashColor(widget.isSelected, widget.isDim),
-        highlightColor: widget.theme
-            .getEffectiveHighlightColor(widget.isSelected, widget.isDim),
-        child: hoveredContent,
-      );
-    }
-
-    return hoveredContent;
   }
 }

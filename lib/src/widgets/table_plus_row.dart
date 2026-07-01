@@ -6,6 +6,7 @@ import 'package:flutter_table_plus/src/widgets/table_plus_row_widget.dart';
 
 import 'package:flutter_table_plus/src/utils/column_width_access.dart';
 import 'package:flutter_table_plus/src/widgets/row_hover_button.dart';
+import 'package:flutter_table_plus/src/widgets/row_interaction_shell.dart';
 
 /// A single table row widget.
 class TablePlusRow<T> extends TablePlusRowWidget {
@@ -179,45 +180,25 @@ class _TablePlusRowState<T> extends State<TablePlusRow<T>> {
       horizontalOffset: widget.hoverButtonTheme?.horizontalOffset ?? 8.0,
     );
 
-    // Wrap with Stack for hover buttons
-    Widget stackedContent = Stack(
-      children: [
-        rowContent,
-        if (hoverButtons != null) hoverButtons,
-      ],
+    return RowInteractionShell(
+      rowContent: rowContent,
+      hoverButtons: hoverButtons,
+      onHoverChanged: (v) => setState(() => _isHovered = v),
+      enableSelectionInk:
+          widget.isSelectable && !widget.isEditable && widget.rowId != null,
+      inkKey: ValueKey(widget.rowId),
+      onTap: widget.handleSelectionTap,
+      onDoubleTap: () => widget.onRowDoubleTap?.call(widget.rowId!),
+      onSecondaryTapDown: (details, renderBox) => widget.onRowSecondaryTapDown
+          ?.call(widget.rowId!, details, renderBox, widget.isSelected),
+      doubleClickTime: widget.theme.doubleClickTime,
+      backgroundColor: widget.backgroundColor,
+      hoverColor:
+          widget.theme.getEffectiveHoverColor(widget.isSelected, widget.isDim),
+      splashColor:
+          widget.theme.getEffectiveSplashColor(widget.isSelected, widget.isDim),
+      highlightColor: widget.theme
+          .getEffectiveHighlightColor(widget.isSelected, widget.isDim),
     );
-
-    // Wrap with MouseRegion for hover detection
-    Widget hoveredContent = MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: stackedContent,
-    );
-
-    // Wrap with CustomInkWell for row selection if selectable and not editable
-    if (widget.isSelectable && !widget.isEditable && widget.rowId != null) {
-      return CustomInkWell(
-        key: ValueKey(widget.rowId),
-        onTap: widget.handleSelectionTap,
-        onDoubleTap: () {
-          widget.onRowDoubleTap?.call(widget.rowId!);
-        },
-        onSecondaryTapDown: (details, renderBox) {
-          widget.onRowSecondaryTapDown
-              ?.call(widget.rowId!, details, renderBox, widget.isSelected);
-        },
-        doubleClickTime: widget.theme.doubleClickTime,
-        backgroundColor: widget.backgroundColor,
-        hoverColor: widget.theme
-            .getEffectiveHoverColor(widget.isSelected, widget.isDim),
-        splashColor: widget.theme
-            .getEffectiveSplashColor(widget.isSelected, widget.isDim),
-        highlightColor: widget.theme
-            .getEffectiveHighlightColor(widget.isSelected, widget.isDim),
-        child: hoveredContent,
-      );
-    }
-
-    return hoveredContent;
   }
 }
