@@ -273,6 +273,10 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
 
   /// Editing state
   int? _editingRowIndex;
+
+  /// The id of the row being edited, captured at edit start so the edit can be
+  /// re-pinned to the same row (not a stale index) when [widget.data] changes.
+  String? _editingRowId;
   String? _editingColumnKey;
   TextEditingController? _cellController;
   dynamic _originalCellValue;
@@ -368,6 +372,7 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
       if (widget.data.isNotEmpty) {
         _validateUniqueIds();
       }
+      _reconcileEditingAfterDataChange();
     }
     if (!identical(widget.columns, oldWidget.columns)) {
       _validateColumns();
@@ -810,6 +815,7 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
 
       // Start editing the new cell
       _editingRowIndex = rowIndex;
+      _editingRowId = widget.rowId(widget.data[rowIndex]);
       _editingColumnKey = columnKey;
 
       // Get the current cell value
@@ -844,10 +850,37 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
 
     setState(() {
       _editingRowIndex = null;
+      _editingRowId = null;
       _editingColumnKey = null;
       _originalCellValue = null;
       // Don't dispose the controller here, it will be disposed on next cell tap or widget dispose
     });
+  }
+
+  /// After [widget.data] changes, keep an in-progress edit pinned to its row
+  /// by id: update the now-stale index, or cancel the edit (disposing the
+  /// controller) when the edited row no longer exists. Without this, a later
+  /// commit reads `widget.data[_editingRowIndex]` against the new list and
+  /// writes to the wrong row — or throws RangeError if the list shrank.
+  void _reconcileEditingAfterDataChange() {
+    final id = _editingRowId;
+    if (id == null) return;
+    final newIndex = widget.data.indexWhere((row) => widget.rowId(row) == id);
+    if (newIndex == -1) {
+      _cancelEditing();
+    } else {
+      _editingRowIndex = newIndex;
+    }
+  }
+
+  /// Cancel the current edit without saving, releasing its controller.
+  void _cancelEditing() {
+    _cellController?.dispose();
+    _cellController = null;
+    _editingRowIndex = null;
+    _editingRowId = null;
+    _editingColumnKey = null;
+    _originalCellValue = null;
   }
 
   /// Check if a specific cell is being edited.
