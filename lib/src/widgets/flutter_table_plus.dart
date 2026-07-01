@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:math';
 import 'dart:ui' as ui;
 
@@ -318,10 +317,6 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
   /// scroll deltas it reports.
   late final DragSelectionController _dragController;
 
-  Timer? _autoScrollTimer;
-
-  static const Duration _autoScrollInterval = Duration(milliseconds: 16);
-
   bool get _isDragSelectionEnabled =>
       widget.enableDragSelection &&
       widget.isSelectable &&
@@ -348,6 +343,13 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
       horizontalOffset: () => _horizontalScrollController?.hasClients == true
           ? _horizontalScrollController!.offset
           : 0.0,
+      scrollVerticalBy: (delta) =>
+          _applyAxisScroll(_verticalScrollController, delta),
+      scrollHorizontalBy: (delta) =>
+          _applyAxisScroll(_horizontalScrollController, delta),
+      onTick: () {
+        if (mounted) setState(() {});
+      },
       onUpdate: (ids) => widget.onDragSelectionUpdate?.call(ids),
       onEnd: (ids) {
         if (widget.onDragSelectionEnd != null) {
@@ -519,7 +521,7 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
 
   @override
   void dispose() {
-    _stopAutoScroll();
+    _dragController.dispose();
     _isHovered.dispose();
     _cellController?.dispose();
     super.dispose();
@@ -1235,29 +1237,19 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
 
   void _onDragPointerMove(PointerMoveEvent event) {
     if (!_isDragSelectionEnabled) return;
+    // The controller updates the selection and engages/releases its own
+    // auto-scroll timer internally.
     _dragController.move(local: event.localPosition, global: event.position);
-    if (!_dragController.isDragging) return;
-
-    // Engage or release auto-scroll: a non-zero delta means the pointer is in
-    // an edge zone.
-    if (_dragController.autoScrollDelta() != Offset.zero) {
-      _startAutoScroll();
-    } else {
-      _stopAutoScroll();
-    }
-
     // Rebuild so the rubber band tracks the pointer.
-    if (mounted) setState(() {});
+    if (mounted && _dragController.isDragging) setState(() {});
   }
 
   void _onDragPointerUp(PointerUpEvent event) {
-    _stopAutoScroll();
     _dragController.up();
     if (mounted) setState(() {});
   }
 
   void _onDragPointerCancel(PointerCancelEvent event) {
-    _stopAutoScroll();
     _dragController.cancel();
     if (mounted) setState(() {});
   }
@@ -1274,55 +1266,18 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
   /// [_viewportBox] without requiring another GlobalKey.
   BuildContext? _viewportContext;
 
-  // --- Drag-selection: auto-scroll engine ---
+  // --- Drag-selection: auto-scroll application ---
 
-  void _startAutoScroll() {
-    if (_autoScrollTimer != null) return;
-    _autoScrollTimer = Timer.periodic(_autoScrollInterval, (_) {
-      _performAutoScroll();
-    });
-  }
-
-  void _stopAutoScroll() {
-    _autoScrollTimer?.cancel();
-    _autoScrollTimer = null;
-  }
-
-  void _performAutoScroll() {
-    final delta = _dragController.autoScrollDelta();
-    if (delta == Offset.zero) {
-      _stopAutoScroll();
-      return;
-    }
-
-    bool scrolled = false;
-    final vc = _verticalScrollController;
-    if (delta.dy != 0 && vc?.hasClients == true) {
-      final prev = vc!.offset;
-      final next = (prev + delta.dy).clamp(0.0, vc.position.maxScrollExtent);
-      if (next != prev) {
-        vc.jumpTo(next);
-        scrolled = true;
-        // Rows under the stationary pointer changed — re-resolve the range.
-        _dragController.refresh();
-      }
-    }
-    final hc = _horizontalScrollController;
-    if (delta.dx != 0 && hc?.hasClients == true) {
-      final prev = hc!.offset;
-      final next = (prev + delta.dx).clamp(0.0, hc.position.maxScrollExtent);
-      if (next != prev) {
-        hc.jumpTo(next);
-        scrolled = true;
-      }
-    }
-
-    if (!scrolled) {
-      _stopAutoScroll();
-      return;
-    }
-    // Rebuild so the rubber band tracks the new scroll offsets.
-    if (mounted) setState(() {});
+  /// Applies a clamped auto-scroll [delta] to [controller], returning whether
+  /// the view actually moved. Injected into [DragSelectionController], which
+  /// owns the auto-scroll timer loop and decides when to call this.
+  bool _applyAxisScroll(ScrollController? controller, double delta) {
+    if (controller?.hasClients != true) return false;
+    final prev = controller!.offset;
+    final next = (prev + delta).clamp(0.0, controller.position.maxScrollExtent);
+    if (next == prev) return false;
+    controller.jumpTo(next);
+    return true;
   }
 
   // --- Drag-selection: rubber band ---

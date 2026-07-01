@@ -1,3 +1,4 @@
+import 'package:fake_async/fake_async.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_table_plus/src/widgets/drag_selection_controller.dart';
 import 'package:flutter_table_plus/src/widgets/row_locator.dart';
@@ -25,6 +26,23 @@ class _FakeRowLocator implements RowLocator {
     final lo = a < b ? a : b;
     final hi = a < b ? b : a;
     return {for (int i = lo; i <= hi; i++) '$i'};
+  }
+}
+
+/// A mutable scroll axis for auto-scroll tests: applies a clamped delta and
+/// reports whether it actually moved (mirroring a real ScrollController at its
+/// extents).
+class _FakeAxis {
+  _FakeAxis({required this.maxExtent});
+
+  final double maxExtent;
+  double offset = 0;
+
+  bool by(double delta) {
+    final next = (offset + delta).clamp(0.0, maxExtent);
+    if (next == offset) return false;
+    offset = next;
+    return true;
   }
 }
 
@@ -252,6 +270,133 @@ void main() {
         ),
         -10,
       );
+    });
+  });
+
+  group('DragSelectionController — auto-scroll loop', () {
+    test('holding the pointer in the bottom edge zone auto-scrolls on a timer',
+        () {
+      fakeAsync((async) {
+        final locator = _FakeRowLocator(rowHeight: 40, rowCount: 100);
+        final vAxis = _FakeAxis(maxExtent: 1000);
+        var ticks = 0;
+
+        final controller = DragSelectionController(
+          locator: () => locator,
+          verticalOffset: () => vAxis.offset,
+          horizontalOffset: () => 0,
+          scrollVerticalBy: vAxis.by,
+          onTick: () => ticks++,
+        );
+
+        const start = Offset(50, 20); // row 0
+        const bottomEdge = Offset(50, 290); // within the bottom 40px of 300
+
+        controller.down(
+            local: start, global: start, viewport: const Size(400, 300));
+        controller.move(local: bottomEdge, global: bottomEdge);
+
+        expect(vAxis.offset, 0, reason: 'no scroll until the timer ticks');
+
+        async.elapse(const Duration(milliseconds: 16 * 4));
+
+        expect(vAxis.offset, greaterThan(0),
+            reason:
+                'auto-scroll advances while the pointer is held at the edge');
+        expect(ticks, greaterThan(0),
+            reason: 'onTick fires each auto-scroll tick');
+
+        controller.dispose();
+      });
+    });
+
+    test('moving the pointer out of the edge zone stops auto-scroll', () {
+      fakeAsync((async) {
+        final locator = _FakeRowLocator(rowHeight: 40, rowCount: 100);
+        final vAxis = _FakeAxis(maxExtent: 1000);
+        final controller = DragSelectionController(
+          locator: () => locator,
+          verticalOffset: () => vAxis.offset,
+          horizontalOffset: () => 0,
+          scrollVerticalBy: vAxis.by,
+        );
+
+        const start = Offset(50, 20);
+        const bottomEdge = Offset(50, 290);
+        const middle = Offset(50, 150); // outside both edge zones
+
+        controller.down(
+            local: start, global: start, viewport: const Size(400, 300));
+        controller.move(local: bottomEdge, global: bottomEdge);
+        async.elapse(const Duration(milliseconds: 16 * 3));
+        final scrolledSoFar = vAxis.offset;
+        expect(scrolledSoFar, greaterThan(0));
+
+        controller.move(local: middle, global: middle);
+        async.elapse(const Duration(milliseconds: 16 * 5));
+
+        expect(vAxis.offset, scrolledSoFar,
+            reason: 'no further scroll after the pointer leaves the edge zone');
+        controller.dispose();
+      });
+    });
+
+    test('releasing the pointer stops auto-scroll', () {
+      fakeAsync((async) {
+        final locator = _FakeRowLocator(rowHeight: 40, rowCount: 100);
+        final vAxis = _FakeAxis(maxExtent: 1000);
+        final controller = DragSelectionController(
+          locator: () => locator,
+          verticalOffset: () => vAxis.offset,
+          horizontalOffset: () => 0,
+          scrollVerticalBy: vAxis.by,
+        );
+
+        const start = Offset(50, 20);
+        const bottomEdge = Offset(50, 290);
+
+        controller.down(
+            local: start, global: start, viewport: const Size(400, 300));
+        controller.move(local: bottomEdge, global: bottomEdge);
+        async.elapse(const Duration(milliseconds: 16 * 3));
+        final scrolledSoFar = vAxis.offset;
+        expect(scrolledSoFar, greaterThan(0));
+
+        controller.up();
+        async.elapse(const Duration(milliseconds: 16 * 5));
+
+        expect(vAxis.offset, scrolledSoFar,
+            reason: 'the timer must be cancelled when the drag ends');
+      });
+    });
+
+    test('dispose cancels a running auto-scroll timer', () {
+      fakeAsync((async) {
+        final locator = _FakeRowLocator(rowHeight: 40, rowCount: 100);
+        final vAxis = _FakeAxis(maxExtent: 1000);
+        final controller = DragSelectionController(
+          locator: () => locator,
+          verticalOffset: () => vAxis.offset,
+          horizontalOffset: () => 0,
+          scrollVerticalBy: vAxis.by,
+        );
+
+        const start = Offset(50, 20);
+        const bottomEdge = Offset(50, 290);
+
+        controller.down(
+            local: start, global: start, viewport: const Size(400, 300));
+        controller.move(local: bottomEdge, global: bottomEdge);
+        async.elapse(const Duration(milliseconds: 16 * 2));
+        final scrolledSoFar = vAxis.offset;
+        expect(scrolledSoFar, greaterThan(0));
+
+        controller.dispose();
+        async.elapse(const Duration(milliseconds: 16 * 5));
+
+        expect(vAxis.offset, scrolledSoFar,
+            reason: 'dispose must cancel the timer (no ticks after disposal)');
+      });
     });
   });
 }

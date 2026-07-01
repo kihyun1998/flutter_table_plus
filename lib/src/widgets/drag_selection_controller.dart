@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 
 import 'row_locator.dart';
@@ -15,11 +17,31 @@ class DragSelectionController {
     required this.horizontalOffset,
     this.onUpdate,
     this.onEnd,
+    this.scrollVerticalBy,
+    this.scrollHorizontalBy,
+    this.onTick,
     this.activationThreshold = 8.0,
     this.edgeZone = 40.0,
     this.maxSpeedVertical = 10.0,
     this.maxSpeedHorizontal = 40.0,
+    this.autoScrollInterval = const Duration(milliseconds: 16),
   });
+
+  /// Applies a vertical auto-scroll [delta] to the host, returning `true` when
+  /// the view actually moved (`false` at an extent). Null disables vertical
+  /// auto-scroll — and, if both axes are null, the auto-scroll timer never
+  /// starts (keeps pure gesture unit tests free of pending timers).
+  final bool Function(double delta)? scrollVerticalBy;
+
+  /// Applies a horizontal auto-scroll [delta]; see [scrollVerticalBy].
+  final bool Function(double delta)? scrollHorizontalBy;
+
+  /// Called after each auto-scroll tick that moved the view, so the host can
+  /// repaint the rubber band (no pointer event fires during pure auto-scroll).
+  final VoidCallback? onTick;
+
+  /// The auto-scroll timer period.
+  final Duration autoScrollInterval;
 
   /// Movement (in global pixels) required before a press becomes a drag.
   final double activationThreshold;
@@ -64,6 +86,11 @@ class DragSelectionController {
   double _startVerticalOffset = 0;
   double _startHorizontalOffset = 0;
 
+  Timer? _autoScrollTimer;
+
+  bool get _hasAutoScroll =>
+      scrollVerticalBy != null || scrollHorizontalBy != null;
+
   void down({
     required Offset local,
     required Offset global,
@@ -95,20 +122,31 @@ class DragSelectionController {
     // Lazy anchor: the first crossing into a real row sets the start.
     _startRenderIndex ??= renderIdx;
 
-    if (_startRenderIndex == null) return;
+    if (_startRenderIndex != null) {
+      if (renderIdx != null) {
+        _currentRenderIndex = renderIdx;
+        _emit(onUpdate);
+      } else if (_startedFromEmpty) {
+        // Pointer-down began in the empty area below the data. Returning to
+        // that area (absolute Y >= 0) releases the range; moving up into the
+        // header (absolute Y < 0) preserves the sticky selection.
+        final absoluteY = local.dy + verticalOffset();
+        if (absoluteY >= 0) {
+          _startRenderIndex = null;
+          _currentRenderIndex = null;
+          onUpdate?.call(<String>{});
+        }
+      }
+    }
 
-    if (renderIdx != null) {
-      _currentRenderIndex = renderIdx;
-      _emit(onUpdate);
-    } else if (_startedFromEmpty) {
-      // Pointer-down began in the empty area below the data. Returning to
-      // that area (absolute Y >= 0) releases the range; moving up into the
-      // header (absolute Y < 0) preserves the sticky selection.
-      final absoluteY = local.dy + verticalOffset();
-      if (absoluteY >= 0) {
-        _startRenderIndex = null;
-        _currentRenderIndex = null;
-        onUpdate?.call(<String>{});
+    // Engage or release auto-scroll based on whether the pointer sits in an
+    // edge zone (a non-zero delta means it does). Runs regardless of the
+    // anchor so an edge-held pointer over empty space still scrolls.
+    if (_hasAutoScroll) {
+      if (autoScrollDelta() != Offset.zero) {
+        _startAutoScroll();
+      } else {
+        _stopAutoScroll();
       }
     }
   }
@@ -119,6 +157,9 @@ class DragSelectionController {
   }
 
   void cancel() => _reset();
+
+  /// Cancels any in-flight auto-scroll timer. Call from the host's `dispose`.
+  void dispose() => _stopAutoScroll();
 
   /// Whether a drag has crossed the activation threshold and is live.
   bool get isDragging => _isDragging;
@@ -200,6 +241,43 @@ class DragSelectionController {
     return Offset(dx, dy);
   }
 
+  void _startAutoScroll() {
+    if (_autoScrollTimer != null) return;
+    _autoScrollTimer = Timer.periodic(autoScrollInterval, (_) => _tick());
+  }
+
+  void _stopAutoScroll() {
+    _autoScrollTimer?.cancel();
+    _autoScrollTimer = null;
+  }
+
+  /// One auto-scroll tick: apply the current delta to the host's scroll axes,
+  /// re-resolve the row under the stationary pointer, and stop when nothing
+  /// moved (pointer left the edge zone, or the view hit an extent).
+  void _tick() {
+    final delta = autoScrollDelta();
+    if (delta == Offset.zero) {
+      _stopAutoScroll();
+      return;
+    }
+
+    var scrolled = false;
+    if (delta.dy != 0 && (scrollVerticalBy?.call(delta.dy) ?? false)) {
+      scrolled = true;
+      // Rows under the stationary pointer changed — re-resolve the range.
+      refresh();
+    }
+    if (delta.dx != 0 && (scrollHorizontalBy?.call(delta.dx) ?? false)) {
+      scrolled = true;
+    }
+
+    if (!scrolled) {
+      _stopAutoScroll();
+      return;
+    }
+    onTick?.call();
+  }
+
   void _emit(ValueChanged<Set<String>>? sink) {
     final start = _startRenderIndex;
     final current = _currentRenderIndex;
@@ -209,6 +287,7 @@ class DragSelectionController {
   }
 
   void _reset() {
+    _stopAutoScroll();
     _isDragging = false;
     _startedFromEmpty = false;
     _startRenderIndex = null;
