@@ -158,6 +158,20 @@ Comprehensive documentation is available in the `documentation/` directory:
 - DYNAMIC_HEIGHT.md: Dynamic row heights with TextOverflow.visible support and TableRowHeightCalculator utility
 - RIVERPOD_GENERATOR_GUIDE.md: State management integration
 
+## Agent skills
+
+### Issue tracker
+
+Issues are tracked in this repo's GitHub Issues via the `gh` CLI; external PRs are not a triage surface. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default vocabulary (`needs-triage` / `needs-info` / `ready-for-agent` / `ready-for-human` / `wontfix`). See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
+
 # important-instruction-reminders
 Do what has been asked; nothing more, nothing less.
 NEVER create files unless they're absolutely necessary for achieving your goal.
