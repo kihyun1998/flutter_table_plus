@@ -9,14 +9,14 @@ import '../models/theme/checkbox_theme.dart';
 import '../models/theme/editable_theme.dart' show TablePlusEditableTheme;
 import '../models/theme/hover_button_theme.dart' show TablePlusHoverButtonTheme;
 import '../models/theme/tooltip_theme.dart' show TablePlusTooltipTheme;
-import '../models/tooltip_behavior.dart';
 import '../utils/column_width_access.dart';
+import '../utils/tooltip_resolver.dart';
 import 'row_decoration.dart';
 import 'row_hover_button.dart';
 import '../utils/text_overflow_detector.dart';
 import 'cells/editable_text_field.dart';
-import 'flutter_tooltip_plus.dart';
 import 'row_interaction_shell.dart';
+import 'tooltip_wrapper.dart';
 import 'table_plus_row_widget.dart';
 
 /// A merged table row widget that combines multiple data rows into one visual row.
@@ -554,33 +554,19 @@ class _TablePlusMergedRowState<T> extends State<TablePlusMergedRow<T>> {
   /// Determines whether a tooltip should be shown.
   bool _shouldShowTooltip(
       String displayValue, TablePlusColumn<T> column, double maxWidth) {
-    if (!widget.tooltipTheme.enabled || displayValue.isEmpty) {
-      return false;
-    }
-
-    switch (column.tooltipBehavior) {
-      case TooltipBehavior.never:
-        return false;
-
-      case TooltipBehavior.always:
-        return column.textOverflow == TextOverflow.ellipsis;
-
-      case TooltipBehavior.onlyTextOverflow:
-        if (column.textOverflow != TextOverflow.ellipsis) {
-          return false;
-        }
-
-        final padding = widget.theme.padding;
-        final availableWidth = maxWidth - padding.horizontal;
-
-        return TextOverflowDetector.willTextOverflowInContext(
-          context: context,
-          text: displayValue,
-          maxWidth: availableWidth,
-          style: widget.theme
-              .getEffectiveTextStyle(widget.isSelected, widget.isDim),
-        );
-    }
+    if (!widget.tooltipTheme.enabled) return false;
+    return TooltipResolver.shouldShow(
+      behavior: column.tooltipBehavior,
+      isEllipsis: column.textOverflow == TextOverflow.ellipsis,
+      textIsEmpty: displayValue.isEmpty,
+      willOverflow: () => TextOverflowDetector.willTextOverflowInContext(
+        context: context,
+        text: displayValue,
+        maxWidth: maxWidth - widget.theme.padding.horizontal,
+        style:
+            widget.theme.getEffectiveTextStyle(widget.isSelected, widget.isDim),
+      ),
+    );
   }
 
   /// Wraps a text widget with tooltip if needed.
@@ -592,29 +578,15 @@ class _TablePlusMergedRowState<T> extends State<TablePlusMergedRow<T>> {
     double maxWidth,
     T? rowData,
   ) {
-    if (_shouldShowTooltip(displayValue, column, maxWidth)) {
-      if (column.tooltipBuilder != null && rowData != null) {
-        final capturedRowData = rowData;
-        return FlutterTooltipPlus(
-          tooltipBuilder: (context) =>
-              column.tooltipBuilder!(context, capturedRowData),
-          theme: widget.tooltipTheme,
-          child: textWidget,
-        );
-      } else {
-        final tooltipMessage =
-            column.tooltipFormatter != null && rowData != null
-                ? column.tooltipFormatter!(rowData)
-                : displayValue;
-
-        return FlutterTooltipPlus(
-          message: tooltipMessage,
-          theme: widget.tooltipTheme,
-          child: textWidget,
-        );
-      }
-    }
-    return textWidget;
+    return wrapWithTooltip<T>(
+      shouldShow: _shouldShowTooltip(displayValue, column, maxWidth),
+      child: textWidget,
+      theme: widget.tooltipTheme,
+      tooltipBuilder: column.tooltipBuilder,
+      tooltipFormatter: column.tooltipFormatter,
+      rowData: rowData,
+      fallbackMessage: displayValue,
+    );
   }
 
   /// Build selection cell for merged row.

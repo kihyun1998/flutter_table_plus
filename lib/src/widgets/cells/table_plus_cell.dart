@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
 import 'package:flutter_table_plus/src/utils/text_overflow_detector.dart';
+import 'package:flutter_table_plus/src/utils/tooltip_resolver.dart';
 import 'package:flutter_table_plus/src/widgets/cells/editable_text_field.dart';
+import 'package:flutter_table_plus/src/widgets/tooltip_wrapper.dart';
 
 /// A single table cell widget.
 class TablePlusCell<T> extends StatefulWidget {
@@ -150,31 +152,15 @@ class _TablePlusCellState<T> extends State<TablePlusCell<T>> {
       textAlign: widget.column.textAlign,
     );
 
-    // Add tooltip based on tooltip behavior and priority
-    if (_shouldShowTooltip(displayValue, textWidget)) {
-      // Priority: tooltipBuilder > tooltipFormatter > default
-      if (widget.column.tooltipBuilder != null) {
-        // Use custom widget tooltip via tooltipBuilder adapter
-        final rowData = widget.rowData;
-        textWidget = FlutterTooltipPlus(
-          tooltipBuilder: (context) =>
-              widget.column.tooltipBuilder!(context, rowData),
-          theme: widget.tooltipTheme,
-          child: textWidget,
-        );
-      } else {
-        // Use text-based tooltip
-        final tooltipMessage = widget.column.tooltipFormatter != null
-            ? widget.column.tooltipFormatter!(widget.rowData)
-            : displayValue;
-
-        textWidget = FlutterTooltipPlus(
-          message: tooltipMessage,
-          theme: widget.tooltipTheme,
-          child: textWidget,
-        );
-      }
-    }
+    textWidget = wrapWithTooltip<T>(
+      shouldShow: _shouldShowTooltip(displayValue, textWidget),
+      child: textWidget,
+      theme: widget.tooltipTheme,
+      tooltipBuilder: widget.column.tooltipBuilder,
+      tooltipFormatter: widget.column.tooltipFormatter,
+      rowData: widget.rowData,
+      fallbackMessage: displayValue,
+    );
 
     return Align(
       alignment: widget.column.alignment,
@@ -228,47 +214,34 @@ class _TablePlusCellState<T> extends State<TablePlusCell<T>> {
 
   /// Determines whether a tooltip should be shown based on the column's tooltip behavior.
   bool _shouldShowTooltip(String displayValue, Widget textWidget) {
-    // Basic checks - tooltip must be enabled and text must not be empty
-    if (!widget.tooltipTheme.enabled || displayValue.isEmpty) {
-      return false;
+    if (!widget.tooltipTheme.enabled) return false;
+    return TooltipResolver.shouldShow(
+      behavior: widget.column.tooltipBehavior,
+      isEllipsis: widget.column.textOverflow == TextOverflow.ellipsis,
+      textIsEmpty: displayValue.isEmpty,
+      willOverflow: () => _willTextOverflowCached(displayValue),
+    );
+  }
+
+  /// Whether [displayValue] overflows the cell, memoized on (text, width) so a
+  /// rebuild with unchanged inputs skips re-measuring.
+  bool _willTextOverflowCached(String displayValue) {
+    final availableWidth = widget.width - widget.theme.padding.horizontal;
+    if (_cachedOverflow != null &&
+        _cachedOverflowText == displayValue &&
+        _cachedOverflowWidth == availableWidth) {
+      return _cachedOverflow!;
     }
-
-    switch (widget.column.tooltipBehavior) {
-      case TooltipBehavior.never:
-        return false;
-
-      case TooltipBehavior.always:
-        return widget.column.textOverflow == TextOverflow.ellipsis;
-
-      case TooltipBehavior.onlyTextOverflow:
-        // Only show tooltip if text actually overflows
-        if (widget.column.textOverflow != TextOverflow.ellipsis) {
-          return false;
-        }
-
-        // Calculate available width for the cell content
-        final padding = widget.theme.padding;
-        final availableWidth = widget.width - padding.horizontal;
-
-        // Use cached result if inputs haven't changed
-        if (_cachedOverflow != null &&
-            _cachedOverflowText == displayValue &&
-            _cachedOverflowWidth == availableWidth) {
-          return _cachedOverflow!;
-        }
-
-        // Use TextOverflowDetector and cache the result
-        final result = TextOverflowDetector.willTextOverflowInContext(
-          context: context,
-          text: displayValue,
-          maxWidth: availableWidth,
-          style: widget.theme
-              .getEffectiveTextStyle(widget.isSelected, widget.isDim),
-        );
-        _cachedOverflowText = displayValue;
-        _cachedOverflowWidth = availableWidth;
-        _cachedOverflow = result;
-        return result;
-    }
+    final result = TextOverflowDetector.willTextOverflowInContext(
+      context: context,
+      text: displayValue,
+      maxWidth: availableWidth,
+      style:
+          widget.theme.getEffectiveTextStyle(widget.isSelected, widget.isDim),
+    );
+    _cachedOverflowText = displayValue;
+    _cachedOverflowWidth = availableWidth;
+    _cachedOverflow = result;
+    return result;
   }
 }
