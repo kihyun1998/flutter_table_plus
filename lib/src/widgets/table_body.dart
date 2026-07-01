@@ -9,6 +9,7 @@ import '../models/theme/body_theme.dart' show TablePlusBodyTheme;
 import '../models/theme/checkbox_theme.dart';
 import '../models/theme/editable_theme.dart' show TablePlusEditableTheme;
 import '../models/theme/tooltip_theme.dart' show TablePlusTooltipTheme;
+import 'row_locator.dart';
 import 'table_plus_merged_row.dart';
 import 'table_plus_row_widget.dart';
 
@@ -162,7 +163,8 @@ class TablePlusBody<T> extends StatefulWidget {
 /// parent [FlutterTablePlus] can drive drag-selection logic from a single
 /// viewport-level coordinate frame, while this widget stays focused on
 /// rendering rows.
-class TablePlusBodyState<T> extends State<TablePlusBody<T>> {
+class TablePlusBodyState<T> extends State<TablePlusBody<T>>
+    implements RowLocator {
   /// Cached renderable indices — recomputed only when data or mergedGroups change.
   List<int>? _cachedRenderableIndices;
 
@@ -329,17 +331,18 @@ class TablePlusBodyState<T> extends State<TablePlusBody<T>> {
     return null;
   }
 
-  // --- Public API for drag selection (driven by parent FlutterTablePlus) ---
+  // --- RowLocator port (consumed by the parent's DragSelectionController) ---
 
-  /// Resolve a Y coordinate (in this body's local space, which equals
-  /// viewport-local Y for vertical purposes) into a render index, or
-  /// null when the position falls outside any rendered row.
-  int? renderIndexAtLocalY(double localY) => _renderIndexFromLocalY(localY);
+  /// Resolve a viewport-local Y coordinate into a render index, or null when
+  /// the position falls outside any rendered row.
+  @override
+  int? indexAt(double localY) => _renderIndexFromLocalY(localY);
 
   /// Collect row IDs (or merged group IDs) for the inclusive render-index
-  /// range `[startRenderIdx, endRenderIdx]`.
-  Set<String> rowIdsBetween(int startRenderIdx, int endRenderIdx) =>
-      _collectRowIdsInRange(startRenderIdx, endRenderIdx);
+  /// range `[startRenderIndex, endRenderIndex]`.
+  @override
+  Set<String> idsBetween(int startRenderIndex, int endRenderIndex) =>
+      _collectRowIdsInRange(startRenderIndex, endRenderIndex);
 
   // --- Internal helpers ---
 

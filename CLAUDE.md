@@ -64,7 +64,9 @@ dart doc .                      # Generate API documentation
 - **`lib/flutter_table_plus.dart`**: Main library export file
 - **`lib/src/widgets/flutter_table_plus.dart`**: Main FlutterTablePlus widget implementation
 - **`lib/src/widgets/table_header.dart`**: Header row implementation with sorting, reordering, and column resizing
-- **`lib/src/widgets/table_body.dart`**: Body rows `ListView` — a pure row renderer. Exposes `renderIndexAtLocalY` and `rowIdsBetween` (via a public `TablePlusBodyState`, accessed by the parent through `GlobalKey`) so drag-selection logic in the parent can resolve coordinates to row IDs without owning the body's caches
+- **`lib/src/widgets/table_body.dart`**: Body rows `ListView` — a pure row renderer. Implements the `RowLocator` port (`indexAt` / `idsBetween`) via a public `TablePlusBodyState`, accessed by the parent through `GlobalKey`, so drag-selection logic can resolve coordinates to row IDs without owning the body's caches
+- **`lib/src/widgets/row_locator.dart`**: `RowLocator` — the narrow port (`indexAt(localY)`, `idsBetween(start, end)`) that decouples drag selection from the body's internal caching strategy
+- **`lib/src/widgets/drag_selection_controller.dart`**: `DragSelectionController` — the drag-to-select gesture state machine (threshold, lazy anchor, sticky range, emit), rubber-band geometry, and auto-scroll math, extracted from the table widget and driven by primitive coordinates so it is unit-testable without pumping a widget (see `test/drag_selection_controller_test.dart`)
 - **`lib/src/widgets/synced_scroll_controllers.dart`**: Synchronized scrolling logic
 - **`lib/src/widgets/custom_ink_well.dart`**: Custom tap handling widget
 - **`lib/src/widgets/table_plus_merged_row.dart`**: Merged row rendering widget for grouped data display
@@ -91,13 +93,13 @@ dart doc .                      # Generate API documentation
 5. **Theme Composition**: Nested theme classes (TablePlusTheme, TablePlusHeaderTheme, etc.) for granular styling control
 6. **State Management Ready**: Designed to work with state management solutions like Riverpod (see documentation/RIVERPOD_GENERATOR_GUIDE.md)
 7. **Row Widget Polymorphism**: TablePlusRowWidget abstract class enables different row types (_TablePlusRow for normal rows, TablePlusMergedRow for grouped rows) with consistent ListView.builder interface
-8. **Drag Selection (single coordinate frame)**: Drag-selection state lives at `_FlutterTablePlusState`, not in the body. A `Listener` wraps the body's horizontal `Scrollable` from the *outside*, so its `RenderBox` is stationary in screen — `event.localPosition` is therefore viewport-local on both axes. Coordinate state is encapsulated in `_DragCoordinator`; the rubber band's origin is content-anchored via the symmetric `downLocal − hDelta/vDelta` formula on both axes
+8. **Drag Selection (single coordinate frame)**: A `Listener` wraps the body's horizontal `Scrollable` from the *outside*, so its `RenderBox` is stationary in screen — `event.localPosition` is therefore viewport-local on both axes. The widget's pointer handlers are thin translators that forward `down`/`move`/`up`/`cancel` to a `DragSelectionController`, which owns the gesture state machine, auto-scroll math, and the content-anchored rubber-band origin (`downLocal − hDelta/vDelta` on both axes). Row lookups go through the `RowLocator` port the body implements
 
 ### Widget Lifecycle
 
 FlutterTablePlus follows a composition pattern where:
 - Header and body are separate widgets, each with its own horizontal `SingleChildScrollView`; `SyncedScrollControllers` keeps their positions aligned
-- Drag selection lives at `_FlutterTablePlusState` via a viewport-level `Listener`; the body is queried for row-index lookups through `GlobalKey<TablePlusBodyState<T>>`
+- Drag selection is owned by a `DragSelectionController` (constructed in `_FlutterTablePlusState.initState`); a viewport-level `Listener` forwards pointer events to it, and the body is queried for row-index lookups through the `RowLocator` port it implements (reached via `GlobalKey<TablePlusBodyState<T>>`)
 - Column reordering updates the column map and triggers rebuilds
 - Column resizing is managed internally via `_resizedWidths` state map; `onColumnResized` callback notifies externally for persistence
 - Selection state is managed externally and passed down as props
@@ -125,7 +127,7 @@ FlutterTablePlus follows a composition pattern where:
 - **Merged Rows**: MergedRowGroup functionality allows grouping consecutive rows with configurable merge behavior per column. Supports custom content, selection, and editing within merged cells
 - **Row Hover Implementation**: Currently supports basic hover effects via CustomInkWell.hoverColor. Row widgets extend TablePlusRowWidget (StatelessWidget) making advanced hover features (like button overlays) require architectural changes to support state management
 - **Column Width Constraints**: `minWidth`/`maxWidth` on `TablePlusColumn` are enforced in all `_calculateColumnWidths` paths via `clamp()` — both for resize drag and normal proportional layout distribution
-- **Drag Selection Coordinate Model**: All drag-selection coordinates live in a single viewport-local reference frame. The `Listener` is placed at the body's viewport (outside the body's horizontal `SingleChildScrollView`), so `event.localPosition` is viewport-local on both axes — eliminating the asymmetry that previously existed when the body slid horizontally under a stale captured screen origin. Auto-scroll edge zones, the rubber band rectangle, and content-anchored origin (`downLocal − hDelta/vDelta`) all use this single frame. State is held in `_DragCoordinator`; row-index lookups are routed to the body through `GlobalKey<TablePlusBodyState<T>>`
+- **Drag Selection Coordinate Model**: All drag-selection coordinates live in a single viewport-local reference frame. The `Listener` is placed at the body's viewport (outside the body's horizontal `SingleChildScrollView`), so `event.localPosition` is viewport-local on both axes — eliminating the asymmetry that previously existed when the body slid horizontally under a stale captured screen origin. Auto-scroll edge zones, the rubber band rectangle, and content-anchored origin (`downLocal − hDelta/vDelta`) all use this single frame. This gesture state machine + geometry is encapsulated in `DragSelectionController` (unit-tested in isolation via a fake `RowLocator`); the widget's pointer handlers are thin translators, and row-index lookups are routed to the body through the `RowLocator` port (reached via `GlobalKey<TablePlusBodyState<T>>`)
 
 ## Code Patterns & Conventions
 
