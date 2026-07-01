@@ -8,6 +8,7 @@ import '../models/theme/header_theme.dart';
 import '../models/theme/tooltip_theme.dart' show TablePlusTooltipTheme;
 import '../models/tooltip_behavior.dart';
 import '../utils/text_overflow_detector.dart';
+import 'edge_auto_scroller.dart';
 import 'flutter_tooltip_plus.dart';
 
 /// A widget that renders the header row of the table.
@@ -694,91 +695,63 @@ class _ResizeHandleState extends State<_ResizeHandle> {
   bool _isDragging = false;
   double _dragWidth = 0;
 
-  // Auto-scroll state for edge-proximity scrolling during resize drag
-  Timer? _autoScrollTimer;
-  double _autoScrollDirection = 0;
+  // Auto-scroll during a resize drag, delegated to the shared engine. Created
+  // on drag start, disposed on drag end/cancel.
+  EdgeAutoScroller? _autoScroller;
   ScrollableState? _scrollable;
 
-  /// Distance in pixels from viewport edge where auto-scroll activates.
+  /// Distance in pixels from the viewport edge where auto-scroll activates.
   static const double _autoScrollEdgeZone = 50.0;
 
   /// Maximum scroll speed in pixels per tick at the very edge.
   static const double _autoScrollMaxSpeed = 8.0;
 
-  /// Interval between auto-scroll ticks (~60 fps).
-  static const Duration _autoScrollInterval = Duration(milliseconds: 16);
-
   @override
   void dispose() {
-    _stopAutoScroll();
+    _autoScroller?.dispose();
     super.dispose();
   }
 
-  void _startAutoScroll() {
-    if (_autoScrollTimer != null) return;
-    _autoScrollTimer = Timer.periodic(_autoScrollInterval, (_) {
-      _performAutoScroll();
-    });
-  }
-
-  void _stopAutoScroll() {
-    _autoScrollTimer?.cancel();
-    _autoScrollTimer = null;
-    _autoScrollDirection = 0;
-  }
-
-  /// Perform one auto-scroll tick: scroll the viewport and adjust column width.
-  void _performAutoScroll() {
-    if (!mounted || _scrollable == null || _autoScrollDirection == 0) return;
-
-    final position = _scrollable!.position;
-    final scrollDelta = _autoScrollDirection * _autoScrollMaxSpeed;
+  /// Applies a scroll [delta] to the resize viewport, clamped to its extents.
+  /// Returns the amount actually moved, or 0 when it would move <= 0.5px
+  /// (preserving the original no-op threshold), which stops the engine.
+  double _applyResizeScroll(double delta) {
+    final position = _scrollable?.position;
+    if (position == null) return 0;
     final oldOffset = position.pixels;
-    final newOffset = (oldOffset + scrollDelta).clamp(
-      position.minScrollExtent,
-      position.maxScrollExtent,
-    );
+    final newOffset = (oldOffset + delta)
+        .clamp(position.minScrollExtent, position.maxScrollExtent);
     final actualDelta = newOffset - oldOffset;
-
-    if (actualDelta.abs() > 0.5) {
-      position.jumpTo(newOffset);
-      // Adjust column width by the scroll amount so the resize handle
-      // stays near the pointer during auto-scroll.
-      _dragWidth += actualDelta;
-      final clamped = _dragWidth.clamp(
-        widget.minWidth,
-        widget.maxWidth ?? double.infinity,
-      );
-      widget.onResize?.call(widget.columnKey, clamped);
-    }
+    if (actualDelta.abs() <= 0.5) return 0;
+    position.jumpTo(newOffset);
+    return actualDelta;
   }
 
-  /// Check pointer proximity to viewport edges and start/stop auto-scroll.
-  void _updateAutoScroll(Offset globalPosition) {
-    if (_scrollable == null) return;
+  /// Grows the dragged column by the scrolled amount so the handle keeps
+  /// tracking the pointer during auto-scroll.
+  void _onResizeScrolled(double actualDelta) {
+    _dragWidth += actualDelta;
+    final clamped = _dragWidth.clamp(
+      widget.minWidth,
+      widget.maxWidth ?? double.infinity,
+    );
+    widget.onResize?.call(widget.columnKey, clamped);
+  }
 
-    final renderBox = _scrollable!.context.findRenderObject() as RenderBox?;
+  /// Feed the pointer's viewport-relative X into the auto-scroll engine.
+  void _updateAutoScroll(Offset globalPosition) {
+    final scrollable = _scrollable;
+    final scroller = _autoScroller;
+    if (scrollable == null || scroller == null) return;
+
+    final renderBox = scrollable.context.findRenderObject() as RenderBox?;
     if (renderBox == null || !renderBox.hasSize) return;
 
     final viewportLeft = renderBox.localToGlobal(Offset.zero).dx;
-    final viewportRight = viewportLeft + renderBox.size.width;
-    final pointerX = globalPosition.dx;
-
-    if (pointerX > viewportRight - _autoScrollEdgeZone) {
-      // Near right edge – speed proportional to proximity
-      final proximity = 1.0 -
-          ((viewportRight - pointerX) / _autoScrollEdgeZone).clamp(0.0, 1.0);
-      _autoScrollDirection = proximity;
-      _startAutoScroll();
-    } else if (pointerX < viewportLeft + _autoScrollEdgeZone) {
-      // Near left edge – speed proportional to proximity
-      final proximity = 1.0 -
-          ((pointerX - viewportLeft) / _autoScrollEdgeZone).clamp(0.0, 1.0);
-      _autoScrollDirection = -proximity;
-      _startAutoScroll();
-    } else {
-      _stopAutoScroll();
-    }
+    scroller.update(
+      axisPos: globalPosition.dx - viewportLeft,
+      viewportExtent: renderBox.size.width,
+    );
   }
 
   @override
@@ -792,6 +765,12 @@ class _ResizeHandleState extends State<_ResizeHandle> {
         onDoubleTap: widget.onDoubleTap,
         onHorizontalDragStart: (details) {
           _scrollable = Scrollable.maybeOf(context);
+          _autoScroller = EdgeAutoScroller(
+            edgeZone: _autoScrollEdgeZone,
+            maxSpeed: _autoScrollMaxSpeed,
+            scrollBy: _applyResizeScroll,
+            onScrolled: _onResizeScrolled,
+          );
           setState(() {
             _isDragging = true;
             _dragWidth = widget.columnWidth;
@@ -807,7 +786,8 @@ class _ResizeHandleState extends State<_ResizeHandle> {
           _updateAutoScroll(details.globalPosition);
         },
         onHorizontalDragEnd: (details) {
-          _stopAutoScroll();
+          _autoScroller?.dispose();
+          _autoScroller = null;
           _scrollable = null;
           final clamped = _dragWidth.clamp(
             widget.minWidth,
@@ -817,7 +797,8 @@ class _ResizeHandleState extends State<_ResizeHandle> {
           widget.onResizeEnd?.call(widget.columnKey, clamped);
         },
         onHorizontalDragCancel: () {
-          _stopAutoScroll();
+          _autoScroller?.dispose();
+          _autoScroller = null;
           _scrollable = null;
           setState(() => _isDragging = false);
         },

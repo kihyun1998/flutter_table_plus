@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/widgets.dart';
 
+import 'edge_auto_scroller.dart';
 import 'row_locator.dart';
 
 /// Owns the drag-to-select gesture state machine, decoupled from the widget.
@@ -193,30 +194,23 @@ class DragSelectionController {
     return Rect.fromPoints(origin, current);
   }
 
-  /// The per-tick auto-scroll delta for one axis, given the pointer's
-  /// viewport-local position on that axis. Negative pulls toward the leading
-  /// edge, positive toward the trailing edge, `0` when outside both edge
-  /// zones. [clampProximity] caps the proximity scalar at 1 so the speed never
-  /// exceeds [maxSpeed]; leaving it false lets the pointer overshoot the edge
-  /// and scroll faster than [maxSpeed] (the historical vertical behavior).
+  /// The per-tick auto-scroll delta for one axis — delegates to the shared
+  /// [EdgeAutoScroller.axisScrollDelta] so drag-selection and column-resize
+  /// compute proximity identically.
   static double axisScrollDelta({
     required double localPos,
     required double viewportExtent,
     required double edgeZone,
     required double maxSpeed,
     required bool clampProximity,
-  }) {
-    if (localPos < edgeZone) {
-      var proximity = (edgeZone - localPos) / edgeZone;
-      if (clampProximity) proximity = proximity.clamp(0.0, 1.0);
-      return -maxSpeed * proximity;
-    } else if (localPos > viewportExtent - edgeZone) {
-      var proximity = (localPos - (viewportExtent - edgeZone)) / edgeZone;
-      if (clampProximity) proximity = proximity.clamp(0.0, 1.0);
-      return maxSpeed * proximity;
-    }
-    return 0;
-  }
+  }) =>
+      EdgeAutoScroller.axisScrollDelta(
+        localPos: localPos,
+        viewportExtent: viewportExtent,
+        edgeZone: edgeZone,
+        maxSpeed: maxSpeed,
+        clampProximity: clampProximity,
+      );
 
   /// The auto-scroll delta to apply this tick as an [Offset] (`dx` horizontal,
   /// `dy` vertical), computed from the last known pointer position and the
