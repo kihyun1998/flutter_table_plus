@@ -11,6 +11,7 @@ import '../models/theme/hover_button_theme.dart' show TablePlusHoverButtonTheme;
 import '../models/theme/tooltip_theme.dart' show TablePlusTooltipTheme;
 import '../models/tooltip_behavior.dart';
 import '../utils/column_width_access.dart';
+import 'row_hover_button.dart';
 import '../utils/text_overflow_detector.dart';
 import 'cells/editable_text_field.dart';
 import 'flutter_tooltip_plus.dart';
@@ -658,32 +659,6 @@ class _TablePlusMergedRowState<T> extends State<TablePlusMergedRow<T>> {
     );
   }
 
-  /// Build hover buttons for the merged row.
-  Widget? _buildHoverButtons(double mergedHeight) {
-    if (!_isHovered || widget.hoverButtonBuilder == null) {
-      return null;
-    }
-
-    // Get representative row data (first row in the merge group)
-    final representativeData = _getRowData(widget.mergeGroup.rowKeys.first);
-
-    if (representativeData == null) return null;
-
-    final buttonWidget = widget.hoverButtonBuilder!(
-      widget.mergeGroup.groupId,
-      representativeData,
-    );
-
-    if (buttonWidget == null) {
-      return null;
-    }
-
-    return widget.hoverButtonPosition.buildPositioned(
-      child: buttonWidget,
-      horizontalOffset: widget.hoverButtonTheme?.horizontalOffset ?? 8.0,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final mergedHeight = widget.calculatedHeight ??
@@ -725,7 +700,14 @@ class _TablePlusMergedRowState<T> extends State<TablePlusMergedRow<T>> {
       ),
     );
 
-    final hoverButtons = _buildHoverButtons(mergedHeight);
+    final hoverButtons = buildRowHoverButton<T>(
+      isHovered: _isHovered,
+      builder: widget.hoverButtonBuilder,
+      id: widget.mergeGroup.groupId,
+      data: _getRowData(widget.mergeGroup.rowKeys.first),
+      position: widget.hoverButtonPosition,
+      horizontalOffset: widget.hoverButtonTheme?.horizontalOffset ?? 8.0,
+    );
 
     Widget stackedContent = Stack(
       children: [

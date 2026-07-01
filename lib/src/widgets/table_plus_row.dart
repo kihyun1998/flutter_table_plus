@@ -5,6 +5,7 @@ import 'package:flutter_table_plus/src/widgets/cells/table_plus_selection_cell.d
 import 'package:flutter_table_plus/src/widgets/table_plus_row_widget.dart';
 
 import 'package:flutter_table_plus/src/utils/column_width_access.dart';
+import 'package:flutter_table_plus/src/widgets/row_hover_button.dart';
 
 /// A single table row widget.
 class TablePlusRow<T> extends TablePlusRowWidget {
@@ -169,24 +170,14 @@ class _TablePlusRowState<T> extends State<TablePlusRow<T>> {
       ),
     );
 
-    // Create hover buttons using builder or theme
-    Widget? hoverButtons;
-    if (_isHovered && widget.rowId != null) {
-      Widget? buttonWidget;
-
-      // Priority: custom builder > theme-based default
-      if (widget.hoverButtonBuilder != null) {
-        buttonWidget =
-            widget.hoverButtonBuilder!(widget.rowId!, widget.rowData);
-      }
-
-      if (buttonWidget != null) {
-        hoverButtons = widget.hoverButtonPosition.buildPositioned(
-          child: buttonWidget,
-          horizontalOffset: widget.hoverButtonTheme?.horizontalOffset ?? 8.0,
-        );
-      }
-    }
+    final hoverButtons = buildRowHoverButton<T>(
+      isHovered: _isHovered,
+      builder: widget.hoverButtonBuilder,
+      id: widget.rowId,
+      data: widget.rowData,
+      position: widget.hoverButtonPosition,
+      horizontalOffset: widget.hoverButtonTheme?.horizontalOffset ?? 8.0,
+    );
 
     // Wrap with Stack for hover buttons
     Widget stackedContent = Stack(
