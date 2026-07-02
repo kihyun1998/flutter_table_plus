@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../utils/clamped_scroll_delta.dart';
 import 'edge_auto_scroller.dart';
 
 /// An overlay resize handle widget centered on a column boundary.
@@ -67,13 +68,14 @@ class _ResizeHandleState extends State<ResizeHandle> {
   double _applyResizeScroll(double delta) {
     final position = _scrollable?.position;
     if (position == null) return 0;
-    final oldOffset = position.pixels;
-    final newOffset = (oldOffset + delta)
-        .clamp(position.minScrollExtent, position.maxScrollExtent);
-    final actualDelta = newOffset - oldOffset;
-    if (actualDelta.abs() <= 0.5) return 0;
-    position.jumpTo(newOffset);
-    return actualDelta;
+    final actual = clampedScrollDelta(
+      pixels: position.pixels,
+      delta: delta,
+      min: position.minScrollExtent,
+      max: position.maxScrollExtent,
+    );
+    if (actual != 0) position.jumpTo(position.pixels + actual);
+    return actual;
   }
 
   /// Grows the dragged column by the scrolled amount so the handle keeps

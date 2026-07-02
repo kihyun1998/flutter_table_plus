@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
+import 'package:flutter_table_plus/src/utils/edit_key_action.dart';
 import 'package:flutter_table_plus/src/utils/text_overflow_detector.dart';
 import 'package:flutter_table_plus/src/utils/tooltip_resolver.dart';
 import 'package:flutter_table_plus/src/widgets/cells/editable_text_field.dart';
@@ -90,18 +90,16 @@ class _TablePlusCellState<T> extends State<TablePlusCell<T>> {
 
   /// Handle key presses in the text field
   bool _handleKeyPress(KeyEvent event) {
-    if (event is KeyDownEvent) {
-      if (event.logicalKey == LogicalKeyboardKey.enter) {
-        // Enter key - save and stop editing
+    switch (editKeyAction(event)) {
+      case EditKeyAction.save:
         widget.onStopEditing?.call(save: true);
         return true;
-      } else if (event.logicalKey == LogicalKeyboardKey.escape) {
-        // Escape key - cancel and stop editing
+      case EditKeyAction.cancel:
         widget.onStopEditing?.call(save: false);
         return true;
-      }
+      case EditKeyAction.none:
+        return false;
     }
-    return false;
   }
 
   /// Extract the display value for this cell.

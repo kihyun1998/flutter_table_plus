@@ -10,6 +10,7 @@ import '../models/theme/editable_theme.dart' show TablePlusEditableTheme;
 import '../models/theme/hover_button_theme.dart' show TablePlusHoverButtonTheme;
 import '../models/theme/tooltip_theme.dart' show TablePlusTooltipTheme;
 import '../utils/column_width_access.dart';
+import '../utils/edit_key_action.dart';
 import '../utils/tooltip_resolver.dart';
 import 'row_decoration.dart';
 import '../utils/text_overflow_detector.dart';
@@ -296,18 +297,18 @@ class _TablePlusMergedRowState<T>
           autofocus: true,
           alignment: column.alignment,
           onKeyEvent: (event) {
-            if (event is KeyDownEvent) {
-              if (event.logicalKey == LogicalKeyboardKey.enter) {
+            switch (editKeyAction(event)) {
+              case EditKeyAction.save:
                 _handleMergedCellValueChange(
                     column.key, dataIndex, controller?.text);
                 widget.onStopEditing?.call(save: true);
                 return true;
-              } else if (event.logicalKey == LogicalKeyboardKey.escape) {
+              case EditKeyAction.cancel:
                 widget.onStopEditing?.call(save: false);
                 return true;
-              }
+              case EditKeyAction.none:
+                return false;
             }
-            return false;
           },
           onStopEditing: null,
         ),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
+import 'package:flutter_table_plus/src/utils/edit_key_action.dart';
 
 /// A reusable editable text field component for table cells.
 ///
@@ -51,18 +51,16 @@ class EditableTextField extends StatelessWidget {
       return true;
     }
 
-    if (event is KeyDownEvent) {
-      if (event.logicalKey == LogicalKeyboardKey.enter) {
-        // Enter key - save and stop editing
+    switch (editKeyAction(event)) {
+      case EditKeyAction.save:
         onStopEditing?.call(save: true);
         return true;
-      } else if (event.logicalKey == LogicalKeyboardKey.escape) {
-        // Escape key - cancel and stop editing
+      case EditKeyAction.cancel:
         onStopEditing?.call(save: false);
         return true;
-      }
+      case EditKeyAction.none:
+        return false;
     }
-    return false;
   }
 
   @override
