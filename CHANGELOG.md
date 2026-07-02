@@ -1,4 +1,4 @@
-## 2.13.2
+## 2.13.1
 
 *   **PERF**: Rows no longer rebuild on pointer hover when there are no hover buttons
     *   Each row wrapped its content in a hover-tracking `MouseRegion` that called `setState` on every pointer enter/exit, but that state drives only the hover button. When `hoverButtonBuilder == null` (the common case), the rebuild — all cells, including tooltip overflow re-measurement — had no visible effect, and fired continuously while the mouse moved over the table during scrolling
@@ -6,9 +6,6 @@
 *   **PERF**: Cell `FocusNode` is now allocated lazily, only when a cell can edit
     *   `TablePlusCell` created a `FocusNode` (and registered a listener) for every cell in `initState`, though only editing uses it. It is now created on first edit, so non-editable tables and non-editable columns allocate none — one fewer object + listener per visible cell as rows scroll into view
 *   **CHORE**: Bump `just_tooltip` dependency `^0.2.5` → `^0.3.0`
-
-## 2.13.1
-
 *   **PERF**: Uniform-height tables now scroll with O(1)-per-frame layout instead of O(n)
     *   `TablePlusBody` used `ListView.builder(itemExtentBuilder: ...)` unconditionally, which drives `RenderSliverVariedExtentList` — it sums every row's extent on each layout to know the total scroll extent and to map a scroll offset to an index. On a 100k-row table this is ~O(n) per frame and caused visible scroll jank
     *   When there are no merged groups and no `calculateRowHeight` (i.e. all rows share `theme.rowHeight`), the body now passes a fixed `itemExtent`, so Flutter uses `RenderSliverFixedExtentList` (offset↔index by division). Merged-group and dynamic-height tables keep `itemExtentBuilder` with identical geometry
