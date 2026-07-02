@@ -142,4 +142,33 @@ void main() {
       expect(c.hideOnEmptyMessage, theme.hideOnEmptyMessage);
     });
   });
+
+  group('TablePlusTheme (composite)', () {
+    const theme = TablePlusTheme();
+
+    test('copyWith replaces one sub-theme and preserves the rest', () {
+      const newBody = TablePlusBodyTheme(rowHeight: 100);
+      final c = theme.copyWith(bodyTheme: newBody);
+      expect(c.bodyTheme, same(newBody));
+      expect(c.headerTheme, same(theme.headerTheme));
+      expect(c.checkboxTheme, same(theme.checkboxTheme));
+    });
+
+    test('scaledBy scales the dimensional sub-themes', () {
+      final s = theme.scaledBy(2.0);
+      expect(s.bodyTheme.rowHeight, 96); // 48 * 2
+      expect(s.headerTheme.height, 112); // 56 * 2
+      expect(s.checkboxTheme.checkboxColumnWidth, 120); // 60 * 2
+    });
+
+    test('scaledBy leaves the scrollbar and tooltip themes unscaled', () {
+      final s = theme.scaledBy(2.0);
+      expect(s.scrollbarTheme, same(theme.scrollbarTheme));
+      expect(s.tooltipTheme, same(theme.tooltipTheme));
+    });
+
+    test('scaledBy(1.0) returns the same instance', () {
+      expect(identical(theme.scaledBy(1.0), theme), isTrue);
+    });
+  });
 }
