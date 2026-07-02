@@ -11,6 +11,7 @@ import '../models/merged_row_group.dart';
 import '../models/table_column.dart';
 import '../models/theme/scrollbar_theme.dart' show TablePlusScrollbarTheme;
 import '../models/theme/theme.dart' show TablePlusTheme;
+import '../utils/column_ordering.dart';
 import '../utils/column_width_resolver.dart';
 import 'cell_edit_session.dart';
 import 'drag_selection_controller.dart';
@@ -627,37 +628,11 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
   }
 
   /// Get ordered columns, with optional selection column prepended.
-  List<TablePlusColumn<T>> _getOrderedColumns() {
-    // Sort columns by order
-    final sortedColumns = widget.columns.entries.toList()
-      ..sort((a, b) => a.value.order.compareTo(b.value.order));
-
-    // Filter out invisible columns
-    final visibleColumns =
-        sortedColumns.where((entry) => entry.value.visible).toList();
-
-    // Add selection column at the beginning if selectable and checkbox column is enabled
-    if (widget.isSelectable && widget.theme.checkboxTheme.showCheckboxColumn) {
-      visibleColumns.insert(
-        0,
-        MapEntry(
-          '__selection__',
-          TablePlusColumn<T>(
-            key: '__selection__',
-            label: '',
-            order: -1,
-            valueAccessor: (_) => null,
-            width: widget.theme.checkboxTheme.checkboxColumnWidth,
-            minWidth: widget.theme.checkboxTheme.checkboxColumnWidth,
-            maxWidth: widget.theme.checkboxTheme.checkboxColumnWidth,
-            sortable: false,
-          ),
-        ),
+  List<TablePlusColumn<T>> _getOrderedColumns() => orderVisibleColumns<T>(
+        columns: widget.columns,
+        isSelectable: widget.isSelectable,
+        checkboxTheme: widget.theme.checkboxTheme,
       );
-    }
-
-    return visibleColumns.map((entry) => entry.value).toList();
-  }
 
   /// Calculate column widths based on available space.
   ///
