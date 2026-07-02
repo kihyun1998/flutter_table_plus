@@ -1,3 +1,19 @@
+## 2.13.0
+
+*   **FIX**: Row-level gestures now fire while `isEditable` is `true`
+    *   `onRowDoubleTap` and `onRowSecondaryTapDown` previously never fired in edit mode because the row's interaction layer was gated on selection being active (`isSelectable && !isEditable`). They now fire whenever a handler is provided — e.g. right-click a row to delete it while other rows stay editable
+    *   Tap-to-select is still suppressed while editing (a single tap edits a cell); the selection ink splash is not shown for edit-mode gestures
+*   **FIX**: Checkboxes no longer require a `Material` / `Scaffold` ancestor
+    *   The `InkWell` inside `FlutterCheckbox` needs a `Material` ancestor; the row selection cell and header select-all cell now wrap the checkbox in a transparent `Material`, so the table works in non-Material desktop apps without a `Scaffold`
+*   **FIX**: Narrow selection columns no longer clip the checkbox
+    *   The row and header select-all cells no longer wrap the (already-centered) checkbox in the full horizontal padding, which squeezed the content area to zero. A `checkboxColumnWidth` below ~40 now keeps the checkbox visible
+*   **PERF**: Column-width layout is now near-linear in the column count
+    *   The max-width redistribution used to cap one exceeding column and restart the scan (~O(n²)). It now settles all caps in a single sweep over columns sorted by `maxWidth / width` (~O(n log n)) — identical widths, verified by a differential test against the previous algorithm across randomized inputs
+    *   ~28× faster at 10,000 columns in the local benchmark (9.7 ms → 0.35 ms); negligible difference for normal column counts
+*   **INTERNAL**: Large testability refactor — no public API or behavior change
+    *   The column-width algorithm, the row hit-test geometry behind the drag-selection `RowLocator` port, table metrics (total height / row count / renderable indices), the sort-direction cycle, the single/double-tap timing, the scroll-sync reentrancy guard, and several theme/row helpers were extracted into pure, unit-tested modules
+    *   Test count `271` → `331`; line coverage ~85% → ~91%. Added `benchmark/pure_paths_benchmark.dart` microbenchmarks (run with `flutter test benchmark/pure_paths_benchmark.dart`)
+
 ## 2.12.2
 
 *   **CHORE**: Bump `flutter_checkbox` dependency `^0.2.0` → `^0.2.1`
