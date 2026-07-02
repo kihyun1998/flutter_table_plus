@@ -1,7 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'dart:async';
-
 import 'package:flutter/material.dart';
+
+import 'tap_counter.dart';
 
 /// A custom [InkWell] widget that provides enhanced tap, double-tap, and secondary-tap
 /// functionalities without delaying single taps when double-tap is enabled.
@@ -58,37 +58,17 @@ class CustomInkWell extends StatefulWidget {
 }
 
 class _CustomInkWellState extends State<CustomInkWell> {
-  int _clickCount = 0;
-  Timer? _timer;
+  final TapCounter _tapCounter = TapCounter();
 
-  void _handleTap() {
-    if (widget.onDoubleTap == null) {
-      // 더블탭 기능이 없으면 모든 탭을 단일 탭으로 처리
-      widget.onTap?.call();
-      return;
-    }
-
-    _clickCount++;
-
-    if (_clickCount == 1) {
-      // 첫 번째 클릭 - 즉시 처리 (지연 없음!)
-      widget.onTap?.call();
-
-      // 더블클릭 콜백이 있으면 타이머 시작
-      _timer = Timer(widget.doubleClickTime, () {
-        _clickCount = 0;
-      });
-    } else if (_clickCount == 2) {
-      // 두 번째 클릭 - 더블클릭 처리
-      _timer?.cancel();
-      widget.onDoubleTap?.call();
-      _clickCount = 0;
-    }
-  }
+  void _handleTap() => _tapCounter.handleTap(
+        doubleTapTimeout: widget.doubleClickTime,
+        onTap: widget.onTap,
+        onDoubleTap: widget.onDoubleTap,
+      );
 
   @override
   void dispose() {
-    _timer?.cancel();
+    _tapCounter.dispose();
     super.dispose();
   }
 
