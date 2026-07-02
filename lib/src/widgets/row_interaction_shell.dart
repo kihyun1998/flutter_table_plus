@@ -15,9 +15,9 @@ class RowInteractionShell extends StatelessWidget {
     required this.rowContent,
     required this.hoverButtons,
     required this.onHoverChanged,
-    required this.enableSelectionInk,
+    required this.enableInteractionLayer,
     required this.inkKey,
-    required this.onTap,
+    this.onTap,
     required this.onDoubleTap,
     required this.onSecondaryTapDown,
     required this.doubleClickTime,
@@ -36,13 +36,16 @@ class RowInteractionShell extends StatelessWidget {
   /// Called with the hover state as the pointer enters/exits the row.
   final ValueChanged<bool> onHoverChanged;
 
-  /// Whether to wrap the row in a [CustomInkWell] for tap selection.
-  final bool enableSelectionInk;
+  /// Whether to wrap the row in a [CustomInkWell] interaction layer — true when
+  /// tap-selection OR a row gesture (double-tap / secondary-tap) is active.
+  final bool enableInteractionLayer;
 
   /// Key applied to the [CustomInkWell] (typically a ValueKey of the row id).
   final Key inkKey;
 
-  final VoidCallback onTap;
+  /// The tap-selection handler, or null when tapping should not select (e.g.
+  /// in edit mode, where the layer only exists for double/secondary gestures).
+  final VoidCallback? onTap;
   final VoidCallback? onDoubleTap;
   final void Function(TapDownDetails details, RenderBox renderBox)?
       onSecondaryTapDown;
@@ -65,7 +68,7 @@ class RowInteractionShell extends StatelessWidget {
       ),
     );
 
-    if (!enableSelectionInk) return hovered;
+    if (!enableInteractionLayer) return hovered;
 
     return CustomInkWell(
       key: inkKey,

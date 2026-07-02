@@ -128,23 +128,38 @@ abstract class TablePlusRowStateBase<W extends TablePlusRowWidget<T>, T>
       horizontalOffset: widget.hoverButtonTheme?.horizontalOffset ?? 8.0,
     );
 
+    final id = widget.selectionId;
+
+    // Tap-to-select (and the selection ink visual) only in non-edit mode; row
+    // gestures (double-tap / secondary-tap) are available whenever a handler is
+    // provided, even while editing — so the layer must wrap the row for either.
+    final tapSelect = widget.enableSelectionInk;
+    final wantsRowGesture = id != null &&
+        (widget.onRowDoubleTap != null || widget.onRowSecondaryTapDown != null);
+
     return RowInteractionShell(
       rowContent: rowContent,
       hoverButtons: hoverButtons,
       onHoverChanged: (v) => setState(() => _isHovered = v),
-      enableSelectionInk: widget.enableSelectionInk,
-      inkKey: ValueKey(widget.selectionId),
-      onTap: widget.handleSelectionTap,
-      onDoubleTap: () => widget.onRowDoubleTap?.call(widget.selectionId!),
+      enableInteractionLayer: tapSelect || wantsRowGesture,
+      inkKey: ValueKey(id),
+      onTap: tapSelect ? widget.handleSelectionTap : null,
+      onDoubleTap: () => widget.onRowDoubleTap?.call(id!),
       onSecondaryTapDown: (details, renderBox) => widget.onRowSecondaryTapDown
-          ?.call(widget.selectionId!, details, renderBox, widget.isSelected),
+          ?.call(id!, details, renderBox, widget.isSelected),
       doubleClickTime: theme.doubleClickTime,
       backgroundColor: widget.backgroundColor,
-      hoverColor: theme.getEffectiveHoverColor(widget.isSelected, widget.isDim),
-      splashColor:
-          theme.getEffectiveSplashColor(widget.isSelected, widget.isDim),
-      highlightColor:
-          theme.getEffectiveHighlightColor(widget.isSelected, widget.isDim),
+      // Selection ink colors only when tap-selecting; edit-mode row gestures
+      // shouldn't paint a selection splash.
+      hoverColor: tapSelect
+          ? theme.getEffectiveHoverColor(widget.isSelected, widget.isDim)
+          : null,
+      splashColor: tapSelect
+          ? theme.getEffectiveSplashColor(widget.isSelected, widget.isDim)
+          : null,
+      highlightColor: tapSelect
+          ? theme.getEffectiveHighlightColor(widget.isSelected, widget.isDim)
+          : null,
     );
   }
 }
