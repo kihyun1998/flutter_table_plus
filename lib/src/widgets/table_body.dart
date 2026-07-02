@@ -9,6 +9,7 @@ import '../models/theme/body_theme.dart' show TablePlusBodyTheme;
 import '../models/theme/checkbox_theme.dart';
 import '../models/theme/editable_theme.dart' show TablePlusEditableTheme;
 import '../models/theme/tooltip_theme.dart' show TablePlusTooltipTheme;
+import 'row_geometry.dart';
 import 'row_locator.dart';
 import 'row_lookup.dart';
 import 'table_plus_merged_row.dart';
@@ -177,6 +178,10 @@ class TablePlusBodyState<T> extends State<TablePlusBody<T>>
   /// Cached row heights.
   Map<int, double> _cachedRowHeights = const {};
 
+  /// Cached pure hit-test geometry for the [RowLocator] port. Built lazily on
+  /// the first drag query, invalidated on data/mergedGroups/scale change.
+  RowGeometry? _rowGeometry;
+
   @override
   void initState() {
     super.initState();
@@ -190,8 +195,10 @@ class TablePlusBodyState<T> extends State<TablePlusBody<T>>
         !identical(widget.mergedGroups, oldWidget.mergedGroups)) {
       _rebuildCaches();
     } else if (widget.scale != oldWidget.scale) {
-      // Clear cached row heights when scale changes
+      // Clear cached row heights (and the geometry that derives from them)
+      // when scale changes.
       _cachedRowHeights = {};
+      _rowGeometry = null;
     }
   }
 
@@ -242,6 +249,7 @@ class TablePlusBodyState<T> extends State<TablePlusBody<T>>
     }
 
     _cachedRowHeights = {};
+    _rowGeometry = null;
   }
 
   /// Get the background color for a row at the given index.
@@ -323,79 +331,41 @@ class TablePlusBodyState<T> extends State<TablePlusBody<T>>
   /// Resolve a viewport-local Y coordinate into a render index, or null when
   /// the position falls outside any rendered row.
   @override
-  int? indexAt(double localY) => _renderIndexFromLocalY(localY);
+  int? indexAt(double localY) =>
+      _geometry().indexAt(localY + widget.verticalController.offset);
 
   /// Collect row IDs (or merged group IDs) for the inclusive render-index
   /// range `[startRenderIndex, endRenderIndex]`.
   @override
   Set<String> idsBetween(int startRenderIndex, int endRenderIndex) =>
-      _collectRowIdsInRange(startRenderIndex, endRenderIndex);
+      _geometry().idsBetween(startRenderIndex, endRenderIndex);
 
   // --- Internal helpers ---
 
-  /// Convert a local Y coordinate (relative to the ListView's scroll extent)
-  /// into a render index.
-  ///
-  /// Returns null when the coordinate falls outside the actual row area
-  /// (above the first row or below the last row). Callers rely on this
-  /// signal to keep drag selection sticky at the last valid row instead of
-  /// snapping to a row the pointer never crossed.
-  int? _renderIndexFromLocalY(double localY) {
+  /// The hit-test geometry, built lazily and cached until a data/scale change.
+  RowGeometry _geometry() => _rowGeometry ??= _buildGeometry();
+
+  /// Snapshot each render row's height and id (row id or merged group id) into a
+  /// pure [RowGeometry]. Uniform, dynamic, and merged-extent heights all resolve
+  /// through the same path here (uniform rows fall back to `theme.rowHeight`).
+  RowGeometry _buildGeometry() {
     final indices = _cachedRenderableIndices;
-    final itemCount = indices?.length ?? widget.data.length;
-    if (itemCount == 0) return null;
+    final count = indices?.length ?? widget.data.length;
 
-    // Absolute Y = localY + scroll offset
-    final absoluteY = localY + widget.verticalController.offset;
-
-    if (absoluteY < 0) return null;
-
-    // Fast path: uniform row heights (no calculateRowHeight, no merged groups)
-    if (widget.calculateRowHeight == null && widget.mergedGroups.isEmpty) {
-      final rowHeight = widget.theme.rowHeight;
-      final idx = (absoluteY / rowHeight).floor();
-      if (idx >= itemCount) return null;
-      return idx;
-    }
-
-    // Slow path: accumulate heights
-    double cumulativeHeight = 0;
-    for (int renderIdx = 0; renderIdx < itemCount; renderIdx++) {
+    final heights = <double>[];
+    final ids = <String>[];
+    for (int renderIdx = 0; renderIdx < count; renderIdx++) {
       final actualIndex = indices?[renderIdx] ?? renderIdx;
       final group = _getMergedGroupForRow(actualIndex);
-      final double rowHeight;
       if (group != null) {
-        rowHeight = _getMergedGroupExtent(group);
+        heights.add(_getMergedGroupExtent(group));
+        ids.add(group.groupId);
       } else {
-        rowHeight = _calculateRowHeight(actualIndex) ?? widget.theme.rowHeight;
-      }
-      cumulativeHeight += rowHeight;
-      if (absoluteY < cumulativeHeight) {
-        return renderIdx;
+        heights.add(_calculateRowHeight(actualIndex) ?? widget.theme.rowHeight);
+        ids.add(widget.rowId(widget.data[actualIndex]));
       }
     }
-    return null;
-  }
-
-  /// Collect all row IDs between two render indices (inclusive).
-  Set<String> _collectRowIdsInRange(int startRenderIdx, int endRenderIdx) {
-    final indices = _cachedRenderableIndices;
-    final lo = startRenderIdx < endRenderIdx ? startRenderIdx : endRenderIdx;
-    final hi = startRenderIdx < endRenderIdx ? endRenderIdx : startRenderIdx;
-
-    final result = <String>{};
-    for (int renderIdx = lo; renderIdx <= hi; renderIdx++) {
-      final actualIndex = indices?[renderIdx] ?? renderIdx;
-      if (actualIndex >= widget.data.length) continue;
-
-      final group = _getMergedGroupForRow(actualIndex);
-      if (group != null) {
-        result.add(group.groupId);
-      } else {
-        result.add(widget.rowId(widget.data[actualIndex]));
-      }
-    }
-    return result;
+    return RowGeometry(heights: heights, ids: ids);
   }
 
   @override
