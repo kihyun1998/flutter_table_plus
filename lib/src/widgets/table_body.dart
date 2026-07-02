@@ -9,6 +9,7 @@ import '../models/theme/body_theme.dart' show TablePlusBodyTheme;
 import '../models/theme/checkbox_theme.dart';
 import '../models/theme/editable_theme.dart' show TablePlusEditableTheme;
 import '../models/theme/tooltip_theme.dart' show TablePlusTooltipTheme;
+import '../utils/row_background_color.dart';
 import 'row_geometry.dart';
 import 'row_locator.dart';
 import 'row_lookup.dart';
@@ -253,21 +254,14 @@ class TablePlusBodyState<T> extends State<TablePlusBody<T>>
   }
 
   /// Get the background color for a row at the given index.
-  Color _getRowColor(int index, bool isSelected, bool isDim) {
-    if (isSelected && widget.isSelectable) {
-      return widget.theme.selectedRowColor;
-    }
-
-    if (isDim) {
-      return widget.theme.dimRowColor ?? widget.theme.backgroundColor;
-    }
-
-    if (widget.theme.alternateRowColor != null && index.isOdd) {
-      return widget.theme.alternateRowColor!;
-    }
-
-    return widget.theme.backgroundColor;
-  }
+  Color _getRowColor(int index, bool isSelected, bool isDim) =>
+      rowBackgroundColor(
+        theme: widget.theme,
+        index: index,
+        isSelected: isSelected,
+        isDim: isDim,
+        isSelectable: widget.isSelectable,
+      );
 
   /// Find the merged group that contains the specified row index.
   MergedRowGroup<T>? _getMergedGroupForRow(int rowIndex) =>
