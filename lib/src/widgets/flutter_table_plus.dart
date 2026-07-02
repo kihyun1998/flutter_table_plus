@@ -13,6 +13,7 @@ import '../models/theme/scrollbar_theme.dart' show TablePlusScrollbarTheme;
 import '../models/theme/theme.dart' show TablePlusTheme;
 import '../utils/column_ordering.dart';
 import '../utils/column_width_resolver.dart';
+import '../utils/table_metrics.dart';
 import 'cell_edit_session.dart';
 import 'drag_selection_controller.dart';
 import 'row_lookup.dart';
@@ -452,38 +453,16 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
       rowId: widget.rowId,
     );
 
-    // Calculate total height and row count in a single pass
-    double totalHeight = 0;
-    int totalCount = 0;
-    final Set<int> processedIndices = {};
-
-    for (int i = 0; i < widget.data.length; i++) {
-      if (processedIndices.contains(i)) continue;
-
-      final mergeGroup = _getMergedGroupForRow(i);
-      if (mergeGroup != null) {
-        totalHeight += _getMergedRowHeight(mergeGroup);
-        totalCount++;
-        for (final rowKey in mergeGroup.rowKeys) {
-          final rowIndex = _rowLookup.indexOf(rowKey);
-          if (rowIndex != null) {
-            processedIndices.add(rowIndex);
-          }
-        }
-      } else {
-        totalHeight += _getRowHeight(i);
-        totalCount++;
-        processedIndices.add(i);
-      }
-    }
-
-    _cachedTotalDataHeight = totalHeight;
-    _cachedTotalRowCount = totalCount;
+    // Total scrollable height + row count in a single pass (heights injected).
+    final metrics = computeTableMetrics<T>(
+      data: widget.data,
+      lookup: _rowLookup,
+      rowHeightOf: _getRowHeight,
+      mergedGroupHeightOf: _getMergedRowHeight,
+    );
+    _cachedTotalDataHeight = metrics.totalHeight;
+    _cachedTotalRowCount = metrics.totalCount;
   }
-
-  /// Find the merged group that contains the specified row index.
-  MergedRowGroup<T>? _getMergedGroupForRow(int rowIndex) =>
-      _rowLookup.groupForRowIndex(rowIndex);
 
   /// Get the height for an individual row (scaled by [widget.scale]).
   double _getRowHeight(int index) {

@@ -10,6 +10,7 @@ import '../models/theme/checkbox_theme.dart';
 import '../models/theme/editable_theme.dart' show TablePlusEditableTheme;
 import '../models/theme/tooltip_theme.dart' show TablePlusTooltipTheme;
 import '../utils/row_background_color.dart';
+import '../utils/table_metrics.dart';
 import 'row_geometry.dart';
 import 'row_locator.dart';
 import 'row_lookup.dart';
@@ -215,39 +216,13 @@ class TablePlusBodyState<T> extends State<TablePlusBody<T>>
       rowId: widget.rowId,
     );
 
-    // Build renderable indices only when merged groups exist
-    if (mergedGroups.isEmpty) {
-      _cachedRenderableIndices = null;
-    } else {
-      final renderableIndices = <int>[];
-      final processedIndices = <int>{};
-
-      for (int i = 0; i < data.length; i++) {
-        if (processedIndices.contains(i)) continue;
-
-        final rowKey = widget.rowId(data[i]);
-        final group = _rowLookup.groupOf(rowKey);
-
-        if (group != null) {
-          final firstRowKey = group.rowKeys.first;
-          final firstRowIndex = _rowLookup.indexOf(firstRowKey);
-          if (firstRowIndex == i) {
-            renderableIndices.add(i);
-          }
-          for (final gRowKey in group.rowKeys) {
-            final idx = _rowLookup.indexOf(gRowKey);
-            if (idx != null) {
-              processedIndices.add(idx);
-            }
-          }
-        } else {
-          renderableIndices.add(i);
-          processedIndices.add(i);
-        }
-      }
-
-      _cachedRenderableIndices = renderableIndices;
-    }
+    // Renderable indices (null when there are no merged groups).
+    _cachedRenderableIndices = computeRenderableIndices<T>(
+      data: data,
+      lookup: _rowLookup,
+      rowId: widget.rowId,
+      hasMergedGroups: mergedGroups.isNotEmpty,
+    );
 
     _cachedRowHeights = {};
     _rowGeometry = null;
