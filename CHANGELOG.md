@@ -1,3 +1,12 @@
+## 2.13.2
+
+*   **PERF**: Rows no longer rebuild on pointer hover when there are no hover buttons
+    *   Each row wrapped its content in a hover-tracking `MouseRegion` that called `setState` on every pointer enter/exit, but that state drives only the hover button. When `hoverButtonBuilder == null` (the common case), the rebuild — all cells, including tooltip overflow re-measurement — had no visible effect, and fired continuously while the mouse moved over the table during scrolling
+    *   The `MouseRegion` + `setState` are now installed only when there are hover buttons. Row hover / splash / highlight **colors** are unchanged (painted by the row's `CustomInkWell`), and the hover-button reveal is unchanged when a builder is set
+*   **PERF**: Cell `FocusNode` is now allocated lazily, only when a cell can edit
+    *   `TablePlusCell` created a `FocusNode` (and registered a listener) for every cell in `initState`, though only editing uses it. It is now created on first edit, so non-editable tables and non-editable columns allocate none — one fewer object + listener per visible cell as rows scroll into view
+*   **CHORE**: Bump `just_tooltip` dependency `^0.2.5` → `^0.3.0`
+
 ## 2.13.1
 
 *   **PERF**: Uniform-height tables now scroll with O(1)-per-frame layout instead of O(n)
