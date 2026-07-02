@@ -11,6 +11,7 @@ import '../models/merged_row_group.dart';
 import '../models/table_column.dart';
 import '../models/theme/scrollbar_theme.dart' show TablePlusScrollbarTheme;
 import '../models/theme/theme.dart' show TablePlusTheme;
+import '../utils/column_width_resolver.dart';
 import 'cell_edit_session.dart';
 import 'drag_selection_controller.dart';
 import 'row_lookup.dart';
@@ -660,127 +661,16 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
 
   /// Calculate column widths based on available space.
   ///
-  /// When columns have been resized by the user, their widths are fixed.
-  /// Remaining space is distributed proportionally among flexible columns.
-  /// Columns whose maxWidth == their preferred width are treated as fixed
-  /// and excluded from proportional distribution to prevent space loss.
+  /// Thin adapter over the pure [computeColumnWidths] algorithm, supplying the
+  /// current user-resized widths and the stretch flag.
   List<double> _calculateColumnWidths(
       double availableWidth, List<TablePlusColumn<T>> orderedColumns) {
-    if (orderedColumns.isEmpty) return [];
-
-    // Classify each column: resized, fixed (maxWidth caps it), or flexible
-    double fixedTotal = 0;
-    double flexiblePreferredTotal = 0;
-    final widths = List<double?>.filled(orderedColumns.length, null);
-
-    for (int i = 0; i < orderedColumns.length; i++) {
-      final column = orderedColumns[i];
-      final resizedWidth = _resizedWidths[column.key];
-
-      if (resizedWidth != null) {
-        // User-resized column — lock to resized width
-        final clamped = resizedWidth.clamp(
-          column.minWidth,
-          column.maxWidth ?? double.infinity,
-        );
-        widths[i] = clamped;
-        fixedTotal += clamped;
-      } else if (column.maxWidth != null && column.width >= column.maxWidth!) {
-        // Column whose preferred width already hits maxWidth — fixed
-        final clamped = column.width.clamp(column.minWidth, column.maxWidth!);
-        widths[i] = clamped;
-        fixedTotal += clamped;
-      } else {
-        // Flexible column — participates in proportional distribution
-        flexiblePreferredTotal += column.width;
-      }
-    }
-
-    final spaceForFlexible = availableWidth - fixedTotal;
-
-    // Not enough space for proportional distribution — give preferred widths.
-    // Using `< flexiblePreferredTotal` instead of `<= 0` prevents a
-    // discontinuous jump when the boundary is crossed during window resize.
-    if (spaceForFlexible < flexiblePreferredTotal ||
-        flexiblePreferredTotal <= 0) {
-      for (int i = 0; i < orderedColumns.length; i++) {
-        if (widths[i] == null) {
-          final col = orderedColumns[i];
-          widths[i] =
-              col.width.clamp(col.minWidth, col.maxWidth ?? double.infinity);
-        }
-      }
-    } else {
-      // Iterative redistribution: when a flexible column hits maxWidth,
-      // lock it and redistribute the excess to remaining flexible columns.
-      double remainingSpace = spaceForFlexible;
-      double remainingPreferred = flexiblePreferredTotal;
-      final isFlexible = List<bool>.generate(
-        orderedColumns.length,
-        (i) => widths[i] == null,
-      );
-
-      bool changed = true;
-      while (changed) {
-        changed = false;
-
-        if (remainingPreferred <= 0 || remainingSpace <= 0) {
-          for (int i = 0; i < orderedColumns.length; i++) {
-            if (!isFlexible[i]) continue;
-            final col = orderedColumns[i];
-            widths[i] =
-                col.width.clamp(col.minWidth, col.maxWidth ?? double.infinity);
-          }
-          break;
-        }
-
-        for (int i = 0; i < orderedColumns.length; i++) {
-          if (!isFlexible[i]) continue;
-          final column = orderedColumns[i];
-          final proportion = column.width / remainingPreferred;
-          final calculatedWidth = remainingSpace * proportion;
-
-          if (column.maxWidth != null && calculatedWidth > column.maxWidth!) {
-            widths[i] = column.maxWidth!;
-            isFlexible[i] = false;
-            remainingSpace -= column.maxWidth!;
-            remainingPreferred -= column.width;
-            changed = true;
-            break;
-          }
-        }
-      }
-
-      // Final pass: assign remaining flexible columns
-      for (int i = 0; i < orderedColumns.length; i++) {
-        if (widths[i] != null) continue;
-        final column = orderedColumns[i];
-        final proportion = column.width / remainingPreferred;
-        widths[i] = (remainingSpace * proportion)
-            .clamp(column.minWidth, column.maxWidth ?? double.infinity);
-      }
-    }
-
-    // stretchLastColumn: absorb any remaining space into the last column
-    if (widget.stretchLastColumn) {
-      final totalUsed = widths.fold(0.0, (sum, w) => sum + (w ?? 0.0));
-      final remaining = availableWidth - totalUsed;
-      if (remaining > 0) {
-        // Find last non-selection column index
-        int lastIdx = -1;
-        for (int i = orderedColumns.length - 1; i >= 0; i--) {
-          if (orderedColumns[i].key != '__selection__') {
-            lastIdx = i;
-            break;
-          }
-        }
-        if (lastIdx >= 0) {
-          widths[lastIdx] = widths[lastIdx]! + remaining;
-        }
-      }
-    }
-
-    return widths.cast<double>();
+    return computeColumnWidths<T>(
+      availableWidth: availableWidth,
+      columns: orderedColumns,
+      resizedWidths: _resizedWidths,
+      stretchLastColumn: widget.stretchLastColumn,
+    );
   }
 
   /// Handle starting a cell editing session.
