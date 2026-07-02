@@ -1,3 +1,10 @@
+## 2.13.1
+
+*   **PERF**: Uniform-height tables now scroll with O(1)-per-frame layout instead of O(n)
+    *   `TablePlusBody` used `ListView.builder(itemExtentBuilder: ...)` unconditionally, which drives `RenderSliverVariedExtentList` — it sums every row's extent on each layout to know the total scroll extent and to map a scroll offset to an index. On a 100k-row table this is ~O(n) per frame and caused visible scroll jank
+    *   When there are no merged groups and no `calculateRowHeight` (i.e. all rows share `theme.rowHeight`), the body now passes a fixed `itemExtent`, so Flutter uses `RenderSliverFixedExtentList` (offset↔index by division). Merged-group and dynamic-height tables keep `itemExtentBuilder` with identical geometry
+    *   Local harness (100k uniform rows, 60 `jumpTo` layouts): ~83.6 ms/jump → ~22.1 ms/jump end-to-end, and the per-frame layout cost no longer grows with row count
+
 ## 2.13.0
 
 *   **FIX**: Row-level gestures now fire while `isEditable` is `true`

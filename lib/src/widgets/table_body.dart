@@ -359,17 +359,30 @@ class TablePlusBodyState<T> extends State<TablePlusBody<T>>
 
     final indices = _cachedRenderableIndices;
 
+    // When every row is the same height — no merged groups (which vary by
+    // group extent) and no per-row [calculateRowHeight] — a single fixed
+    // [itemExtent] lets Flutter use RenderSliverFixedExtentList, which maps a
+    // scroll offset to an index by division (O(1)). The [itemExtentBuilder]
+    // path below drives RenderSliverVariedExtentList, which sums every extent
+    // each layout (~O(n) per frame) — the source of 100k-row scroll jank (#34).
+    // `theme.rowHeight` is already pre-scaled by the parent, matching the
+    // fallback the builder returns.
+    final uniformHeight = indices == null && widget.calculateRowHeight == null;
+
     return ListView.builder(
       controller: widget.verticalController,
       physics: widget.scrollPhysics,
-      itemExtentBuilder: (int index, _) {
-        final actualIndex = indices?[index] ?? index;
-        final group = _getMergedGroupForRow(actualIndex);
-        if (group != null) {
-          return _getMergedGroupExtent(group);
-        }
-        return _calculateRowHeight(actualIndex) ?? widget.theme.rowHeight;
-      },
+      itemExtent: uniformHeight ? widget.theme.rowHeight : null,
+      itemExtentBuilder: uniformHeight
+          ? null
+          : (int index, _) {
+              final actualIndex = indices?[index] ?? index;
+              final group = _getMergedGroupForRow(actualIndex);
+              if (group != null) {
+                return _getMergedGroupExtent(group);
+              }
+              return _calculateRowHeight(actualIndex) ?? widget.theme.rowHeight;
+            },
       itemCount: indices?.length ?? widget.data.length,
       itemBuilder: (context, index) {
         final actualIndex = indices?[index] ?? index;

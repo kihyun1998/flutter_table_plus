@@ -131,4 +131,20 @@ void main() {
     // The tooltip echoes the cell text into an overlay -> a second 'R0'.
     expect(find.text('R0'), findsNWidgets(2));
   });
+
+  testWidgets('uniform table scrolls to the last row (fixed itemExtent path)',
+      (tester) async {
+    // No merged groups and no calculateRowHeight -> the fixed-itemExtent path.
+    await _pump(tester, rows: 1000);
+
+    final vertical = find.byWidgetPredicate(
+      (w) => w is Scrollable && w.axisDirection == AxisDirection.down,
+    );
+    final pos = tester.state<ScrollableState>(vertical.first).position;
+    pos.jumpTo(pos.maxScrollExtent);
+    await tester.pumpAndSettle();
+
+    // Offset<->index mapping is correct under RenderSliverFixedExtentList.
+    expect(find.text('R999'), findsOneWidget);
+  });
 }
