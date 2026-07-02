@@ -7,6 +7,7 @@ import '../models/theme/checkbox_theme.dart';
 import '../models/theme/header_theme.dart';
 import '../models/theme/tooltip_theme.dart' show TablePlusTooltipTheme;
 import '../utils/column_width_access.dart';
+import '../utils/select_all_state.dart';
 import '../utils/sort_cycle.dart';
 import 'table_header_cell.dart';
 import 'table_resize_handle.dart';
@@ -107,12 +108,10 @@ class _TablePlusHeaderState<T> extends State<TablePlusHeader<T>> {
   bool _isReordering = false;
 
   /// Determine the state of the select-all checkbox.
-  bool? _getSelectAllState() {
-    if (widget.totalRowCount == 0) return false;
-    if (widget.selectedRows.isEmpty) return false;
-    if (widget.selectedRows.length == widget.totalRowCount) return true;
-    return null; // Indeterminate state
-  }
+  bool? _getSelectAllState() => selectAllState(
+        total: widget.totalRowCount,
+        selectedCount: widget.selectedRows.length,
+      );
 
   /// Handle column reorder
   void _handleColumnReorder(int oldIndex, int newIndex) {
