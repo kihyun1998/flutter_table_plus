@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../utils/no_cascade_guard.dart';
+
 /// A widget that synchronizes multiple [ScrollController]s.
 ///
 /// This is particularly useful for scenarios where different scrollable widgets
@@ -112,7 +114,7 @@ class _SyncedScrollControllersState extends State<SyncedScrollControllers> {
   }
 
   void _initControllers() {
-    _doNotReissueJump.clear();
+    _guard.reset();
 
     // 수직 스크롤 컨트롤러 (메인, Scrollable Area 용)
     _sc11 = widget.scrollController ?? ScrollController();
@@ -165,7 +167,8 @@ class _SyncedScrollControllersState extends State<SyncedScrollControllers> {
     if (widget.horizontalHeaderController == null) _sc23.dispose();
   }
 
-  final Map<ScrollController, bool> _doNotReissueJump = {};
+  /// Breaks the master/slave notification echo (unit-tested in isolation).
+  final NoCascadeGuard _guard = NoCascadeGuard();
 
   void _syncScrollControllers(ScrollController master, ScrollController slave) {
     // 마스터 컨트롤러에 리스너 추가
@@ -184,16 +187,15 @@ class _SyncedScrollControllersState extends State<SyncedScrollControllers> {
       return;
     }
 
-    if (_doNotReissueJump[master] == null ||
-        _doNotReissueJump[master]! == false) {
-      _doNotReissueJump[slave] = true;
-      final clampedOffset = master.offset.clamp(
-        slave.position.minScrollExtent,
-        slave.position.maxScrollExtent,
-      );
-      slave.jumpTo(clampedOffset);
-    } else {
-      _doNotReissueJump[master] = false;
+    final target = _guard.resolveJump(
+      master: master,
+      slave: slave,
+      masterOffset: master.offset,
+      slaveMin: slave.position.minScrollExtent,
+      slaveMax: slave.position.maxScrollExtent,
+    );
+    if (target != null) {
+      slave.jumpTo(target);
     }
   }
 
