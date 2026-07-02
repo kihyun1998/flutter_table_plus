@@ -49,17 +49,17 @@ class TablePlusCell<T> extends StatefulWidget {
 }
 
 class _TablePlusCellState<T> extends State<TablePlusCell<T>> {
-  late FocusNode _focusNode;
+  // Created lazily — only an editing cell needs a focus node, so non-editable
+  // tables (and non-editable columns) never allocate one. That saves an object
+  // + listener per visible cell as rows scroll into the viewport.
+  FocusNode? _focusNode;
 
   // Cached overflow detection result
   final OverflowCache _overflowCache = OverflowCache();
 
-  @override
-  void initState() {
-    super.initState();
-    _focusNode = FocusNode();
-    _focusNode.addListener(_onFocusChange);
-  }
+  /// Lazily create the focus node (with its blur listener) on first use.
+  FocusNode _ensureFocusNode() =>
+      _focusNode ??= (FocusNode()..addListener(_onFocusChange));
 
   @override
   void didUpdateWidget(TablePlusCell<T> oldWidget) {
@@ -68,21 +68,22 @@ class _TablePlusCellState<T> extends State<TablePlusCell<T>> {
     // Focus the text field when editing starts
     if (!oldWidget.isCellEditing && widget.isCellEditing) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _focusNode.requestFocus();
+        if (mounted) _ensureFocusNode().requestFocus();
       });
     }
   }
 
   @override
   void dispose() {
-    _focusNode.removeListener(_onFocusChange);
-    _focusNode.dispose();
+    _focusNode?.removeListener(_onFocusChange);
+    _focusNode?.dispose();
     super.dispose();
   }
 
   /// Handle focus changes - stop editing when focus is lost
   void _onFocusChange() {
-    if (!_focusNode.hasFocus && widget.isCellEditing) {
+    final node = _focusNode;
+    if (node != null && !node.hasFocus && widget.isCellEditing) {
       widget.onStopEditing?.call(save: true);
     }
   }
@@ -114,7 +115,7 @@ class _TablePlusCellState<T> extends State<TablePlusCell<T>> {
       column: widget.column,
       theme: widget.editableTheme,
       controller: widget.cellController,
-      focusNode: _focusNode,
+      focusNode: _ensureFocusNode(),
       autofocus: false, // We handle focus manually in didUpdateWidget
       alignment: widget.column.alignment,
       onStopEditing: widget.onStopEditing,
