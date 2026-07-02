@@ -246,14 +246,19 @@ class SelectionHeaderCell extends StatelessWidget {
       // only shrank its room and a narrow selection column would clip it (#4).
       decoration: _buildSelectionCellDecoration(),
       child: showSelectAllCheckbox && onSelectAll != null
+          // Transparent Material: FlutterCheckbox's internal InkWell needs a
+          // Material ancestor so the table works without a Scaffold (#3).
           ? Center(
-              child: checkboxTheme.buildCheckbox(
-                value: selectAllState,
-                tristate: true,
-                onChanged: (value) {
-                  final shouldSelectAll = selectedRows.isEmpty;
-                  onSelectAll!(shouldSelectAll);
-                },
+              child: Material(
+                type: MaterialType.transparency,
+                child: checkboxTheme.buildCheckbox(
+                  value: selectAllState,
+                  tristate: true,
+                  onChanged: (value) {
+                    final shouldSelectAll = selectedRows.isEmpty;
+                    onSelectAll!(shouldSelectAll);
+                  },
+                ),
               ),
             )
           : const SizedBox.shrink(),

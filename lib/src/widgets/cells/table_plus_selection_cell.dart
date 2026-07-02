@@ -30,11 +30,18 @@ class TablePlusSelectionCell extends StatelessWidget {
       // Center only — no horizontal body padding. The checkbox is already
       // centered, so padding never changed its position, only shrank the room
       // it had; a narrow selection column would then clip it away entirely (#4).
+      //
+      // The transparent Material gives FlutterCheckbox's internal InkWell an
+      // ancestor so the table works without a Scaffold/Material (e.g. on
+      // desktop) (#3).
       content = Center(
-        child: checkboxTheme.buildCheckbox(
-          value: isSelected,
-          onChanged:
-              rowId != null ? (value) => onSelectionChanged(rowId!) : null,
+        child: Material(
+          type: MaterialType.transparency,
+          child: checkboxTheme.buildCheckbox(
+            value: isSelected,
+            onChanged:
+                rowId != null ? (value) => onSelectionChanged(rowId!) : null,
+          ),
         ),
       );
 
