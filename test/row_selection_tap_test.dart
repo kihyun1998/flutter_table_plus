@@ -109,4 +109,51 @@ void main() {
       expect(calls, isEmpty);
     });
   });
+
+  group('TablePlusRowWidget.enableSelectionInk', () {
+    _TestRow row({
+      required bool isEditable,
+      required bool isSelectable,
+      required String? selectionId,
+    }) {
+      return _TestRow(
+        isEditable: isEditable,
+        isSelectable: isSelectable,
+        selectionId: selectionId,
+        onRowSelectionChanged: (_) {},
+      );
+    }
+
+    test('true only when selectable, not editing, and id present', () {
+      expect(
+        row(isEditable: false, isSelectable: true, selectionId: 'r')
+            .enableSelectionInk,
+        isTrue,
+      );
+    });
+
+    test('false while editing', () {
+      expect(
+        row(isEditable: true, isSelectable: true, selectionId: 'r')
+            .enableSelectionInk,
+        isFalse,
+      );
+    });
+
+    test('false when not selectable', () {
+      expect(
+        row(isEditable: false, isSelectable: false, selectionId: 'r')
+            .enableSelectionInk,
+        isFalse,
+      );
+    });
+
+    test('false when the id is null', () {
+      expect(
+        row(isEditable: false, isSelectable: true, selectionId: null)
+            .enableSelectionInk,
+        isFalse,
+      );
+    });
+  });
 }
