@@ -242,7 +242,8 @@ class SelectionHeaderCell extends StatelessWidget {
     Widget content = Container(
       width: width,
       height: theme.height,
-      padding: theme.padding,
+      // No horizontal padding: the select-all checkbox is centered, so padding
+      // only shrank its room and a narrow selection column would clip it (#4).
       decoration: _buildSelectionCellDecoration(),
       child: showSelectAllCheckbox && onSelectAll != null
           ? Center(

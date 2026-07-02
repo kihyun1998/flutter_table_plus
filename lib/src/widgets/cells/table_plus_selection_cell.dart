@@ -27,14 +27,14 @@ class TablePlusSelectionCell extends StatelessWidget {
     Widget content;
 
     if (checkboxTheme.showRowCheckbox) {
-      content = Padding(
-        padding: theme.padding,
-        child: Center(
-          child: checkboxTheme.buildCheckbox(
-            value: isSelected,
-            onChanged:
-                rowId != null ? (value) => onSelectionChanged(rowId!) : null,
-          ),
+      // Center only — no horizontal body padding. The checkbox is already
+      // centered, so padding never changed its position, only shrank the room
+      // it had; a narrow selection column would then clip it away entirely (#4).
+      content = Center(
+        child: checkboxTheme.buildCheckbox(
+          value: isSelected,
+          onChanged:
+              rowId != null ? (value) => onSelectionChanged(rowId!) : null,
         ),
       );
 
