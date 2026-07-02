@@ -140,7 +140,12 @@ abstract class TablePlusRowStateBase<W extends TablePlusRowWidget<T>, T>
     return RowInteractionShell(
       rowContent: rowContent,
       hoverButtons: hoverButtons,
-      onHoverChanged: (v) => setState(() => _isHovered = v),
+      // Track hover only when there are hover buttons — `_isHovered` drives
+      // nothing else, so skipping it avoids a wasted full-row rebuild on every
+      // pointer enter/exit.
+      onHoverChanged: widget.hoverButtonBuilder != null
+          ? (v) => setState(() => _isHovered = v)
+          : null,
       enableInteractionLayer: tapSelect || wantsRowGesture,
       inkKey: ValueKey(id),
       onTap: tapSelect ? widget.handleSelectionTap : null,

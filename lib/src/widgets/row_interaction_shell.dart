@@ -33,8 +33,12 @@ class RowInteractionShell extends StatelessWidget {
   /// The positioned hover-button overlay, or null when none.
   final Widget? hoverButtons;
 
-  /// Called with the hover state as the pointer enters/exits the row.
-  final ValueChanged<bool> onHoverChanged;
+  /// Called with the hover state as the pointer enters/exits the row. `null`
+  /// when the row has no hover buttons — then no hover-tracking [MouseRegion] is
+  /// installed at all, so moving the pointer over the row does not rebuild it.
+  /// (Hover *colors* are unaffected: they are painted by [CustomInkWell]'s own
+  /// internal hover handling.)
+  final ValueChanged<bool>? onHoverChanged;
 
   /// Whether to wrap the row in a [CustomInkWell] interaction layer — true when
   /// tap-selection OR a row gesture (double-tap / secondary-tap) is active.
@@ -57,16 +61,24 @@ class RowInteractionShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hovered = MouseRegion(
-      onEnter: (_) => onHoverChanged(true),
-      onExit: (_) => onHoverChanged(false),
-      child: Stack(
-        children: [
-          rowContent,
-          if (hoverButtons != null) hoverButtons!,
-        ],
-      ),
+    final content = Stack(
+      children: [
+        rowContent,
+        if (hoverButtons != null) hoverButtons!,
+      ],
     );
+
+    // Only track hover when a consumer needs it (i.e. there are hover buttons).
+    // Skipping the MouseRegion avoids a per-row setState on every pointer
+    // enter/exit — a wasted full-row rebuild while the mouse moves over the
+    // table during scrolling.
+    final hovered = onHoverChanged != null
+        ? MouseRegion(
+            onEnter: (_) => onHoverChanged!(true),
+            onExit: (_) => onHoverChanged!(false),
+            child: content,
+          )
+        : content;
 
     if (!enableInteractionLayer) return hovered;
 
