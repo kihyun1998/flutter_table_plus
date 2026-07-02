@@ -76,53 +76,55 @@ List<double> computeColumnWidths<T>({
       }
     }
   } else {
-    // Iterative redistribution: when a flexible column hits maxWidth,
-    // lock it and redistribute the excess to remaining flexible columns.
+    // Cap-and-redistribute. A flexible column saturates when its proportional
+    // share exceeds its maxWidth; capping it raises every other flexible
+    // column's share, so more may then saturate. The naive version capped one
+    // exceeder and restarted the scan — O(n^2). Instead, sweep the cappable
+    // columns once in ascending maxWidth/width order: that reaches the same
+    // (order-independent) fixpoint, because once a column doesn't saturate,
+    // none of the higher-ratio ones can either. Near-linear (O(n log n)).
     double remainingSpace = spaceForFlexible;
     double remainingPreferred = flexiblePreferredTotal;
-    final isFlexible = List<bool>.generate(
-      columns.length,
-      (i) => widths[i] == null,
-    );
 
-    bool changed = true;
-    while (changed) {
-      changed = false;
+    final cappable = <int>[
+      for (int i = 0; i < columns.length; i++)
+        if (widths[i] == null && columns[i].maxWidth != null) i,
+    ]..sort((a, b) => (columns[a].maxWidth! / columns[a].width)
+        .compareTo(columns[b].maxWidth! / columns[b].width));
 
-      if (remainingPreferred <= 0 || remainingSpace <= 0) {
-        for (int i = 0; i < columns.length; i++) {
-          if (!isFlexible[i]) continue;
+    for (final i in cappable) {
+      if (remainingPreferred <= 0 || remainingSpace <= 0) break;
+      final column = columns[i];
+      final calculatedWidth =
+          remainingSpace * (column.width / remainingPreferred);
+      if (calculatedWidth > column.maxWidth!) {
+        widths[i] = column.maxWidth!;
+        remainingSpace -= column.maxWidth!;
+        remainingPreferred -= column.width;
+      } else {
+        break;
+      }
+    }
+
+    if (remainingPreferred <= 0 || remainingSpace <= 0) {
+      // No room left — remaining flexible columns fall back to their (clamped)
+      // preferred width, matching the naive loop's early-exit branch.
+      for (int i = 0; i < columns.length; i++) {
+        if (widths[i] == null) {
           final col = columns[i];
           widths[i] =
               col.width.clamp(col.minWidth, col.maxWidth ?? double.infinity);
         }
-        break;
       }
-
+    } else {
+      // Final pass: remaining flexible columns get their proportional share.
       for (int i = 0; i < columns.length; i++) {
-        if (!isFlexible[i]) continue;
+        if (widths[i] != null) continue;
         final column = columns[i];
         final proportion = column.width / remainingPreferred;
-        final calculatedWidth = remainingSpace * proportion;
-
-        if (column.maxWidth != null && calculatedWidth > column.maxWidth!) {
-          widths[i] = column.maxWidth!;
-          isFlexible[i] = false;
-          remainingSpace -= column.maxWidth!;
-          remainingPreferred -= column.width;
-          changed = true;
-          break;
-        }
+        widths[i] = (remainingSpace * proportion)
+            .clamp(column.minWidth, column.maxWidth ?? double.infinity);
       }
-    }
-
-    // Final pass: assign remaining flexible columns
-    for (int i = 0; i < columns.length; i++) {
-      if (widths[i] != null) continue;
-      final column = columns[i];
-      final proportion = column.width / remainingPreferred;
-      widths[i] = (remainingSpace * proportion)
-          .clamp(column.minWidth, column.maxWidth ?? double.infinity);
     }
   }
 
