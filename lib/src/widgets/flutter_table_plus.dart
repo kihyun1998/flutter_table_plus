@@ -1,5 +1,4 @@
 import 'dart:math';
-import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
@@ -13,6 +12,7 @@ import '../models/theme/scrollbar_theme.dart' show TablePlusScrollbarTheme;
 import '../models/theme/theme.dart' show TablePlusTheme;
 import '../utils/column_ordering.dart';
 import '../utils/column_width_resolver.dart';
+import '../utils/table_column_width_calculator.dart';
 import '../utils/table_metrics.dart';
 import 'cell_edit_session.dart';
 import 'drag_selection_controller.dart';
@@ -551,54 +551,31 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
     final resolvedBodyStyle = defaultStyle.merge(bodyTheme.textStyle);
     final textScaler = MediaQuery.textScalerOf(context);
 
-    // Measure header text width
-    final headerPainter = TextPainter(
-      text: TextSpan(text: column.label, style: resolvedHeaderStyle),
-      textDirection: ui.TextDirection.ltr,
-      textScaler: textScaler,
-      maxLines: 1,
-    )..layout();
-
     final bool hasSortIcon = column.sortable && widget.onSort != null;
     final double sortIconArea = hasSortIcon
         ? headerTheme.sortIconSpacing + headerTheme.sortIconWidth
         : 0.0;
-
-    double maxWidth =
-        headerPainter.width + headerTheme.padding.horizontal + sortIconArea;
-
-    // Account for vertical divider border in body cells (right border 0.5px)
+    // Account for the vertical divider border in body cells (right border 0.5px)
     final double bodyBorderWidth = bodyTheme.showVerticalDividers ? 0.5 : 0.0;
 
-    // Measure body cell widths
-    for (final row in widget.data) {
-      final value = column.valueAccessor(row);
-      final text = value?.toString() ?? '';
-      if (text.isEmpty) continue;
-
-      final bodyPainter = TextPainter(
-        text: TextSpan(text: text, style: resolvedBodyStyle),
-        textDirection: ui.TextDirection.ltr,
-        textScaler: textScaler,
-        maxLines: 1,
-      )..layout();
-
-      final cellWidth =
-          bodyPainter.width + bodyTheme.padding.horizontal + bodyBorderWidth;
-      if (cellWidth > maxWidth) {
-        maxWidth = cellWidth;
-      }
-    }
-
-    // Add a small buffer (1px) to prevent ellipsis from rounding errors
-    maxWidth = (maxWidth + 1.0).ceilToDouble();
-
-    // Clamp to scaled column constraints, then unscale for storage
-    final result = maxWidth.clamp(
-      column.minWidth * scale,
-      (column.maxWidth ?? double.infinity) * scale,
+    // Measure header + body via the shared (tested) calculator, in scaled
+    // space, then unscale for storage. This reproduces the exact formula the
+    // widget used to inline: painter width + padding + extra, +1px ceil, clamp.
+    final scaledResult = TableColumnWidthCalculator.calculateColumnWidth<T>(
+      headerLabel: column.label,
+      headerTextStyle: resolvedHeaderStyle,
+      data: widget.data,
+      valueAccessor: column.valueAccessor,
+      bodyTextStyle: resolvedBodyStyle,
+      headerPadding: headerTheme.padding,
+      bodyPadding: bodyTheme.padding,
+      headerExtraWidth: sortIconArea,
+      bodyExtraWidth: bodyBorderWidth,
+      textScaler: textScaler,
+      minWidth: column.minWidth * scale,
+      maxWidth: column.maxWidth == null ? null : column.maxWidth! * scale,
     );
-    final logicalResult = result / scale;
+    final logicalResult = scaledResult / scale;
 
     setState(() {
       _resizedWidths[columnKey] = logicalResult;
