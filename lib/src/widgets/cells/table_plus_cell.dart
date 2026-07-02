@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
 import 'package:flutter_table_plus/src/utils/edit_key_action.dart';
+import 'package:flutter_table_plus/src/utils/overflow_cache.dart';
 import 'package:flutter_table_plus/src/utils/text_overflow_detector.dart';
 import 'package:flutter_table_plus/src/utils/tooltip_resolver.dart';
 import 'package:flutter_table_plus/src/widgets/cells/editable_text_field.dart';
@@ -51,9 +52,7 @@ class _TablePlusCellState<T> extends State<TablePlusCell<T>> {
   late FocusNode _focusNode;
 
   // Cached overflow detection result
-  bool? _cachedOverflow;
-  String _cachedOverflowText = '';
-  double _cachedOverflowWidth = 0;
+  final OverflowCache _overflowCache = OverflowCache();
 
   @override
   void initState() {
@@ -225,21 +224,16 @@ class _TablePlusCellState<T> extends State<TablePlusCell<T>> {
   /// rebuild with unchanged inputs skips re-measuring.
   bool _willTextOverflowCached(String displayValue) {
     final availableWidth = widget.width - widget.theme.padding.horizontal;
-    if (_cachedOverflow != null &&
-        _cachedOverflowText == displayValue &&
-        _cachedOverflowWidth == availableWidth) {
-      return _cachedOverflow!;
-    }
-    final result = TextOverflowDetector.willTextOverflowInContext(
-      context: context,
-      text: displayValue,
-      maxWidth: availableWidth,
-      style:
-          widget.theme.getEffectiveTextStyle(widget.isSelected, widget.isDim),
+    return _overflowCache.resolve(
+      displayValue,
+      availableWidth,
+      () => TextOverflowDetector.willTextOverflowInContext(
+        context: context,
+        text: displayValue,
+        maxWidth: availableWidth,
+        style:
+            widget.theme.getEffectiveTextStyle(widget.isSelected, widget.isDim),
+      ),
     );
-    _cachedOverflowText = displayValue;
-    _cachedOverflowWidth = availableWidth;
-    _cachedOverflow = result;
-    return result;
   }
 }
