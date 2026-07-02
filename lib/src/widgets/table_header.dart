@@ -7,6 +7,7 @@ import '../models/theme/checkbox_theme.dart';
 import '../models/theme/header_theme.dart';
 import '../models/theme/tooltip_theme.dart' show TablePlusTooltipTheme;
 import '../utils/column_width_access.dart';
+import '../utils/sort_cycle.dart';
 import 'table_header_cell.dart';
 import 'table_resize_handle.dart';
 
@@ -172,43 +173,12 @@ class _TablePlusHeaderState<T> extends State<TablePlusHeader<T>> {
   void _handleSortClick(String columnKey) {
     if (widget.onSort == null) return;
 
-    // Determine next sort direction based on cycle order
-    SortDirection nextDirection;
-    if (widget.sortColumnKey == columnKey) {
-      // Same column - cycle through directions based on sortCycleOrder
-      if (widget.sortCycleOrder == SortCycleOrder.ascendingFirst) {
-        // none -> ascending -> descending -> none
-        switch (widget.sortDirection) {
-          case SortDirection.none:
-            nextDirection = SortDirection.ascending;
-            break;
-          case SortDirection.ascending:
-            nextDirection = SortDirection.descending;
-            break;
-          case SortDirection.descending:
-            nextDirection = SortDirection.none;
-            break;
-        }
-      } else {
-        // none -> descending -> ascending -> none
-        switch (widget.sortDirection) {
-          case SortDirection.none:
-            nextDirection = SortDirection.descending;
-            break;
-          case SortDirection.descending:
-            nextDirection = SortDirection.ascending;
-            break;
-          case SortDirection.ascending:
-            nextDirection = SortDirection.none;
-            break;
-        }
-      }
-    } else {
-      // Different column - start based on sortCycleOrder
-      nextDirection = widget.sortCycleOrder == SortCycleOrder.ascendingFirst
-          ? SortDirection.ascending
-          : SortDirection.descending;
-    }
+    final nextDirection = nextSortDirection(
+      current: widget.sortDirection,
+      tappedKey: columnKey,
+      sortedKey: widget.sortColumnKey,
+      cycle: widget.sortCycleOrder,
+    );
 
     widget.onSort!(columnKey, nextDirection);
   }
