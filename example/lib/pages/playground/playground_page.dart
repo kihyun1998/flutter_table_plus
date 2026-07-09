@@ -1030,6 +1030,9 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         showHorizontalDividers: _settings.showDividers,
         showVerticalDividers: _settings.showDividers,
         selectedRowColor: Colors.blue.shade100.withValues(alpha: 0.6),
+        splashColor: _settings.splashColor.color,
+        hoverColor: _settings.hoverColor.color,
+        highlightColor: _settings.highlightColor.color,
         rowHeight: _settings.rowHeight,
       ),
       editableTheme: TablePlusEditableTheme(
