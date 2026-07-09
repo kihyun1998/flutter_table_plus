@@ -35,6 +35,7 @@ class TablePlusTooltipTheme {
     this.arrowLength = 6.0,
     this.arrowPositionRatio = 0.25,
     // Layout & behavior
+    this.anchor = TooltipAnchor.child,
     this.direction = TooltipDirection.bottom,
     this.alignment = TooltipAlignment.center,
     this.offset = 8.0,
@@ -103,6 +104,25 @@ class TablePlusTooltipTheme {
 
   // ── Layout & behavior (passed to JustTooltip widget) ────────────────
 
+  /// What the tooltip is positioned against.
+  ///
+  /// [TooltipAnchor.child] (the default) places the tooltip beside the rect of
+  /// the widget it wraps. [TooltipAnchor.pointer] leaves the hover region alone
+  /// and places the tooltip beside the cursor instead — useful when the hovered
+  /// widget is much wider than the neighbourhood the user is pointing at, such
+  /// as a long ellipsized cell.
+  ///
+  /// This governs cell and header tooltips. Row tooltips built by
+  /// `rowTooltipBuilder` always use [TooltipAnchor.pointer] and ignore this
+  /// field: a row is as wide as the table's content, so anchoring to it would
+  /// aim at a point that may be off screen.
+  ///
+  /// Note that header and cell tooltips currently share a single
+  /// `TablePlusTheme.tooltipTheme`, so their anchors cannot be set separately.
+  ///
+  /// See also [alignment], whose meaning depends on this field.
+  final TooltipAnchor anchor;
+
   /// The direction (side) where the tooltip appears relative to the child.
   final TooltipDirection direction;
 
@@ -114,6 +134,10 @@ class TablePlusTooltipTheme {
   ///
   /// The `startTargetCenter` and `endTargetCenter` alignments position the
   /// arrow to dynamically point toward the center of the target widget.
+  ///
+  /// Under [TooltipAnchor.pointer] this field changes meaning. A point has no
+  /// edges to align against, so the alignment instead selects which of the
+  /// tooltip's *own* edges lands on the cursor.
   final TooltipAlignment alignment;
 
   /// The gap between the child widget and the tooltip.
@@ -199,6 +223,7 @@ class TablePlusTooltipTheme {
     double? arrowBaseWidth,
     double? arrowLength,
     double? arrowPositionRatio,
+    TooltipAnchor? anchor,
     TooltipDirection? direction,
     TooltipAlignment? alignment,
     double? offset,
@@ -232,6 +257,7 @@ class TablePlusTooltipTheme {
       arrowBaseWidth: arrowBaseWidth ?? this.arrowBaseWidth,
       arrowLength: arrowLength ?? this.arrowLength,
       arrowPositionRatio: arrowPositionRatio ?? this.arrowPositionRatio,
+      anchor: anchor ?? this.anchor,
       direction: direction ?? this.direction,
       alignment: alignment ?? this.alignment,
       offset: offset ?? this.offset,

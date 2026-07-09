@@ -48,7 +48,7 @@ export 'package:flutter_checkbox/flutter_checkbox.dart'
 
 /// Re-export just_tooltip types for convenience
 export 'package:just_tooltip/just_tooltip.dart'
-    show TooltipDirection, TooltipAlignment, TooltipAnimation;
+    show TooltipAnchor, TooltipDirection, TooltipAlignment, TooltipAnimation;
 
 /// Widgets
 export 'src/widgets/custom_ink_well.dart';

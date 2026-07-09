@@ -14,11 +14,12 @@ Widget _wrap({
   String Function(Map<String, dynamic>)? formatter,
   Map<String, dynamic>? data = const {'id': '1'},
   String fallback = 'FALLBACK',
+  TablePlusTooltipTheme theme = const TablePlusTooltipTheme(),
 }) {
   return wrapWithTooltip<Map<String, dynamic>>(
     shouldShow: shouldShow,
     child: _child,
-    theme: const TablePlusTooltipTheme(),
+    theme: theme,
     tooltipBuilder: builder,
     tooltipFormatter: formatter,
     rowData: data,
@@ -59,6 +60,26 @@ void main() {
           data: null) as FlutterTooltipPlus;
       expect(r.message, 'FALLBACK');
       expect(r.tooltipBuilder, isNull);
+    });
+
+    test('carries the theme anchor down both the builder and message paths',
+        () {
+      const theme = TablePlusTooltipTheme(anchor: TooltipAnchor.pointer);
+
+      final builderPath = _wrap(
+          shouldShow: true,
+          builder: (c, d) => const Text('x'),
+          theme: theme) as FlutterTooltipPlus;
+      final messagePath =
+          _wrap(shouldShow: true, theme: theme) as FlutterTooltipPlus;
+
+      expect(builderPath.anchor, TooltipAnchor.pointer);
+      expect(messagePath.anchor, TooltipAnchor.pointer);
+    });
+
+    test('defaults to anchoring on the child', () {
+      final r = _wrap(shouldShow: true) as FlutterTooltipPlus;
+      expect(r.anchor, TooltipAnchor.child);
     });
   });
 }

@@ -359,6 +359,7 @@ TablePlusTooltipTheme(
   arrowLength: 6.0,
 
   // Position & layout
+  anchor: TooltipAnchor.child,          // child, pointer
   direction: TooltipDirection.bottom,   // top, bottom, left, right
   alignment: TooltipAlignment.center,   // start, center, end, startTargetCenter, endTargetCenter
   offset: 8.0,
@@ -377,6 +378,31 @@ TablePlusTooltipTheme(
   animationDuration: Duration(milliseconds: 150),
 )
 ```
+
+### Anchoring at the pointer
+
+`anchor` decides what the tooltip is positioned against. The default,
+`TooltipAnchor.child`, places it beside the rect of the widget it wraps. That is
+usually what you want — but a cell whose text is long enough to ellipsize fills
+the whole column, so its tooltip appears at the column's centre, which may be
+far from where the user is actually pointing. `TooltipAnchor.pointer` keeps the
+same hover region and places the tooltip at the cursor instead:
+
+```dart
+TablePlusTooltipTheme(anchor: TooltipAnchor.pointer)
+```
+
+Two things to know:
+
+- Against a point there are no target edges to align to, so under
+  `TooltipAnchor.pointer` the `alignment` field selects which of the tooltip's
+  *own* edges lands on the cursor.
+- Header and cell tooltips share a single `tooltipTheme`, so this setting
+  applies to both; they cannot be anchored differently.
+
+Row tooltips built by `rowTooltipBuilder` always anchor at the pointer and
+ignore this field. A row is as wide as the table's content, so anchoring to the
+row would aim at a point that scrolls off screen.
 
 ---
 

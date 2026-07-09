@@ -112,6 +112,7 @@ class HeaderCell extends StatelessWidget {
       try {
         textWidget = FlutterTooltipPlus(
           message: column.label,
+          anchor: tooltipTheme.anchor,
           theme: tooltipTheme,
           child: textWidget,
         );

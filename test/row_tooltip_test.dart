@@ -115,6 +115,30 @@ void main() {
     );
   });
 
+  testWidgets('the card ignores the theme anchor and stays on the pointer',
+      (tester) async {
+    // tooltipTheme.anchor governs cells, and rowTooltipTheme falls back to it
+    // when unset — so a caller who anchors their cell tooltips to the child
+    // must not thereby drag the row card onto the row's rect, whose centre
+    // (x≈900) is off screen.
+    await tester.pumpWidget(_table(
+      columns: {
+        'name': _col('name', width: 600),
+        'note': _col('note', width: 600),
+        'id': _col('id', width: 600),
+      },
+      theme: const TablePlusTheme(
+        tooltipTheme: TablePlusTooltipTheme(anchor: TooltipAnchor.child),
+      ),
+    ));
+
+    const pointer = Offset(120, 90);
+    await _hoverAt(tester, pointer);
+
+    final card = tester.getRect(find.text(_card));
+    expect((card.center.dx - pointer.dx).abs(), lessThan(200));
+  });
+
   testWidgets('a truncated cell shows its text tooltip, not the card',
       (tester) async {
     // `maxWidth` pins the column: a lone column would otherwise be widened to
