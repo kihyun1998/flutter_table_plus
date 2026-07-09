@@ -22,7 +22,9 @@ Flutter Table Plus follows a **"UI-only, data-agnostic"** philosophy. The packag
 
 ## Environment Notes
 
-**IMPORTANT**: Claude Code runs in WSL environment while the user is on Windows. When Flutter/Dart commands need to be executed (flutter test, flutter analyze, dart format, etc.), DO NOT attempt to run them directly. Instead, ask the user to run these commands on their Windows environment.
+Claude Code and the user share the same Windows machine. The Flutter SDK is on `PATH`, so run `flutter test`, `flutter analyze`, and `dart format` directly — do not ask the user to run them.
+
+The one exception is anything that opens a window or waits for input: `flutter run` needs a human to drive the app and read what is on screen. Ask for those, and say which settings to use and what to look for.
 
 ## Common Development Commands
 
@@ -86,12 +88,12 @@ dart doc .                      # Generate API documentation
 
 ### Key Architectural Patterns
 
-1. **Map-based Data Structure**: Tables use `List<Map<String, dynamic>>` for row data, requiring unique row ID fields for selection features (default: 'id', configurable via `rowIdKey`)
+1. **Generic, Data-Agnostic Rows**: `FlutterTablePlus<T>` takes `List<T>`; the row's identity comes from the required `rowId: String Function(T)`. Columns read values through `valueAccessor`, so rows can be maps, models, or anything else
 2. **Builder Pattern**: TableColumnsBuilder prevents order conflicts and manages column ordering automatically
 3. **Synchronized Scrolling**: Header and body each have their own horizontal `SingleChildScrollView`; `SyncedScrollControllers` synchronizes them through a shared-controller pattern (the body is the user-input master, the header uses `NeverScrollableScrollPhysics` and is driven by the body's position). The horizontal scrollbar is a third sync target. Vertical scroll lives inside the body's `ListView`
 4. **Merged Row Groups**: MergedRowGroup system for visually combining multiple data rows with configurable merge behavior per column
 5. **Theme Composition**: Nested theme classes (TablePlusTheme, TablePlusHeaderTheme, etc.) for granular styling control
-6. **State Management Ready**: Designed to work with state management solutions like Riverpod (see documentation/RIVERPOD_GENERATOR_GUIDE.md)
+6. **State Management Ready**: Designed to work with state management solutions like setState, Provider, Riverpod, or Bloc
 7. **Row Widget Polymorphism**: TablePlusRowWidget abstract class enables different row types (_TablePlusRow for normal rows, TablePlusMergedRow for grouped rows) with consistent ListView.builder interface
 8. **Drag Selection (single coordinate frame)**: A `Listener` wraps the body's horizontal `Scrollable` from the *outside*, so its `RenderBox` is stationary in screen — `event.localPosition` is therefore viewport-local on both axes. The widget's pointer handlers are thin translators that forward `down`/`move`/`up`/`cancel` to a `DragSelectionController`, which owns the gesture state machine, the auto-scroll loop (its own `Timer`, with scroll application injected as callbacks), and the content-anchored rubber-band origin (`downLocal − hDelta/vDelta` on both axes). Row lookups go through the `RowLocator` port the body implements
 
@@ -116,7 +118,7 @@ FlutterTablePlus follows a composition pattern where:
 ## Important Implementation Details
 
 - **Column Order Management**: Column order is managed by the `order` field in TablePlusColumn. Use TableColumnsBuilder to prevent order conflicts
-- **Selection Requirements**: Selection features require unique row ID field in each row data map (default: 'id', configurable via `rowIdKey` parameter) - duplicate IDs cause unexpected behavior
+- **Selection Requirements**: `rowId` must return a unique, stable id per row - duplicate ids cause unexpected behavior
 - **Null Safety for Features**: Setting `onSort: null` completely hides sort icons and disables sorting. Setting `onColumnReorder: null` disables drag-and-drop. Setting `resizable: false` (default) hides resize handles entirely
 - **Column Resizing**: `resizable: true` enables drag-to-resize on header cell right edges. Resize widths are internal layout state (`_resizedWidths`); `onColumnResized` callback fires once on drag end for persistence. Resized columns keep fixed width while unresized columns redistribute proportionally. `minWidth`/`maxWidth` per column are enforced via `clamp()` in all layout calculation paths. Selection column (`__selection__`) is excluded from resizing. Resize handle theming via `TablePlusHeaderTheme.resizeHandleWidth` and `resizeHandleColor`
 - **Coexisting Features**: Selection and editing modes can coexist in the same table simultaneously
@@ -125,17 +127,17 @@ FlutterTablePlus follows a composition pattern where:
 - **Sort Cycle Configuration**: Sort cycle order is configurable between ascending-first and descending-first patterns
 - **Tooltip Control**: Fine-grained tooltip behavior control for both cells and headers via `tooltipBehavior` and `headerTooltipBehavior` properties
 - **Merged Rows**: MergedRowGroup functionality allows grouping consecutive rows with configurable merge behavior per column. Supports custom content, selection, and editing within merged cells
-- **Row Hover Implementation**: Currently supports basic hover effects via CustomInkWell.hoverColor. Row widgets extend TablePlusRowWidget (StatelessWidget) making advanced hover features (like button overlays) require architectural changes to support state management
+- **Row Ink and Hover**: `TablePlusRowWidget` is a `StatefulWidget`; `TablePlusRowStateBase` owns the hover flag and wires `RowInteractionShell` once for every row type. Hover-button overlays are supported via `hoverButtonBuilder`, and the hover-tracking `MouseRegion` is installed only when one is set. Which ink appears is gated by **which callbacks are wired**, not by the colors: `InkWell` paints a splash/highlight only with a primary-button callback, a hover highlight with any callback. Passing a `null` color does not disable ink - it selects the framework default (`Colors.transparent` disables it, per `TablePlusBodyTheme` docs)
 - **Column Width Constraints**: `minWidth`/`maxWidth` on `TablePlusColumn` are enforced in all `_calculateColumnWidths` paths via `clamp()` — both for resize drag and normal proportional layout distribution
 - **Drag Selection Coordinate Model**: All drag-selection coordinates live in a single viewport-local reference frame. The `Listener` is placed at the body's viewport (outside the body's horizontal `SingleChildScrollView`), so `event.localPosition` is viewport-local on both axes — eliminating the asymmetry that previously existed when the body slid horizontally under a stale captured screen origin. Auto-scroll edge zones, the rubber band rectangle, and content-anchored origin (`downLocal − hDelta/vDelta`) all use this single frame. This gesture state machine + geometry is encapsulated in `DragSelectionController` (unit-tested in isolation via a fake `RowLocator`); the widget's pointer handlers are thin translators, and row-index lookups are routed to the body through the `RowLocator` port (reached via `GlobalKey<TablePlusBodyState<T>>`)
 
 ## Code Patterns & Conventions
 
 ### Data Structure Requirements
-- Row data: `List<Map<String, dynamic>>` where keys match column keys
-- Selection feature: Each row must have unique row ID field (default: 'id', configurable via `rowIdKey`)
+- Row data: `List<T>`; each column reads its value through `valueAccessor`
+- Selection feature: `rowId` must return a unique, stable id per row
 - Column definitions: Use `TableColumnsBuilder` for safe column creation
-- Merged rows: MergedRowGroup requires valid `rowKeys` that correspond to the unique identifier field (`rowIdKey`) in the data list
+- Merged rows: MergedRowGroup requires valid `rowKeys` that match the ids returned by `rowId`
 
 ### Widget Composition Pattern
 - Header and body are separate widgets with independent horizontal `Scrollable`s synchronized through a shared `SyncedScrollControllers` instance
@@ -149,16 +151,12 @@ FlutterTablePlus follows a composition pattern where:
 
 ## Documentation Structure
 
-Comprehensive documentation is available in the `documentation/` directory:
-- EDITING.md: Cell editing implementation
-- SELECTION.md: Row selection patterns  
-- SORTING.md: Column sorting configuration
+User-facing documentation lives in the `docs/` directory:
+- FEATURES.md: Sorting, selection, editing, merged rows, dynamic heights, empty state, advanced columns
 - THEMING.md: Complete theming guide
-- ADVANCED_COLUMNS.md: Advanced column features
-- EMPTY_STATE.md: Handling empty table states
-- MERGED_ROWS.md: Complete guide to merged row functionality with examples
-- DYNAMIC_HEIGHT.md: Dynamic row heights with TextOverflow.visible support and TableRowHeightCalculator utility
-- RIVERPOD_GENERATOR_GUIDE.md: State management integration
+- MIGRATION.md: Breaking-change migration notes
+
+`docs/agents/` holds the agent-facing conventions referenced under "Agent skills" below.
 
 ## Agent skills
 
