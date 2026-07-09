@@ -7,6 +7,12 @@
     *   Tapping an **editable** column still starts editing that cell — the cell's own `GestureDetector` wins the gesture arena against the row-level tap. Tapping anywhere else on a selectable row now toggles its selection, as it does outside editing mode
     *   Row-tap selection was suppressed during editing since editing was introduced, when the two modes were mutually exclusive (`assert((isSelectable && isEditable) == false)`). That assert was removed to let them coexist, but the row guard survived, leaving a contradiction: while editing you could still select a row via its checkbox, just not by clicking it
     *   If you relied on rows not selecting on tap while editing, handle it in your `onRowSelectionChanged`
+*   **PERF**: The selection cell no longer allocates its own `Material`s — up to three per row become one
+    *   `TablePlusSelectionCell` wrapped its checkbox in a transparent `Material`, and its cell-tap `InkWell` in another, so that `FlutterCheckbox`'s internal `InkWell` would find a `Material` ancestor and the table would render without a `Scaffold` (#3). But `CustomInkWell` already wraps the whole row in one, and the selection cell only renders when the row is selectable — which is exactly when that row `Material` exists. Both were redundant
+    *   A `Material` is not cheap: with the default `canvas` type it expands to `AnimatedDefaultTextStyle` → `AnimatedPhysicalModel` → `PhysicalModel` → `_InkFeatures`, i.e. two render objects and two implicit-animation controllers. Removing them takes a selection-enabled row from three to one
+    *   Ink is still painted per row, so this is unrelated to the root-`Material` hoist rejected in #38 — that regressed scroll because it moved ink painting outside each row's `RepaintBoundary`
+*   **TEST**: The #3 regression guard now exercises the checkbox, not just its rendering
+    *   `InkWell` resolves `Material.of` only when it paints ink — on tap (`_createSplash`) and on hover/press (`updateHighlight`) — so a checkbox with no `Material` ancestor builds fine and throws only when touched. The old guard pumped the table and asserted no exception, which passed for an incidental reason: the row's `Ink` demands a `Material` at build. The guard now taps the checkbox, taps the cell (`cellTapTogglesCheckbox`, previously untested), and hovers the checkbox
 
 ## 2.13.1
 
