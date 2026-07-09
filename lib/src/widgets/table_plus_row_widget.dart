@@ -79,20 +79,22 @@ abstract class TablePlusRowWidget<T> extends StatefulWidget {
       bool isSelected)? get onRowSecondaryTapDown;
 
   /// Shared row-tap selection gating for every row type. A tap selects only
-  /// when selection is enabled, the table is not editing, and the row has an
-  /// id — otherwise it is a no-op.
+  /// when selection is enabled and the row has an id — otherwise it is a no-op.
+  ///
+  /// Editing does not suppress this. An editable *cell* wraps itself in its own
+  /// [GestureDetector], which wins the gesture arena against this row-level tap,
+  /// so tapping an editable column still starts editing rather than selecting.
   void handleSelectionTap() {
-    if (isEditable || !isSelectable) return;
+    if (!isSelectable) return;
     final id = selectionId;
     if (id == null) return;
     onRowSelectionChanged(id);
   }
 
   /// Whether the row wraps its content in a selection ink well. True only when
-  /// selection is enabled, the table is not editing, and the row has an id.
+  /// selection is enabled and the row has an id.
   /// This same predicate drives the transparent-selection decoration.
-  bool get enableSelectionInk =>
-      isSelectable && !isEditable && selectionId != null;
+  bool get enableSelectionInk => isSelectable && selectionId != null;
 }
 
 /// Shared base [State] holding the row build skeleton (the template method).
@@ -149,22 +151,28 @@ abstract class TablePlusRowStateBase<W extends TablePlusRowWidget<T>, T>
       enableInteractionLayer: tapSelect || wantsRowGesture,
       inkKey: ValueKey(id),
       onTap: tapSelect ? widget.handleSelectionTap : null,
-      onDoubleTap: () => widget.onRowDoubleTap?.call(id!),
-      onSecondaryTapDown: (details, renderBox) => widget.onRowSecondaryTapDown
-          ?.call(id!, details, renderBox, widget.isSelected),
+      // Forward a callback only when one actually exists. A non-null closure
+      // that merely calls a null handler still reads as "enabled" to InkWell,
+      // which is what makes it paint a splash for a tap that does nothing.
+      onDoubleTap: (id != null && widget.onRowDoubleTap != null)
+          ? () => widget.onRowDoubleTap!(id)
+          : null,
+      onSecondaryTapDown: (id != null && widget.onRowSecondaryTapDown != null)
+          ? (details, renderBox) => widget.onRowSecondaryTapDown!(
+              id, details, renderBox, widget.isSelected)
+          : null,
       doubleClickTime: theme.doubleClickTime,
       backgroundColor: widget.backgroundColor,
-      // Selection ink colors only when tap-selecting; edit-mode row gestures
-      // shouldn't paint a selection splash.
-      hoverColor: tapSelect
-          ? theme.getEffectiveHoverColor(widget.isSelected, widget.isDim)
-          : null,
-      splashColor: tapSelect
-          ? theme.getEffectiveSplashColor(widget.isSelected, widget.isDim)
-          : null,
-      highlightColor: tapSelect
-          ? theme.getEffectiveHighlightColor(widget.isSelected, widget.isDim)
-          : null,
+      // Which ink appears is decided by which callbacks exist, not by the
+      // colors: InkWell paints a splash/highlight only when a primary-button
+      // callback is wired, and a hover highlight only when any callback is.
+      // Passing `null` here would not suppress ink — it selects the framework's
+      // default color (see TablePlusBodyTheme.splashColor).
+      hoverColor: theme.getEffectiveHoverColor(widget.isSelected, widget.isDim),
+      splashColor:
+          theme.getEffectiveSplashColor(widget.isSelected, widget.isDim),
+      highlightColor:
+          theme.getEffectiveHighlightColor(widget.isSelected, widget.isDim),
     );
   }
 }
