@@ -67,6 +67,7 @@ class TablePlusTheme {
       checkboxTheme: checkboxTheme.scaledBy(factor),
       editableTheme: editableTheme.scaledBy(factor),
       tooltipTheme: tooltipTheme,
+      rowTooltipTheme: rowTooltipTheme,
       hoverButtonTheme: hoverButtonTheme.scaledBy(factor),
       dragSelectionTheme: dragSelectionTheme.scaledBy(factor),
     );

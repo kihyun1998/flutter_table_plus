@@ -29,6 +29,7 @@ Widget _table({
   required Map<String, TablePlusColumn<Map<String, dynamic>>> columns,
   bool withCard = true,
   TablePlusTheme theme = const TablePlusTheme(),
+  double scale = 1.0,
   void Function(String rowId, bool isSelected)? onRowSelectionChanged,
 }) {
   return MaterialApp(
@@ -40,6 +41,7 @@ Widget _table({
         ],
         rowId: (r) => r['id'] as String,
         theme: theme,
+        scale: scale,
         isSelectable: onRowSelectionChanged != null,
         onRowSelectionChanged: onRowSelectionChanged,
         rowTooltipBuilder: withCard ? (context, r) => const Text(_card) : null,
@@ -177,6 +179,25 @@ void main() {
       columns: {'name': _col('name')},
       theme: const TablePlusTheme(
         tooltipTheme: TablePlusTooltipTheme(enabled: false),
+      ),
+    ));
+
+    final text = tester.getRect(find.text('A'));
+    await _hoverAt(tester, Offset(text.right + 200, text.center.dy));
+
+    expect(find.text(_card), findsNothing);
+  });
+
+  testWidgets('rowTooltipTheme still governs the card at a non-1.0 scale',
+      (tester) async {
+    // Scaling rebuilds the theme. A rebuild that loses rowTooltipTheme falls
+    // back to tooltipTheme, which is enabled by default — so the card the
+    // caller switched off would come back, wearing the text tooltip's surface.
+    await tester.pumpWidget(_table(
+      columns: {'name': _col('name')},
+      scale: 1.5,
+      theme: const TablePlusTheme(
+        rowTooltipTheme: TablePlusTooltipTheme(enabled: false),
       ),
     ));
 

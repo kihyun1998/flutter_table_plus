@@ -167,6 +167,18 @@ void main() {
       expect(s.tooltipTheme, same(theme.tooltipTheme));
     });
 
+    test('scaledBy carries the row tooltip theme through untouched', () {
+      const rowTooltip = TablePlusTooltipTheme(padding: EdgeInsets.zero);
+      const scoped = TablePlusTheme(rowTooltipTheme: rowTooltip);
+      expect(scoped.scaledBy(2.0).rowTooltipTheme, same(rowTooltip));
+    });
+
+    test('scaledBy leaves an unset row tooltip theme unset', () {
+      // Null is meaningful: it selects the documented fallback to tooltipTheme.
+      // Defaulting it to an instance here would silently break that.
+      expect(theme.scaledBy(2.0).rowTooltipTheme, isNull);
+    });
+
     test('scaledBy(1.0) returns the same instance', () {
       expect(identical(theme.scaledBy(1.0), theme), isTrue);
     });
