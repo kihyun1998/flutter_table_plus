@@ -16,6 +16,7 @@ Complete guide to all Flutter Table Plus features.
 - [Hover Buttons](#hover-buttons)
 - [Dynamic Row Heights](#dynamic-row-heights)
 - [Tooltips](#tooltips)
+  - [Row Tooltips](#row-tooltips)
 - [Dim Rows](#dim-rows)
 - [Empty State](#empty-state)
 - [Context Menu (Right-Click)](#context-menu)
@@ -610,13 +611,43 @@ TablePlusColumn<User>(
 )
 ```
 
+### Row Tooltips
+
+A card shown while the pointer is anywhere on the row — not just over a cell's text. It is anchored beside the pointer, so it stays where you are looking even on a table wide enough to scroll horizontally.
+
+```dart
+FlutterTablePlus<User>(
+  // ...
+  rowTooltipBuilder: (context, user) {
+    if (!user.hasProfile) return null;   // this row gets no card
+    return AccountCard(user);
+  },
+  theme: TablePlusTheme(
+    // A card draws its own surface, so the tooltip must not draw one behind it.
+    rowTooltipTheme: TablePlusTooltipTheme(
+      backgroundColor: Colors.transparent,
+      padding: EdgeInsets.zero,
+      elevation: 0,
+    ),
+  ),
+)
+```
+
+When a cell under the pointer has a tooltip of its own, that one wins — exactly one tooltip is ever visible. So a truncated cell still reveals its full text, while the rest of the row shows the card.
+
+Merged rows stand for several data rows, so there is no single `rowData` to build from. They carry no card.
+
+`rowTooltipTheme` falls back to `tooltipTheme` when omitted.
+
+> **A row card and `TooltipBehavior.always` do not mix.** `always` shows a text tooltip on every ellipsized column whether or not its text is actually cut — and ellipsis is the default. Since the cell's tooltip wins, the card would surface nowhere. Give your text columns `tooltipBehavior: TooltipBehavior.onlyTextOverflow` alongside a row card, so a text tooltip appears only when it has something to add.
+
 ### Tooltip Behavior
 
 ```dart
 // Per-column cell tooltip behavior
-tooltipBehavior: TooltipBehavior.always,            // Always show tooltip
+tooltipBehavior: TooltipBehavior.always,            // Whenever the column is ellipsized — even if the text is not actually cut
 tooltipBehavior: TooltipBehavior.never,             // Never show
-tooltipBehavior: TooltipBehavior.onlyTextOverflow,  // Only when text is truncated
+tooltipBehavior: TooltipBehavior.onlyTextOverflow,  // Only when the text is actually truncated
 
 // Per-column header tooltip behavior
 headerTooltipBehavior: TooltipBehavior.always,
