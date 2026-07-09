@@ -48,6 +48,9 @@ class PlaygroundSettings {
   final double resizeHandleWidth;
   final bool showAlternateRows;
   final bool showDividers;
+
+  /// Show a rich card while hovering anywhere on a row.
+  final bool rowCardTooltip;
   final InkColorOption splashColor;
   final InkColorOption hoverColor;
   final InkColorOption highlightColor;
@@ -114,6 +117,7 @@ class PlaygroundSettings {
     this.resizeHandleWidth = 8.0,
     this.showAlternateRows = true,
     this.showDividers = true,
+    this.rowCardTooltip = false,
     this.splashColor = InkColorOption.themeDefault,
     this.hoverColor = InkColorOption.themeDefault,
     this.highlightColor = InkColorOption.themeDefault,
@@ -171,6 +175,7 @@ class PlaygroundSettings {
     double? resizeHandleWidth,
     bool? showAlternateRows,
     bool? showDividers,
+    bool? rowCardTooltip,
     InkColorOption? splashColor,
     InkColorOption? hoverColor,
     InkColorOption? highlightColor,
@@ -227,6 +232,7 @@ class PlaygroundSettings {
       resizeHandleWidth: resizeHandleWidth ?? this.resizeHandleWidth,
       showAlternateRows: showAlternateRows ?? this.showAlternateRows,
       showDividers: showDividers ?? this.showDividers,
+      rowCardTooltip: rowCardTooltip ?? this.rowCardTooltip,
       splashColor: splashColor ?? this.splashColor,
       hoverColor: hoverColor ?? this.hoverColor,
       highlightColor: highlightColor ?? this.highlightColor,
@@ -925,6 +931,14 @@ class SettingsPanel extends StatelessWidget {
           value: settings.showAlternateRows,
           onChanged: (value) {
             onSettingsChanged(settings.copyWith(showAlternateRows: value));
+          },
+        ),
+
+        _buildSwitchTile(
+          label: 'Row Card Tooltip',
+          value: settings.rowCardTooltip,
+          onChanged: (value) {
+            onSettingsChanged(settings.copyWith(rowCardTooltip: value));
           },
         ),
 

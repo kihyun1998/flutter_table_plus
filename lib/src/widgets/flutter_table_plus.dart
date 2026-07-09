@@ -52,6 +52,7 @@ class FlutterTablePlus<T> extends StatefulWidget {
     this.sortCycleOrder = SortCycleOrder.ascendingFirst,
     this.onSort,
     this.isEditable = false,
+    this.rowTooltipBuilder,
     this.onCellChanged,
     this.onMergedCellChanged,
     this.onMergedRowExpandToggle,
@@ -151,6 +152,22 @@ class FlutterTablePlus<T> extends StatefulWidget {
   /// that cell, while tapping anywhere else on a selectable row still selects
   /// the row, exactly as it does outside editing mode.
   final bool isEditable;
+
+  /// Builds a rich tooltip card shown while the pointer is anywhere on the row.
+  ///
+  /// Return null for a row that should not have one. The whole row is the hover
+  /// region, and the card is anchored beside the pointer.
+  ///
+  /// A cell with a tooltip of its own wins: exactly one tooltip is visible, the
+  /// innermost under the pointer. Note that `TooltipBehavior.always` — the
+  /// default — gives *every* ellipsized text column a tooltip whether or not
+  /// its text is actually cut, which leaves the card nowhere to appear. Use
+  /// [TooltipBehavior.onlyTextOverflow] on text columns alongside a row card.
+  ///
+  /// Merged rows stand for several data rows and never show a card.
+  ///
+  /// Style it with [TablePlusTheme.rowTooltipTheme].
+  final Widget? Function(BuildContext context, T rowData)? rowTooltipBuilder;
 
   /// Callback when a cell value is changed.
   final CellChangedCallback<T>? onCellChanged;
@@ -849,6 +866,9 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
                         height: max(bodyConstraints.maxHeight, tableDataHeight),
                         child: TablePlusBody<T>(
                           key: _bodyKey,
+                          rowTooltipBuilder: widget.rowTooltipBuilder,
+                          rowTooltipTheme:
+                              theme.rowTooltipTheme ?? theme.tooltipTheme,
                           columns: orderedColumns,
                           data: widget.data,
                           columnWidths: columnWidths,

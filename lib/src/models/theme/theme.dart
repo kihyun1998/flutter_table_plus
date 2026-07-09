@@ -17,6 +17,7 @@ class TablePlusTheme {
     this.checkboxTheme = const TablePlusCheckboxTheme(),
     this.editableTheme = const TablePlusEditableTheme(),
     this.tooltipTheme = const TablePlusTooltipTheme(),
+    this.rowTooltipTheme,
     this.hoverButtonTheme = const TablePlusHoverButtonTheme(),
     this.dragSelectionTheme = const TablePlusDragSelectionTheme(),
   });
@@ -38,6 +39,14 @@ class TablePlusTheme {
 
   /// Theme configuration for cell tooltips.
   final TablePlusTooltipTheme tooltipTheme;
+
+  /// Theme configuration for the row tooltip built by `rowTooltipBuilder`.
+  ///
+  /// Falls back to [tooltipTheme] when null. A row tooltip usually draws its
+  /// own surface, so it wants `padding: EdgeInsets.zero`, a transparent
+  /// `backgroundColor` and no elevation — settings that would ruin the plain
+  /// text tooltips governed by [tooltipTheme].
+  final TablePlusTooltipTheme? rowTooltipTheme;
 
   /// Theme configuration for hover buttons.
   final TablePlusHoverButtonTheme hoverButtonTheme;
@@ -71,6 +80,7 @@ class TablePlusTheme {
     TablePlusCheckboxTheme? checkboxTheme,
     TablePlusEditableTheme? editableTheme,
     TablePlusTooltipTheme? tooltipTheme,
+    TablePlusTooltipTheme? rowTooltipTheme,
     TablePlusHoverButtonTheme? hoverButtonTheme,
     TablePlusDragSelectionTheme? dragSelectionTheme,
   }) {
@@ -81,6 +91,7 @@ class TablePlusTheme {
       checkboxTheme: checkboxTheme ?? this.checkboxTheme,
       editableTheme: editableTheme ?? this.editableTheme,
       tooltipTheme: tooltipTheme ?? this.tooltipTheme,
+      rowTooltipTheme: rowTooltipTheme ?? this.rowTooltipTheme,
       hoverButtonTheme: hoverButtonTheme ?? this.hoverButtonTheme,
       dragSelectionTheme: dragSelectionTheme ?? this.dragSelectionTheme,
     );
