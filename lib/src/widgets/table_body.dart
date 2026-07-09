@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_table_plus/src/widgets/flutter_tooltip_plus.dart';
 import 'package:flutter_table_plus/src/widgets/table_plus_row.dart';
+import 'package:just_tooltip/just_tooltip.dart' show TooltipAnchor;
 
 import '../../flutter_table_plus.dart'
     show HoverButtonPosition, TablePlusHoverButtonTheme;
@@ -39,6 +41,8 @@ class TablePlusBody<T> extends StatefulWidget {
     this.onRowSecondaryTapDown,
     this.isEditable = false,
     this.editableTheme = const TablePlusEditableTheme(),
+    this.rowTooltipBuilder,
+    this.rowTooltipTheme = const TablePlusTooltipTheme(),
     this.tooltipTheme = const TablePlusTooltipTheme(),
     this.isCellEditing,
     this.getCellController,
@@ -104,6 +108,13 @@ class TablePlusBody<T> extends StatefulWidget {
 
   /// Whether the table supports cell editing.
   final bool isEditable;
+
+  /// A rich card shown while hovering anywhere on the row, or null for no card.
+  final Widget? Function(BuildContext context, T rowData)? rowTooltipBuilder;
+
+  /// The theme for [rowTooltipBuilder]'s card. Already resolved by the parent,
+  /// which falls back to the cell [tooltipTheme] when none is set.
+  final TablePlusTooltipTheme rowTooltipTheme;
 
   /// The theme configuration for editing.
   final TablePlusEditableTheme editableTheme;
@@ -386,7 +397,26 @@ class TablePlusBodyState<T> extends State<TablePlusBody<T>>
       itemCount: indices?.length ?? widget.data.length,
       itemBuilder: (context, index) {
         final actualIndex = indices?[index] ?? index;
-        return _buildRowWidget(actualIndex, index);
+        final row = _buildRowWidget(actualIndex, index);
+
+        // The row is the hover region; the pointer is the anchor. A row's
+        // RenderBox is `contentWidth` wide, so anchoring to it would aim at its
+        // centre — off screen once the table scrolls horizontally.
+        //
+        // A merged row stands for several data rows, so there is no single
+        // `rowData` to hand the builder; it gets no tooltip.
+        final builder = widget.rowTooltipBuilder;
+        if (builder == null || !widget.rowTooltipTheme.enabled) return row;
+        if (_getMergedGroupForRow(actualIndex) != null) return row;
+        final card = builder(context, widget.data[actualIndex]);
+        if (card == null) return row;
+
+        return FlutterTooltipPlus(
+          anchor: TooltipAnchor.pointer,
+          tooltipBuilder: (_) => card,
+          theme: widget.rowTooltipTheme,
+          child: row,
+        );
       },
     );
   }

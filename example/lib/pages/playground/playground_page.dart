@@ -259,6 +259,43 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
     _columns = builder.build();
   }
 
+  /// The row tooltip's card. It draws its own surface, which is why the
+  /// playground gives `rowTooltipTheme` a transparent, unpadded one.
+  Widget _rowCard(Employee e) {
+    return Container(
+      width: 260,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.indigo, width: 2),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(e.name,
+              style:
+                  const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          const SizedBox(height: 6),
+          Wrap(
+            spacing: 6,
+            children: [
+              Chip(
+                  label: Text(e.department),
+                  visualDensity: VisualDensity.compact),
+              Chip(
+                  label: Text(e.position),
+                  visualDensity: VisualDensity.compact),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text('performance ${e.performance.toStringAsFixed(2)}'),
+        ],
+      ),
+    );
+  }
+
   /// Generate random data based on current row count setting
   Future<void> _generateData() async {
     if (_isGenerating) return;
@@ -842,6 +879,10 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
           });
         },
         isEditable: _settings.editingEnabled,
+        // The row is the hover region; the card is anchored beside the pointer.
+        rowTooltipBuilder: _settings.rowCardTooltip
+            ? (context, employee) => _rowCard(employee)
+            : null,
         onCellChanged: _handleCellChanged,
         onRowSecondaryTapDown: _handleRowSecondaryTapDown,
         calculateRowHeight: _settings.dynamicRowHeight
@@ -1050,6 +1091,16 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         ),
         cellTapTogglesCheckbox: _settings.cellTapTogglesCheckbox,
         showRowCheckbox: _settings.showRowCheckbox,
+      ),
+      // The card draws its own surface, so the tooltip must not draw one behind
+      // it. Text tooltips keep the styled surface from `tooltipTheme`.
+      rowTooltipTheme: TablePlusTooltipTheme(
+        enabled: _settings.tooltipEnabled,
+        waitDuration: Duration(milliseconds: _settings.tooltipWaitDurationMs),
+        backgroundColor: Colors.transparent,
+        padding: EdgeInsets.zero,
+        elevation: 0,
+        showArrow: false,
       ),
       tooltipTheme: TablePlusTooltipTheme(
         enabled: _settings.tooltipEnabled,
