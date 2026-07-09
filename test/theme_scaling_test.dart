@@ -190,6 +190,26 @@ void main() {
       expect(theme.scaledBy(2.0).rowTooltipTheme, isNull);
     });
 
+    test('scaledBy carries the header tooltip theme through untouched', () {
+      const headerTooltip =
+          TablePlusTooltipTheme(anchor: TooltipAnchor.pointer);
+      const scoped = TablePlusTheme(headerTooltipTheme: headerTooltip);
+      expect(scoped.scaledBy(2.0).headerTooltipTheme, same(headerTooltip));
+    });
+
+    test('scaledBy leaves an unset header tooltip theme unset', () {
+      expect(theme.scaledBy(2.0).headerTooltipTheme, isNull);
+    });
+
+    test('copyWith carries the header tooltip theme', () {
+      const headerTooltip =
+          TablePlusTooltipTheme(anchor: TooltipAnchor.pointer);
+      final c = theme.copyWith(headerTooltipTheme: headerTooltip);
+      expect(c.headerTooltipTheme, same(headerTooltip));
+      expect(c.copyWith().headerTooltipTheme, same(headerTooltip));
+      expect(c.tooltipTheme, same(theme.tooltipTheme));
+    });
+
     test('scaledBy(1.0) returns the same instance', () {
       expect(identical(theme.scaledBy(1.0), theme), isTrue);
     });

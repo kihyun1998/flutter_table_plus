@@ -15,8 +15,9 @@ TablePlusTheme(
   checkboxTheme: TablePlusCheckboxTheme(...),
   editableTheme: TablePlusEditableTheme(...),
   scrollbarTheme: TablePlusScrollbarTheme(...),
-  tooltipTheme: TablePlusTooltipTheme(...),
+  tooltipTheme: TablePlusTooltipTheme(...),     // cell tooltips
   rowTooltipTheme: TablePlusTooltipTheme(...),  // rowTooltipBuilder's card; falls back to tooltipTheme
+  headerTooltipTheme: TablePlusTooltipTheme(...),  // header tooltips; falls back to tooltipTheme
   hoverButtonTheme: TablePlusHoverButtonTheme(...),
 )
 ```
@@ -397,8 +398,16 @@ Two things to know:
 - Against a point there are no target edges to align to, so under
   `TooltipAnchor.pointer` the `alignment` field selects which of the tooltip's
   *own* edges lands on the cursor.
-- Header and cell tooltips share a single `tooltipTheme`, so this setting
-  applies to both; they cannot be anchored differently.
+- `tooltipTheme` governs cells and `headerTooltipTheme` governs headers, so the
+  two can be anchored differently. Leave `headerTooltipTheme` unset and headers
+  follow the cells:
+
+  ```dart
+  TablePlusTheme(
+    tooltipTheme: TablePlusTooltipTheme(anchor: TooltipAnchor.pointer),
+    headerTooltipTheme: TablePlusTooltipTheme(anchor: TooltipAnchor.child),
+  )
+  ```
 
 Row tooltips built by `rowTooltipBuilder` always anchor at the pointer and
 ignore this field. A row is as wide as the table's content, so anchoring to the
