@@ -65,7 +65,7 @@ class _TestRowState extends State<_TestRow> {
 
 void main() {
   group('TablePlusRowWidget.handleSelectionTap', () {
-    test('toggles selection when selectable, not editable, and id present', () {
+    test('toggles selection when selectable and id present', () {
       final calls = <String>[];
       _TestRow(
         isEditable: false,
@@ -76,7 +76,7 @@ void main() {
       expect(calls, ['r1']);
     });
 
-    test('does nothing in editable mode', () {
+    test('still toggles selection in editable mode', () {
       final calls = <String>[];
       _TestRow(
         isEditable: true,
@@ -84,7 +84,7 @@ void main() {
         selectionId: 'r1',
         onRowSelectionChanged: calls.add,
       ).handleSelectionTap();
-      expect(calls, isEmpty);
+      expect(calls, ['r1']);
     });
 
     test('does nothing when not selectable', () {
@@ -124,7 +124,7 @@ void main() {
       );
     }
 
-    test('true only when selectable, not editing, and id present', () {
+    test('true only when selectable and id present', () {
       expect(
         row(isEditable: false, isSelectable: true, selectionId: 'r')
             .enableSelectionInk,
@@ -132,11 +132,11 @@ void main() {
       );
     });
 
-    test('false while editing', () {
+    test('still true while editing', () {
       expect(
         row(isEditable: true, isSelectable: true, selectionId: 'r')
             .enableSelectionInk,
-        isFalse,
+        isTrue,
       );
     });
 
