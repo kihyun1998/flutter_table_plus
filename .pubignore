@@ -1,14 +1,22 @@
 *.exe
 
+# Working notes, not part of the package.
 todo.md
+tip.md
 CLAUDE.md
+
+# Build and measurement artifacts.
 build/
+coverage/
+benchmark/
+
 example/build/
 example/windows/
 example/linux/
 example/android/
 example/ios/
 example/assets/
+
+# Read on GitHub, where their relative links resolve.
 docs/
-documentation/
 .github/
