@@ -18,7 +18,7 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_checkbox: ^0.2.1
-  just_tooltip: ^0.3.0
+  just_tooltip: ^0.4.0
 
 dev_dependencies:
   flutter_test:
