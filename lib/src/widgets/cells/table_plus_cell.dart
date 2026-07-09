@@ -133,9 +133,15 @@ class _TablePlusCellState<T> extends State<TablePlusCell<T>> {
       widget.isDim,
     );
     if (customCell != null) {
-      return Align(
-        alignment: widget.column.alignment,
-        child: customCell,
+      // A custom cell renders no text of ours, so it can only ever carry a
+      // widget tooltip — and that tooltip takes the whole cell.
+      return _wrapWithTooltip(
+        shouldShow: _shouldShowTooltip('', customCell),
+        child: Align(
+          alignment: widget.column.alignment,
+          child: customCell,
+        ),
+        fallbackMessage: '',
       );
     }
 
@@ -150,19 +156,47 @@ class _TablePlusCellState<T> extends State<TablePlusCell<T>> {
       textAlign: widget.column.textAlign,
     );
 
-    textWidget = wrapWithTooltip<T>(
-      shouldShow: _shouldShowTooltip(displayValue, textWidget),
+    final shouldShow = _shouldShowTooltip(displayValue, textWidget);
+    final hasWidgetTooltip = widget.column.tooltipBuilder != null;
+
+    // A *text* tooltip belongs to the glyphs — you hover the truncated text to
+    // read the rest of it. A *widget* tooltip has nothing to do with them, so
+    // it takes the whole cell: an empty cell's Text is zero-wide, and a short
+    // one leaves most of the cell unhoverable.
+    if (!hasWidgetTooltip) {
+      textWidget = _wrapWithTooltip(
+        shouldShow: shouldShow,
+        child: textWidget,
+        fallbackMessage: displayValue,
+      );
+    }
+
+    final aligned = Align(
+      alignment: widget.column.alignment,
       child: textWidget,
+    );
+    if (!hasWidgetTooltip) return aligned;
+
+    return _wrapWithTooltip(
+      shouldShow: shouldShow,
+      child: aligned,
+      fallbackMessage: displayValue,
+    );
+  }
+
+  Widget _wrapWithTooltip({
+    required bool shouldShow,
+    required Widget child,
+    required String fallbackMessage,
+  }) {
+    return wrapWithTooltip<T>(
+      shouldShow: shouldShow,
+      child: child,
       theme: widget.tooltipTheme,
       tooltipBuilder: widget.column.tooltipBuilder,
       tooltipFormatter: widget.column.tooltipFormatter,
       rowData: widget.rowData,
-      fallbackMessage: displayValue,
-    );
-
-    return Align(
-      alignment: widget.column.alignment,
-      child: textWidget,
+      fallbackMessage: fallbackMessage,
     );
   }
 
@@ -215,6 +249,7 @@ class _TablePlusCellState<T> extends State<TablePlusCell<T>> {
     if (!widget.tooltipTheme.enabled) return false;
     return TooltipResolver.shouldShow(
       behavior: widget.column.tooltipBehavior,
+      hasWidgetTooltip: widget.column.tooltipBuilder != null,
       isEllipsis: widget.column.textOverflow == TextOverflow.ellipsis,
       textIsEmpty: displayValue.isEmpty,
       willOverflow: () => _willTextOverflowCached(displayValue),

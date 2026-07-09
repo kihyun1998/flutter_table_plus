@@ -204,14 +204,23 @@ class _TablePlusMergedRowState<T>
       content = _buildMergedCellEditingTextField(
           context, column, spanningDataIndex, rowData, mergedHeight);
     } else if (column.hasCustomCellBuilder && rowData != null) {
-      content = Container(
-        alignment: column.alignment,
-        padding: widget.theme.padding,
-        child: Align(
+      // A custom cell renders no text of ours, so it can only ever carry a
+      // widget tooltip — and that tooltip takes the whole cell.
+      content = _wrapWithTooltip(
+        context,
+        Container(
           alignment: column.alignment,
-          child: column.buildCustomCell(
-              context, rowData, widget.isSelected, widget.isDim),
+          padding: widget.theme.padding,
+          child: Align(
+            alignment: column.alignment,
+            child: column.buildCustomCell(
+                context, rowData, widget.isSelected, widget.isDim),
+          ),
         ),
+        '',
+        column,
+        column.width,
+        rowData,
       );
     } else {
       final displayValue = rowData != null
@@ -371,14 +380,23 @@ class _TablePlusMergedRowState<T>
       content = _buildStackedCellEditingTextField(
           context, column, originalIndex, rowData, groupHeight);
     } else if (column.hasCustomCellBuilder && rowData != null) {
-      content = Container(
-        alignment: column.alignment,
-        padding: widget.theme.padding,
-        child: Align(
+      // A custom cell renders no text of ours, so it can only ever carry a
+      // widget tooltip — and that tooltip takes the whole cell.
+      content = _wrapWithTooltip(
+        context,
+        Container(
           alignment: column.alignment,
-          child: column.buildCustomCell(
-              context, rowData, widget.isSelected, widget.isDim),
+          padding: widget.theme.padding,
+          child: Align(
+            alignment: column.alignment,
+            child: column.buildCustomCell(
+                context, rowData, widget.isSelected, widget.isDim),
+          ),
         ),
+        '',
+        column,
+        column.width,
+        rowData,
       );
     } else {
       final displayValue = rowData != null
@@ -566,6 +584,7 @@ class _TablePlusMergedRowState<T>
     if (!widget.tooltipTheme.enabled) return false;
     return TooltipResolver.shouldShow(
       behavior: column.tooltipBehavior,
+      hasWidgetTooltip: column.tooltipBuilder != null,
       isEllipsis: column.textOverflow == TextOverflow.ellipsis,
       textIsEmpty: displayValue.isEmpty,
       willOverflow: () => TextOverflowDetector.willTextOverflowInContext(
