@@ -16,6 +16,7 @@ TablePlusTheme(
   editableTheme: TablePlusEditableTheme(...),
   scrollbarTheme: TablePlusScrollbarTheme(...),
   tooltipTheme: TablePlusTooltipTheme(...),
+  rowTooltipTheme: TablePlusTooltipTheme(...),  // rowTooltipBuilder's card; falls back to tooltipTheme
   hoverButtonTheme: TablePlusHoverButtonTheme(...),
 )
 ```
