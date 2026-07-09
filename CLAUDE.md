@@ -123,9 +123,9 @@ FlutterTablePlus follows a composition pattern where:
 - **Column Resizing**: `resizable: true` enables drag-to-resize on header cell right edges. Resize widths are internal layout state (`_resizedWidths`); `onColumnResized` callback fires once on drag end for persistence. Resized columns keep fixed width while unresized columns redistribute proportionally. `minWidth`/`maxWidth` per column are enforced via `clamp()` in all layout calculation paths. Selection column (`__selection__`) is excluded from resizing. Resize handle theming via `TablePlusHeaderTheme.resizeHandleWidth` and `resizeHandleColor`
 - **Coexisting Features**: Selection and editing modes can coexist in the same table simultaneously
 - **Theme Architecture**: Uses nested theme classes (TablePlusTheme > TablePlusHeaderTheme/TablePlusBodyTheme/etc.) for granular control
-- **Custom Cell Rendering**: `cellBuilder` property allows rendering any Flutter widget in cells but can impact performance with large datasets
+- **Custom Cell Rendering**: `statefulCellBuilder` (the only custom-cell hook; there is no `cellBuilder`) renders any Flutter widget in a cell, but can impact performance with large datasets
 - **Sort Cycle Configuration**: Sort cycle order is configurable between ascending-first and descending-first patterns
-- **Tooltip Control**: Fine-grained tooltip behavior control for both cells and headers via `tooltipBehavior` and `headerTooltipBehavior` properties
+- **Tooltip Control**: Fine-grained tooltip behavior control for both cells and headers via `tooltipBehavior` and `headerTooltipBehavior` properties. Two kinds of body tooltip, gated differently: a **text** tooltip exists to reveal truncated glyphs, so it is gated on ellipsis / non-empty text and its hover target is the `Text` itself. A **widget** tooltip (`tooltipBuilder`) draws unrelated content, so only `TooltipBehavior.never` suppresses it and its hover target is the whole cell. `TooltipResolver.shouldShow` takes `hasWidgetTooltip` to keep the two apart
 - **Merged Rows**: MergedRowGroup functionality allows grouping consecutive rows with configurable merge behavior per column. Supports custom content, selection, and editing within merged cells
 - **Row Ink and Hover**: `TablePlusRowWidget` is a `StatefulWidget`; `TablePlusRowStateBase` owns the hover flag and wires `RowInteractionShell` once for every row type. Hover-button overlays are supported via `hoverButtonBuilder`, and the hover-tracking `MouseRegion` is installed only when one is set. Which ink appears is gated by **which callbacks are wired**, not by the colors: `InkWell` paints a splash/highlight only with a primary-button callback, a hover highlight with any callback. Passing a `null` color does not disable ink - it selects the framework default (`Colors.transparent` disables it, per `TablePlusBodyTheme` docs)
 - **Column Width Constraints**: `minWidth`/`maxWidth` on `TablePlusColumn` are enforced in all `_calculateColumnWidths` paths via `clamp()` — both for resize drag and normal proportional layout distribution
@@ -145,7 +145,7 @@ FlutterTablePlus follows a composition pattern where:
 - Callbacks flow user interactions (sort, select, edit, reorder, resize) back to parent
 
 ### Performance Considerations
-- Use simple text cells when possible; `cellBuilder` sparingly for complex widgets
+- Use simple text cells when possible; `statefulCellBuilder` sparingly for complex widgets
 - Consider pagination for 1000+ rows
 - TableColumnsBuilder prevents order conflicts during column management
 
