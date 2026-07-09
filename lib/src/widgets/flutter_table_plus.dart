@@ -146,6 +146,10 @@ class FlutterTablePlus<T> extends StatefulWidget {
   final void Function(String columnKey, SortDirection direction)? onSort;
 
   /// Whether the table supports cell editing.
+  ///
+  /// Editing coexists with selection: tapping an editable column starts editing
+  /// that cell, while tapping anywhere else on a selectable row still selects
+  /// the row, exactly as it does outside editing mode.
   final bool isEditable;
 
   /// Callback when a cell value is changed.
