@@ -3,6 +3,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
 import 'performance_monitor.dart';
 
+/// A pickable value for the body theme's ink colors (splash / hover /
+/// highlight).
+///
+/// [themeDefault] passes `null` through, which is what makes the table fall
+/// back to the framework's own ink colors — on a white row those are faint
+/// enough to look like nothing is happening at all, so the loud presets exist
+/// to tell "no ink" apart from "ink you cannot see".
+enum InkColorOption {
+  themeDefault('Theme default', null),
+  none('None (transparent)', Colors.transparent),
+  red('Red', Color(0x80F44336)),
+  blue('Blue', Color(0x803F51B5)),
+  green('Green', Color(0x804CAF50)),
+  black('Black', Color(0x40000000));
+
+  const InkColorOption(this.label, this.color);
+
+  final String label;
+  final Color? color;
+}
+
 /// Playground settings configuration
 class PlaygroundSettings {
   // Data settings
@@ -27,6 +48,9 @@ class PlaygroundSettings {
   final double resizeHandleWidth;
   final bool showAlternateRows;
   final bool showDividers;
+  final InkColorOption splashColor;
+  final InkColorOption hoverColor;
+  final InkColorOption highlightColor;
   final bool dynamicRowHeight;
   final bool dimInactiveRows;
   final bool showCheckboxColumn;
@@ -90,6 +114,9 @@ class PlaygroundSettings {
     this.resizeHandleWidth = 8.0,
     this.showAlternateRows = true,
     this.showDividers = true,
+    this.splashColor = InkColorOption.themeDefault,
+    this.hoverColor = InkColorOption.themeDefault,
+    this.highlightColor = InkColorOption.themeDefault,
     this.dynamicRowHeight = false,
     this.dimInactiveRows = false,
     this.showCheckboxColumn = true,
@@ -144,6 +171,9 @@ class PlaygroundSettings {
     double? resizeHandleWidth,
     bool? showAlternateRows,
     bool? showDividers,
+    InkColorOption? splashColor,
+    InkColorOption? hoverColor,
+    InkColorOption? highlightColor,
     bool? dynamicRowHeight,
     bool? dimInactiveRows,
     bool? showCheckboxColumn,
@@ -197,6 +227,9 @@ class PlaygroundSettings {
       resizeHandleWidth: resizeHandleWidth ?? this.resizeHandleWidth,
       showAlternateRows: showAlternateRows ?? this.showAlternateRows,
       showDividers: showDividers ?? this.showDividers,
+      splashColor: splashColor ?? this.splashColor,
+      hoverColor: hoverColor ?? this.hoverColor,
+      highlightColor: highlightColor ?? this.highlightColor,
       dynamicRowHeight: dynamicRowHeight ?? this.dynamicRowHeight,
       dimInactiveRows: dimInactiveRows ?? this.dimInactiveRows,
       showCheckboxColumn: showCheckboxColumn ?? this.showCheckboxColumn,
@@ -893,6 +926,46 @@ class SettingsPanel extends StatelessWidget {
           onChanged: (value) {
             onSettingsChanged(settings.copyWith(showAlternateRows: value));
           },
+        ),
+
+        _buildDropdownRow<InkColorOption>(
+          label: 'Splash Color',
+          value: settings.splashColor,
+          items: InkColorOption.values,
+          itemLabel: (option) => option.label,
+          onChanged: (option) {
+            onSettingsChanged(settings.copyWith(splashColor: option));
+          },
+        ),
+
+        _buildDropdownRow<InkColorOption>(
+          label: 'Hover Color',
+          value: settings.hoverColor,
+          items: InkColorOption.values,
+          itemLabel: (option) => option.label,
+          onChanged: (option) {
+            onSettingsChanged(settings.copyWith(hoverColor: option));
+          },
+        ),
+
+        _buildDropdownRow<InkColorOption>(
+          label: 'Highlight Color',
+          value: settings.highlightColor,
+          items: InkColorOption.values,
+          itemLabel: (option) => option.label,
+          onChanged: (option) {
+            onSettingsChanged(settings.copyWith(highlightColor: option));
+          },
+        ),
+
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 4),
+          child: Text(
+            'Row splash needs Selection on and Editing off — while editing, the '
+            'ink layer stays for row gestures but the selection splash is '
+            'suppressed.',
+            style: TextStyle(fontSize: 11, color: Colors.black54),
+          ),
         ),
 
         _buildSwitchTile(
