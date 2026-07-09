@@ -86,6 +86,28 @@ Widget _table({
   );
 }
 
+/// A header tooltip's message is the label itself, so a label long enough to
+/// ellipsize also makes a tooltip wide enough to hit screenMargin and get
+/// clamped — which would hide the anchor's effect. Widen the view and put the
+/// column well clear of both edges so nothing clamps.
+Future<void> _pumpHeaderTable(WidgetTester tester, TablePlusTheme theme) async {
+  tester.view.physicalSize = const Size(2000, 800);
+  tester.view.devicePixelRatio = 1.0;
+  addTearDown(tester.view.reset);
+
+  await tester.pumpWidget(_table(
+    theme: theme,
+    columns: {
+      'name': _col('name', width: 800, order: 1),
+      'note': _col('note',
+          width: 600,
+          order: 2,
+          label: _longHeader,
+          headerBehavior: TooltipBehavior.always),
+    },
+  ));
+}
+
 void main() {
   testWidgets('a cell text tooltip anchors at the pointer when asked',
       (tester) async {
@@ -109,29 +131,36 @@ void main() {
     );
   });
 
-  testWidgets('a header tooltip anchors at the pointer when asked',
+  testWidgets('a cell tooltip is not dragged along by the header anchor',
       (tester) async {
-    // A header tooltip's message is the label itself, so a label long enough to
-    // ellipsize also makes a tooltip wide enough to hit screenMargin and get
-    // clamped — which would hide the anchor's effect. Widen the view and put
-    // the column well clear of both edges so nothing clamps.
-    tester.view.physicalSize = const Size(2000, 800);
-    tester.view.devicePixelRatio = 1.0;
-    addTearDown(tester.view.reset);
-
     await tester.pumpWidget(_table(
       theme: const TablePlusTheme(
+        headerTooltipTheme:
+            TablePlusTooltipTheme(anchor: TooltipAnchor.pointer),
+      ),
+    ));
+
+    final text = tester.getRect(find.text(_long));
+    final pointer = Offset(text.left + 40, text.center.dy);
+    await _hoverAt(tester, pointer);
+
+    final tip = tester.getRect(find.text(_full));
+    expect(
+      (tip.center.dx - text.center.dx).abs(),
+      lessThan(40),
+      reason: 'cells keep tooltipTheme\'s default child anchor; the header '
+          'theme must not reach them',
+    );
+  });
+
+  testWidgets('a header tooltip anchors at the pointer when asked',
+      (tester) async {
+    await _pumpHeaderTable(
+      tester,
+      const TablePlusTheme(
         tooltipTheme: TablePlusTooltipTheme(anchor: TooltipAnchor.pointer),
       ),
-      columns: {
-        'name': _col('name', width: 800, order: 1),
-        'note': _col('note',
-            width: 600,
-            order: 2,
-            label: _longHeader,
-            headerBehavior: TooltipBehavior.always),
-      },
-    ));
+    );
 
     final header = tester.getRect(find.text(_longHeader));
     final pointer = Offset(header.left + 40, header.center.dy);
@@ -143,6 +172,52 @@ void main() {
       lessThan(80),
       reason: 'the tooltip should sit beside the cursor, not at the centre of '
           'the header label (x≈${header.center.dx.round()})',
+    );
+  });
+
+  testWidgets('a header tooltip reads its own theme, not the cell one',
+      (tester) async {
+    await _pumpHeaderTable(
+      tester,
+      const TablePlusTheme(
+        headerTooltipTheme:
+            TablePlusTooltipTheme(anchor: TooltipAnchor.pointer),
+      ),
+    );
+
+    final header = tester.getRect(find.text(_longHeader));
+    final pointer = Offset(header.left + 40, header.center.dy);
+    await _hoverAt(tester, pointer);
+
+    final tip = _tooltipRectFor(tester, _longHeader, header);
+    expect(
+      (tip.center.dx - pointer.dx).abs(),
+      lessThan(80),
+      reason: 'headerTooltipTheme alone should move the header tooltip, with '
+          'tooltipTheme left at its default child anchor',
+    );
+  });
+
+  testWidgets('a header tooltip is not dragged along by the cell anchor',
+      (tester) async {
+    await _pumpHeaderTable(
+      tester,
+      const TablePlusTheme(
+        tooltipTheme: TablePlusTooltipTheme(anchor: TooltipAnchor.pointer),
+        headerTooltipTheme: TablePlusTooltipTheme(anchor: TooltipAnchor.child),
+      ),
+    );
+
+    final header = tester.getRect(find.text(_longHeader));
+    final pointer = Offset(header.left + 40, header.center.dy);
+    await _hoverAt(tester, pointer);
+
+    final tip = _tooltipRectFor(tester, _longHeader, header);
+    expect(
+      (tip.center.dx - header.center.dx).abs(),
+      lessThan(40),
+      reason: 'the header asked for the child anchor, so it stays on the label '
+          'even though cells were sent to the pointer',
     );
   });
 }

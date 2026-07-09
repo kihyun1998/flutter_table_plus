@@ -112,13 +112,14 @@ class TablePlusTooltipTheme {
   /// widget is much wider than the neighbourhood the user is pointing at, such
   /// as a long ellipsized cell.
   ///
-  /// This governs cell and header tooltips. Row tooltips built by
-  /// `rowTooltipBuilder` always use [TooltipAnchor.pointer] and ignore this
-  /// field: a row is as wide as the table's content, so anchoring to it would
-  /// aim at a point that may be off screen.
+  /// Cell tooltips read this from `TablePlusTheme.tooltipTheme` and header
+  /// tooltips from `TablePlusTheme.headerTooltipTheme`, which falls back to the
+  /// former — so set them apart to anchor a header differently from its cells.
   ///
-  /// Note that header and cell tooltips currently share a single
-  /// `TablePlusTheme.tooltipTheme`, so their anchors cannot be set separately.
+  /// Row tooltips built by `rowTooltipBuilder` always use
+  /// [TooltipAnchor.pointer] and ignore this field: a row is as wide as the
+  /// table's content, so anchoring to it would aim at a point that may be off
+  /// screen.
   ///
   /// See also [alignment], whose meaning depends on this field.
   final TooltipAnchor anchor;

@@ -837,7 +837,7 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
                   columnWidths: columnWidths,
                   totalWidth: contentWidth,
                   theme: theme.headerTheme,
-                  tooltipTheme: theme.tooltipTheme,
+                  tooltipTheme: theme.headerTooltipTheme ?? theme.tooltipTheme,
                   checkboxTheme: theme.checkboxTheme,
                   isSelectable: widget.isSelectable,
                   selectionMode: widget.selectionMode,

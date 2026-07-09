@@ -18,6 +18,7 @@ class TablePlusTheme {
     this.editableTheme = const TablePlusEditableTheme(),
     this.tooltipTheme = const TablePlusTooltipTheme(),
     this.rowTooltipTheme,
+    this.headerTooltipTheme,
     this.hoverButtonTheme = const TablePlusHoverButtonTheme(),
     this.dragSelectionTheme = const TablePlusDragSelectionTheme(),
   });
@@ -48,6 +49,14 @@ class TablePlusTheme {
   /// text tooltips governed by [tooltipTheme].
   final TablePlusTooltipTheme? rowTooltipTheme;
 
+  /// Theme configuration for header tooltips.
+  ///
+  /// Falls back to [tooltipTheme] when null, so header and cell tooltips look
+  /// alike unless you say otherwise. Set this to style them apart — most often
+  /// to give the header a different [TablePlusTooltipTheme.anchor], since a
+  /// header label and a data cell rarely want the same one.
+  final TablePlusTooltipTheme? headerTooltipTheme;
+
   /// Theme configuration for hover buttons.
   final TablePlusHoverButtonTheme hoverButtonTheme;
 
@@ -68,6 +77,7 @@ class TablePlusTheme {
       editableTheme: editableTheme.scaledBy(factor),
       tooltipTheme: tooltipTheme,
       rowTooltipTheme: rowTooltipTheme,
+      headerTooltipTheme: headerTooltipTheme,
       hoverButtonTheme: hoverButtonTheme.scaledBy(factor),
       dragSelectionTheme: dragSelectionTheme.scaledBy(factor),
     );
@@ -82,6 +92,7 @@ class TablePlusTheme {
     TablePlusEditableTheme? editableTheme,
     TablePlusTooltipTheme? tooltipTheme,
     TablePlusTooltipTheme? rowTooltipTheme,
+    TablePlusTooltipTheme? headerTooltipTheme,
     TablePlusHoverButtonTheme? hoverButtonTheme,
     TablePlusDragSelectionTheme? dragSelectionTheme,
   }) {
@@ -93,6 +104,7 @@ class TablePlusTheme {
       editableTheme: editableTheme ?? this.editableTheme,
       tooltipTheme: tooltipTheme ?? this.tooltipTheme,
       rowTooltipTheme: rowTooltipTheme ?? this.rowTooltipTheme,
+      headerTooltipTheme: headerTooltipTheme ?? this.headerTooltipTheme,
       hoverButtonTheme: hoverButtonTheme ?? this.hoverButtonTheme,
       dragSelectionTheme: dragSelectionTheme ?? this.dragSelectionTheme,
     );
