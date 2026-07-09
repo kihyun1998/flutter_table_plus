@@ -1,3 +1,13 @@
+## 2.14.0
+
+*   **FIX**: Row splash / hover / highlight now use the colors you set on `TablePlusBodyTheme`, in every mode
+    *   The row's ink colors were passed as `null` whenever the row was not tap-selectable — notably in editing mode — to suppress the ink. But `null` does not suppress it: `InkWell` resolves `widget.splashColor ?? Theme.of(context).splashColor`, so the table silently rendered Flutter's faint grey default instead of your theme. On a white row that default is nearly invisible, which made "no splash" and "a splash you cannot see" look identical. `TablePlusBodyTheme.splashColor` already documented the real contract: *pass `Colors.transparent` to disable*
+    *   Which ink appears is now decided by which callbacks are wired, which is what `InkWell` actually gates on — a splash/highlight needs a primary-button callback, a hover highlight needs any callback. The row shell previously forwarded `onDoubleTap` / `onSecondaryTapDown` as non-null closures that merely called a possibly-null handler, so `InkWell` always looked enabled and painted a splash for a tap that did nothing. Those closures are now forwarded only when a handler exists, and the theme's colors are always passed through
+*   **BEHAVIOR**: Tapping a row now selects it while `isEditable` is true
+    *   Tapping an **editable** column still starts editing that cell — the cell's own `GestureDetector` wins the gesture arena against the row-level tap. Tapping anywhere else on a selectable row now toggles its selection, as it does outside editing mode
+    *   Row-tap selection was suppressed during editing since editing was introduced, when the two modes were mutually exclusive (`assert((isSelectable && isEditable) == false)`). That assert was removed to let them coexist, but the row guard survived, leaving a contradiction: while editing you could still select a row via its checkbox, just not by clicking it
+    *   If you relied on rows not selecting on tap while editing, handle it in your `onRowSelectionChanged`
+
 ## 2.13.1
 
 *   **PERF**: Rows no longer rebuild on pointer hover when there are no hover buttons
