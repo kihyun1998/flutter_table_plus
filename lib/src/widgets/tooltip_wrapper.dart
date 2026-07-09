@@ -25,6 +25,7 @@ Widget wrapWithTooltip<T>({
   if (tooltipBuilder != null && data != null) {
     return FlutterTooltipPlus(
       tooltipBuilder: (context) => tooltipBuilder(context, data),
+      anchor: theme.anchor,
       theme: theme,
       child: child,
     );
@@ -35,6 +36,7 @@ Widget wrapWithTooltip<T>({
       : fallbackMessage;
   return FlutterTooltipPlus(
     message: message,
+    anchor: theme.anchor,
     theme: theme,
     child: child,
   );

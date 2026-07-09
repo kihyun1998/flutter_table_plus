@@ -141,6 +141,17 @@ void main() {
       expect(c.backgroundColor, theme.backgroundColor);
       expect(c.hideOnEmptyMessage, theme.hideOnEmptyMessage);
     });
+
+    test('anchors on the child unless told otherwise', () {
+      expect(theme.anchor, TooltipAnchor.child);
+    });
+
+    test('copyWith carries the anchor', () {
+      final c = theme.copyWith(anchor: TooltipAnchor.pointer);
+      expect(c.anchor, TooltipAnchor.pointer);
+      expect(c.copyWith().anchor, TooltipAnchor.pointer);
+      expect(c.direction, theme.direction);
+    });
   });
 
   group('TablePlusTheme (composite)', () {
