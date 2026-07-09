@@ -31,29 +31,25 @@ class TablePlusSelectionCell extends StatelessWidget {
       // centered, so padding never changed its position, only shrank the room
       // it had; a narrow selection column would then clip it away entirely (#4).
       //
-      // The transparent Material gives FlutterCheckbox's internal InkWell an
-      // ancestor so the table works without a Scaffold/Material (e.g. on
-      // desktop) (#3).
+      // Neither the checkbox's internal InkWell nor the cell-tap InkWell below
+      // owns a Material. They paint onto the row's — CustomInkWell wraps the
+      // whole row whenever the row is selectable, and this cell only renders
+      // when it is. That row Material is what keeps the table working without a
+      // Scaffold/Material of its own (#3).
       content = Center(
-        child: Material(
-          type: MaterialType.transparency,
-          child: checkboxTheme.buildCheckbox(
-            value: isSelected,
-            onChanged:
-                rowId != null ? (value) => onSelectionChanged(rowId!) : null,
-          ),
+        child: checkboxTheme.buildCheckbox(
+          value: isSelected,
+          onChanged:
+              rowId != null ? (value) => onSelectionChanged(rowId!) : null,
         ),
       );
 
       if (checkboxTheme.cellTapTogglesCheckbox) {
-        content = Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: rowId != null ? () => onSelectionChanged(rowId!) : null,
-            mouseCursor:
-                rowId != null ? SystemMouseCursors.click : MouseCursor.defer,
-            child: content,
-          ),
+        content = InkWell(
+          onTap: rowId != null ? () => onSelectionChanged(rowId!) : null,
+          mouseCursor:
+              rowId != null ? SystemMouseCursors.click : MouseCursor.defer,
+          child: content,
         );
       }
     } else {
