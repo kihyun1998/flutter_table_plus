@@ -13,15 +13,23 @@ class TooltipResolver {
 
   /// Whether a body cell with the given [behavior] should show a tooltip.
   ///
-  /// Tooltips only apply to ellipsized text ([isEllipsis]); empty text never
-  /// shows one. [willOverflow] is evaluated only for
-  /// [TooltipBehavior.onlyTextOverflow] on ellipsized text.
+  /// A cell with a widget tooltip ([hasWidgetTooltip]) draws content of its
+  /// own, unrelated to the cell's text, so the text gates do not apply to it:
+  /// only [TooltipBehavior.never] suppresses it. "Text overflow" is undefined
+  /// for builder content, so [TooltipBehavior.onlyTextOverflow] shows it too.
+  ///
+  /// For a *text* tooltip the gates stand: it only applies to ellipsized text
+  /// ([isEllipsis]), and empty text never shows one. [willOverflow] is
+  /// evaluated only for [TooltipBehavior.onlyTextOverflow] on ellipsized text.
   static bool shouldShow({
     required TooltipBehavior behavior,
+    required bool hasWidgetTooltip,
     required bool isEllipsis,
     required bool textIsEmpty,
     required bool Function() willOverflow,
   }) {
+    if (behavior == TooltipBehavior.never) return false;
+    if (hasWidgetTooltip) return true;
     if (textIsEmpty) return false;
     switch (behavior) {
       case TooltipBehavior.never:
