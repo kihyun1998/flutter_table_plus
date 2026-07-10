@@ -14,12 +14,14 @@ import 'package:flutter_test/flutter_test.dart';
 // the point: naming 68 controls would rewrite the panel in test form, and the
 // names are exactly what a later navigability pass is free to change.
 
+// Four groups, cut by what a reader is trying to do, replaced five sections cut
+// by topic. The counts below are what did not change, and are the point of this
+// test: the structure moved, every control survived.
 const _sectionTitles = [
-  'Data Settings',
-  'Style Settings',
-  'Header Border / Divider',
-  'Feature Toggles',
-  'Tooltip Settings',
+  'Data',
+  'Interaction',
+  'Content',
+  'Appearance',
 ];
 
 /// Only 'Data Settings' starts expanded, and a collapsed section does not build
@@ -81,9 +83,11 @@ void main() {
     expect(find.byType(Switch), findsNWidgets(25));
     expect(
         find.byWidgetPredicate((w) => w is DropdownButton), findsNWidgets(12));
-    // 21, not 20: the row card was given its own wait duration, since a card
-    // interrupts more than a line of text does.
-    expect(find.byType(Slider), findsNWidgets(21));
+    // 20, down from 21: the row card's wait duration is an option of the row
+    // card, and the card is off by default. It used to sit under the tooltip
+    // toggle and so was reachable while it meant nothing. The description put
+    // it where it belongs, and this count is the first thing to notice.
+    expect(find.byType(Slider), findsNWidgets(20));
   });
 
   testWidgets('a search narrows the panel to the controls that match',

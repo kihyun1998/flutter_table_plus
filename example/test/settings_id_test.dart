@@ -15,11 +15,10 @@ import 'package:flutter_test/flutter_test.dart';
 // settings class and compares its fields to the ids the panel renders.
 
 const _sectionTitles = [
-  'Data Settings',
-  'Style Settings',
-  'Header Border / Divider',
-  'Feature Toggles',
-  'Tooltip Settings',
+  'Data',
+  'Interaction',
+  'Content',
+  'Appearance',
 ];
 
 Future<void> _expandEverySection(WidgetTester tester) async {

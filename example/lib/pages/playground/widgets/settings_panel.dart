@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../models/playground_settings.dart';
+import '../models/settings_spec.dart';
 import 'performance_monitor.dart';
-import 'sections/data_settings_section.dart';
-import 'sections/feature_toggles_section.dart';
-import 'sections/header_border_section.dart';
-import 'sections/style_settings_section.dart';
-import 'sections/tooltip_settings_section.dart';
+import 'settings_controls.dart';
+import 'settings_registry.dart';
 
 /// Settings panel widget for the playground
 ///
@@ -91,96 +89,159 @@ class _SettingsPanelState extends State<SettingsPanel> {
             ),
             const SizedBox(height: 24),
 
-            // Data Settings
-            DataSettingsSection(
-              query: query,
-              settings: widget.settings,
-              onSettingsChanged: widget.onSettingsChanged,
-              onGenerateData: widget.onGenerateData,
-              isGenerating: widget.isGenerating,
-            ),
-            const SizedBox(height: 16),
-
-            // Width persistence demo buttons
-            if (widget.onRestoreWidths != null)
-              Row(
-                children: [
-                  Expanded(
-                    child: SizedBox(
-                      height: 44,
-                      child: OutlinedButton.icon(
-                        onPressed: widget.onRandomSavedWidths,
-                        icon: const Icon(Icons.shuffle, size: 18),
-                        label: const Text('Random'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.orange.shade700,
-                          side: BorderSide(color: Colors.orange.shade400),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: SizedBox(
-                      height: 44,
-                      child: OutlinedButton.icon(
-                        onPressed: widget.hasSavedWidths
-                            ? widget.onRestoreWidths
-                            : null,
-                        icon: const Icon(Icons.restore, size: 18),
-                        label: const Text('Restore'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.orange.shade700,
-                          side: BorderSide(
-                            color: widget.hasSavedWidths
-                                ? Colors.orange.shade400
-                                : Colors.grey.shade300,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            const SizedBox(height: 24),
-
-            // Style Settings
-            StyleSettingsSection(
-              query: query,
-              settings: widget.settings,
-              onSettingsChanged: widget.onSettingsChanged,
-              onRandomizeWidths: widget.onRandomizeWidths,
-            ),
-            const SizedBox(height: 24),
-
-            // Header Border/Divider Settings
-            HeaderBorderSection(
-              query: query,
-              settings: widget.settings,
-              onSettingsChanged: widget.onSettingsChanged,
-            ),
-            const SizedBox(height: 24),
-
-            // Feature Toggles
-            FeatureTogglesSection(
-              query: query,
-              settings: widget.settings,
-              onSettingsChanged: widget.onSettingsChanged,
-            ),
-            const SizedBox(height: 24),
-
-            // Tooltip Settings
-            TooltipSettingsSection(
-              query: query,
-              settings: widget.settings,
-              onSettingsChanged: widget.onSettingsChanged,
-            ),
-            const SizedBox(height: 24),
+            for (final group in settingsSpec) ...[
+              _buildGroup(group, query),
+              const SizedBox(height: 24),
+            ],
 
             // Performance Monitor
             PerformanceMonitor(metrics: widget.performanceMetrics),
           ],
         ),
+      ),
+    );
+  }
+
+  /// One group of the description, drawn as a collapsible section.
+  ///
+  /// The panel walks the description for structure and asks the registry how to
+  /// draw each id. Nothing here knows what a setting means.
+  Widget _buildGroup(SettingGroup group, String query) {
+    return buildSection(
+      query: query,
+      title: group.title,
+      icon: _groupIcons[group.id]!,
+      color: _groupColors[group.id]!,
+      borderColor: _groupBorders[group.id]!,
+      initiallyExpanded: group.id == 'data',
+      children: [
+        for (final feature in group.features) ..._buildFeature(feature),
+      ],
+    );
+  }
+
+  /// A feature's switch, then the options it owns — which only appear while it
+  /// is on. Eight of these were guarded by hand; the description knows all of
+  /// them.
+  List<Widget> _buildFeature(SettingFeature feature) {
+    final s = widget.settings;
+    final on = feature.switchId == null || _isOn(feature.switchId!);
+
+    return [
+      if (feature.switchId != null) _draw(feature.switchId!),
+      if (feature.id == 'data') _rowCountBadge(s),
+      if (on) ...[
+        for (final option in feature.options) _draw(option),
+        if (feature.id == 'data') ..._dataExtras(s),
+      ],
+      const SizedBox(height: 8),
+    ];
+  }
+
+  Widget _draw(String id) =>
+      settingsRegistry[id]!(widget.settings, widget.onSettingsChanged);
+
+  bool _isOn(String switchId) => switch (switchId) {
+        'sortingEnabled' => widget.settings.sortingEnabled,
+        'selectionEnabled' => widget.settings.selectionEnabled,
+        'dragSelectionEnabled' => widget.settings.dragSelectionEnabled,
+        'editingEnabled' => widget.settings.editingEnabled,
+        'columnReorderEnabled' => widget.settings.columnReorderEnabled,
+        'resizableEnabled' => widget.settings.resizableEnabled,
+        'tooltipEnabled' => widget.settings.tooltipEnabled,
+        'rowCardTooltip' => widget.settings.rowCardTooltip,
+        'mergedRowsEnabled' => widget.settings.mergedRowsEnabled,
+        'dynamicRowHeight' => widget.settings.dynamicRowHeight,
+        'dimInactiveRows' => widget.settings.dimInactiveRows,
+        'showAlternateRows' => widget.settings.showAlternateRows,
+        'showDividers' => widget.settings.showDividers,
+        'headerTopBorderShow' => widget.settings.headerTopBorderShow,
+        'headerBottomBorderShow' => widget.settings.headerBottomBorderShow,
+        'headerVerticalDividerShow' =>
+          widget.settings.headerVerticalDividerShow,
+        _ => true,
+      };
+
+  Widget _rowCountBadge(PlaygroundSettings s) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        const Expanded(
+          child: Text(
+            'Row Count',
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(
+            color: Colors.green.shade100,
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Text(
+            formatNumber(s.rowCount),
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: Colors.green.shade800,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// The quick presets and the generate button need `onGenerateData`, which no
+  /// registry entry is handed, so the panel draws them itself.
+  List<Widget> _dataExtras(PlaygroundSettings s) {
+    return [
+      const SizedBox(height: 8),
+      Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          for (final value in [5, 100, 1000, 10000, 100000])
+            _quickButton(s, value),
+        ],
+      ),
+      const SizedBox(height: 12),
+      SizedBox(
+        width: double.infinity,
+        height: 48,
+        child: ElevatedButton.icon(
+          onPressed: widget.isGenerating ? null : widget.onGenerateData,
+          icon: widget.isGenerating
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.refresh),
+          label: Text(widget.isGenerating ? 'Generating...' : 'Generate Data'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.green.shade600,
+            foregroundColor: Colors.white,
+          ),
+        ),
+      ),
+    ];
+  }
+
+  Widget _quickButton(PlaygroundSettings s, int value) {
+    final selected = s.rowCount == value;
+    return ElevatedButton(
+      onPressed: () => widget.onSettingsChanged(s.copyWith(rowCount: value)),
+      style: ElevatedButton.styleFrom(
+        backgroundColor:
+            selected ? Colors.green.shade600 : Colors.grey.shade200,
+        foregroundColor: selected ? Colors.white : Colors.grey.shade700,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        minimumSize: Size.zero,
+      ),
+      child: Text(
+        formatNumber(value),
+        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
       ),
     );
   }
@@ -215,3 +276,24 @@ class _SettingsPanelState extends State<SettingsPanel> {
     );
   }
 }
+
+const _groupIcons = {
+  'data': Icons.data_array,
+  'interaction': Icons.touch_app,
+  'content': Icons.view_agenda_outlined,
+  'appearance': Icons.palette_outlined,
+};
+
+final _groupColors = {
+  'data': Colors.green.shade700,
+  'interaction': Colors.blue.shade700,
+  'content': Colors.indigo.shade700,
+  'appearance': Colors.purple.shade700,
+};
+
+final _groupBorders = {
+  'data': Colors.green.shade200,
+  'interaction': Colors.blue.shade200,
+  'content': Colors.indigo.shade200,
+  'appearance': Colors.purple.shade200,
+};
