@@ -960,156 +960,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
             );
           });
         },
-        theme: _buildTheme(),
-      ),
-    );
-  }
-
-  TextStyle _fontTextStyle({
-    double? fontSize,
-    Color? color,
-    FontWeight? fontWeight,
-  }) {
-    return switch (_settings.fontFamily) {
-      'pretendard' => TextStyle(
-          fontFamily: 'Pretendard',
-          fontSize: fontSize,
-          color: color,
-          fontWeight: fontWeight),
-      'notoSansKr' => GoogleFonts.notoSansKr(
-          fontSize: fontSize, color: color, fontWeight: fontWeight),
-      'inter' => GoogleFonts.inter(
-          fontSize: fontSize, color: color, fontWeight: fontWeight),
-      'firaCode' => GoogleFonts.firaCode(
-          fontSize: fontSize, color: color, fontWeight: fontWeight),
-      _ => TextStyle(fontSize: fontSize, color: color, fontWeight: fontWeight),
-    };
-  }
-
-  TablePlusTheme _buildTheme() {
-    return TablePlusTheme(
-      headerTheme: TablePlusHeaderTheme(
-        resizeHandle: TablePlusResizeHandleTheme(
-          width: _settings.resizeHandleWidth,
-          thickness: _settings.resizeHandleThickness,
-          indent: _settings.resizeHandleIndent,
-          endIndent: _settings.resizeHandleEndIndent,
-        ),
-        backgroundColor: Colors.blue.shade50,
-        topBorder: TablePlusHeaderBorderTheme(
-          show: _settings.headerTopBorderShow,
-          color: Colors.blue.shade200,
-          thickness: _settings.headerTopBorderThickness,
-        ),
-        bottomBorder: TablePlusHeaderBorderTheme(
-          show: _settings.headerBottomBorderShow,
-          color: Colors.grey.shade300,
-          thickness: _settings.headerBottomBorderThickness,
-        ),
-        verticalDivider: TablePlusHeaderDividerTheme(
-          show: _settings.headerVerticalDividerShow,
-          color: Colors.grey.shade300,
-          thickness: _settings.headerVerticalDividerThickness,
-          indent: _settings.headerVerticalDividerIndent,
-          endIndent: _settings.headerVerticalDividerEndIndent,
-        ),
-        textStyle: _fontTextStyle(
-          fontWeight: FontWeight.w600,
-          color: Colors.blue.shade800,
-          fontSize: _settings.fontSize,
-        ),
-        padding: EdgeInsets.symmetric(
-          horizontal: _settings.horizontalPadding,
-          vertical: _settings.verticalPadding,
-        ),
-        sortIcons: SortIcons(
-          ascending: SvgPicture.asset(
-            'assets/icons/up.svg',
-            width: _settings.sortIconWidth,
-            height: _settings.sortIconWidth,
-            colorFilter: ColorFilter.mode(
-              Colors.blue.shade700,
-              BlendMode.srcIn,
-            ),
-          ),
-          descending: SvgPicture.asset(
-            'assets/icons/down.svg',
-            width: _settings.sortIconWidth,
-            height: _settings.sortIconWidth,
-            colorFilter: ColorFilter.mode(
-              Colors.blue.shade700,
-              BlendMode.srcIn,
-            ),
-          ),
-          unsorted: SvgPicture.asset(
-            'assets/icons/upndown.svg',
-            width: _settings.sortIconWidth,
-            height: _settings.sortIconWidth,
-            colorFilter: const ColorFilter.mode(
-              Colors.grey,
-              BlendMode.srcIn,
-            ),
-          ),
-        ),
-        sortIconWidth: _settings.sortIconWidth,
-      ),
-      bodyTheme: TablePlusBodyTheme(
-        backgroundColor: Colors.white,
-        alternateRowColor: _settings.showAlternateRows
-            ? Colors.blue.shade50.withValues(alpha: 0.3)
-            : null,
-        textStyle: _fontTextStyle(
-          fontSize: _settings.fontSize,
-          color: Colors.black87,
-        ),
-        padding: EdgeInsets.symmetric(
-          horizontal: _settings.horizontalPadding,
-          vertical: _settings.verticalPadding,
-        ),
-        dividerColor:
-            _settings.showDividers ? Colors.grey.shade300 : Colors.transparent,
-        showHorizontalDividers: _settings.showDividers,
-        showVerticalDividers: _settings.showDividers,
-        selectedRowColor: Colors.blue.shade100.withValues(alpha: 0.6),
-        splashColor: _settings.splashColor.color,
-        hoverColor: _settings.hoverColor.color,
-        highlightColor: _settings.highlightColor.color,
-        rowHeight: _settings.rowHeight,
-      ),
-      editableTheme: TablePlusEditableTheme(
-        editingCellColor: Colors.yellow.shade100,
-        editingBorderColor: Colors.orange.shade400,
-        editingBorderWidth: 2.0,
-      ),
-      checkboxTheme: TablePlusCheckboxTheme(
-        showCheckboxColumn: _settings.showCheckboxColumn,
-        style: CheckboxStyle(
-          size: 18,
-          hoverRingPadding: _settings.checkboxTapTargetSize > 18
-              ? (_settings.checkboxTapTargetSize - 18) / 2
-              : 0,
-        ),
-        cellTapTogglesCheckbox: _settings.cellTapTogglesCheckbox,
-        showRowCheckbox: _settings.showRowCheckbox,
-      ),
-      // The card draws its own surface, so the tooltip must not draw one behind
-      // it. Text tooltips keep the styled surface from `tooltipTheme`.
-      rowTooltipTheme: TablePlusTooltipTheme(
-        enabled: _settings.tooltipEnabled,
-        waitDuration: Duration(milliseconds: _settings.tooltipWaitDurationMs),
-        backgroundColor: Colors.transparent,
-        padding: EdgeInsets.zero,
-        elevation: 0,
-        showArrow: false,
-      ),
-      tooltipTheme: TablePlusTooltipTheme(
-        enabled: _settings.tooltipEnabled,
-        waitDuration: Duration(milliseconds: _settings.tooltipWaitDurationMs),
-        textStyle: _fontTextStyle(fontSize: 12, color: Colors.white),
-        direction: _settings.tooltipDirection,
-        alignment: _settings.tooltipAlignment,
-        showArrow: _settings.tooltipShowArrow,
-        offset: _settings.tooltipOffset,
+        theme: buildPlaygroundTheme(_settings),
       ),
     );
   }
@@ -1134,4 +985,160 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
     }
     return number.toString();
   }
+}
+
+/// The table theme the playground builds from its [PlaygroundSettings].
+///
+/// Free of `BuildContext` and of widget state, so it can be asserted on
+/// directly: what the panel selects is exactly what the table receives.
+TextStyle _fontTextStyle(
+  PlaygroundSettings settings, {
+  double? fontSize,
+  Color? color,
+  FontWeight? fontWeight,
+}) {
+  return switch (settings.fontFamily) {
+    'pretendard' => TextStyle(
+        fontFamily: 'Pretendard',
+        fontSize: fontSize,
+        color: color,
+        fontWeight: fontWeight),
+    'notoSansKr' => GoogleFonts.notoSansKr(
+        fontSize: fontSize, color: color, fontWeight: fontWeight),
+    'inter' => GoogleFonts.inter(
+        fontSize: fontSize, color: color, fontWeight: fontWeight),
+    'firaCode' => GoogleFonts.firaCode(
+        fontSize: fontSize, color: color, fontWeight: fontWeight),
+    _ => TextStyle(fontSize: fontSize, color: color, fontWeight: fontWeight),
+  };
+}
+
+TablePlusTheme buildPlaygroundTheme(PlaygroundSettings settings) {
+  return TablePlusTheme(
+    headerTheme: TablePlusHeaderTheme(
+      resizeHandle: TablePlusResizeHandleTheme(
+        width: settings.resizeHandleWidth,
+        thickness: settings.resizeHandleThickness,
+        indent: settings.resizeHandleIndent,
+        endIndent: settings.resizeHandleEndIndent,
+      ),
+      backgroundColor: Colors.blue.shade50,
+      topBorder: TablePlusHeaderBorderTheme(
+        show: settings.headerTopBorderShow,
+        color: Colors.blue.shade200,
+        thickness: settings.headerTopBorderThickness,
+      ),
+      bottomBorder: TablePlusHeaderBorderTheme(
+        show: settings.headerBottomBorderShow,
+        color: Colors.grey.shade300,
+        thickness: settings.headerBottomBorderThickness,
+      ),
+      verticalDivider: TablePlusHeaderDividerTheme(
+        show: settings.headerVerticalDividerShow,
+        color: Colors.grey.shade300,
+        thickness: settings.headerVerticalDividerThickness,
+        indent: settings.headerVerticalDividerIndent,
+        endIndent: settings.headerVerticalDividerEndIndent,
+      ),
+      textStyle: _fontTextStyle(
+        settings,
+        fontWeight: FontWeight.w600,
+        color: Colors.blue.shade800,
+        fontSize: settings.fontSize,
+      ),
+      padding: EdgeInsets.symmetric(
+        horizontal: settings.horizontalPadding,
+        vertical: settings.verticalPadding,
+      ),
+      sortIcons: SortIcons(
+        ascending: SvgPicture.asset(
+          'assets/icons/up.svg',
+          width: settings.sortIconWidth,
+          height: settings.sortIconWidth,
+          colorFilter: ColorFilter.mode(
+            Colors.blue.shade700,
+            BlendMode.srcIn,
+          ),
+        ),
+        descending: SvgPicture.asset(
+          'assets/icons/down.svg',
+          width: settings.sortIconWidth,
+          height: settings.sortIconWidth,
+          colorFilter: ColorFilter.mode(
+            Colors.blue.shade700,
+            BlendMode.srcIn,
+          ),
+        ),
+        unsorted: SvgPicture.asset(
+          'assets/icons/upndown.svg',
+          width: settings.sortIconWidth,
+          height: settings.sortIconWidth,
+          colorFilter: const ColorFilter.mode(
+            Colors.grey,
+            BlendMode.srcIn,
+          ),
+        ),
+      ),
+      sortIconWidth: settings.sortIconWidth,
+    ),
+    bodyTheme: TablePlusBodyTheme(
+      backgroundColor: Colors.white,
+      alternateRowColor: settings.showAlternateRows
+          ? Colors.blue.shade50.withValues(alpha: 0.3)
+          : null,
+      textStyle: _fontTextStyle(
+        settings,
+        fontSize: settings.fontSize,
+        color: Colors.black87,
+      ),
+      padding: EdgeInsets.symmetric(
+        horizontal: settings.horizontalPadding,
+        vertical: settings.verticalPadding,
+      ),
+      dividerColor:
+          settings.showDividers ? Colors.grey.shade300 : Colors.transparent,
+      showHorizontalDividers: settings.showDividers,
+      showVerticalDividers: settings.showDividers,
+      selectedRowColor: Colors.blue.shade100.withValues(alpha: 0.6),
+      splashColor: settings.splashColor.color,
+      hoverColor: settings.hoverColor.color,
+      highlightColor: settings.highlightColor.color,
+      rowHeight: settings.rowHeight,
+    ),
+    editableTheme: TablePlusEditableTheme(
+      editingCellColor: Colors.yellow.shade100,
+      editingBorderColor: Colors.orange.shade400,
+      editingBorderWidth: 2.0,
+    ),
+    checkboxTheme: TablePlusCheckboxTheme(
+      showCheckboxColumn: settings.showCheckboxColumn,
+      style: CheckboxStyle(
+        size: 18,
+        hoverRingPadding: settings.checkboxTapTargetSize > 18
+            ? (settings.checkboxTapTargetSize - 18) / 2
+            : 0,
+      ),
+      cellTapTogglesCheckbox: settings.cellTapTogglesCheckbox,
+      showRowCheckbox: settings.showRowCheckbox,
+    ),
+    // The card draws its own surface, so the tooltip must not draw one behind
+    // it. Text tooltips keep the styled surface from `tooltipTheme`.
+    rowTooltipTheme: TablePlusTooltipTheme(
+      enabled: settings.tooltipEnabled,
+      waitDuration: Duration(milliseconds: settings.tooltipWaitDurationMs),
+      backgroundColor: Colors.transparent,
+      padding: EdgeInsets.zero,
+      elevation: 0,
+      showArrow: false,
+    ),
+    tooltipTheme: TablePlusTooltipTheme(
+      enabled: settings.tooltipEnabled,
+      waitDuration: Duration(milliseconds: settings.tooltipWaitDurationMs),
+      textStyle: _fontTextStyle(settings, fontSize: 12, color: Colors.white),
+      direction: settings.tooltipDirection,
+      alignment: settings.tooltipAlignment,
+      showArrow: settings.tooltipShowArrow,
+      offset: settings.tooltipOffset,
+    ),
+  );
 }
