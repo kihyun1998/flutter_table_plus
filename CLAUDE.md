@@ -28,15 +28,17 @@ The one exception is anything that opens a window or waits for input: `flutter r
 
 There is **no CI**. The gates in Step 8 are the only gates, and they run here.
 
+`just_tooltip` and `flutter_checkbox` resolve from pub, but their sources sit beside this repo — `../just_tooltip` and `../flutter_checkbox`, same author, each with its own GitHub issue tracker. Read them instead of guessing from pub docs, and fix there what belongs there (Step 2).
+
 Minimum Flutter is **3.13.0** (Dart 3.1.0), forced by `just_tooltip ^0.4.2`. The floor is not decoration: a caret range admits future patches, and a patch that raises its own SDK floor retroactively breaks the promise this package's `environment` makes.
 
 ## Common Development Commands
 
 ### Testing
 ```bash
-flutter test                    # Package suite (382 tests)
+flutter test                    # Package suite
 flutter test test/row_tooltip_test.dart         # One file
-cd example && flutter test      # Example suite (39 tests) — a gate, not an afterthought
+cd example && flutter test      # Example suite — a gate, not an afterthought
 ```
 
 ### Code Quality
@@ -82,6 +84,15 @@ dart doc .                      # Generate API documentation
 - **`find.text(...)` 는 화면 어디든 잡는다.** 실증(#58): 홈이 존재하지도 않는데 `find.text('Playground')` 가 통과했다 — `settings_panel.dart` 의 헤더가 같은 문자열을 그린다. 흔한 단어를 단언에 쓰면 그 테스트는 아무것도 말하지 않는다.
 - **의존성 스캔은 컴파일러가 한다.** 실증(#60): `_settings`/`_columns`/`context` 만 훑고 "순수하다" 고 판단했으나, 옮기자 `_formatNumber`·`_getPerformanceColor` 가 없다고 했다. 둘 다 인자만 받는 순수 함수였다. **위치가 의존성을 만들지 않는다 — 다만 위치가 의존성을 숨긴다.**
 - **캐럿 범위는 미래를 미리 허용한다.** 실증(#69): `just_tooltip: ^0.4.0` 은 0.4.2 를 **이미 해석한다**. 0.4.2 는 Flutter 3.13 을 요구하는데 `environment` 는 `>=3.10.0` 이었다. 로컬 SDK 가 3.41 이라 `pub get` 이 성공했고, 3.10~3.12 사용자에게만 깨졌다. `pub get` 성공은 제약이 정직하다는 증거가 아니다.
+
+**경계에서 멈추지 마라 — 원인은 `pubspec` 바깥에 있을 수 있다.**
+
+`just_tooltip` 과 `flutter_checkbox` 는 남의 코드가 아니다. 소스는 `../just_tooltip` · `../flutter_checkbox` 에 있고 각자 이슈 트래커가 있다. dep 의 동작이 궁금하면 pub 문서로 추측하지 말고 **그 리포의 소스와 CHANGELOG 를 읽는다.**
+
+- **우회는 결함을 고치지 않고 *숨긴다*.** 실증(#33): 행 툴팁이 `child` 앵커를 피해 `pointer` 로 우회했고, 잘 작동했다. 그래서 upstream 결함은 살아남았다 — just_tooltip 0.4.2 의 CHANGELOG 가 그 결과를 적는다: *"both known downstreams had independently adopted it as a workaround."* **우회가 잘 들을수록 결함은 오래 산다.** 0.4.2 가 진짜로 고치자 이 리포 여섯 곳의 근거가 한꺼번에 거짓이 됐다(Step 7 의 낡은 근거 회수).
+- **"upstream 으로 간다" 는 "upstream 탓을 한다" 가 아니다.** 물을 것은 **누구의 불변식이 깨졌는가**다. 실증(#88): `MouseRegion.onEnter` 에서 조상 툴팁을 억제하는 건 결함이 아니라 0.4.0(#22)이 *의도한 계약*이다. 깨진 건 이쪽 불변식이었다 — 그릴 게 없는 툴팁을 지었다. 고칠 자리는 여기였고, 여기서 고쳤다.
+- **의존성은 벽이 아니라 양방향으로 새는 막이다.** 실증(#69/#38): upstream 이 Flutter 3.13 을 요구하자 이쪽 `environment` 가 따라 올라가야 했다. 변경은 아래로만 흐르지 않는다.
+- 판정 뒤에도 우회를 택했다면 — 릴리스 사이클이 급하거나 upstream 수정이 클 때 — **우회라고 적고 upstream 이슈 번호를 남긴다.** 이유 없는 우회는 다음 사람에게 그냥 코드로 보인다. upstream 수정의 비용은 발행 한 번(+ `^` 범프)이고, 우회의 비용은 **downstream 전부가** 낸다.
 
 **"확인 못 했다" ≠ "없다".** 미확인 사실은 갭이다. 이슈로 surfacing 하거나 사용자에게 묻는다.
 
@@ -139,8 +150,8 @@ CI 는 없다. 이 순서로 **직접** 돌린다:
 ```bash
 flutter analyze                                    # 0 issues
 dart format --output=none --set-exit-if-changed lib test
-flutter test                                       # 382
-cd example && flutter analyze && flutter test      # 39
+flutter test
+cd example && flutter analyze && flutter test
 flutter pub publish --dry-run                      # 0 warnings, clean tree
 ```
 
@@ -188,9 +199,8 @@ flutter pub publish --dry-run                      # 0 warnings, clean tree
 3. **Synchronized Scrolling**: Header and body each have their own horizontal `SingleChildScrollView`; `SyncedScrollControllers` synchronizes them through a shared-controller pattern (the body is the user-input master, the header uses `NeverScrollableScrollPhysics` and is driven by the body's position). The horizontal scrollbar is a third sync target. Vertical scroll lives inside the body's `ListView`
 4. **Merged Row Groups**: MergedRowGroup system for visually combining multiple data rows with configurable merge behavior per column
 5. **Theme Composition**: Nested theme classes (TablePlusTheme, TablePlusHeaderTheme, etc.) for granular styling control
-6. **State Management Ready**: Designed to work with state management solutions like setState, Provider, Riverpod, or Bloc
-7. **Row Widget Polymorphism**: TablePlusRowWidget abstract class enables different row types (_TablePlusRow for normal rows, TablePlusMergedRow for grouped rows) with consistent ListView.builder interface
-8. **Drag Selection (single coordinate frame)**: A `Listener` wraps the body's horizontal `Scrollable` from the *outside*, so its `RenderBox` is stationary in screen — `event.localPosition` is therefore viewport-local on both axes. The widget's pointer handlers are thin translators that forward `down`/`move`/`up`/`cancel` to a `DragSelectionController`, which owns the gesture state machine, the auto-scroll loop (its own `Timer`, with scroll application injected as callbacks), and the content-anchored rubber-band origin (`downLocal − hDelta/vDelta` on both axes). Row lookups go through the `RowLocator` port the body implements
+6. **Row Widget Polymorphism**: TablePlusRowWidget abstract class enables different row types (_TablePlusRow for normal rows, TablePlusMergedRow for grouped rows) with consistent ListView.builder interface
+7. **Drag Selection (single coordinate frame)**: A `Listener` wraps the body's horizontal `Scrollable` from the *outside*, so its `RenderBox` is stationary in screen — `event.localPosition` is therefore viewport-local on both axes. The widget's pointer handlers are thin translators that forward `down`/`move`/`up`/`cancel` to a `DragSelectionController`, which owns the gesture state machine, the auto-scroll loop (its own `Timer`, with scroll application injected as callbacks), and the content-anchored rubber-band origin (`downLocal − hDelta/vDelta` on both axes). Row lookups go through the `RowLocator` port the body implements
 
 ### Widget Lifecycle
 
@@ -203,17 +213,10 @@ FlutterTablePlus follows a composition pattern where:
 - Editing state can coexist with selection state
 - Merged row groups are treated as single units for selection and editing operations
 
-### Data Flow
-
-1. Columns defined via TableColumnsBuilder or direct Map creation
-2. Data provided as List of Maps with consistent keys matching column keys
-3. User interactions (sort, select, edit, reorder, resize) flow through callback functions
-4. External state management handles data updates and passes back to widget
-
 ## Important Implementation Details
 
 - **Column Order Management**: Column order is managed by the `order` field in TablePlusColumn. Use TableColumnsBuilder to prevent order conflicts
-- **Selection Requirements**: `rowId` must return a unique, stable id per row - duplicate ids cause unexpected behavior
+- **Selection Requirements**: `rowId` must return a unique, stable id per row - duplicate ids cause unexpected behavior. `MergedRowGroup.rowKeys` are matched against those same ids
 - **Null Safety for Features**: Setting `onSort: null` completely hides sort icons and disables sorting. Setting `onColumnReorder: null` disables drag-and-drop. Setting `resizable: false` (default) hides resize handles entirely
 - **Column Resizing**: `resizable: true` enables drag-to-resize on header cell right edges. Resize widths are internal layout state (`_resizedWidths`); `onColumnResized` callback fires once on drag end for persistence. Resized columns keep fixed width while unresized columns redistribute proportionally. `minWidth`/`maxWidth` per column are enforced via `clamp()` in all layout calculation paths. Selection column (`__selection__`) is excluded from resizing. Resize handle theming via `TablePlusHeaderTheme.resizeHandleWidth` and `resizeHandleColor`
 - **Coexisting Features**: Selection and editing modes can coexist in the same table simultaneously
@@ -226,24 +229,6 @@ FlutterTablePlus follows a composition pattern where:
 - **Row Ink and Hover**: `TablePlusRowWidget` is a `StatefulWidget`; `TablePlusRowStateBase` owns the hover flag and wires `RowInteractionShell` once for every row type. Hover-button overlays are supported via `hoverButtonBuilder`, and the hover-tracking `MouseRegion` is installed only when one is set. Which ink appears is gated by **which callbacks are wired**, not by the colors: `InkWell` paints a splash/highlight only with a primary-button callback, a hover highlight with any callback. Passing a `null` color does not disable ink - it selects the framework default (`Colors.transparent` disables it, per `TablePlusBodyTheme` docs)
 - **Column Width Constraints**: `minWidth`/`maxWidth` on `TablePlusColumn` are enforced in all `_calculateColumnWidths` paths via `clamp()` — both for resize drag and normal proportional layout distribution
 - **Drag Selection Coordinate Model**: All drag-selection coordinates live in a single viewport-local reference frame. The `Listener` is placed at the body's viewport (outside the body's horizontal `SingleChildScrollView`), so `event.localPosition` is viewport-local on both axes — eliminating the asymmetry that previously existed when the body slid horizontally under a stale captured screen origin. Auto-scroll edge zones, the rubber band rectangle, and content-anchored origin (`downLocal − hDelta/vDelta`) all use this single frame. This gesture state machine + geometry is encapsulated in `DragSelectionController` (unit-tested in isolation via a fake `RowLocator`); the widget's pointer handlers are thin translators, and row-index lookups are routed to the body through the `RowLocator` port (reached via `GlobalKey<TablePlusBodyState<T>>`)
-
-## Code Patterns & Conventions
-
-### Data Structure Requirements
-- Row data: `List<T>`; each column reads its value through `valueAccessor`
-- Selection feature: `rowId` must return a unique, stable id per row
-- Column definitions: Use `TableColumnsBuilder` for safe column creation
-- Merged rows: MergedRowGroup requires valid `rowKeys` that match the ids returned by `rowId`
-
-### Widget Composition Pattern
-- Header and body are separate widgets with independent horizontal `Scrollable`s synchronized through a shared `SyncedScrollControllers` instance
-- State is managed externally and passed down through props
-- Callbacks flow user interactions (sort, select, edit, reorder, resize) back to parent
-
-### Performance Considerations
-- Use simple text cells when possible; `statefulCellBuilder` sparingly for complex widgets
-- Consider pagination for 1000+ rows
-- TableColumnsBuilder prevents order conflicts during column management
 
 ## Documentation Structure
 
