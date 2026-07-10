@@ -84,7 +84,7 @@ class TablePlusHeaderDividerTheme {
 /// Theme configuration for the column resize handle in the header.
 ///
 /// Controls the appearance of the drag-to-resize indicator shown at
-/// column boundaries when [resizable] is enabled. The [width] defines
+/// column boundaries when a column is `resizable`. The [width] defines
 /// the invisible hit-test area, while [thickness], [color], [indent],
 /// and [endIndent] control the visible indicator line.
 class TablePlusResizeHandleTheme {
@@ -218,7 +218,8 @@ class TablePlusHeaderTheme {
   /// Theme for the column resize handle shown at column boundaries.
   ///
   /// Controls the hit-test area width and the visible indicator line styling.
-  /// If [TablePlusResizeHandleTheme.color] is null, uses [verticalDivider.color].
+  /// If [TablePlusResizeHandleTheme.color] is null, uses the color of
+  /// [verticalDivider].
   final TablePlusResizeHandleTheme resizeHandle;
 
   /// Returns a new [TablePlusHeaderTheme] with dimensional values scaled by [factor].
