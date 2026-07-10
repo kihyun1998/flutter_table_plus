@@ -1,5 +1,6 @@
 import 'package:example/main.dart';
 import 'package:example/pages/playground/models/employee.dart';
+import 'package:example/pages/tooltip_anchor/tooltip_anchor_page.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -21,6 +22,17 @@ void main() {
         reason: 'the home lists demos; it does not host one');
   });
 
+  testWidgets('the home offers the tooltip anchor demo', (tester) async {
+    await tester.pumpWidget(const MyApp());
+    await tester.pumpAndSettle();
+
+    expect(find.text('Tooltip anchors'), findsOneWidget);
+    expect(
+        find.text(
+            'Where a tooltip sits: beside the cell, or beside the cursor'),
+        findsOneWidget);
+  });
+
   testWidgets('opening the playground renders its table', (tester) async {
     await tester.pumpWidget(const MyApp());
     await tester.pumpAndSettle();
@@ -30,5 +42,16 @@ void main() {
 
     expect(find.byType(FlutterTablePlus<Employee>), findsOneWidget);
     expect(find.text('Name'), findsOneWidget, reason: 'a header cell painted');
+  });
+
+  testWidgets('opening the tooltip anchor demo renders its table',
+      (tester) async {
+    await tester.pumpWidget(const MyApp());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Tooltip anchors'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(FlutterTablePlus<TooltipAnchorRow>), findsOneWidget);
   });
 }
