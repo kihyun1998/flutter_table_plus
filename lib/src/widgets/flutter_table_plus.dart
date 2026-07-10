@@ -238,8 +238,8 @@ class FlutterTablePlus<T> extends StatefulWidget {
   /// or return null to fall back to the built-in text measurement.
   ///
   /// This is useful for columns that use [TablePlusColumn.statefulCellBuilder]
-  /// or [TablePlusColumn.cellBuilder] with custom styles, padding, or text
-  /// transformations that the default measurement cannot account for.
+  /// with custom styles, padding, or text transformations that the default
+  /// measurement cannot account for.
   final double? Function(String columnKey)? autoFitColumnWidth;
 
   /// Whether the last column should stretch to fill remaining space
