@@ -917,10 +917,12 @@ TablePlusTheme buildPlaygroundTheme(PlaygroundSettings settings) {
       showRowCheckbox: settings.showRowCheckbox,
     ),
     // The card draws its own surface, so the tooltip must not draw one behind
-    // it. Text tooltips keep the styled surface from `tooltipTheme`.
+    // it. Text tooltips keep the styled surface from `tooltipTheme`. The pause
+    // before it appears is its own, because a card interrupts more than a line
+    // of text does.
     rowTooltipTheme: TablePlusTooltipTheme(
       enabled: settings.tooltipEnabled,
-      waitDuration: Duration(milliseconds: settings.tooltipWaitDurationMs),
+      waitDuration: Duration(milliseconds: settings.rowCardWaitDurationMs),
       backgroundColor: Colors.transparent,
       padding: EdgeInsets.zero,
       elevation: 0,

@@ -81,7 +81,9 @@ void main() {
     expect(find.byType(Switch), findsNWidgets(25));
     expect(
         find.byWidgetPredicate((w) => w is DropdownButton), findsNWidgets(12));
-    expect(find.byType(Slider), findsNWidgets(20));
+    // 21, not 20: the row card was given its own wait duration, since a card
+    // interrupts more than a line of text does.
+    expect(find.byType(Slider), findsNWidgets(21));
   });
 
   testWidgets('a search narrows the panel to the controls that match',

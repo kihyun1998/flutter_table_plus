@@ -74,6 +74,12 @@ class PlaygroundSettings {
   final TooltipBehavior headerTooltipBehavior;
   final bool tooltipEnabled;
   final int tooltipWaitDurationMs;
+
+  /// How long the row card waits before it appears.
+  ///
+  /// Separate from [tooltipWaitDurationMs] because a card is a larger, more
+  /// interruptive thing than a line of text, and often wants a longer pause.
+  final int rowCardWaitDurationMs;
   final bool showTooltipFormatter;
   final bool showTooltipBuilder;
   final TooltipDirection tooltipDirection;
@@ -147,6 +153,7 @@ class PlaygroundSettings {
     this.headerTooltipBehavior = TooltipBehavior.always,
     this.tooltipEnabled = true,
     this.tooltipWaitDurationMs = 500,
+    this.rowCardWaitDurationMs = 500,
     this.showTooltipFormatter = false,
     this.showTooltipBuilder = false,
     this.tooltipDirection = TooltipDirection.bottom,
@@ -207,6 +214,7 @@ class PlaygroundSettings {
     TooltipBehavior? headerTooltipBehavior,
     bool? tooltipEnabled,
     int? tooltipWaitDurationMs,
+    int? rowCardWaitDurationMs,
     bool? showTooltipFormatter,
     bool? showTooltipBuilder,
     TooltipDirection? tooltipDirection,
@@ -270,6 +278,8 @@ class PlaygroundSettings {
       tooltipEnabled: tooltipEnabled ?? this.tooltipEnabled,
       tooltipWaitDurationMs:
           tooltipWaitDurationMs ?? this.tooltipWaitDurationMs,
+      rowCardWaitDurationMs:
+          rowCardWaitDurationMs ?? this.rowCardWaitDurationMs,
       showTooltipFormatter: showTooltipFormatter ?? this.showTooltipFormatter,
       showTooltipBuilder: showTooltipBuilder ?? this.showTooltipBuilder,
       tooltipDirection: tooltipDirection ?? this.tooltipDirection,

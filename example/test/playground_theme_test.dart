@@ -48,6 +48,24 @@ void main() {
           reason: 'the cell anchor is untouched by the header one');
     });
 
+    test('the row card waits on its own clock, not the cells\'', () {
+      final theme = buildPlaygroundTheme(const PlaygroundSettings(
+        tooltipWaitDurationMs: 100,
+        rowCardWaitDurationMs: 900,
+      ));
+      expect(theme.rowTooltipTheme?.waitDuration,
+          const Duration(milliseconds: 900));
+      expect(
+          theme.tooltipTheme.waitDuration, const Duration(milliseconds: 100));
+    });
+
+    test('turning tooltips off silences the row card too', () {
+      final theme =
+          buildPlaygroundTheme(const PlaygroundSettings(tooltipEnabled: false));
+      expect(theme.rowTooltipTheme?.enabled, isFalse);
+      expect(theme.tooltipTheme.enabled, isFalse);
+    });
+
     test('the header can return to following the cells', () {
       // A dropdown must be able to walk back. `copyWith`'s `?? this.x` idiom
       // cannot restore a null, which is why the panel models this as a third

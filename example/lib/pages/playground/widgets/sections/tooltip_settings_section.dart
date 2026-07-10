@@ -35,6 +35,13 @@ class TooltipSettingsSection extends StatelessWidget {
             onSettingsChanged(settings.copyWith(tooltipEnabled: value));
           },
         ),
+        Padding(
+          padding: const EdgeInsets.only(left: 8, bottom: 4),
+          child: Text(
+            'Off silences the row card too, not just cells and headers',
+            style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+          ),
+        ),
 
         if (settings.tooltipEnabled) ...[
           const SizedBox(height: 8),
@@ -83,6 +90,20 @@ class TooltipSettingsSection extends StatelessWidget {
             onChanged: (value) {
               onSettingsChanged(
                   settings.copyWith(tooltipWaitDurationMs: value.round()));
+            },
+          ),
+
+          // The card is bigger and more interruptive than a line of text, so
+          // it gets its own pause rather than borrowing the cells'.
+          buildSliderSetting(
+            label: 'Row Card Wait',
+            value: settings.rowCardWaitDurationMs.toDouble(),
+            min: 0,
+            max: 2000,
+            unit: 'ms',
+            onChanged: (value) {
+              onSettingsChanged(
+                  settings.copyWith(rowCardWaitDurationMs: value.round()));
             },
           ),
 
