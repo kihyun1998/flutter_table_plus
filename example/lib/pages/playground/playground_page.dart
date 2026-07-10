@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
@@ -8,13 +6,14 @@ import 'package:google_fonts/google_fonts.dart';
 import 'models/employee.dart';
 import 'models/playground_settings.dart';
 import 'models/settings_presets.dart';
+import 'models/settings_spec.dart';
 import 'playground_columns.dart';
 import 'playground_format.dart';
 import 'utils/random_data_generator.dart';
+import 'widgets/feature_detail_pane.dart';
 import 'widgets/feature_list_pane.dart';
 import 'widgets/performance_monitor.dart';
 import 'widgets/preset_bar.dart';
-import 'widgets/settings_panel.dart';
 
 /// Interactive playground for testing FlutterTablePlus
 ///
@@ -42,9 +41,9 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
   /// has changed something by hand.
   String? _activePresetId = 'bare';
 
-  /// The feature whose detail is shown. The list selects; nothing reads this
-  /// yet. #85 gives it a pane to open into.
-  String? _selectedFeatureId;
+  /// The feature the detail pane has open. The list selects it; selecting is
+  /// not enabling. It opens on Rows, the one setting everyone touches first.
+  String _selectedFeatureId = 'data';
 
   // Data
   List<Employee> _data = [];
@@ -494,26 +493,6 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
     debugPrint('🔄 Reordered column from $oldIndex to $newIndex');
   }
 
-  /// Apply random widths to all columns (simulates restoring saved widths)
-  void _randomizeColumnWidths() {
-    final rng = Random();
-    setState(() {
-      _columns = Map.fromEntries(
-        _columns.entries.map((entry) {
-          final col = entry.value;
-          final minW = col.minWidth;
-          final maxW = col.maxWidth ?? 400.0;
-          final randomWidth = minW + rng.nextDouble() * (maxW - minW);
-          return MapEntry(
-            entry.key,
-            col.copyWith(width: randomWidth.roundToDouble()),
-          );
-        }),
-      );
-    });
-    debugPrint('🎲 Randomized column widths');
-  }
-
   /// Update merged groups (group by department)
   void _updateMergedGroups() {
     if (!_settings.mergedRowsEnabled || _data.isEmpty) {
@@ -633,36 +612,33 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
                       setState(() => _selectedFeatureId = id),
                 ),
 
-                // Left: Settings Panel
-                SettingsPanel(
-                  settings: _settings,
-                  performanceMetrics: _performanceMetrics,
-                  onSettingsChanged: _handleSettingsChanged,
-                  onGenerateData: _generateData,
-                  onRandomizeWidths: _randomizeColumnWidths,
-                  onRandomSavedWidths: () {
-                    final rng = Random();
-                    setState(() {
-                      _activeInitialWidths = {
-                        for (final entry in _columns.entries)
-                          entry.key: (entry.value.minWidth +
-                                  rng.nextDouble() *
-                                      ((entry.value.maxWidth ?? 400.0) -
-                                          entry.value.minWidth))
-                              .roundToDouble(),
-                      };
-                    });
-                    debugPrint('🎲 Applied random widths (not saved)');
-                  },
-                  onRestoreWidths: () {
-                    setState(() {
-                      _activeInitialWidths = Map.of(_savedWidths);
-                    });
-                    debugPrint(
-                        '♻️ Restored saved widths: ${_savedWidths.entries.map((e) => '${e.key}: ${e.value.toStringAsFixed(1)}px').join(', ')}');
-                  },
-                  hasSavedWidths: _savedWidths.isNotEmpty,
-                  isGenerating: _isGenerating,
+                // Middle: the feature the list has open, and nothing else.
+                Container(
+                  width: 380,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border:
+                        Border(right: BorderSide(color: Colors.grey.shade300)),
+                  ),
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: FeatureDetailPane(
+                          settings: _settings,
+                          feature: featureById(_selectedFeatureId),
+                          onSettingsChanged: _handleSettingsChanged,
+                          onGenerateData: _generateData,
+                          isGenerating: _isGenerating,
+                        ),
+                      ),
+                      // The monitor belongs to no feature, so it does not
+                      // scroll away with one.
+                      Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: PerformanceMonitor(metrics: _performanceMetrics),
+                      ),
+                    ],
+                  ),
                 ),
 
                 // Right: Table Area

@@ -317,3 +317,8 @@ const settingsSpec = <SettingGroup>[
     ],
   ),
 ];
+
+/// The feature with this id. Throws when nothing has it — an id that names
+/// nothing is a typo, not a null.
+SettingFeature featureById(String id) =>
+    settingsSpec.expand((g) => g.features).firstWhere((f) => f.id == id);
