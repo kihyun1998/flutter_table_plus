@@ -30,19 +30,17 @@ class HeaderBorderSection extends StatelessWidget {
           },
         ),
         if (settings.headerTopBorderShow)
-          Padding(
-            padding: const EdgeInsets.only(left: 8),
-            child: buildSliderSetting(
-              label: 'Thickness',
-              value: settings.headerTopBorderThickness,
-              min: 0.5,
-              max: 6,
-              unit: 'px',
-              onChanged: (value) {
-                onSettingsChanged(
-                    settings.copyWith(headerTopBorderThickness: value));
-              },
-            ),
+          buildSliderSetting(
+            label: 'Thickness',
+            value: settings.headerTopBorderThickness,
+            min: 0.5,
+            max: 6,
+            unit: 'px',
+            onChanged: (value) {
+              onSettingsChanged(
+                  settings.copyWith(headerTopBorderThickness: value));
+            },
+            indent: true,
           ),
         const SizedBox(height: 4),
 
@@ -55,19 +53,17 @@ class HeaderBorderSection extends StatelessWidget {
           },
         ),
         if (settings.headerBottomBorderShow)
-          Padding(
-            padding: const EdgeInsets.only(left: 8),
-            child: buildSliderSetting(
-              label: 'Thickness',
-              value: settings.headerBottomBorderThickness,
-              min: 0.5,
-              max: 6,
-              unit: 'px',
-              onChanged: (value) {
-                onSettingsChanged(
-                    settings.copyWith(headerBottomBorderThickness: value));
-              },
-            ),
+          buildSliderSetting(
+            label: 'Thickness',
+            value: settings.headerBottomBorderThickness,
+            min: 0.5,
+            max: 6,
+            unit: 'px',
+            onChanged: (value) {
+              onSettingsChanged(
+                  settings.copyWith(headerBottomBorderThickness: value));
+            },
+            indent: true,
           ),
 
         const Divider(height: 24),
@@ -82,49 +78,43 @@ class HeaderBorderSection extends StatelessWidget {
           },
         ),
         if (settings.headerVerticalDividerShow) ...[
-          Padding(
-            padding: const EdgeInsets.only(left: 8),
-            child: buildSliderSetting(
-              label: 'Thickness',
-              value: settings.headerVerticalDividerThickness,
-              min: 0.5,
-              max: 6,
-              unit: 'px',
-              onChanged: (value) {
-                onSettingsChanged(
-                    settings.copyWith(headerVerticalDividerThickness: value));
-              },
-            ),
+          buildSliderSetting(
+            label: 'Thickness',
+            value: settings.headerVerticalDividerThickness,
+            min: 0.5,
+            max: 6,
+            unit: 'px',
+            onChanged: (value) {
+              onSettingsChanged(
+                  settings.copyWith(headerVerticalDividerThickness: value));
+            },
+            indent: true,
           ),
           const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.only(left: 8),
-            child: buildSliderSetting(
-              label: 'Indent (top)',
-              value: settings.headerVerticalDividerIndent,
-              min: 0,
-              max: 24,
-              unit: 'px',
-              onChanged: (value) {
-                onSettingsChanged(
-                    settings.copyWith(headerVerticalDividerIndent: value));
-              },
-            ),
+          buildSliderSetting(
+            label: 'Indent (top)',
+            value: settings.headerVerticalDividerIndent,
+            min: 0,
+            max: 24,
+            unit: 'px',
+            onChanged: (value) {
+              onSettingsChanged(
+                  settings.copyWith(headerVerticalDividerIndent: value));
+            },
+            indent: true,
           ),
           const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.only(left: 8),
-            child: buildSliderSetting(
-              label: 'End Indent (bottom)',
-              value: settings.headerVerticalDividerEndIndent,
-              min: 0,
-              max: 24,
-              unit: 'px',
-              onChanged: (value) {
-                onSettingsChanged(
-                    settings.copyWith(headerVerticalDividerEndIndent: value));
-              },
-            ),
+          buildSliderSetting(
+            label: 'End Indent (bottom)',
+            value: settings.headerVerticalDividerEndIndent,
+            min: 0,
+            max: 24,
+            unit: 'px',
+            onChanged: (value) {
+              onSettingsChanged(
+                  settings.copyWith(headerVerticalDividerEndIndent: value));
+            },
+            indent: true,
           ),
         ],
 
