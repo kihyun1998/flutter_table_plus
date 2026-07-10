@@ -156,13 +156,24 @@ class FlutterTablePlus<T> extends StatefulWidget {
   /// Builds a rich tooltip card shown while the pointer is anywhere on the row.
   ///
   /// Return null for a row that should not have one. The whole row is the hover
-  /// region, and the card is anchored beside the pointer.
+  /// region, and the card is anchored beside the pointer. "Whole" is literal:
+  /// the blank space past the last column, and a cell whose value is empty,
+  /// both show the card. (An empty cell paints a zero-width `Text`, but the
+  /// row's `MouseRegion` is opaque and hit-tests itself, so nothing needs to
+  /// be under the pointer for the row to be hovered.)
   ///
   /// A cell with a tooltip of its own wins: exactly one tooltip is visible, the
   /// innermost under the pointer. Note that `TooltipBehavior.always` — the
   /// default — gives *every* ellipsized text column a tooltip whether or not
   /// its text is actually cut, which leaves the card nowhere to appear. Use
   /// [TooltipBehavior.onlyTextOverflow] on text columns alongside a row card.
+  ///
+  /// A cell only takes the card's place when it has something to show. A
+  /// [TablePlusColumn.tooltipFormatter] returning an empty string yields no
+  /// cell tooltip, so the card surfaces there — unless
+  /// [TablePlusTooltipTheme.hideOnEmptyMessage] is false, which asks for the
+  /// empty bubble. A [TablePlusColumn.tooltipBuilder] is always taken to have
+  /// content and always wins, even if the widget it returns draws nothing.
   ///
   /// Merged rows stand for several data rows and never show a card.
   ///
