@@ -56,7 +56,8 @@ void main() {
     await tester.pump();
 
     expect(cellBuilds, before,
-        reason: 'rows must not rebuild on hover when there are no hover buttons');
+        reason:
+            'rows must not rebuild on hover when there are no hover buttons');
   });
 
   testWidgets('with hover buttons: hovering a row reveals its hover button',

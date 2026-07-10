@@ -400,8 +400,9 @@ class TablePlusBodyState<T> extends State<TablePlusBody<T>>
         final row = _buildRowWidget(actualIndex, index);
 
         // The row is the hover region; the pointer is the anchor. A row's
-        // RenderBox is `contentWidth` wide, so anchoring to it would aim at its
-        // centre — off screen once the table scrolls horizontally.
+        // RenderBox is `contentWidth` wide, so anchoring to it would aim at the
+        // centre of the visible slice — the viewport's centre, wherever the
+        // cursor happens to be along the row.
         //
         // A merged row stands for several data rows, so there is no single
         // `rowData` to hand the builder; it gets no tooltip.

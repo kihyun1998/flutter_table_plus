@@ -42,7 +42,9 @@ class FlutterTooltipPlus extends StatelessWidget {
   /// Leave it null and the theme decides, which is what cell and header
   /// tooltips want. Pass [TooltipAnchor.pointer] to anchor beside the cursor no
   /// matter what the theme says — the row tooltip must, because [child] is then
-  /// as wide as the table's content and its centre can be off screen.
+  /// as wide as the table's content, and a child anchor would aim at the
+  /// centre of whatever slice of it happens to be on screen: visible, but
+  /// nowhere near the cell the user is pointing at.
   final TooltipAnchor? anchor;
 
   /// The text to display in the tooltip.
