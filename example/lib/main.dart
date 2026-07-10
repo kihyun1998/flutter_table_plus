@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'pages/playground/playground_page.dart';
+import 'pages/home_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -11,13 +11,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'FlutterTablePlus Playground',
+      title: 'FlutterTablePlus Examples',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.blue,
         useMaterial3: true,
       ),
-      home: const PlaygroundPage(),
+      home: const HomePage(),
     );
   }
 }
