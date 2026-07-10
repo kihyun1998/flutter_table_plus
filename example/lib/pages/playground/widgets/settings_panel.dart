@@ -1,8 +1,9 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
-import 'performance_monitor.dart';
+
 import '../models/playground_settings.dart';
+import 'performance_monitor.dart';
+import 'settings_controls.dart';
 
 /// Settings panel widget for the playground
 ///
@@ -155,7 +156,7 @@ class SettingsPanel extends StatelessWidget {
   }
 
   Widget _buildDataSettings() {
-    return _buildSection(
+    return buildSection(
       title: 'Data Settings',
       icon: Icons.data_array,
       color: Colors.green.shade700,
@@ -182,7 +183,7 @@ class SettingsPanel extends StatelessWidget {
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
-                _formatNumber(settings.rowCount),
+                formatNumber(settings.rowCount),
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
@@ -195,7 +196,7 @@ class SettingsPanel extends StatelessWidget {
         const SizedBox(height: 12),
 
         // Logarithmic slider (5 to 100,000)
-        _buildLogSlider(
+        buildLogSlider(
           value: settings.rowCount.toDouble(),
           min: 5,
           max: 100000,
@@ -249,7 +250,7 @@ class SettingsPanel extends StatelessWidget {
   }
 
   Widget _buildStyleSettings() {
-    return _buildSection(
+    return buildSection(
       title: 'Style Settings',
       icon: Icons.palette,
       color: Colors.purple.shade700,
@@ -258,7 +259,7 @@ class SettingsPanel extends StatelessWidget {
         const SizedBox(height: 12),
 
         // Font family
-        _buildDropdownRow<String>(
+        buildDropdownRow<String>(
           label: 'Font Family',
           value: settings.fontFamily,
           items: const [
@@ -283,7 +284,7 @@ class SettingsPanel extends StatelessWidget {
         const SizedBox(height: 16),
 
         // Scale (zoom)
-        _buildSliderSetting(
+        buildSliderSetting(
           label: 'Scale',
           value: settings.scale,
           min: 0.25,
@@ -308,7 +309,7 @@ class SettingsPanel extends StatelessWidget {
             child: const Text('Reset (1.0x)', style: TextStyle(fontSize: 11)),
           ),
         ),
-        _buildSwitchTile(
+        buildSwitchTile(
           label: 'Block Modifier+Scroll',
           value: settings.blockModifierScroll,
           onChanged: (value) {
@@ -318,7 +319,7 @@ class SettingsPanel extends StatelessWidget {
         const SizedBox(height: 12),
 
         // Column min width
-        _buildSliderSetting(
+        buildSliderSetting(
           label: 'Col Min Width',
           value: settings.columnMinWidth,
           min: 20,
@@ -347,7 +348,7 @@ class SettingsPanel extends StatelessWidget {
         const SizedBox(height: 16),
 
         // Row height
-        _buildSliderSetting(
+        buildSliderSetting(
           label: 'Row Height',
           value: settings.rowHeight,
           min: 30,
@@ -360,7 +361,7 @@ class SettingsPanel extends StatelessWidget {
         const SizedBox(height: 16),
 
         // Font size
-        _buildSliderSetting(
+        buildSliderSetting(
           label: 'Font Size',
           value: settings.fontSize,
           min: 10,
@@ -373,7 +374,7 @@ class SettingsPanel extends StatelessWidget {
         const SizedBox(height: 16),
 
         // Horizontal padding
-        _buildSliderSetting(
+        buildSliderSetting(
           label: 'H-Padding',
           value: settings.horizontalPadding,
           min: 4,
@@ -386,7 +387,7 @@ class SettingsPanel extends StatelessWidget {
         const SizedBox(height: 16),
 
         // Vertical padding
-        _buildSliderSetting(
+        buildSliderSetting(
           label: 'V-Padding',
           value: settings.verticalPadding,
           min: 4,
@@ -399,7 +400,7 @@ class SettingsPanel extends StatelessWidget {
         const SizedBox(height: 16),
 
         // Checkbox tap target size
-        _buildSliderSetting(
+        buildSliderSetting(
           label: 'Checkbox Tap Size',
           value: settings.checkboxTapTargetSize,
           min: 18,
@@ -412,7 +413,7 @@ class SettingsPanel extends StatelessWidget {
         const SizedBox(height: 16),
 
         // Sort icon width
-        _buildSliderSetting(
+        buildSliderSetting(
           label: 'Sort Icon Width',
           value: settings.sortIconWidth,
           min: 8,
@@ -427,14 +428,14 @@ class SettingsPanel extends StatelessWidget {
   }
 
   Widget _buildHeaderBorderSettings() {
-    return _buildSection(
+    return buildSection(
       title: 'Header Border / Divider',
       icon: Icons.border_all,
       color: Colors.teal.shade700,
       borderColor: Colors.teal.shade200,
       children: [
         // --- Top Border ---
-        _buildSwitchTile(
+        buildSwitchTile(
           label: 'Top Border',
           value: settings.headerTopBorderShow,
           onChanged: (value) {
@@ -444,7 +445,7 @@ class SettingsPanel extends StatelessWidget {
         if (settings.headerTopBorderShow)
           Padding(
             padding: const EdgeInsets.only(left: 8),
-            child: _buildSliderSetting(
+            child: buildSliderSetting(
               label: 'Thickness',
               value: settings.headerTopBorderThickness,
               min: 0.5,
@@ -459,7 +460,7 @@ class SettingsPanel extends StatelessWidget {
         const SizedBox(height: 4),
 
         // --- Bottom Border ---
-        _buildSwitchTile(
+        buildSwitchTile(
           label: 'Bottom Border',
           value: settings.headerBottomBorderShow,
           onChanged: (value) {
@@ -469,7 +470,7 @@ class SettingsPanel extends StatelessWidget {
         if (settings.headerBottomBorderShow)
           Padding(
             padding: const EdgeInsets.only(left: 8),
-            child: _buildSliderSetting(
+            child: buildSliderSetting(
               label: 'Thickness',
               value: settings.headerBottomBorderThickness,
               min: 0.5,
@@ -485,7 +486,7 @@ class SettingsPanel extends StatelessWidget {
         const Divider(height: 24),
 
         // --- Vertical Divider ---
-        _buildSwitchTile(
+        buildSwitchTile(
           label: 'Vertical Divider',
           value: settings.headerVerticalDividerShow,
           onChanged: (value) {
@@ -496,7 +497,7 @@ class SettingsPanel extends StatelessWidget {
         if (settings.headerVerticalDividerShow) ...[
           Padding(
             padding: const EdgeInsets.only(left: 8),
-            child: _buildSliderSetting(
+            child: buildSliderSetting(
               label: 'Thickness',
               value: settings.headerVerticalDividerThickness,
               min: 0.5,
@@ -511,7 +512,7 @@ class SettingsPanel extends StatelessWidget {
           const SizedBox(height: 8),
           Padding(
             padding: const EdgeInsets.only(left: 8),
-            child: _buildSliderSetting(
+            child: buildSliderSetting(
               label: 'Indent (top)',
               value: settings.headerVerticalDividerIndent,
               min: 0,
@@ -526,7 +527,7 @@ class SettingsPanel extends StatelessWidget {
           const SizedBox(height: 8),
           Padding(
             padding: const EdgeInsets.only(left: 8),
-            child: _buildSliderSetting(
+            child: buildSliderSetting(
               label: 'End Indent (bottom)',
               value: settings.headerVerticalDividerEndIndent,
               min: 0,
@@ -544,7 +545,7 @@ class SettingsPanel extends StatelessWidget {
 
         // --- Resize Handle ---
         if (settings.resizableEnabled) ...[
-          _buildSliderSetting(
+          buildSliderSetting(
             label: 'Handle Hit Width',
             value: settings.resizeHandleWidth,
             min: 4,
@@ -555,7 +556,7 @@ class SettingsPanel extends StatelessWidget {
             },
           ),
           const SizedBox(height: 8),
-          _buildSliderSetting(
+          buildSliderSetting(
             label: 'Handle Thickness',
             value: settings.resizeHandleThickness,
             min: 1,
@@ -567,7 +568,7 @@ class SettingsPanel extends StatelessWidget {
             },
           ),
           const SizedBox(height: 8),
-          _buildSliderSetting(
+          buildSliderSetting(
             label: 'Handle Indent (top)',
             value: settings.resizeHandleIndent,
             min: 0,
@@ -578,7 +579,7 @@ class SettingsPanel extends StatelessWidget {
             },
           ),
           const SizedBox(height: 8),
-          _buildSliderSetting(
+          buildSliderSetting(
             label: 'Handle End Indent',
             value: settings.resizeHandleEndIndent,
             min: 0,
@@ -595,7 +596,7 @@ class SettingsPanel extends StatelessWidget {
   }
 
   Widget _buildFeatureToggles() {
-    return _buildSection(
+    return buildSection(
       title: 'Feature Toggles',
       icon: Icons.toggle_on,
       color: Colors.orange.shade700,
@@ -603,7 +604,7 @@ class SettingsPanel extends StatelessWidget {
       children: [
         const SizedBox(height: 12),
 
-        _buildSwitchTile(
+        buildSwitchTile(
           label: 'Sorting',
           value: settings.sortingEnabled,
           onChanged: (value) {
@@ -611,7 +612,7 @@ class SettingsPanel extends StatelessWidget {
           },
         ),
 
-        _buildSwitchTile(
+        buildSwitchTile(
           label: 'Editing',
           value: settings.editingEnabled,
           onChanged: (value) {
@@ -619,7 +620,7 @@ class SettingsPanel extends StatelessWidget {
           },
         ),
 
-        _buildSwitchTile(
+        buildSwitchTile(
           label: 'Column Reorder',
           value: settings.columnReorderEnabled,
           onChanged: (value) {
@@ -627,7 +628,7 @@ class SettingsPanel extends StatelessWidget {
           },
         ),
 
-        _buildSwitchTile(
+        buildSwitchTile(
           label: 'Column Resize',
           value: settings.resizableEnabled,
           onChanged: (value) {
@@ -635,7 +636,7 @@ class SettingsPanel extends StatelessWidget {
           },
         ),
 
-        _buildSwitchTile(
+        buildSwitchTile(
           label: 'Stretch Last Column',
           value: settings.stretchLastColumn,
           onChanged: (value) {
@@ -643,7 +644,7 @@ class SettingsPanel extends StatelessWidget {
           },
         ),
 
-        _buildSwitchTile(
+        buildSwitchTile(
           label: 'Alternate Rows',
           value: settings.showAlternateRows,
           onChanged: (value) {
@@ -651,7 +652,7 @@ class SettingsPanel extends StatelessWidget {
           },
         ),
 
-        _buildSwitchTile(
+        buildSwitchTile(
           label: 'Row Card Tooltip',
           value: settings.rowCardTooltip,
           onChanged: (value) {
@@ -659,7 +660,7 @@ class SettingsPanel extends StatelessWidget {
           },
         ),
 
-        _buildDropdownRow<InkColorOption>(
+        buildDropdownRow<InkColorOption>(
           label: 'Splash Color',
           value: settings.splashColor,
           items: InkColorOption.values,
@@ -669,7 +670,7 @@ class SettingsPanel extends StatelessWidget {
           },
         ),
 
-        _buildDropdownRow<InkColorOption>(
+        buildDropdownRow<InkColorOption>(
           label: 'Hover Color',
           value: settings.hoverColor,
           items: InkColorOption.values,
@@ -679,7 +680,7 @@ class SettingsPanel extends StatelessWidget {
           },
         ),
 
-        _buildDropdownRow<InkColorOption>(
+        buildDropdownRow<InkColorOption>(
           label: 'Highlight Color',
           value: settings.highlightColor,
           items: InkColorOption.values,
@@ -699,7 +700,7 @@ class SettingsPanel extends StatelessWidget {
           ),
         ),
 
-        _buildSwitchTile(
+        buildSwitchTile(
           label: 'Show Dividers',
           value: settings.showDividers,
           onChanged: (value) {
@@ -707,7 +708,7 @@ class SettingsPanel extends StatelessWidget {
           },
         ),
 
-        _buildSwitchTile(
+        buildSwitchTile(
           label: 'Merged Rows',
           value: settings.mergedRowsEnabled,
           onChanged: (value) {
@@ -715,7 +716,7 @@ class SettingsPanel extends StatelessWidget {
           },
         ),
 
-        _buildSwitchTile(
+        buildSwitchTile(
           label: 'Dynamic Row Height',
           value: settings.dynamicRowHeight,
           onChanged: (value) {
@@ -723,7 +724,7 @@ class SettingsPanel extends StatelessWidget {
           },
         ),
 
-        _buildSwitchTile(
+        buildSwitchTile(
           label: 'Dim Inactive Rows',
           value: settings.dimInactiveRows,
           onChanged: (value) {
@@ -731,7 +732,7 @@ class SettingsPanel extends StatelessWidget {
           },
         ),
 
-        _buildSwitchTile(
+        buildSwitchTile(
           label: 'Selection (Checkbox)',
           value: settings.selectionEnabled,
           onChanged: (value) {
@@ -740,28 +741,28 @@ class SettingsPanel extends StatelessWidget {
         ),
 
         if (settings.selectionEnabled) ...[
-          _buildSwitchTile(
+          buildSwitchTile(
             label: 'Show Checkbox Column',
             value: settings.showCheckboxColumn,
             onChanged: (value) {
               onSettingsChanged(settings.copyWith(showCheckboxColumn: value));
             },
           ),
-          _buildSwitchTile(
+          buildSwitchTile(
             label: 'Select All',
             value: settings.selectAllEnabled,
             onChanged: (value) {
               onSettingsChanged(settings.copyWith(selectAllEnabled: value));
             },
           ),
-          _buildSwitchTile(
+          buildSwitchTile(
             label: 'Drag Selection',
             value: settings.dragSelectionEnabled,
             onChanged: (value) {
               onSettingsChanged(settings.copyWith(dragSelectionEnabled: value));
             },
           ),
-          _buildSwitchTile(
+          buildSwitchTile(
             label: 'Cell Tap Toggles Checkbox',
             value: settings.cellTapTogglesCheckbox,
             onChanged: (value) {
@@ -769,7 +770,7 @@ class SettingsPanel extends StatelessWidget {
                   settings.copyWith(cellTapTogglesCheckbox: value));
             },
           ),
-          _buildSwitchTile(
+          buildSwitchTile(
             label: 'Show Row Checkbox',
             value: settings.showRowCheckbox,
             onChanged: (value) {
@@ -783,7 +784,7 @@ class SettingsPanel extends StatelessWidget {
         const SizedBox(height: 12),
 
         // Selection mode dropdown
-        _buildDropdownRow<SelectionMode>(
+        buildDropdownRow<SelectionMode>(
           label: 'Selection Mode',
           value: settings.selectionMode,
           items: SelectionMode.values,
@@ -795,7 +796,7 @@ class SettingsPanel extends StatelessWidget {
         const SizedBox(height: 8),
 
         // Sort cycle order dropdown
-        _buildDropdownRow<SortCycleOrder>(
+        buildDropdownRow<SortCycleOrder>(
           label: 'Sort Cycle',
           value: settings.sortCycleOrder,
           items: SortCycleOrder.values,
@@ -811,7 +812,7 @@ class SettingsPanel extends StatelessWidget {
   }
 
   Widget _buildTooltipSettings() {
-    return _buildSection(
+    return buildSection(
       title: 'Tooltip Settings',
       icon: Icons.chat_bubble_outline,
       color: Colors.indigo.shade700,
@@ -820,7 +821,7 @@ class SettingsPanel extends StatelessWidget {
         const SizedBox(height: 12),
 
         // Tooltip enabled toggle
-        _buildSwitchTile(
+        buildSwitchTile(
           label: 'Tooltip Enabled',
           value: settings.tooltipEnabled,
           onChanged: (value) {
@@ -832,7 +833,7 @@ class SettingsPanel extends StatelessWidget {
           const SizedBox(height: 8),
 
           // Cell tooltip behavior
-          _buildDropdownRow<TooltipBehavior>(
+          buildDropdownRow<TooltipBehavior>(
             label: 'Cell Tooltip',
             value: settings.tooltipBehavior,
             items: TooltipBehavior.values,
@@ -848,7 +849,7 @@ class SettingsPanel extends StatelessWidget {
           const SizedBox(height: 4),
 
           // Header tooltip behavior
-          _buildDropdownRow<TooltipBehavior>(
+          buildDropdownRow<TooltipBehavior>(
             label: 'Header Tooltip',
             value: settings.headerTooltipBehavior,
             items: TooltipBehavior.values,
@@ -866,7 +867,7 @@ class SettingsPanel extends StatelessWidget {
           const Divider(height: 24),
 
           // Wait duration slider
-          _buildSliderSetting(
+          buildSliderSetting(
             label: 'Wait Duration',
             value: settings.tooltipWaitDurationMs.toDouble(),
             min: 0,
@@ -881,7 +882,7 @@ class SettingsPanel extends StatelessWidget {
           const Divider(height: 24),
 
           // Direction
-          _buildDropdownRow<TooltipDirection>(
+          buildDropdownRow<TooltipDirection>(
             label: 'Direction',
             value: settings.tooltipDirection,
             items: TooltipDirection.values,
@@ -898,7 +899,7 @@ class SettingsPanel extends StatelessWidget {
           const SizedBox(height: 4),
 
           // Anchor — cells
-          _buildDropdownRow<TooltipAnchor>(
+          buildDropdownRow<TooltipAnchor>(
             label: 'Cell Anchor',
             value: settings.tooltipAnchor,
             items: TooltipAnchor.values,
@@ -919,7 +920,7 @@ class SettingsPanel extends StatelessWidget {
           ),
 
           // Anchor — headers
-          _buildDropdownRow<HeaderTooltipAnchor>(
+          buildDropdownRow<HeaderTooltipAnchor>(
             label: 'Header Anchor',
             value: settings.headerTooltipAnchor,
             items: HeaderTooltipAnchor.values,
@@ -935,7 +936,7 @@ class SettingsPanel extends StatelessWidget {
           const SizedBox(height: 4),
 
           // Alignment
-          _buildDropdownRow<TooltipAlignment>(
+          buildDropdownRow<TooltipAlignment>(
             label: 'Alignment',
             value: settings.tooltipAlignment,
             items: TooltipAlignment.values,
@@ -962,7 +963,7 @@ class SettingsPanel extends StatelessWidget {
           ),
 
           // Show Arrow
-          _buildSwitchTile(
+          buildSwitchTile(
             label: 'Show Arrow',
             value: settings.tooltipShowArrow,
             onChanged: (value) {
@@ -971,7 +972,7 @@ class SettingsPanel extends StatelessWidget {
           ),
 
           // Offset slider
-          _buildSliderSetting(
+          buildSliderSetting(
             label: 'Offset',
             value: settings.tooltipOffset,
             min: 0,
@@ -986,7 +987,7 @@ class SettingsPanel extends StatelessWidget {
           const Divider(height: 24),
 
           // Demo: tooltipFormatter
-          _buildSwitchTile(
+          buildSwitchTile(
             label: 'tooltipFormatter (Email)',
             value: settings.showTooltipFormatter,
             onChanged: (value) {
@@ -1003,7 +1004,7 @@ class SettingsPanel extends StatelessWidget {
             ),
 
           // Demo: tooltipBuilder
-          _buildSwitchTile(
+          buildSwitchTile(
             label: 'tooltipBuilder (Name)',
             value: settings.showTooltipBuilder,
             onChanged: (value) {
@@ -1020,171 +1021,6 @@ class SettingsPanel extends StatelessWidget {
             ),
         ],
       ],
-    );
-  }
-
-  Widget _buildSection({
-    required String title,
-    required IconData icon,
-    required Color color,
-    required Color borderColor,
-    required List<Widget> children,
-    bool initiallyExpanded = false,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: borderColor),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: ExpansionTile(
-        tilePadding: const EdgeInsets.symmetric(horizontal: 16),
-        childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-        initiallyExpanded: initiallyExpanded,
-        leading: Icon(icon, color: color, size: 20),
-        title: Text(
-          title,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: color,
-          ),
-        ),
-        children: children,
-      ),
-    );
-  }
-
-  Widget _buildSliderSetting({
-    required String label,
-    required double value,
-    required double min,
-    required double max,
-    required String unit,
-    required ValueChanged<double> onChanged,
-    int decimalPlaces = 0,
-  }) {
-    final displayValue = decimalPlaces > 0
-        ? value.toStringAsFixed(decimalPlaces)
-        : '${value.round()}';
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            Text(
-              '$displayValue$unit',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-                color: Colors.purple.shade700,
-              ),
-            ),
-          ],
-        ),
-        Slider(
-          value: value,
-          min: min,
-          max: max,
-          divisions: ((max - min) / (decimalPlaces > 0 ? 0.05 : 2)).round(),
-          onChanged: onChanged,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSwitchTile({
-    required String label,
-    required bool value,
-    required ValueChanged<bool> onChanged,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const Spacer(),
-          Switch(
-            value: value,
-            onChanged: onChanged,
-            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDropdownRow<T>({
-    required String label,
-    required T value,
-    required List<T> items,
-    required String Function(T) itemLabel,
-    required ValueChanged<T> onChanged,
-  }) {
-    return Row(
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        const Spacer(),
-        DropdownButton<T>(
-          value: value,
-          onChanged: (T? newValue) {
-            if (newValue != null) onChanged(newValue);
-          },
-          items: items.map((item) {
-            return DropdownMenuItem(
-              value: item,
-              child: Text(
-                itemLabel(item),
-                style: const TextStyle(fontSize: 13),
-              ),
-            );
-          }).toList(),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildLogSlider({
-    required double value,
-    required double min,
-    required double max,
-    required ValueChanged<double> onChanged,
-  }) {
-    // Convert to logarithmic scale
-    final logMin = math.log(min) / math.ln10;
-    final logMax = math.log(max) / math.ln10;
-    final logValue = math.log(value) / math.ln10;
-
-    return Slider(
-      value: logValue,
-      min: logMin,
-      max: logMax,
-      divisions: 100,
-      onChanged: (logVal) {
-        final actualValue = math.pow(10, logVal).toDouble();
-        onChanged(actualValue);
-      },
     );
   }
 
@@ -1209,14 +1045,5 @@ class SettingsPanel extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  String _formatNumber(int number) {
-    if (number >= 1000000) {
-      return '${(number / 1000000).toStringAsFixed(1)}M';
-    } else if (number >= 1000) {
-      return '${(number / 1000).toStringAsFixed(1)}K';
-    }
-    return number.toString();
   }
 }
