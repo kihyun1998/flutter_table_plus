@@ -63,6 +63,7 @@ class DataSettingsSection extends StatelessWidget {
 
         // Logarithmic slider (5 to 100,000)
         buildLogSlider(
+          id: 'rowCount',
           label: 'Row Count',
           value: settings.rowCount.toDouble(),
           min: 5,

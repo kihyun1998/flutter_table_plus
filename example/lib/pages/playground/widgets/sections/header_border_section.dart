@@ -26,6 +26,7 @@ class HeaderBorderSection extends StatelessWidget {
       children: [
         // --- Top Border ---
         buildSwitchTile(
+          id: 'headerTopBorderShow',
           label: 'Top Border',
           value: settings.headerTopBorderShow,
           onChanged: (value) {
@@ -34,6 +35,7 @@ class HeaderBorderSection extends StatelessWidget {
         ),
         if (settings.headerTopBorderShow)
           buildSliderSetting(
+            id: 'headerTopBorderThickness',
             label: 'Thickness',
             value: settings.headerTopBorderThickness,
             min: 0.5,
@@ -49,6 +51,7 @@ class HeaderBorderSection extends StatelessWidget {
 
         // --- Bottom Border ---
         buildSwitchTile(
+          id: 'headerBottomBorderShow',
           label: 'Bottom Border',
           value: settings.headerBottomBorderShow,
           onChanged: (value) {
@@ -57,6 +60,7 @@ class HeaderBorderSection extends StatelessWidget {
         ),
         if (settings.headerBottomBorderShow)
           buildSliderSetting(
+            id: 'headerBottomBorderThickness',
             label: 'Thickness',
             value: settings.headerBottomBorderThickness,
             min: 0.5,
@@ -73,6 +77,7 @@ class HeaderBorderSection extends StatelessWidget {
 
         // --- Vertical Divider ---
         buildSwitchTile(
+          id: 'headerVerticalDividerShow',
           label: 'Vertical Divider',
           value: settings.headerVerticalDividerShow,
           onChanged: (value) {
@@ -82,6 +87,7 @@ class HeaderBorderSection extends StatelessWidget {
         ),
         if (settings.headerVerticalDividerShow) ...[
           buildSliderSetting(
+            id: 'headerVerticalDividerThickness',
             label: 'Thickness',
             value: settings.headerVerticalDividerThickness,
             min: 0.5,
@@ -95,6 +101,7 @@ class HeaderBorderSection extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           buildSliderSetting(
+            id: 'headerVerticalDividerIndent',
             label: 'Indent (top)',
             value: settings.headerVerticalDividerIndent,
             min: 0,
@@ -108,6 +115,7 @@ class HeaderBorderSection extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           buildSliderSetting(
+            id: 'headerVerticalDividerEndIndent',
             label: 'End Indent (bottom)',
             value: settings.headerVerticalDividerEndIndent,
             min: 0,
@@ -126,6 +134,7 @@ class HeaderBorderSection extends StatelessWidget {
         // --- Resize Handle ---
         if (settings.resizableEnabled) ...[
           buildSliderSetting(
+            id: 'resizeHandleWidth',
             label: 'Handle Hit Width',
             value: settings.resizeHandleWidth,
             min: 4,
@@ -137,6 +146,7 @@ class HeaderBorderSection extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           buildSliderSetting(
+            id: 'resizeHandleThickness',
             label: 'Handle Thickness',
             value: settings.resizeHandleThickness,
             min: 1,
@@ -149,6 +159,7 @@ class HeaderBorderSection extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           buildSliderSetting(
+            id: 'resizeHandleIndent',
             label: 'Handle Indent (top)',
             value: settings.resizeHandleIndent,
             min: 0,
@@ -160,6 +171,7 @@ class HeaderBorderSection extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           buildSliderSetting(
+            id: 'resizeHandleEndIndent',
             label: 'Handle End Indent',
             value: settings.resizeHandleEndIndent,
             min: 0,

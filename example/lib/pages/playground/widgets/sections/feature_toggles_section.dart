@@ -28,6 +28,7 @@ class FeatureTogglesSection extends StatelessWidget {
         const SizedBox(height: 12),
 
         buildSwitchTile(
+          id: 'sortingEnabled',
           label: 'Sorting',
           value: settings.sortingEnabled,
           onChanged: (value) {
@@ -36,6 +37,7 @@ class FeatureTogglesSection extends StatelessWidget {
         ),
 
         buildSwitchTile(
+          id: 'editingEnabled',
           label: 'Editing',
           value: settings.editingEnabled,
           onChanged: (value) {
@@ -44,6 +46,7 @@ class FeatureTogglesSection extends StatelessWidget {
         ),
 
         buildSwitchTile(
+          id: 'columnReorderEnabled',
           label: 'Column Reorder',
           value: settings.columnReorderEnabled,
           onChanged: (value) {
@@ -52,6 +55,7 @@ class FeatureTogglesSection extends StatelessWidget {
         ),
 
         buildSwitchTile(
+          id: 'resizableEnabled',
           label: 'Column Resize',
           value: settings.resizableEnabled,
           onChanged: (value) {
@@ -60,6 +64,7 @@ class FeatureTogglesSection extends StatelessWidget {
         ),
 
         buildSwitchTile(
+          id: 'stretchLastColumn',
           label: 'Stretch Last Column',
           value: settings.stretchLastColumn,
           onChanged: (value) {
@@ -68,6 +73,7 @@ class FeatureTogglesSection extends StatelessWidget {
         ),
 
         buildSwitchTile(
+          id: 'showAlternateRows',
           label: 'Alternate Rows',
           value: settings.showAlternateRows,
           onChanged: (value) {
@@ -76,6 +82,7 @@ class FeatureTogglesSection extends StatelessWidget {
         ),
 
         buildSwitchTile(
+          id: 'rowCardTooltip',
           label: 'Row Card Tooltip',
           value: settings.rowCardTooltip,
           onChanged: (value) {
@@ -84,6 +91,7 @@ class FeatureTogglesSection extends StatelessWidget {
         ),
 
         buildDropdownRow<InkColorOption>(
+          id: 'splashColor',
           label: 'Splash Color',
           value: settings.splashColor,
           items: InkColorOption.values,
@@ -94,6 +102,7 @@ class FeatureTogglesSection extends StatelessWidget {
         ),
 
         buildDropdownRow<InkColorOption>(
+          id: 'hoverColor',
           label: 'Hover Color',
           value: settings.hoverColor,
           items: InkColorOption.values,
@@ -104,6 +113,7 @@ class FeatureTogglesSection extends StatelessWidget {
         ),
 
         buildDropdownRow<InkColorOption>(
+          id: 'highlightColor',
           label: 'Highlight Color',
           value: settings.highlightColor,
           items: InkColorOption.values,
@@ -124,6 +134,7 @@ class FeatureTogglesSection extends StatelessWidget {
         ),
 
         buildSwitchTile(
+          id: 'showDividers',
           label: 'Show Dividers',
           value: settings.showDividers,
           onChanged: (value) {
@@ -132,6 +143,7 @@ class FeatureTogglesSection extends StatelessWidget {
         ),
 
         buildSwitchTile(
+          id: 'mergedRowsEnabled',
           label: 'Merged Rows',
           value: settings.mergedRowsEnabled,
           onChanged: (value) {
@@ -140,6 +152,7 @@ class FeatureTogglesSection extends StatelessWidget {
         ),
 
         buildSwitchTile(
+          id: 'dynamicRowHeight',
           label: 'Dynamic Row Height',
           value: settings.dynamicRowHeight,
           onChanged: (value) {
@@ -148,6 +161,7 @@ class FeatureTogglesSection extends StatelessWidget {
         ),
 
         buildSwitchTile(
+          id: 'dimInactiveRows',
           label: 'Dim Inactive Rows',
           value: settings.dimInactiveRows,
           onChanged: (value) {
@@ -156,6 +170,7 @@ class FeatureTogglesSection extends StatelessWidget {
         ),
 
         buildSwitchTile(
+          id: 'selectionEnabled',
           label: 'Selection (Checkbox)',
           value: settings.selectionEnabled,
           onChanged: (value) {
@@ -165,6 +180,7 @@ class FeatureTogglesSection extends StatelessWidget {
 
         if (settings.selectionEnabled) ...[
           buildSwitchTile(
+            id: 'showCheckboxColumn',
             label: 'Show Checkbox Column',
             value: settings.showCheckboxColumn,
             onChanged: (value) {
@@ -172,6 +188,7 @@ class FeatureTogglesSection extends StatelessWidget {
             },
           ),
           buildSwitchTile(
+            id: 'selectAllEnabled',
             label: 'Select All',
             value: settings.selectAllEnabled,
             onChanged: (value) {
@@ -179,6 +196,7 @@ class FeatureTogglesSection extends StatelessWidget {
             },
           ),
           buildSwitchTile(
+            id: 'dragSelectionEnabled',
             label: 'Drag Selection',
             value: settings.dragSelectionEnabled,
             onChanged: (value) {
@@ -186,6 +204,7 @@ class FeatureTogglesSection extends StatelessWidget {
             },
           ),
           buildSwitchTile(
+            id: 'cellTapTogglesCheckbox',
             label: 'Cell Tap Toggles Checkbox',
             value: settings.cellTapTogglesCheckbox,
             onChanged: (value) {
@@ -194,6 +213,7 @@ class FeatureTogglesSection extends StatelessWidget {
             },
           ),
           buildSwitchTile(
+            id: 'showRowCheckbox',
             label: 'Show Row Checkbox',
             value: settings.showRowCheckbox,
             onChanged: (value) {
@@ -208,6 +228,7 @@ class FeatureTogglesSection extends StatelessWidget {
 
         // Selection mode dropdown
         buildDropdownRow<SelectionMode>(
+          id: 'selectionMode',
           label: 'Selection Mode',
           value: settings.selectionMode,
           items: SelectionMode.values,
@@ -220,6 +241,7 @@ class FeatureTogglesSection extends StatelessWidget {
 
         // Sort cycle order dropdown
         buildDropdownRow<SortCycleOrder>(
+          id: 'sortCycleOrder',
           label: 'Sort Cycle',
           value: settings.sortCycleOrder,
           items: SortCycleOrder.values,
