@@ -207,11 +207,15 @@ void main() {
 
   testWidgets('a cell tooltip that cannot show does not suppress the card',
       (tester) async {
-    // just_tooltip suppresses every ancestor tooltip the moment the pointer
-    // enters a descendant one — before that descendant decides whether it has
-    // anything to draw. A `hideOnEmptyMessage` tooltip with an empty message
-    // decides "no". Wrapping the cell at all would therefore kill the card and
-    // put nothing in its place: hovering the cell would show nothing.
+    // A tooltip claims its ancestors the moment the pointer enters it. Under
+    // just_tooltip 0.4.3 it claimed them before deciding it had nothing to
+    // draw, so a `hideOnEmptyMessage` cell tooltip over an empty message took
+    // the card down and put nothing in its place — this package answered by
+    // not building such a tooltip at all. 0.4.4 gates the claim on content, so
+    // the empty cell tooltip stands aside on its own and the card survives.
+    //
+    // This test did not change when that guard was removed, which is what says
+    // it observes the contract (the card survives) and not the mechanism.
     await tester.pumpWidget(_table(columns: {
       'note': _col(
         'note',
@@ -230,9 +234,10 @@ void main() {
 
   testWidgets('hideOnEmptyMessage: false keeps the empty cell tooltip winning',
       (tester) async {
-    // The guard above must read the theme, not hard-code the policy: a caller
-    // who turned `hideOnEmptyMessage` off asked for the empty bubble, and it
-    // must keep suppressing the card the way any other cell tooltip does.
+    // The rule above is about content, not about emptiness: a caller who turned
+    // `hideOnEmptyMessage` off asked for the empty bubble, so that bubble has
+    // something to draw and displaces the card the way any other cell tooltip
+    // does. This is the half that keeps the theme flag from being ignored.
     await tester.pumpWidget(_table(
       columns: {
         'note': _col(
