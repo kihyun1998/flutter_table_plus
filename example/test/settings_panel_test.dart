@@ -43,22 +43,17 @@ Widget _panel({PlaygroundSettings settings = const PlaygroundSettings()}) {
   return MaterialApp(
     home: Scaffold(
       // The test font draws every glyph as a square of the font size, so the
-      // panel's labels measure far wider here than on screen and burst a dozen
-      // of its fixed-width rows. This test counts controls; it does not judge
-      // layout. Shrink the text until the labels fit and the counting can
-      // proceed. (Those rows are fragile under a real accessibility text scale
-      // too — a separate concern from moving them between files.)
-      body: MediaQuery(
-        data: const MediaQueryData(textScaler: TextScaler.linear(0.5)),
-        child: SettingsPanel(
-          settings: settings,
-          performanceMetrics: PerformanceMetrics(
-            rowCount: 0,
-            lastUpdate: DateTime.fromMillisecondsSinceEpoch(0),
-          ),
-          onSettingsChanged: (_) {},
-          onGenerateData: () {},
+      // panel's labels measure far wider here than on screen. Nothing is
+      // shrunk to compensate: a control row that cannot hold its own label is
+      // a bug, and one a real accessibility text scale would find.
+      body: SettingsPanel(
+        settings: settings,
+        performanceMetrics: PerformanceMetrics(
+          rowCount: 0,
+          lastUpdate: DateTime.fromMillisecondsSinceEpoch(0),
         ),
+        onSettingsChanged: (_) {},
+        onGenerateData: () {},
       ),
     ),
   );
