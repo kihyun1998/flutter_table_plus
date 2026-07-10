@@ -7,10 +7,12 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'models/employee.dart';
 import 'models/playground_settings.dart';
+import 'models/settings_presets.dart';
 import 'playground_columns.dart';
 import 'playground_format.dart';
 import 'utils/random_data_generator.dart';
 import 'widgets/performance_monitor.dart';
+import 'widgets/preset_bar.dart';
 import 'widgets/settings_panel.dart';
 
 /// Interactive playground for testing FlutterTablePlus
@@ -29,7 +31,15 @@ class PlaygroundPage extends StatefulWidget {
 
 class _PlaygroundPageState extends State<PlaygroundPage> {
   // Settings
-  PlaygroundSettings _settings = const PlaygroundSettings();
+  /// The playground opens bare: an addition needs a zero to be measured
+  /// against. The row count is left alone — a table with no scroll cannot show
+  /// drag selection or auto-scroll.
+  PlaygroundSettings _settings =
+      applyPreset(const PlaygroundSettings(), presetById('bare'));
+
+  /// The preset whose state the settings still match, or null once the reader
+  /// has changed something by hand.
+  String? _activePresetId = 'bare';
 
   // Data
   List<Employee> _data = [];
@@ -144,7 +154,13 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
   }
 
   /// Handle settings changes
+  void _applyPreset(SettingsPreset preset) {
+    _handleSettingsChanged(applyPreset(_settings, preset));
+    setState(() => _activePresetId = preset.id);
+  }
+
   void _handleSettingsChanged(PlaygroundSettings newSettings) {
+    _activePresetId = null;
     setState(() {
       final oldSettings = _settings;
       _settings = newSettings;
@@ -595,43 +611,53 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
             ),
         ],
       ),
-      body: Row(
+      body: Column(
         children: [
-          // Left: Settings Panel
-          SettingsPanel(
-            settings: _settings,
-            performanceMetrics: _performanceMetrics,
-            onSettingsChanged: _handleSettingsChanged,
-            onGenerateData: _generateData,
-            onRandomizeWidths: _randomizeColumnWidths,
-            onRandomSavedWidths: () {
-              final rng = Random();
-              setState(() {
-                _activeInitialWidths = {
-                  for (final entry in _columns.entries)
-                    entry.key: (entry.value.minWidth +
-                            rng.nextDouble() *
-                                ((entry.value.maxWidth ?? 400.0) -
-                                    entry.value.minWidth))
-                        .roundToDouble(),
-                };
-              });
-              debugPrint('🎲 Applied random widths (not saved)');
-            },
-            onRestoreWidths: () {
-              setState(() {
-                _activeInitialWidths = Map.of(_savedWidths);
-              });
-              debugPrint(
-                  '♻️ Restored saved widths: ${_savedWidths.entries.map((e) => '${e.key}: ${e.value.toStringAsFixed(1)}px').join(', ')}');
-            },
-            hasSavedWidths: _savedWidths.isNotEmpty,
-            isGenerating: _isGenerating,
+          PresetBar(
+            activePresetId: _activePresetId,
+            onPresetSelected: _applyPreset,
           ),
-
-          // Right: Table Area
           Expanded(
-            child: _buildTableArea(),
+            child: Row(
+              children: [
+                // Left: Settings Panel
+                SettingsPanel(
+                  settings: _settings,
+                  performanceMetrics: _performanceMetrics,
+                  onSettingsChanged: _handleSettingsChanged,
+                  onGenerateData: _generateData,
+                  onRandomizeWidths: _randomizeColumnWidths,
+                  onRandomSavedWidths: () {
+                    final rng = Random();
+                    setState(() {
+                      _activeInitialWidths = {
+                        for (final entry in _columns.entries)
+                          entry.key: (entry.value.minWidth +
+                                  rng.nextDouble() *
+                                      ((entry.value.maxWidth ?? 400.0) -
+                                          entry.value.minWidth))
+                              .roundToDouble(),
+                      };
+                    });
+                    debugPrint('🎲 Applied random widths (not saved)');
+                  },
+                  onRestoreWidths: () {
+                    setState(() {
+                      _activeInitialWidths = Map.of(_savedWidths);
+                    });
+                    debugPrint(
+                        '♻️ Restored saved widths: ${_savedWidths.entries.map((e) => '${e.key}: ${e.value.toStringAsFixed(1)}px').join(', ')}');
+                  },
+                  hasSavedWidths: _savedWidths.isNotEmpty,
+                  isGenerating: _isGenerating,
+                ),
+
+                // Right: Table Area
+                Expanded(
+                  child: _buildTableArea(),
+                ),
+              ],
+            ),
           ),
         ],
       ),

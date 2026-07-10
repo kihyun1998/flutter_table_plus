@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../models/feature_switches.dart';
 import '../models/playground_settings.dart';
 import '../models/settings_spec.dart';
 import 'performance_monitor.dart';
@@ -178,26 +179,13 @@ class _SettingsPanelState extends State<SettingsPanel> {
   Widget _draw(String id) =>
       settingsRegistry[id]!(widget.settings, widget.onSettingsChanged);
 
-  bool _isOn(String switchId) => switch (switchId) {
-        'sortingEnabled' => widget.settings.sortingEnabled,
-        'selectionEnabled' => widget.settings.selectionEnabled,
-        'dragSelectionEnabled' => widget.settings.dragSelectionEnabled,
-        'editingEnabled' => widget.settings.editingEnabled,
-        'columnReorderEnabled' => widget.settings.columnReorderEnabled,
-        'resizableEnabled' => widget.settings.resizableEnabled,
-        'tooltipEnabled' => widget.settings.tooltipEnabled,
-        'rowCardTooltip' => widget.settings.rowCardTooltip,
-        'mergedRowsEnabled' => widget.settings.mergedRowsEnabled,
-        'dynamicRowHeight' => widget.settings.dynamicRowHeight,
-        'dimInactiveRows' => widget.settings.dimInactiveRows,
-        'showAlternateRows' => widget.settings.showAlternateRows,
-        'showDividers' => widget.settings.showDividers,
-        'headerTopBorderShow' => widget.settings.headerTopBorderShow,
-        'headerBottomBorderShow' => widget.settings.headerBottomBorderShow,
-        'headerVerticalDividerShow' =>
-          widget.settings.headerVerticalDividerShow,
-        _ => true,
-      };
+  /// Whether a feature's switch is on.
+  ///
+  /// This used to be a hand-written switch statement with `_ => true` at the
+  /// bottom, so a feature whose switch nobody taught it to read was drawn as
+  /// permanently on. `featureSwitches` is held to the description by a test.
+  bool _isOn(String switchId) =>
+      featureSwitches[switchId]!.read(widget.settings);
 
   Widget _rowCountBadge(PlaygroundSettings s) {
     return Row(
