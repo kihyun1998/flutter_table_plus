@@ -6,16 +6,19 @@ import '../settings_controls.dart';
 class HeaderBorderSection extends StatelessWidget {
   final PlaygroundSettings settings;
   final ValueChanged<PlaygroundSettings> onSettingsChanged;
+  final String query;
 
   const HeaderBorderSection({
     super.key,
     required this.settings,
     required this.onSettingsChanged,
+    this.query = '',
   });
 
   @override
   Widget build(BuildContext context) {
     return buildSection(
+      query: query,
       title: 'Header Border / Divider',
       icon: Icons.border_all,
       color: Colors.teal.shade700,

@@ -7,16 +7,19 @@ import '../settings_controls.dart';
 class TooltipSettingsSection extends StatelessWidget {
   final PlaygroundSettings settings;
   final ValueChanged<PlaygroundSettings> onSettingsChanged;
+  final String query;
 
   const TooltipSettingsSection({
     super.key,
     required this.settings,
     required this.onSettingsChanged,
+    this.query = '',
   });
 
   @override
   Widget build(BuildContext context) {
     return buildSection(
+      query: query,
       title: 'Tooltip Settings',
       icon: Icons.chat_bubble_outline,
       color: Colors.indigo.shade700,

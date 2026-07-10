@@ -6,18 +6,21 @@ import '../settings_controls.dart';
 class StyleSettingsSection extends StatelessWidget {
   final PlaygroundSettings settings;
   final ValueChanged<PlaygroundSettings> onSettingsChanged;
+  final String query;
   final VoidCallback? onRandomizeWidths;
 
   const StyleSettingsSection({
     super.key,
     required this.settings,
     required this.onSettingsChanged,
+    this.query = '',
     this.onRandomizeWidths,
   });
 
   @override
   Widget build(BuildContext context) {
     return buildSection(
+      query: query,
       title: 'Style Settings',
       icon: Icons.palette,
       color: Colors.purple.shade700,

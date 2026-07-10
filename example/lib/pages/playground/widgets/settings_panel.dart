@@ -15,7 +15,7 @@ import 'sections/tooltip_settings_section.dart';
 /// - Table styling (row height, font size, padding)
 /// - Feature toggles (sorting, selection, editing, etc.)
 /// - Performance monitoring display
-class SettingsPanel extends StatelessWidget {
+class SettingsPanel extends StatefulWidget {
   final PlaygroundSettings settings;
   final PerformanceMetrics performanceMetrics;
   final ValueChanged<PlaygroundSettings> onSettingsChanged;
@@ -40,7 +40,21 @@ class SettingsPanel extends StatelessWidget {
   });
 
   @override
+  State<SettingsPanel> createState() => _SettingsPanelState();
+}
+
+class _SettingsPanelState extends State<SettingsPanel> {
+  final _search = TextEditingController();
+
+  @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final query = _search.text;
     return Container(
       width: 380,
       height: double.infinity,
@@ -57,26 +71,45 @@ class SettingsPanel extends StatelessWidget {
           children: [
             // Header
             _buildHeader(),
+            const SizedBox(height: 16),
+
+            TextField(
+              controller: _search,
+              onChanged: (_) => setState(() {}),
+              decoration: InputDecoration(
+                isDense: true,
+                hintText: 'Search settings',
+                prefixIcon: const Icon(Icons.search, size: 20),
+                suffixIcon: query.isEmpty
+                    ? null
+                    : IconButton(
+                        icon: const Icon(Icons.clear, size: 18),
+                        onPressed: () => setState(_search.clear),
+                      ),
+                border: const OutlineInputBorder(),
+              ),
+            ),
             const SizedBox(height: 24),
 
             // Data Settings
             DataSettingsSection(
-              settings: settings,
-              onSettingsChanged: onSettingsChanged,
-              onGenerateData: onGenerateData,
-              isGenerating: isGenerating,
+              query: query,
+              settings: widget.settings,
+              onSettingsChanged: widget.onSettingsChanged,
+              onGenerateData: widget.onGenerateData,
+              isGenerating: widget.isGenerating,
             ),
             const SizedBox(height: 16),
 
             // Width persistence demo buttons
-            if (onRestoreWidths != null)
+            if (widget.onRestoreWidths != null)
               Row(
                 children: [
                   Expanded(
                     child: SizedBox(
                       height: 44,
                       child: OutlinedButton.icon(
-                        onPressed: onRandomSavedWidths,
+                        onPressed: widget.onRandomSavedWidths,
                         icon: const Icon(Icons.shuffle, size: 18),
                         label: const Text('Random'),
                         style: OutlinedButton.styleFrom(
@@ -91,13 +124,15 @@ class SettingsPanel extends StatelessWidget {
                     child: SizedBox(
                       height: 44,
                       child: OutlinedButton.icon(
-                        onPressed: hasSavedWidths ? onRestoreWidths : null,
+                        onPressed: widget.hasSavedWidths
+                            ? widget.onRestoreWidths
+                            : null,
                         icon: const Icon(Icons.restore, size: 18),
                         label: const Text('Restore'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: Colors.orange.shade700,
                           side: BorderSide(
-                            color: hasSavedWidths
+                            color: widget.hasSavedWidths
                                 ? Colors.orange.shade400
                                 : Colors.grey.shade300,
                           ),
@@ -111,35 +146,39 @@ class SettingsPanel extends StatelessWidget {
 
             // Style Settings
             StyleSettingsSection(
-              settings: settings,
-              onSettingsChanged: onSettingsChanged,
-              onRandomizeWidths: onRandomizeWidths,
+              query: query,
+              settings: widget.settings,
+              onSettingsChanged: widget.onSettingsChanged,
+              onRandomizeWidths: widget.onRandomizeWidths,
             ),
             const SizedBox(height: 24),
 
             // Header Border/Divider Settings
             HeaderBorderSection(
-              settings: settings,
-              onSettingsChanged: onSettingsChanged,
+              query: query,
+              settings: widget.settings,
+              onSettingsChanged: widget.onSettingsChanged,
             ),
             const SizedBox(height: 24),
 
             // Feature Toggles
             FeatureTogglesSection(
-              settings: settings,
-              onSettingsChanged: onSettingsChanged,
+              query: query,
+              settings: widget.settings,
+              onSettingsChanged: widget.onSettingsChanged,
             ),
             const SizedBox(height: 24),
 
             // Tooltip Settings
             TooltipSettingsSection(
-              settings: settings,
-              onSettingsChanged: onSettingsChanged,
+              query: query,
+              settings: widget.settings,
+              onSettingsChanged: widget.onSettingsChanged,
             ),
             const SizedBox(height: 24),
 
             // Performance Monitor
-            PerformanceMonitor(metrics: performanceMetrics),
+            PerformanceMonitor(metrics: widget.performanceMetrics),
           ],
         ),
       ),

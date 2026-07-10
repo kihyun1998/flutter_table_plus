@@ -6,6 +6,7 @@ import '../settings_controls.dart';
 class DataSettingsSection extends StatelessWidget {
   final PlaygroundSettings settings;
   final ValueChanged<PlaygroundSettings> onSettingsChanged;
+  final String query;
   final VoidCallback onGenerateData;
   final bool isGenerating;
 
@@ -13,6 +14,7 @@ class DataSettingsSection extends StatelessWidget {
     super.key,
     required this.settings,
     required this.onSettingsChanged,
+    this.query = '',
     required this.onGenerateData,
     this.isGenerating = false,
   });
@@ -20,6 +22,7 @@ class DataSettingsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return buildSection(
+      query: query,
       title: 'Data Settings',
       icon: Icons.data_array,
       color: Colors.green.shade700,

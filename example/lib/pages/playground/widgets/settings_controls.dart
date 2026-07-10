@@ -2,6 +2,17 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+/// Whether a control named [label] should survive a search for [query].
+///
+/// A blank query is not a search, so everything survives it. Otherwise the
+/// query is a substring of the label, in any case and anywhere within it —
+/// someone hunting the tooltip anchors types "anchor", not "Cell Anchor".
+bool settingMatches(String label, String query) {
+  final needle = query.trim().toLowerCase();
+  if (needle.isEmpty) return true;
+  return label.toLowerCase().contains(needle);
+}
+
 /// One labelled control in the settings panel.
 ///
 /// The label travels with the widget rather than being buried inside it, so a
@@ -43,30 +54,122 @@ Widget buildSection({
   required Color borderColor,
   required List<Widget> children,
   bool initiallyExpanded = false,
+  String query = '',
 }) {
-  return Container(
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(8),
-      border: Border.all(color: borderColor),
-    ),
-    clipBehavior: Clip.antiAlias,
-    child: ExpansionTile(
-      tilePadding: const EdgeInsets.symmetric(horizontal: 16),
-      childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-      initiallyExpanded: initiallyExpanded,
-      leading: Icon(icon, color: color, size: 20),
-      title: Text(
-        title,
-        style: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-          color: color,
-        ),
-      ),
-      children: children,
-    ),
+  return SettingsSection(
+    title: title,
+    icon: icon,
+    color: color,
+    borderColor: borderColor,
+    initiallyExpanded: initiallyExpanded,
+    query: query,
+    children: children,
   );
+}
+
+/// A collapsible group of controls, which a search can see through.
+///
+/// While [query] is blank the section behaves as it always has: it remembers
+/// whether the reader opened it. While a search is running it shows only the
+/// [SettingsControl]s whose labels match, opens itself to show them, and stands
+/// aside entirely when it holds none — and it does not disturb the expanded
+/// state it will go back to once the query is cleared.
+class SettingsSection extends StatefulWidget {
+  const SettingsSection({
+    super.key,
+    required this.title,
+    required this.icon,
+    required this.color,
+    required this.borderColor,
+    required this.children,
+    this.initiallyExpanded = false,
+    this.query = '',
+  });
+
+  final String title;
+  final IconData icon;
+  final Color color;
+  final Color borderColor;
+  final List<Widget> children;
+  final bool initiallyExpanded;
+  final String query;
+
+  @override
+  State<SettingsSection> createState() => _SettingsSectionState();
+}
+
+class _SettingsSectionState extends State<SettingsSection> {
+  late bool _expanded = widget.initiallyExpanded;
+
+  bool get _searching => widget.query.trim().isNotEmpty;
+
+  /// Under a search, only the labelled controls survive. The dividers, spacers
+  /// and explanatory notes between them belong to the section as it reads, not
+  /// to the control the reader is hunting for.
+  List<Widget> get _visibleChildren {
+    if (!_searching) return widget.children;
+    return widget.children
+        .whereType<SettingsControl>()
+        .where((c) => settingMatches(c.label, widget.query))
+        .toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final children = _visibleChildren;
+    if (_searching && children.isEmpty) return const SizedBox.shrink();
+
+    final expanded = _searching || _expanded;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: widget.borderColor),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          InkWell(
+            // A search decides what is open, so the header stops taking taps
+            // while one is running rather than fighting it.
+            onTap:
+                _searching ? null : () => setState(() => _expanded = !expanded),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Icon(widget.icon, color: widget.color, size: 20),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Text(
+                      widget.title,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: widget.color,
+                      ),
+                    ),
+                  ),
+                  Icon(expanded ? Icons.expand_less : Icons.expand_more),
+                ],
+              ),
+            ),
+          ),
+          if (expanded)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: children,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
 }
 
 SettingsControl buildSliderSetting({

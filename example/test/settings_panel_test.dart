@@ -1,5 +1,6 @@
 import 'package:example/pages/playground/models/playground_settings.dart';
 import 'package:example/pages/playground/widgets/performance_monitor.dart';
+import 'package:example/pages/playground/widgets/settings_controls.dart';
 import 'package:example/pages/playground/widgets/settings_panel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -21,16 +22,21 @@ const _sectionTitles = [
   'Tooltip Settings',
 ];
 
-/// Only 'Data Settings' starts expanded, and a collapsed [ExpansionTile] does
-/// not build its children — so nothing can be counted until each section is
-/// opened.
+/// Only 'Data Settings' starts expanded, and a collapsed section does not build
+/// its children — so nothing can be counted until each is opened.
+///
+/// A section is collapsed when its header offers to expand it. That is what the
+/// reader sees, and it survived the move off `ExpansionTile`, which a search has
+/// to see through and so could not stay.
 Future<void> _expandEverySection(WidgetTester tester) async {
   for (final title in _sectionTitles) {
-    final tile = find.ancestor(
+    final section = find.ancestor(
       of: find.text(title),
-      matching: find.byType(ExpansionTile),
+      matching: find.byType(SettingsSection),
     );
-    if (tester.widget<ExpansionTile>(tile).initiallyExpanded) continue;
+    final collapsed =
+        find.descendant(of: section, matching: find.byIcon(Icons.expand_more));
+    if (collapsed.evaluate().isEmpty) continue;
 
     await tester.ensureVisible(find.text(title));
     await tester.pumpAndSettle();
@@ -76,6 +82,42 @@ void main() {
     expect(
         find.byWidgetPredicate((w) => w is DropdownButton), findsNWidgets(12));
     expect(find.byType(Slider), findsNWidgets(20));
+  });
+
+  testWidgets('a search narrows the panel to the controls that match',
+      (tester) async {
+    await tester.pumpWidget(_panel());
+
+    await tester.enterText(find.byType(TextField), 'anchor');
+    await tester.pumpAndSettle();
+
+    // Both anchors live in the last section, which starts collapsed. A match
+    // inside it has to reveal it, or the search would find nothing.
+    expect(find.text('Cell Anchor'), findsOneWidget);
+    expect(find.text('Header Anchor'), findsOneWidget);
+
+    // A section with no match makes no noise, and neither do the controls of
+    // the section that starts open.
+    expect(find.text('Data Settings'), findsNothing);
+    expect(find.text('Row Count'), findsNothing);
+  });
+
+  testWidgets('clearing the search restores what was open before it',
+      (tester) async {
+    await tester.pumpWidget(_panel());
+    expect(find.text('Row Count'), findsOneWidget,
+        reason: 'the data section starts expanded');
+
+    await tester.enterText(find.byType(TextField), 'anchor');
+    await tester.pumpAndSettle();
+    expect(find.text('Row Count'), findsNothing);
+
+    await tester.enterText(find.byType(TextField), '');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Row Count'), findsOneWidget);
+    expect(find.text('Cell Anchor'), findsNothing,
+        reason: 'the tooltip section was closed before the search opened it');
   });
 
   testWidgets('the tooltip anchors are reachable', (tester) async {
