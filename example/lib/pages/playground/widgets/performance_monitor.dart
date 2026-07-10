@@ -64,12 +64,18 @@ class PerformanceMonitor extends StatelessWidget {
             children: [
               Icon(Icons.speed, color: Colors.blue.shade700, size: 20),
               const SizedBox(width: 8),
-              Text(
-                'Performance Metrics',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.blue.shade700,
+              // The panel is a fixed 380 wide, so the title has to yield rather
+              // than overflow when the text grows — a larger accessibility text
+              // scale, or a translation, will do it.
+              Expanded(
+                child: Text(
+                  'Performance Metrics',
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.blue.shade700,
+                  ),
                 ),
               ),
             ],
