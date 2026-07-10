@@ -43,11 +43,62 @@ class FeatureDetailPane extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
+          if (feature.interactions.isNotEmpty) _affects(),
           const SizedBox(height: 12),
           if (feature.switchId != null) _draw(feature.switchId!),
           if (feature.id == 'data') _rowCountBadge(),
           if (feature.options.isNotEmpty) _options(),
           if (feature.id == 'data') ..._dataExtras(),
+        ],
+      ),
+    );
+  }
+
+  /// What this feature does to the others.
+  ///
+  /// A reader flips a switch and something unrelated behaves differently, with
+  /// nothing on screen to say why — and an agent reading the code concludes the
+  /// features are independent. These are the couplings the description records,
+  /// each carrying a citation that a human has read.
+  ///
+  /// Stated in the direction it happens. "A merged row carries no card" and
+  /// "the card is never built for a merged row" are different claims; only one
+  /// of them is what `table_body.dart` does.
+  Widget _affects() {
+    return Container(
+      margin: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.amber.shade50,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: Colors.amber.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Affects',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.8,
+              color: Colors.amber.shade900,
+            ),
+          ),
+          for (final i in feature.interactions) ...[
+            const SizedBox(height: 8),
+            Text(
+              featureById(i.otherFeatureId).title,
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 2),
+            // The pane is 380 wide and the widget-test font draws every glyph
+            // as a square of the font size. This wraps; it must never be a Row.
+            Text(
+              i.effect,
+              style: TextStyle(fontSize: 12, color: Colors.grey.shade800),
+            ),
+          ],
         ],
       ),
     );
