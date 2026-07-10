@@ -7,16 +7,19 @@ import '../settings_controls.dart';
 class FeatureTogglesSection extends StatelessWidget {
   final PlaygroundSettings settings;
   final ValueChanged<PlaygroundSettings> onSettingsChanged;
+  final String query;
 
   const FeatureTogglesSection({
     super.key,
     required this.settings,
     required this.onSettingsChanged,
+    this.query = '',
   });
 
   @override
   Widget build(BuildContext context) {
     return buildSection(
+      query: query,
       title: 'Feature Toggles',
       icon: Icons.toggle_on,
       color: Colors.orange.shade700,
