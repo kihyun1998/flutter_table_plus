@@ -78,7 +78,8 @@ class FlutterTablePlus<T> extends StatefulWidget {
   /// Keys are column identifiers that match the keys used in data.
   /// Values are [TablePlusColumn] instances defining each column's properties.
   ///
-  /// Column display order is determined by each column's [order] property.
+  /// Column display order is determined by each column's
+  /// [TablePlusColumn.order] property.
   /// Use [TableColumnsBuilder] for safe column creation with automatic ordering.
   final Map<String, TablePlusColumn<T>> columns;
 
@@ -209,7 +210,7 @@ class FlutterTablePlus<T> extends StatefulWidget {
   /// Columns not in this map remain flexible and participate in
   /// proportional distribution.
   ///
-  /// Only applied once at widget creation (in [initState]).
+  /// Only applied once at widget creation (in [State.initState]).
   /// Subsequent user resizes override these values at runtime.
   final Map<String, double>? initialResizedWidths;
 
@@ -1203,10 +1204,11 @@ class _RubberBandPainter extends CustomPainter {
 /// Whether the platform-appropriate modifier key (Ctrl on Windows/Linux,
 /// Cmd on macOS) is currently pressed.
 ///
-/// On Windows/Linux only [HardwareKeyboard.instance.isControlPressed] is
+/// On Windows/Linux only [HardwareKeyboard.isControlPressed] is
 /// checked — this avoids the "sticky Windows-key" bug where pressing the
-/// Windows key sets [isMetaPressed] to `true` but the subsequent key-up is
-/// never delivered to the Flutter app, leaving the flag stuck.
+/// Windows key sets [HardwareKeyboard.isMetaPressed] to `true` but the
+/// subsequent key-up is never delivered to the Flutter app, leaving the
+/// flag stuck.
 bool isScaleModifierPressed() {
   if (defaultTargetPlatform == TargetPlatform.macOS) {
     return HardwareKeyboard.instance.isMetaPressed;
