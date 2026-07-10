@@ -29,7 +29,7 @@ A highly customizable, type-safe Flutter table widget with synchronized scrollin
 | **Merged Rows** | Group rows with custom merged content |
 | **Hover Buttons** | Action buttons on row hover |
 | **Dynamic Row Heights** | Support for variable height rows |
-| **Smart Tooltips** | Text or widget-based tooltips |
+| **Smart Tooltips** | Text, widget, and whole-row tooltips, anchored beside the widget or beside the cursor |
 | **Dim Rows** | Style inactive rows differently |
 | **Scale / Zoom** | Ctrl/Cmd+wheel zoom with platform-aware modifier key, scroll-safe physics, automatic position correction, and optional `blockModifierScroll` control |
 | **Deep Theming** | 8 nested theme classes for complete customization |

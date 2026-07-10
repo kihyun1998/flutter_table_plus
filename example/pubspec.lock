@@ -150,10 +150,10 @@ packages:
     dependency: transitive
     description:
       name: just_tooltip
-      sha256: eb0093e47d2a2f95ae81a3f309544905e97cd99ab4519bedfa8101fc275b7f43
+      sha256: cd5a0d1733149ce25facb768cb66548620e97e5ce3223f1e97b6f6c2850d94a4
       url: "https://pub.dev"
     source: hosted
-    version: "0.4.2"
+    version: "0.4.3"
   leak_tracker:
     dependency: transitive
     description:

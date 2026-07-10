@@ -14,7 +14,7 @@ topics:
 # clip walk reads `RenderObject.parent`. That was `AbstractNode?` — a type with
 # no `describeApproximatePaintClip` — until Flutter 3.13. Our `^0.4.0` already
 # resolved 0.4.2, so the old floor had quietly become a promise we could not
-# keep; raising it is the honest fix, not the cause.
+# keep; raising it is the honest fix, not the cause. 0.4.3 keeps the same floor.
 environment:
   sdk: ">=3.1.0 <4.0.0"
   flutter: ">=3.13.0"
@@ -23,7 +23,7 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_checkbox: ^0.2.1
-  just_tooltip: ^0.4.2
+  just_tooltip: ^0.4.3
 
 dev_dependencies:
   flutter_test:
