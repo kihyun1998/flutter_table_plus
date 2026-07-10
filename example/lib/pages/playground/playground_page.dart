@@ -7,6 +7,8 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'models/employee.dart';
 import 'models/playground_settings.dart';
+import 'playground_columns.dart';
+import 'playground_format.dart';
 import 'utils/random_data_generator.dart';
 import 'widgets/performance_monitor.dart';
 import 'widgets/settings_panel.dart';
@@ -57,208 +59,11 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
   @override
   void initState() {
     super.initState();
-    _initializeColumns();
+    _columns = buildPlaygroundColumns(_settings);
     _generateData();
   }
 
   /// Initialize table columns
-  void _initializeColumns() {
-    final builder = TableColumnsBuilder<Employee>();
-
-    final cellTooltip = _settings.tooltipBehavior;
-    final headerTooltip = _settings.headerTooltipBehavior;
-    final minW = _settings.columnMinWidth;
-
-    builder.addColumn(
-      'avatar',
-      TablePlusColumn<Employee>(
-        key: 'avatar',
-        label: '👤',
-        order: 0,
-        valueAccessor: (row) => row.avatar,
-        width: 60,
-        minWidth: minW,
-        maxWidth: 80,
-        sortable: false,
-        tooltipBehavior: cellTooltip,
-        headerTooltipBehavior: headerTooltip,
-      ),
-    );
-
-    builder.addColumn(
-      'name',
-      TablePlusColumn<Employee>(
-        key: 'name',
-        label: 'Name',
-        order: 0,
-        valueAccessor: (row) => row.name,
-        width: 180,
-        minWidth: minW,
-        sortable: _settings.sortingEnabled,
-        tooltipBehavior: cellTooltip,
-        headerTooltipBehavior: headerTooltip,
-        tooltipBuilder: _settings.showTooltipBuilder
-            ? (context, employee) => Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      employee.name,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text('${employee.position} - ${employee.department}'),
-                    Text(
-                      '\$${_formatNumber(employee.salary)}',
-                      style: TextStyle(color: Colors.green.shade300),
-                    ),
-                  ],
-                )
-            : null,
-      ),
-    );
-
-    builder.addColumn(
-      'position',
-      TablePlusColumn<Employee>(
-        key: 'position',
-        label: 'Position',
-        order: 0,
-        valueAccessor: (row) => row.position,
-        width: 200,
-        minWidth: minW,
-        sortable: _settings.sortingEnabled,
-        editable: _settings.editingEnabled,
-        tooltipBehavior: cellTooltip,
-        headerTooltipBehavior: headerTooltip,
-      ),
-    );
-
-    builder.addColumn(
-      'department',
-      TablePlusColumn<Employee>(
-        key: 'department',
-        label: 'Department',
-        order: 0,
-        valueAccessor: (row) => row.department,
-        width: 150,
-        minWidth: minW,
-        sortable: _settings.sortingEnabled,
-        editable: _settings.editingEnabled,
-        tooltipBehavior: cellTooltip,
-        headerTooltipBehavior: headerTooltip,
-      ),
-    );
-
-    builder.addColumn(
-      'salary',
-      TablePlusColumn<Employee>(
-        key: 'salary',
-        label: 'Salary',
-        order: 0,
-        valueAccessor: (row) => row.salary,
-        width: 120,
-        minWidth: minW,
-        maxWidth: 150,
-        sortable: _settings.sortingEnabled,
-        editable: _settings.editingEnabled,
-        tooltipBehavior: cellTooltip,
-        headerTooltipBehavior: headerTooltip,
-        statefulCellBuilder: (context, employee, isSelected, isDim) {
-          return Center(
-            child: Text(
-              '\$${_formatNumber(employee.salary)}',
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                color: isSelected
-                    ? Colors.white
-                    : isDim
-                        ? Colors.green.shade300
-                        : Colors.green.shade700,
-              ),
-            ),
-          );
-        },
-      ),
-    );
-
-    builder.addColumn(
-      'performance',
-      TablePlusColumn<Employee>(
-        key: 'performance',
-        label: 'Performance',
-        order: 0,
-        valueAccessor: (row) => row.performance,
-        width: 130,
-        minWidth: minW,
-        maxWidth: 160,
-        sortable: _settings.sortingEnabled,
-        tooltipBehavior: cellTooltip,
-        headerTooltipBehavior: headerTooltip,
-        statefulCellBuilder: (context, employee, isSelected, isDim) {
-          return Center(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: isDim
-                    ? _getPerformanceColor(employee.performance)
-                        .withValues(alpha: 0.5)
-                    : _getPerformanceColor(employee.performance),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                '${(employee.performance * 100).toStringAsFixed(0)}%',
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-
-    builder.addColumn(
-      'email',
-      TablePlusColumn<Employee>(
-        key: 'email',
-        label: 'Email',
-        order: 0,
-        valueAccessor: (row) => row.email,
-        width: 220,
-        minWidth: minW,
-        sortable: _settings.sortingEnabled,
-        tooltipBehavior: cellTooltip,
-        headerTooltipBehavior: headerTooltip,
-        tooltipFormatter: _settings.showTooltipFormatter
-            ? (employee) => 'Send to: ${employee.email}'
-            : null,
-      ),
-    );
-
-    builder.addColumn(
-      'phone',
-      TablePlusColumn<Employee>(
-        key: 'phone',
-        label: 'Phone',
-        order: 0,
-        valueAccessor: (row) => row.phone,
-        width: 130,
-        minWidth: minW,
-        maxWidth: 160,
-        sortable: _settings.sortingEnabled,
-        tooltipBehavior: cellTooltip,
-        headerTooltipBehavior: headerTooltip,
-      ),
-    );
-
-    _columns = builder.build();
-  }
 
   /// The row tooltip's card. It draws its own surface, which is why the
   /// playground gives `rowTooltipTheme` a transparent, unpadded one.
@@ -357,7 +162,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
           newSettings.columnMinWidth != oldSettings.columnMinWidth;
 
       if (needsColumnRebuild) {
-        _initializeColumns();
+        _columns = buildPlaygroundColumns(_settings);
       }
 
       // Clear selection when selection is disabled
@@ -581,7 +386,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
       'Name': employee.name,
       'Position': employee.position,
       'Department': employee.department,
-      'Salary': '\$${_formatNumber(employee.salary)}',
+      'Salary': '\$${formatPlaygroundNumber(employee.salary)}',
       'Performance': '${(employee.performance * 100).toStringAsFixed(0)}%',
       'Email': employee.email,
       'Phone': employee.phone,
@@ -779,7 +584,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
-                    '${_formatNumber(_data.length)} rows',
+                    '${formatPlaygroundNumber(_data.length)} rows',
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -964,27 +769,6 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         theme: buildPlaygroundTheme(_settings),
       ),
     );
-  }
-
-  Color _getPerformanceColor(double performance) {
-    if (performance >= 0.9) {
-      return Colors.green.shade600;
-    } else if (performance >= 0.75) {
-      return Colors.blue.shade600;
-    } else if (performance >= 0.6) {
-      return Colors.orange.shade600;
-    } else {
-      return Colors.red.shade600;
-    }
-  }
-
-  String _formatNumber(int number) {
-    if (number >= 1000000) {
-      return '${(number / 1000000).toStringAsFixed(1)}M';
-    } else if (number >= 1000) {
-      return '${(number / 1000).toStringAsFixed(1)}K';
-    }
-    return number.toString();
   }
 }
 
