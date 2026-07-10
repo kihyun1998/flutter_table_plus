@@ -11,6 +11,7 @@ import 'models/settings_presets.dart';
 import 'playground_columns.dart';
 import 'playground_format.dart';
 import 'utils/random_data_generator.dart';
+import 'widgets/feature_list_pane.dart';
 import 'widgets/performance_monitor.dart';
 import 'widgets/preset_bar.dart';
 import 'widgets/settings_panel.dart';
@@ -40,6 +41,10 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
   /// The preset whose state the settings still match, or null once the reader
   /// has changed something by hand.
   String? _activePresetId = 'bare';
+
+  /// The feature whose detail is shown. The list selects; nothing reads this
+  /// yet. #85 gives it a pane to open into.
+  String? _selectedFeatureId;
 
   // Data
   List<Employee> _data = [];
@@ -620,6 +625,14 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
           Expanded(
             child: Row(
               children: [
+                FeatureListPane(
+                  settings: _settings,
+                  selectedFeatureId: _selectedFeatureId,
+                  onSettingsChanged: _handleSettingsChanged,
+                  onFeatureSelected: (id) =>
+                      setState(() => _selectedFeatureId = id),
+                ),
+
                 // Left: Settings Panel
                 SettingsPanel(
                   settings: _settings,
