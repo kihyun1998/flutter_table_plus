@@ -179,6 +179,11 @@ class TablePlusColumn<T> {
   /// If provided, this will be used to generate custom tooltip text based on row data.
   /// The function receives the row data object and should return a String for the tooltip.
   /// If null, the default behavior will use the cell's display value.
+  ///
+  /// Return an empty string to give a row no tooltip at all — the cell is then
+  /// left unwrapped, so a `rowTooltipBuilder` card still shows over it. (Unless
+  /// [TablePlusTooltipTheme.hideOnEmptyMessage] is false, which asks for the
+  /// empty bubble.)
   final String Function(T rowData)? tooltipFormatter;
 
   /// Optional custom tooltip widget builder for rich content tooltips.

@@ -1,3 +1,10 @@
+## 2.15.2
+
+*   **FIX**: a cell whose `tooltipFormatter` returns an empty string no longer swallows the `rowTooltipBuilder` card. Hovering such a cell showed nothing at all — not the cell's tooltip, not the row's
+    *   A tooltip suppresses its ancestors from `MouseRegion.onEnter`, *before* it decides whether it has anything to draw, and `hideOnEmptyMessage` decides "nothing" inside `_show()`. The cell had already taken the card down. Hoisting that guard to where the cell is wrapped means a tooltip that cannot show is never built, so it cannot suppress anything. The header has guarded this way all along — an empty label gets no tooltip — but a cell's message is only known once `tooltipFormatter` has run
+    *   `hideOnEmptyMessage: false` is unchanged: that asks for the empty bubble, and it still wins over the card
+*   **DOCS**: `rowTooltipBuilder`'s "the whole row is the hover region" is now pinned by tests, including over a cell whose value is empty. It was never broken there — a row's `MouseRegion` is opaque and hit-tests itself, so a zero-width `Text` under the pointer changes nothing — but nothing said so, and the neighbouring `tooltipFormatter` bug looked exactly like a hole in that region
+
 ## 2.15.1
 
 *   **DEPS**: `just_tooltip: ^0.4.2` → `^0.4.3`. No API change — 0.4.3 declares the same public classes, enums and fields, and touches two internal files. All 378 package tests and 28 example tests pass against it unmodified, and its SDK floor is the same, so this package's Flutter 3.13 floor stands

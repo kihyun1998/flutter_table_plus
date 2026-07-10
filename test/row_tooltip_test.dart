@@ -14,6 +14,10 @@ import 'package:flutter_test/flutter_test.dart';
 const _card = 'CARD';
 const _full = 'FULL';
 
+const _rows = [
+  {'id': '1', 'name': 'A', 'note': 'a value long enough to be cut off'},
+];
+
 Future<void> _hoverAt(WidgetTester tester, Offset location) async {
   final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
   await mouse.addPointer(location: Offset.zero);
@@ -30,15 +34,14 @@ Widget _table({
   bool withCard = true,
   TablePlusTheme theme = const TablePlusTheme(),
   double scale = 1.0,
+  List<Map<String, dynamic>> data = _rows,
   void Function(String rowId, bool isSelected)? onRowSelectionChanged,
 }) {
   return MaterialApp(
     home: Scaffold(
       body: FlutterTablePlus<Map<String, dynamic>>(
         columns: columns,
-        data: const [
-          {'id': '1', 'name': 'A', 'note': 'a value long enough to be cut off'},
-        ],
+        data: data,
         rowId: (r) => r['id'] as String,
         theme: theme,
         scale: scale,
@@ -76,6 +79,46 @@ void main() {
     final text = tester.getRect(find.text('A'));
     await _hoverAt(tester, Offset(text.right + 200, text.center.dy));
 
+    expect(find.text(_card), findsOneWidget);
+  });
+
+  testWidgets('the card shows over a cell whose value is empty',
+      (tester) async {
+    // An empty cell's Text is zero-wide, so nothing under the pointer is hit —
+    // but the row's MouseRegion is opaque and hit-tests itself, so the whole
+    // row stays the hover region. The cell itself has no tooltip to win with:
+    // TooltipResolver gates a *text* tooltip on non-empty text.
+    await tester.pumpWidget(_table(
+      columns: {
+        'name': _col('name'),
+        'note': _col('note', behavior: TooltipBehavior.onlyTextOverflow),
+      },
+      data: const [
+        {'id': '1', 'name': 'A', 'note': ''},
+      ],
+    ));
+
+    final row = tester.getRect(find.text('A'));
+    await _hoverAt(tester, Offset(600, row.center.dy)); // inside 'note'
+
+    expect(find.text(_card), findsOneWidget);
+  });
+
+  testWidgets('the card shows over a cell whose value is not cut off',
+      (tester) async {
+    // onlyTextOverflow means the cell earns a tooltip solely by being cut. An
+    // uncut value leaves the card as the only tooltip under the pointer.
+    await tester.pumpWidget(_table(columns: {
+      'name': _col(
+        'name',
+        behavior: TooltipBehavior.onlyTextOverflow,
+        tooltipFormatter: (_) => _full,
+      ),
+    }));
+
+    await _hoverAt(tester, tester.getCenter(find.text('A')));
+
+    expect(find.text(_full), findsNothing);
     expect(find.text(_card), findsOneWidget);
   });
 
@@ -160,6 +203,55 @@ void main() {
     expect(find.text(_full), findsOneWidget);
     expect(find.text(_card), findsNothing,
         reason: 'the innermost tooltip wins; never both');
+  });
+
+  testWidgets('a cell tooltip that cannot show does not suppress the card',
+      (tester) async {
+    // just_tooltip suppresses every ancestor tooltip the moment the pointer
+    // enters a descendant one — before that descendant decides whether it has
+    // anything to draw. A `hideOnEmptyMessage` tooltip with an empty message
+    // decides "no". Wrapping the cell at all would therefore kill the card and
+    // put nothing in its place: hovering the cell would show nothing.
+    await tester.pumpWidget(_table(columns: {
+      'note': _col(
+        'note',
+        width: 60,
+        maxWidth: 60,
+        behavior: TooltipBehavior.onlyTextOverflow,
+        tooltipFormatter: (_) => '',
+      ),
+      'name': _col('name'),
+    }));
+
+    await _hoverAt(tester, tester.getCenter(find.textContaining('a value')));
+
+    expect(find.text(_card), findsOneWidget);
+  });
+
+  testWidgets('hideOnEmptyMessage: false keeps the empty cell tooltip winning',
+      (tester) async {
+    // The guard above must read the theme, not hard-code the policy: a caller
+    // who turned `hideOnEmptyMessage` off asked for the empty bubble, and it
+    // must keep suppressing the card the way any other cell tooltip does.
+    await tester.pumpWidget(_table(
+      columns: {
+        'note': _col(
+          'note',
+          width: 60,
+          maxWidth: 60,
+          behavior: TooltipBehavior.onlyTextOverflow,
+          tooltipFormatter: (_) => '',
+        ),
+        'name': _col('name'),
+      },
+      theme: const TablePlusTheme(
+        tooltipTheme: TablePlusTooltipTheme(hideOnEmptyMessage: false),
+      ),
+    ));
+
+    await _hoverAt(tester, tester.getCenter(find.textContaining('a value')));
+
+    expect(find.text(_card), findsNothing);
   });
 
   testWidgets('TooltipBehavior.always leaves no room for the card',
