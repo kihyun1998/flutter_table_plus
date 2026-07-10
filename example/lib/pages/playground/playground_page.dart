@@ -1014,6 +1014,16 @@ TextStyle _fontTextStyle(
 }
 
 TablePlusTheme buildPlaygroundTheme(PlaygroundSettings settings) {
+  final cellTooltip = TablePlusTooltipTheme(
+    enabled: settings.tooltipEnabled,
+    waitDuration: Duration(milliseconds: settings.tooltipWaitDurationMs),
+    textStyle: _fontTextStyle(settings, fontSize: 12, color: Colors.white),
+    direction: settings.tooltipDirection,
+    alignment: settings.tooltipAlignment,
+    showArrow: settings.tooltipShowArrow,
+    offset: settings.tooltipOffset,
+    anchor: settings.tooltipAnchor,
+  );
   return TablePlusTheme(
     headerTheme: TablePlusHeaderTheme(
       resizeHandle: TablePlusResizeHandleTheme(
@@ -1131,14 +1141,16 @@ TablePlusTheme buildPlaygroundTheme(PlaygroundSettings settings) {
       elevation: 0,
       showArrow: false,
     ),
-    tooltipTheme: TablePlusTooltipTheme(
-      enabled: settings.tooltipEnabled,
-      waitDuration: Duration(milliseconds: settings.tooltipWaitDurationMs),
-      textStyle: _fontTextStyle(settings, fontSize: 12, color: Colors.white),
-      direction: settings.tooltipDirection,
-      alignment: settings.tooltipAlignment,
-      showArrow: settings.tooltipShowArrow,
-      offset: settings.tooltipOffset,
-    ),
+    tooltipTheme: cellTooltip,
+    // Null while the header follows the cells, so the package's documented
+    // fallback to `tooltipTheme` is the path the playground normally walks.
+    // The two themes differ in nothing but the anchor.
+    headerTooltipTheme: switch (settings.headerTooltipAnchor) {
+      HeaderTooltipAnchor.followCells => null,
+      HeaderTooltipAnchor.child =>
+        cellTooltip.copyWith(anchor: TooltipAnchor.child),
+      HeaderTooltipAnchor.pointer =>
+        cellTooltip.copyWith(anchor: TooltipAnchor.pointer),
+    },
   );
 }
