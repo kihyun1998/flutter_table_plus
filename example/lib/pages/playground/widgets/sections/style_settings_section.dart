@@ -30,6 +30,7 @@ class StyleSettingsSection extends StatelessWidget {
 
         // Font family
         buildDropdownRow<String>(
+          id: 'fontFamily',
           label: 'Font Family',
           value: settings.fontFamily,
           items: const [
@@ -55,6 +56,7 @@ class StyleSettingsSection extends StatelessWidget {
 
         // Scale (zoom)
         buildSliderSetting(
+          id: 'scale',
           label: 'Scale',
           value: settings.scale,
           min: 0.25,
@@ -80,6 +82,7 @@ class StyleSettingsSection extends StatelessWidget {
           ),
         ),
         buildSwitchTile(
+          id: 'blockModifierScroll',
           label: 'Block Modifier+Scroll',
           value: settings.blockModifierScroll,
           onChanged: (value) {
@@ -90,6 +93,7 @@ class StyleSettingsSection extends StatelessWidget {
 
         // Column min width
         buildSliderSetting(
+          id: 'columnMinWidth',
           label: 'Col Min Width',
           value: settings.columnMinWidth,
           min: 20,
@@ -119,6 +123,7 @@ class StyleSettingsSection extends StatelessWidget {
 
         // Row height
         buildSliderSetting(
+          id: 'rowHeight',
           label: 'Row Height',
           value: settings.rowHeight,
           min: 30,
@@ -132,6 +137,7 @@ class StyleSettingsSection extends StatelessWidget {
 
         // Font size
         buildSliderSetting(
+          id: 'fontSize',
           label: 'Font Size',
           value: settings.fontSize,
           min: 10,
@@ -145,6 +151,7 @@ class StyleSettingsSection extends StatelessWidget {
 
         // Horizontal padding
         buildSliderSetting(
+          id: 'horizontalPadding',
           label: 'H-Padding',
           value: settings.horizontalPadding,
           min: 4,
@@ -158,6 +165,7 @@ class StyleSettingsSection extends StatelessWidget {
 
         // Vertical padding
         buildSliderSetting(
+          id: 'verticalPadding',
           label: 'V-Padding',
           value: settings.verticalPadding,
           min: 4,
@@ -171,6 +179,7 @@ class StyleSettingsSection extends StatelessWidget {
 
         // Checkbox tap target size
         buildSliderSetting(
+          id: 'checkboxTapTargetSize',
           label: 'Checkbox Tap Size',
           value: settings.checkboxTapTargetSize,
           min: 18,
@@ -184,6 +193,7 @@ class StyleSettingsSection extends StatelessWidget {
 
         // Sort icon width
         buildSliderSetting(
+          id: 'sortIconWidth',
           label: 'Sort Icon Width',
           value: settings.sortIconWidth,
           min: 8,

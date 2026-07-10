@@ -21,10 +21,18 @@ bool settingMatches(String label, String query) {
 class SettingsControl extends StatelessWidget {
   const SettingsControl({
     super.key,
+    required this.id,
     required this.label,
     required this.child,
     this.indent = false,
   });
+
+  /// Names the settings field this control edits, and nothing else.
+  ///
+  /// The label is prose: it repeats across sections and a redesign is free to
+  /// rewrite it. The id is what anything wanting to reason about a control —
+  /// which feature owns it, what it depends on — has to hold onto instead.
+  final String id;
 
   /// The text the user reads, and the text a search matches against.
   final String label;
@@ -173,6 +181,7 @@ class _SettingsSectionState extends State<SettingsSection> {
 }
 
 SettingsControl buildSliderSetting({
+  required String id,
   required String label,
   required double value,
   required double min,
@@ -186,6 +195,7 @@ SettingsControl buildSliderSetting({
       ? value.toStringAsFixed(decimalPlaces)
       : '${value.round()}';
   return SettingsControl(
+    id: id,
     label: label,
     indent: indent,
     child: Column(
@@ -224,12 +234,14 @@ SettingsControl buildSliderSetting({
 }
 
 SettingsControl buildSwitchTile({
+  required String id,
   required String label,
   required bool value,
   required ValueChanged<bool> onChanged,
   bool indent = false,
 }) {
   return SettingsControl(
+    id: id,
     label: label,
     indent: indent,
     child: Padding(
@@ -261,6 +273,7 @@ SettingsControl buildSwitchTile({
 }
 
 SettingsControl buildDropdownRow<T>({
+  required String id,
   required String label,
   required T value,
   required List<T> items,
@@ -269,6 +282,7 @@ SettingsControl buildDropdownRow<T>({
   bool indent = false,
 }) {
   return SettingsControl(
+    id: id,
     label: label,
     indent: indent,
     child: Row(
@@ -304,6 +318,7 @@ SettingsControl buildDropdownRow<T>({
 }
 
 SettingsControl buildLogSlider({
+  required String id,
   required String label,
   required double value,
   required double min,
@@ -316,6 +331,7 @@ SettingsControl buildLogSlider({
   final logValue = math.log(value) / math.ln10;
 
   return SettingsControl(
+    id: id,
     label: label,
     child: Slider(
       value: logValue,

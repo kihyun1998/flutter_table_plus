@@ -29,6 +29,7 @@ class TooltipSettingsSection extends StatelessWidget {
 
         // Tooltip enabled toggle
         buildSwitchTile(
+          id: 'tooltipEnabled',
           label: 'Tooltip Enabled',
           value: settings.tooltipEnabled,
           onChanged: (value) {
@@ -48,6 +49,7 @@ class TooltipSettingsSection extends StatelessWidget {
 
           // Cell tooltip behavior
           buildDropdownRow<TooltipBehavior>(
+            id: 'tooltipBehavior',
             label: 'Cell Tooltip',
             value: settings.tooltipBehavior,
             items: TooltipBehavior.values,
@@ -64,6 +66,7 @@ class TooltipSettingsSection extends StatelessWidget {
 
           // Header tooltip behavior
           buildDropdownRow<TooltipBehavior>(
+            id: 'headerTooltipBehavior',
             label: 'Header Tooltip',
             value: settings.headerTooltipBehavior,
             items: TooltipBehavior.values,
@@ -82,6 +85,7 @@ class TooltipSettingsSection extends StatelessWidget {
 
           // Wait duration slider
           buildSliderSetting(
+            id: 'tooltipWaitDurationMs',
             label: 'Wait Duration',
             value: settings.tooltipWaitDurationMs.toDouble(),
             min: 0,
@@ -96,6 +100,7 @@ class TooltipSettingsSection extends StatelessWidget {
           // The card is bigger and more interruptive than a line of text, so
           // it gets its own pause rather than borrowing the cells'.
           buildSliderSetting(
+            id: 'rowCardWaitDurationMs',
             label: 'Row Card Wait',
             value: settings.rowCardWaitDurationMs.toDouble(),
             min: 0,
@@ -111,6 +116,7 @@ class TooltipSettingsSection extends StatelessWidget {
 
           // Direction
           buildDropdownRow<TooltipDirection>(
+            id: 'tooltipDirection',
             label: 'Direction',
             value: settings.tooltipDirection,
             items: TooltipDirection.values,
@@ -128,6 +134,7 @@ class TooltipSettingsSection extends StatelessWidget {
 
           // Anchor — cells
           buildDropdownRow<TooltipAnchor>(
+            id: 'tooltipAnchor',
             label: 'Cell Anchor',
             value: settings.tooltipAnchor,
             items: TooltipAnchor.values,
@@ -149,6 +156,7 @@ class TooltipSettingsSection extends StatelessWidget {
 
           // Anchor — headers
           buildDropdownRow<HeaderTooltipAnchor>(
+            id: 'headerTooltipAnchor',
             label: 'Header Anchor',
             value: settings.headerTooltipAnchor,
             items: HeaderTooltipAnchor.values,
@@ -165,6 +173,7 @@ class TooltipSettingsSection extends StatelessWidget {
 
           // Alignment
           buildDropdownRow<TooltipAlignment>(
+            id: 'tooltipAlignment',
             label: 'Alignment',
             value: settings.tooltipAlignment,
             items: TooltipAlignment.values,
@@ -192,6 +201,7 @@ class TooltipSettingsSection extends StatelessWidget {
 
           // Show Arrow
           buildSwitchTile(
+            id: 'tooltipShowArrow',
             label: 'Show Arrow',
             value: settings.tooltipShowArrow,
             onChanged: (value) {
@@ -201,6 +211,7 @@ class TooltipSettingsSection extends StatelessWidget {
 
           // Offset slider
           buildSliderSetting(
+            id: 'tooltipOffset',
             label: 'Offset',
             value: settings.tooltipOffset,
             min: 0,
@@ -216,6 +227,7 @@ class TooltipSettingsSection extends StatelessWidget {
 
           // Demo: tooltipFormatter
           buildSwitchTile(
+            id: 'showTooltipFormatter',
             label: 'tooltipFormatter (Email)',
             value: settings.showTooltipFormatter,
             onChanged: (value) {
@@ -233,6 +245,7 @@ class TooltipSettingsSection extends StatelessWidget {
 
           // Demo: tooltipBuilder
           buildSwitchTile(
+            id: 'showTooltipBuilder',
             label: 'tooltipBuilder (Name)',
             value: settings.showTooltipBuilder,
             onChanged: (value) {
