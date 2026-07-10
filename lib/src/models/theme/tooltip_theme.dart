@@ -62,6 +62,13 @@ class TablePlusTooltipTheme {
   final bool enabled;
 
   /// Whether to suppress the tooltip when the message is empty.
+  ///
+  /// A suppressed tooltip is not built at all, rather than built and hidden.
+  /// The difference is visible when the cell sits inside a row tooltip: a built
+  /// tooltip suppresses the row's card as soon as the pointer enters it, so a
+  /// tooltip that then declines to draw would leave the cell showing nothing.
+  ///
+  /// This has no effect on `tooltipBuilder`, whose content is not a message.
   final bool hideOnEmptyMessage;
 
   // ── Visual (mapped to JustTooltipTheme) ─────────────────────────────

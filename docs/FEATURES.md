@@ -635,6 +635,10 @@ FlutterTablePlus<User>(
 
 When a cell under the pointer has a tooltip of its own, that one wins — exactly one tooltip is ever visible. So a truncated cell still reveals its full text, while the rest of the row shows the card.
 
+The whole row is the hover region, including the empty space past the last column and cells whose value is empty. A cell only takes the card's place when it has a tooltip to put there: `tooltipBehavior: TooltipBehavior.always` gives every ellipsized text column one whether or not its text is cut, which leaves the card nowhere to appear. Use `TooltipBehavior.onlyTextOverflow` on the text columns of a table that shows a card.
+
+A `tooltipFormatter` returning an empty string means "no tooltip on this cell", so the card shows there too. A `tooltipBuilder` returning an invisible widget does not: a widget tooltip is always taken to have content, and it wins.
+
 Merged rows stand for several data rows, so there is no single `rowData` to build from. They carry no card.
 
 `rowTooltipTheme` falls back to `tooltipTheme` when omitted.
