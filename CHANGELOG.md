@@ -1,3 +1,15 @@
+## 2.15.3
+
+*   **DEPS**: `just_tooltip: ^0.4.3` → `^0.4.4`. **A floor, not a preference.** 0.4.4 stops a tooltip that has nothing to draw from displacing the tooltips around it ([just_tooltip#46](https://github.com/kihyun1998/just_tooltip/issues/46)) — the very guarantee 2.15.2 secured for itself by never building such a tooltip. That guard is gone now, so under 0.4.3 this package would *reissue* the bug 2.15.2 fixed, rather than merely miss an upstream improvement
+    *   The SDK floor is unchanged. 0.4.4 still declares `sdk >=3.1.0 <4.0.0` and `flutter >=3.13.0`, so this package's Flutter 3.13 floor stands
+    *   0.4.4 also makes a tooltip that is already on screen follow changes to its `message`, `tooltipBuilder`, `theme`, `direction` and `alignment` ([just_tooltip#47](https://github.com/kihyun1998/just_tooltip/issues/47)); the overlay rendered them live but nothing ever asked it to rebuild. Nothing here relied on the old behaviour — all 382 package tests and 67 example tests pass against 0.4.4 unmodified
+*   **REFACTOR**: `wrapWithTooltip` no longer skips the wrap when the resolved message is empty. just_tooltip owns that rule now, and a local copy of the predicate was a second thing that had to agree with the first, with nothing in the build to make it
+    *   `a cell tooltip that cannot show does not suppress the card` did not change one character. It observes the contract — the row card survives — and not the mechanism, so it kept passing once upstream took the mechanism over
+    *   Removing the guard while allowing 0.4.3 is what would break, and only there: the same test is the single failure across the suite when both are done
+*   **DOCS**: 2.15.2 argued for its fix with a rationale that 0.4.4 has made false, and **no test guards a rationale**. It held that suppressing ancestors from `MouseRegion.onEnter` was an intended contract of just_tooltip, so a tooltip that cannot show must never be built. Upstream has since judged that a trap in its own default and fixed it there. What 2.15.2 shipped was right for 0.4.3; the reason it gave was not, and a reader following that reason today would conclude the guard must stay
+    *   Withdrawn from `TablePlusTooltipTheme.hideOnEmptyMessage`, `TablePlusColumn.tooltipFormatter`, `wrapWithTooltip`, `docs/THEMING.md` and the tests that repeated it. `hideOnEmptyMessage` now reads "draws nothing, and displaces nothing"
+    *   `FlutterTablePlus.rowTooltipBuilder` needed no correction: "a cell only takes the card's place when it has something to show" is what 0.4.4 made upstream law
+
 ## 2.15.2
 
 *   **FIX**: a cell whose `tooltipFormatter` returns an empty string no longer swallows the `rowTooltipBuilder` card. Hovering such a cell showed nothing at all — not the cell's tooltip, not the row's

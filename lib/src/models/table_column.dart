@@ -180,8 +180,9 @@ class TablePlusColumn<T> {
   /// The function receives the row data object and should return a String for the tooltip.
   /// If null, the default behavior will use the cell's display value.
   ///
-  /// Return an empty string to give a row no tooltip at all — the cell is then
-  /// left unwrapped, so a `rowTooltipBuilder` card still shows over it. (Unless
+  /// Return an empty string to give a row no tooltip at all — the cell's
+  /// tooltip then has nothing to draw, so it stands aside and a
+  /// `rowTooltipBuilder` card shows over it. (Unless
   /// [TablePlusTooltipTheme.hideOnEmptyMessage] is false, which asks for the
   /// empty bubble.)
   final String Function(T rowData)? tooltipFormatter;

@@ -63,10 +63,14 @@ class TablePlusTooltipTheme {
 
   /// Whether to suppress the tooltip when the message is empty.
   ///
-  /// A suppressed tooltip is not built at all, rather than built and hidden.
-  /// The difference is visible when the cell sits inside a row tooltip: a built
-  /// tooltip suppresses the row's card as soon as the pointer enters it, so a
-  /// tooltip that then declines to draw would leave the cell showing nothing.
+  /// A suppressed tooltip draws nothing and, from just_tooltip 0.4.4, claims
+  /// nothing: it no longer displaces the tooltips around it. That matters when
+  /// the cell sits inside a row tooltip — the `rowTooltipBuilder` card shows
+  /// over a cell whose message came back empty, rather than being taken down by
+  /// a cell tooltip that then had nothing to put in its place.
+  ///
+  /// Set it to `false` and the empty bubble is drawn, and displaces the card
+  /// like any other cell tooltip. That is what asking for an empty bubble means.
   ///
   /// This has no effect on `tooltipBuilder`, whose content is not a message.
   final bool hideOnEmptyMessage;

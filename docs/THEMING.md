@@ -373,7 +373,7 @@ TablePlusTooltipTheme(
   enableHover: true,
   enableTap: false,
   interactive: true,
-  hideOnEmptyMessage: true,             // an empty message builds no tooltip at all
+  hideOnEmptyMessage: true,             // an empty message draws nothing, and displaces nothing
 
   // Animation
   animation: TooltipAnimation.fade,     // none, fade, scale, slide, fadeScale, fadeSlide, rotation
@@ -418,15 +418,20 @@ unrelated to where along the row you are pointing.
 ### Empty messages
 
 `hideOnEmptyMessage` (default `true`) means a tooltip whose message resolves to
-an empty string is **not built at all**, rather than built and hidden. The two
-differ once tooltips nest. A tooltip suppresses the ones around it the moment
-the pointer enters it — so a cell tooltip that were built and then declined to
-draw would take a `rowTooltipBuilder` card down with it, and the cell would show
-nothing at all. Not building it leaves the card intact.
+an empty string **draws nothing**. It also displaces nothing, which is what
+matters once tooltips nest: a tooltip normally takes the place of the ones
+around it the moment the pointer enters it, but one with nothing to draw stands
+aside. So a `rowTooltipBuilder` card shows over a cell whose message came back
+empty, instead of being taken down by a cell tooltip that then had nothing to
+put in its place.
 
-Set it to `false` and the empty bubble is drawn, and suppresses the card the way
-any other cell tooltip does. `tooltipBuilder` content is not a message, so the
-flag does not apply to it.
+Set it to `false` and the empty bubble is drawn — and, having something to draw,
+it displaces the card the way any other cell tooltip does. `tooltipBuilder`
+content is not a message, so the flag does not apply to it.
+
+> This is guaranteed by `just_tooltip` from 0.4.4 on, which is why this package
+> requires it. Before that, the empty tooltip claimed the card first and
+> declined to draw second, and hovering such a cell showed nothing at all.
 
 ---
 
