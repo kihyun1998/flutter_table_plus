@@ -32,7 +32,7 @@ Widget _pane({
   return MaterialApp(
     home: Scaffold(
       body: SizedBox(
-        width: 180,
+        width: 220,
         child: FeatureListPane(
           settings: settings ??
               applyPreset(const PlaygroundSettings(), presetById('bare')),
@@ -142,6 +142,58 @@ void main() {
         expect(dot, findsOneWidget, reason: feature.id);
       }
     }
+  });
+
+  testWidgets('typing narrows the list, and says what matched', (tester) async {
+    _tallView(tester);
+    await tester.pumpWidget(_pane());
+
+    await tester.enterText(find.byType(TextField), 'anchor');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Tooltips'), findsOneWidget);
+    expect(find.text('Cell Anchor'), findsOneWidget,
+        reason: 'a reader sees where the setting lives before opening it');
+    expect(find.text('Sorting'), findsNothing);
+  });
+
+  testWidgets('a setting is found while its feature is off, and says so',
+      (tester) async {
+    _tallView(tester);
+    await tester.pumpWidget(_pane());
+
+    await tester.enterText(find.byType(TextField), 'row card wait');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Row Card Wait'), findsOneWidget);
+    expect(find.textContaining('Turn on'), findsOneWidget,
+        reason: 'silence cannot say whether a setting is missing or unusable');
+  });
+
+  testWidgets('clearing the search restores the list, and keeps the selection',
+      (tester) async {
+    _tallView(tester);
+    await tester.pumpWidget(_pane(selected: 'sorting'));
+
+    await tester.enterText(find.byType(TextField), 'anchor');
+    await tester.pumpAndSettle();
+    expect(find.text('Sorting'), findsNothing);
+
+    await tester.enterText(find.byType(TextField), '');
+    await tester.pumpAndSettle();
+
+    for (final feature in _features) {
+      expect(find.text(feature.title), findsOneWidget, reason: feature.id);
+    }
+    // A search is a way of getting somewhere. Arriving is not undone by
+    // clearing the query that led there.
+    final tile = tester.widget<ListTile>(
+      find.descendant(
+        of: find.byKey(const ValueKey('feature-sorting')),
+        matching: find.byType(ListTile),
+      ),
+    );
+    expect(tile.selected, isTrue);
   });
 
   testWidgets('the dot changes the table, not just the callback',
