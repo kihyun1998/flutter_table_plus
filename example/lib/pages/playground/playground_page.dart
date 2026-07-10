@@ -6,6 +6,7 @@ import 'package:flutter_table_plus/flutter_table_plus.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'models/employee.dart';
+import 'models/playground_settings.dart';
 import 'utils/random_data_generator.dart';
 import 'widgets/performance_monitor.dart';
 import 'widgets/settings_panel.dart';

@@ -1,3 +1,4 @@
+import 'package:example/pages/playground/models/playground_settings.dart';
 import 'package:example/pages/playground/widgets/performance_monitor.dart';
 import 'package:example/pages/playground/widgets/settings_panel.dart';
 import 'package:flutter/material.dart';

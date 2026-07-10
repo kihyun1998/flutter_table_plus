@@ -1,5 +1,5 @@
+import 'package:example/pages/playground/models/playground_settings.dart';
 import 'package:example/pages/playground/playground_page.dart';
-import 'package:example/pages/playground/widgets/settings_panel.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
 import 'package:flutter_test/flutter_test.dart';
 
