@@ -93,9 +93,9 @@ void main() {
 
   testWidgets('the card anchors at the pointer, not the row rect',
       (tester) async {
-    // Three 600px columns: the row is 1800 wide inside an 800px viewport, so
-    // the row's centre is off screen. Anchoring to the row would put the card
-    // there (and screenMargin would silently clamp it back).
+    // Three 600px columns: the row is 1800 wide inside an 800px viewport. A
+    // child anchor would aim at the centre of the row's *visible* slice — the
+    // viewport's centre — which is on screen but unrelated to the cursor.
     await tester.pumpWidget(_table(columns: {
       'name': _col('name', width: 600),
       'note': _col('note', width: 600),
@@ -119,8 +119,9 @@ void main() {
       (tester) async {
     // tooltipTheme.anchor governs cells, and rowTooltipTheme falls back to it
     // when unset — so a caller who anchors their cell tooltips to the child
-    // must not thereby drag the row card onto the row's rect, whose centre
-    // (x≈900) is off screen.
+    // must not thereby drag the row card onto the row's visible centre, which
+    // sits wherever the table happens to be scrolled rather than at the
+    // cursor.
     await tester.pumpWidget(_table(
       columns: {
         'name': _col('name', width: 600),

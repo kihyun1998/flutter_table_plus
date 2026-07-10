@@ -106,11 +106,11 @@ class TablePlusTooltipTheme {
 
   /// What the tooltip is positioned against.
   ///
-  /// [TooltipAnchor.child] (the default) places the tooltip beside the rect of
-  /// the widget it wraps. [TooltipAnchor.pointer] leaves the hover region alone
-  /// and places the tooltip beside the cursor instead — useful when the hovered
-  /// widget is much wider than the neighbourhood the user is pointing at, such
-  /// as a long ellipsized cell.
+  /// [TooltipAnchor.child] (the default) places the tooltip beside the visible
+  /// part of the widget it wraps. [TooltipAnchor.pointer] leaves the hover
+  /// region alone and places the tooltip beside the cursor instead — useful
+  /// when the hovered widget is much wider than the neighbourhood the user is
+  /// pointing at, such as a cell in a column wider than the viewport.
   ///
   /// Cell tooltips read this from `TablePlusTheme.tooltipTheme` and header
   /// tooltips from `TablePlusTheme.headerTooltipTheme`, which falls back to the
@@ -118,8 +118,8 @@ class TablePlusTooltipTheme {
   ///
   /// Row tooltips built by `rowTooltipBuilder` always use
   /// [TooltipAnchor.pointer] and ignore this field: a row is as wide as the
-  /// table's content, so anchoring to it would aim at a point that may be off
-  /// screen.
+  /// table's content, so a child anchor would aim at the centre of the visible
+  /// slice — the viewport's centre, not the cell under the cursor.
   ///
   /// See also [alignment], whose meaning depends on this field.
   final TooltipAnchor anchor;

@@ -410,8 +410,9 @@ Two things to know:
   ```
 
 Row tooltips built by `rowTooltipBuilder` always anchor at the pointer and
-ignore this field. A row is as wide as the table's content, so anchoring to the
-row would aim at a point that scrolls off screen.
+ignore this field. A row is as wide as the table's content, so a child anchor
+would aim at the centre of whatever slice of the row is on screen — visible, but
+unrelated to where along the row you are pointing.
 
 ---
 

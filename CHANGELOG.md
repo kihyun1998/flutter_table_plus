@@ -1,10 +1,13 @@
 ## 2.15.0
 
+*   **BREAKING**: minimum Flutter is now `3.13.0` (Dart `3.1.0`), up from `3.10.0`. `just_tooltip` 0.4.2 walks `RenderObject.parent`, which was `AbstractNode?` — a type with no `describeApproximatePaintClip` — before Flutter 3.13. The `just_tooltip: ^0.4.0` constraint already resolved 0.4.2, so the old floor had quietly become a promise this package could not keep; raising it is the honest fix, not the cause
+*   **DEPS**: `just_tooltip: ^0.4.2`. Upstream now anchors `TooltipAnchor.child` to the *visible* part of the child, re-aims a shown tooltip when its child moves, and hides it once the child is clipped out of sight. Cell and row tooltip behaviour here is unchanged; all 378 tests pass unmodified
+
 *   **FEAT**: `TablePlusTooltipTheme.anchor` — position a tooltip beside the cursor instead of beside the widget it wraps
-    *   `TooltipAnchor.child` (the default) anchors to the hovered widget's rect. That is wrong whenever the widget is far wider than the neighbourhood the user is pointing at: a cell whose text is long enough to ellipsize fills its whole column, so its tooltip appeared at the column's centre, possibly a screen away from the cursor. `TooltipAnchor.pointer` keeps the same hover region and anchors at the cursor
+    *   `TooltipAnchor.child` (the default) anchors to the visible part of the hovered widget's rect. That is wrong whenever the widget is far wider than the neighbourhood the user is pointing at: a cell in a column wider than the viewport gets a tooltip at the centre of whatever slice is on screen, wherever the cursor may be. `TooltipAnchor.pointer` keeps the same hover region and anchors at the cursor
     *   Against a point there are no target edges to align to, so under `TooltipAnchor.pointer` the `alignment` field selects which of the tooltip's *own* edges lands on the cursor
     *   `TooltipAnchor` is now re-exported, so you no longer need `just_tooltip` in your own `pubspec.yaml` to name it
-    *   Row tooltips built by `rowTooltipBuilder` always anchored at the pointer and still do; they ignore this field. A row is as wide as the table's content, so anchoring to the row would aim at a point that scrolls off screen
+    *   Row tooltips built by `rowTooltipBuilder` always anchored at the pointer and still do; they ignore this field. A row is as wide as the table's content, so a child anchor would aim at the centre of whatever slice of the row is on screen — visible, but unrelated to where along the row the cursor is
 *   **FEAT**: `TablePlusTheme.headerTooltipTheme` — style header tooltips apart from cell tooltips
     *   Header and cell tooltips were styled by one `tooltipTheme`, so tooltip *behavior* was separable (`headerTooltipBehavior` vs `tooltipBehavior`) while tooltip *style* was not. With `anchor` exposed, that asymmetry bit: anchoring a header at the pointer dragged every cell along with it
     *   Nullable, and falls back to `tooltipTheme` when unset — the same shape as `rowTooltipTheme`. Leave it null and nothing changes
