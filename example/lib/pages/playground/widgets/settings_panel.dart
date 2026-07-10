@@ -115,17 +115,21 @@ class _SettingsPanelState extends State<SettingsPanel> {
       borderColor: _groupBorders[group.id]!,
       initiallyExpanded: group.id == 'data',
       children: [
-        for (final feature in group.features) ..._buildFeature(feature),
+        for (final feature in group.features) ..._buildFeature(feature, query),
       ],
     );
   }
 
-  /// A feature's switch, then the options it owns — which only appear while it
-  /// is on. Eight of these were guarded by hand; the description knows all of
-  /// them.
-  List<Widget> _buildFeature(SettingFeature feature) {
+  /// A feature's switch, then the options it owns.
+  ///
+  /// An option means nothing while its feature is off, so it is not there —
+  /// until someone searches for it. A search that turns up nothing cannot say
+  /// whether the setting does not exist or merely cannot be used, so a search
+  /// surfaces it, unavailable, naming the feature that would enable it.
+  List<Widget> _buildFeature(SettingFeature feature, String query) {
     final s = widget.settings;
     final on = feature.switchId == null || _isOn(feature.switchId!);
+    final searching = query.trim().isNotEmpty;
 
     return [
       if (feature.switchId != null) _draw(feature.switchId!),
@@ -133,9 +137,42 @@ class _SettingsPanelState extends State<SettingsPanel> {
       if (on) ...[
         for (final option in feature.options) _draw(option),
         if (feature.id == 'data') ..._dataExtras(s),
-      ],
+      ] else if (searching)
+        for (final option in feature.options) _drawUnavailable(option, feature),
       const SizedBox(height: 8),
     ];
+  }
+
+  /// The control as the search found it: readable, unreachable, and saying what
+  /// would make it reachable.
+  ///
+  /// It stays a [SettingsControl] so the search still sees a label to match on,
+  /// and the note lives inside it for the same reason.
+  Widget _drawUnavailable(String id, SettingFeature feature) {
+    final control = settingsRegistry[id]!(widget.settings, (_) {});
+    return SettingsControl(
+      id: control.id,
+      label: control.label,
+      indent: control.indent,
+      child: Opacity(
+        opacity: 0.5,
+        child: IgnorePointer(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              control.child,
+              Padding(
+                padding: const EdgeInsets.only(left: 8, bottom: 4),
+                child: Text(
+                  'Turn on ${feature.title} to use this',
+                  style: TextStyle(fontSize: 11, color: Colors.orange.shade800),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _draw(String id) =>
