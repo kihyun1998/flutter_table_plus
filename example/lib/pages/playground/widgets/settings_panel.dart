@@ -25,6 +25,15 @@ enum InkColorOption {
 }
 
 /// Playground settings configuration
+/// Where header tooltips anchor, as the settings panel offers it.
+///
+/// [followCells] passes `null` through, leaving `TablePlusTheme
+/// .headerTooltipTheme` unset so the table falls back to `tooltipTheme`. It is
+/// the default because a playground that never walks the fallback would not
+/// show it working. The other two hand the header a theme of its own, which is
+/// the only way to anchor a header differently from the cells beneath it.
+enum HeaderTooltipAnchor { followCells, child, pointer }
+
 class PlaygroundSettings {
   // Data settings
   final int rowCount;
@@ -73,6 +82,12 @@ class PlaygroundSettings {
   final TooltipAlignment tooltipAlignment;
   final bool tooltipShowArrow;
   final double tooltipOffset;
+
+  /// Where cell tooltips are anchored.
+  final TooltipAnchor tooltipAnchor;
+
+  /// Where header tooltips are anchored.
+  final HeaderTooltipAnchor headerTooltipAnchor;
 
   // Font settings
   final String fontFamily;
@@ -140,6 +155,8 @@ class PlaygroundSettings {
     this.tooltipAlignment = TooltipAlignment.center,
     this.tooltipShowArrow = false,
     this.tooltipOffset = 8.0,
+    this.tooltipAnchor = TooltipAnchor.child,
+    this.headerTooltipAnchor = HeaderTooltipAnchor.followCells,
     this.fontFamily = 'default',
     this.headerTopBorderShow = true,
     this.headerTopBorderThickness = 2.0,
@@ -196,6 +213,8 @@ class PlaygroundSettings {
     bool? showTooltipBuilder,
     TooltipDirection? tooltipDirection,
     TooltipAlignment? tooltipAlignment,
+    TooltipAnchor? tooltipAnchor,
+    HeaderTooltipAnchor? headerTooltipAnchor,
     bool? tooltipShowArrow,
     double? tooltipOffset,
     String? fontFamily,
@@ -257,6 +276,8 @@ class PlaygroundSettings {
       showTooltipBuilder: showTooltipBuilder ?? this.showTooltipBuilder,
       tooltipDirection: tooltipDirection ?? this.tooltipDirection,
       tooltipAlignment: tooltipAlignment ?? this.tooltipAlignment,
+      tooltipAnchor: tooltipAnchor ?? this.tooltipAnchor,
+      headerTooltipAnchor: headerTooltipAnchor ?? this.headerTooltipAnchor,
       tooltipShowArrow: tooltipShowArrow ?? this.tooltipShowArrow,
       tooltipOffset: tooltipOffset ?? this.tooltipOffset,
       fontFamily: fontFamily ?? this.fontFamily,
@@ -1180,6 +1201,43 @@ class SettingsPanel extends StatelessWidget {
           ),
           const SizedBox(height: 4),
 
+          // Anchor — cells
+          _buildDropdownRow<TooltipAnchor>(
+            label: 'Cell Anchor',
+            value: settings.tooltipAnchor,
+            items: TooltipAnchor.values,
+            itemLabel: (a) => switch (a) {
+              TooltipAnchor.child => 'Child',
+              TooltipAnchor.pointer => 'Pointer',
+            },
+            onChanged: (value) {
+              onSettingsChanged(settings.copyWith(tooltipAnchor: value));
+            },
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 8, bottom: 4),
+            child: Text(
+              'The row card always anchors at the pointer; it ignores this',
+              style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+            ),
+          ),
+
+          // Anchor — headers
+          _buildDropdownRow<HeaderTooltipAnchor>(
+            label: 'Header Anchor',
+            value: settings.headerTooltipAnchor,
+            items: HeaderTooltipAnchor.values,
+            itemLabel: (a) => switch (a) {
+              HeaderTooltipAnchor.followCells => 'Follow Cells',
+              HeaderTooltipAnchor.child => 'Child',
+              HeaderTooltipAnchor.pointer => 'Pointer',
+            },
+            onChanged: (value) {
+              onSettingsChanged(settings.copyWith(headerTooltipAnchor: value));
+            },
+          ),
+          const SizedBox(height: 4),
+
           // Alignment
           _buildDropdownRow<TooltipAlignment>(
             label: 'Alignment',
@@ -1196,7 +1254,16 @@ class SettingsPanel extends StatelessWidget {
               onSettingsChanged(settings.copyWith(tooltipAlignment: value));
             },
           ),
-          const SizedBox(height: 4),
+          Padding(
+            padding: const EdgeInsets.only(left: 8, bottom: 4),
+            child: Text(
+              settings.tooltipAnchor == TooltipAnchor.pointer
+                  ? "Against the pointer there are no target edges, so this "
+                      "picks which of the tooltip's own edges lands on the cursor"
+                  : 'Picks which edge of the target the tooltip lines up with',
+              style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+            ),
+          ),
 
           // Show Arrow
           _buildSwitchTile(
