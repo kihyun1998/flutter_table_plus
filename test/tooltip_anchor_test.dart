@@ -36,6 +36,7 @@ TablePlusColumn<Map<String, dynamic>> _col(
   int order = 0,
   TooltipBehavior behavior = TooltipBehavior.never,
   TooltipBehavior headerBehavior = TooltipBehavior.never,
+  bool widgetTooltip = false,
 }) {
   return TablePlusColumn<Map<String, dynamic>>(
     key: key,
@@ -47,6 +48,7 @@ TablePlusColumn<Map<String, dynamic>> _col(
     tooltipBehavior: behavior,
     headerTooltipBehavior: headerBehavior,
     tooltipFormatter: (_) => _full,
+    tooltipBuilder: widgetTooltip ? (context, _) => const Text(_full) : null,
   );
 }
 
@@ -128,6 +130,34 @@ void main() {
       lessThan(80),
       reason: 'the tooltip should sit beside the cursor, not at the centre of '
           'the ellipsized Text (x≈${text.center.dx.round()})',
+    );
+  });
+
+  testWidgets('a cell widget tooltip anchors at the pointer when asked',
+      (tester) async {
+    // A widget tooltip's hover target is the whole cell, not just the Text, so
+    // this exercises the tooltipBuilder branch of the cell path.
+    await tester.pumpWidget(_table(
+      theme: const TablePlusTheme(
+        tooltipTheme: TablePlusTooltipTheme(anchor: TooltipAnchor.pointer),
+      ),
+      columns: {
+        'note': _col('note',
+            width: 600, behavior: TooltipBehavior.always, widgetTooltip: true),
+        'name': _col('name', width: 400),
+      },
+    ));
+
+    final cell = tester.getRect(find.text(_long));
+    final pointer = Offset(cell.left + 40, cell.center.dy);
+    await _hoverAt(tester, pointer);
+
+    final tip = tester.getRect(find.text(_full));
+    expect(
+      (tip.center.dx - pointer.dx).abs(),
+      lessThan(80),
+      reason: 'the widget tooltip should sit beside the cursor, not at the '
+          'centre of the cell (x≈${cell.center.dx.round()})',
     );
   });
 

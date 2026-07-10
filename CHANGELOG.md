@@ -1,3 +1,18 @@
+## 2.15.0
+
+*   **FEAT**: `TablePlusTooltipTheme.anchor` — position a tooltip beside the cursor instead of beside the widget it wraps
+    *   `TooltipAnchor.child` (the default) anchors to the hovered widget's rect. That is wrong whenever the widget is far wider than the neighbourhood the user is pointing at: a cell whose text is long enough to ellipsize fills its whole column, so its tooltip appeared at the column's centre, possibly a screen away from the cursor. `TooltipAnchor.pointer` keeps the same hover region and anchors at the cursor
+    *   Against a point there are no target edges to align to, so under `TooltipAnchor.pointer` the `alignment` field selects which of the tooltip's *own* edges lands on the cursor
+    *   `TooltipAnchor` is now re-exported, so you no longer need `just_tooltip` in your own `pubspec.yaml` to name it
+    *   Row tooltips built by `rowTooltipBuilder` always anchored at the pointer and still do; they ignore this field. A row is as wide as the table's content, so anchoring to the row would aim at a point that scrolls off screen
+*   **FEAT**: `TablePlusTheme.headerTooltipTheme` — style header tooltips apart from cell tooltips
+    *   Header and cell tooltips were styled by one `tooltipTheme`, so tooltip *behavior* was separable (`headerTooltipBehavior` vs `tooltipBehavior`) while tooltip *style* was not. With `anchor` exposed, that asymmetry bit: anchoring a header at the pointer dragged every cell along with it
+    *   Nullable, and falls back to `tooltipTheme` when unset — the same shape as `rowTooltipTheme`. Leave it null and nothing changes
+*   **FIX**: A scaled table no longer loses `rowTooltipTheme`
+    *   `TablePlusTheme.scaledBy()` rebuilt the theme without carrying `rowTooltipTheme`, so at any `scale` other than `1.0` it went null and the documented fallback handed the row tooltip to `tooltipTheme` instead. A card styled for its own surface — transparent, unpadded — came back wearing the grey text tooltip's
+    *   `scaledBy(1.0)` returns the receiver untouched, so this never fired at the default scale, which is why it went unnoticed
+    *   `scaledBy()` now names only the sub-themes it actually scales and leans on `copyWith` to carry the rest, so a theme field added later cannot be dropped by forgetting to list it
+
 ## 2.14.0
 
 *   **FIX**: Row splash / hover / highlight now use the colors you set on `TablePlusBodyTheme`, in every mode

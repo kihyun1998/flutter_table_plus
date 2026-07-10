@@ -32,15 +32,18 @@ class FlutterTooltipPlus extends StatelessWidget {
     super.key,
     this.message,
     this.tooltipBuilder,
-    this.anchor = TooltipAnchor.child,
+    this.anchor,
     required this.theme,
     required this.child,
   });
 
-  /// Where the tooltip is anchored. [TooltipAnchor.pointer] keeps [child] as the
-  /// hover region but places the tooltip beside the cursor — needed when the
-  /// child is far wider than the pointer's neighbourhood, e.g. a table row.
-  final TooltipAnchor anchor;
+  /// Overrides [TablePlusTooltipTheme.anchor] for this one tooltip.
+  ///
+  /// Leave it null and the theme decides, which is what cell and header
+  /// tooltips want. Pass [TooltipAnchor.pointer] to anchor beside the cursor no
+  /// matter what the theme says — the row tooltip must, because [child] is then
+  /// as wide as the table's content and its centre can be off screen.
+  final TooltipAnchor? anchor;
 
   /// The text to display in the tooltip.
   /// Either [message] or [tooltipBuilder] should be provided.
@@ -61,7 +64,7 @@ class FlutterTooltipPlus extends StatelessWidget {
     return JustTooltip(
       message: message,
       tooltipBuilder: tooltipBuilder,
-      anchor: anchor,
+      anchor: anchor ?? theme.anchor,
       theme: theme.toJustTooltipTheme(),
       direction: theme.direction,
       alignment: theme.alignment,
