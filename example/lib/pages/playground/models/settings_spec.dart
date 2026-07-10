@@ -121,11 +121,13 @@ const settingsSpec = <SettingGroup>[
           ),
           Interaction(
             otherFeatureId: 'mergedRows',
-            effect: 'A merged group is selected as one unit, not as the rows '
-                'it stands for.',
-            evidence: 'row_lookup.dart derives idToGroup from mergedGroups; '
-                'CLAUDE.md, "Merged row groups are treated as single units for '
-                'selection and editing operations"',
+            effect: 'Selecting a merged row reports the group id once, not the '
+                'ids of the rows it stands for.',
+            // `row_lookup.dart` only builds an id→group map; a lookup table
+            // settles nothing. What settles it is which id reaches the
+            // callback, and that is decided here.
+            evidence: 'table_plus_merged_row.dart calls '
+                'onRowSelectionChanged(mergeGroup.groupId)',
           ),
         ],
       ),
@@ -136,13 +138,19 @@ const settingsSpec = <SettingGroup>[
         interactions: [
           Interaction(
             otherFeatureId: 'selection',
-            effect: 'Dragging selects nothing while selection is off. The '
-                'table requires both.',
+            effect: 'Dragging selects nothing while selection is off, and '
+                'nothing in single-selection mode either. The table wires the '
+                'drag handlers only when both hold.',
             // Cite the library, not the panel. The panel's shape is ours to
             // change, and citing it went stale the moment the sections that
             // guarded this control were deleted.
+            //
+            // Quoted in full: an abridged expression is worse than none. This
+            // used to omit the selectionMode term, which read as a promise that
+            // dragging works in single-selection mode.
             evidence: 'flutter_table_plus.dart: _isDragSelectionEnabled is '
                 'enableDragSelection && isSelectable && '
+                'selectionMode == SelectionMode.multiple && '
                 'onDragSelectionUpdate != null',
           ),
           Interaction(
@@ -151,8 +159,8 @@ const settingsSpec = <SettingGroup>[
                 'ids of the rows inside it.',
             evidence:
                 'test/drag_selection_test.dart, "dragging across a merged '
-                'group adds the group ID, not individual rows"; RowGeometry '
-                'snapshots "row id or merged group id"',
+                'group adds the group ID, not individual rows"; table_body.dart '
+                'snapshots each render row as a "row id or merged group id"',
           ),
         ],
       ),
@@ -219,11 +227,15 @@ const settingsSpec = <SettingGroup>[
         interactions: [
           Interaction(
             otherFeatureId: 'rowCard',
-            effect: 'Turning tooltips off silences the row card too. And with '
+            effect: 'Turning tooltips off silences the row card too — the '
+                'playground gives the card its enabled flag. And with '
                 'TooltipBehavior.always every ellipsized column already has a '
                 'tooltip, which leaves the card nowhere to appear.',
-            evidence: 'test/row_tooltip_test.dart, "TooltipBehavior.always '
-                'leaves no room for the card"; CHANGELOG 2.14.0',
+            // Two claims, so two citations. The test only backs the second.
+            // The first is a control-flow fact one line above the wrapper.
+            evidence: 'table_body.dart returns the row unwrapped when '
+                '!rowTooltipTheme.enabled; test/row_tooltip_test.dart, '
+                '"TooltipBehavior.always leaves no room for the card"',
           ),
         ],
       ),
@@ -235,11 +247,14 @@ const settingsSpec = <SettingGroup>[
         interactions: [
           Interaction(
             otherFeatureId: 'mergedRows',
-            effect: 'A merged row carries no card. It stands for several data '
-                'rows, so there is no single one to build the card from.',
+            // The direction matters. The builder is not called and its result
+            // discarded; the table never calls it, because a merged row stands
+            // for several data rows and there is no single one to hand over.
+            effect: 'The card is never built for a merged row. It stands for '
+                'several data rows, so there is no single one to build from.',
             evidence: 'table_body.dart returns the row unwrapped when '
-                '_getMergedGroupForRow is non-null; test/row_tooltip_test.dart, '
-                '"a merged row carries no card"',
+                '_getMergedGroupForRow is non-null, before calling the builder; '
+                'test/row_tooltip_test.dart, "a merged row carries no card"',
           ),
         ],
       ),

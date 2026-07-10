@@ -165,6 +165,33 @@ void main() {
     expect(changed, isNotNull);
   });
 
+  testWidgets('a feature says which others it changes, and what happens',
+      (tester) async {
+    _tallView(tester);
+
+    // Read from the description, not restated here: a wording this test copied
+    // would agree with itself forever.
+    for (final feature in _features.where((f) => f.interactions.isNotEmpty)) {
+      await tester.pumpWidget(_pane(feature));
+
+      for (final i in feature.interactions) {
+        expect(find.text(featureById(i.otherFeatureId).title), findsOneWidget,
+            reason: '${feature.id} → ${i.otherFeatureId}');
+        expect(find.text(i.effect), findsOneWidget, reason: feature.id);
+      }
+    }
+  });
+
+  testWidgets('a feature with no recorded interaction shows none',
+      (tester) async {
+    _tallView(tester);
+
+    final quiet = _features.firstWhere((f) => f.interactions.isEmpty);
+    await tester.pumpWidget(_pane(quiet));
+
+    expect(find.text('Affects'), findsNothing, reason: quiet.id);
+  });
+
   testWidgets('picking a feature opens it, and its switch changes the table',
       (tester) async {
     tester.view.physicalSize = const Size(1800, 1000);
