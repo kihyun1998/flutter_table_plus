@@ -136,10 +136,14 @@ const settingsSpec = <SettingGroup>[
         interactions: [
           Interaction(
             otherFeatureId: 'selection',
-            effect: 'Dragging only selects while selection is enabled; the '
-                'range it reports is a set of row ids.',
-            evidence: 'The drag selection control lives under the selection '
-                'toggle in the panel, guarded on selectionEnabled',
+            effect: 'Dragging selects nothing while selection is off. The '
+                'table requires both.',
+            // Cite the library, not the panel. The panel's shape is ours to
+            // change, and citing it went stale the moment the sections that
+            // guarded this control were deleted.
+            evidence: 'flutter_table_plus.dart: _isDragSelectionEnabled is '
+                'enableDragSelection && isSelectable && '
+                'onDragSelectionUpdate != null',
           ),
           Interaction(
             otherFeatureId: 'mergedRows',
