@@ -116,7 +116,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "2.15.2"
+    version: "2.15.3"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -150,10 +150,10 @@ packages:
     dependency: transitive
     description:
       name: just_tooltip
-      sha256: cd5a0d1733149ce25facb768cb66548620e97e5ce3223f1e97b6f6c2850d94a4
+      sha256: f4f7fe69f386b53ed06ae7fd365fd8ade26aef9e40696f1e97b61e742f6030f1
       url: "https://pub.dev"
     source: hosted
-    version: "0.4.3"
+    version: "0.4.4"
   leak_tracker:
     dependency: transitive
     description:

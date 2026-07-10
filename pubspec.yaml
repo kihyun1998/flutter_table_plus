@@ -1,6 +1,6 @@
 name: flutter_table_plus
 description: "A highly customizable and efficient table widget for Flutter, featuring synchronized scrolling, theming, sorting, selection, column reordering, hover buttons, and expandable rows."
-version: 2.15.2
+version: 2.15.3
 homepage: https://github.com/kihyun1998/flutter_table_plus
 repository: https://github.com/kihyun1998/flutter_table_plus
 topics:
@@ -14,7 +14,8 @@ topics:
 # clip walk reads `RenderObject.parent`. That was `AbstractNode?` — a type with
 # no `describeApproximatePaintClip` — until Flutter 3.13. Our `^0.4.0` already
 # resolved 0.4.2, so the old floor had quietly become a promise we could not
-# keep; raising it is the honest fix, not the cause. 0.4.3 keeps the same floor.
+# keep; raising it is the honest fix, not the cause. 0.4.3 and 0.4.4 keep the
+# same floor.
 environment:
   sdk: ">=3.1.0 <4.0.0"
   flutter: ">=3.13.0"
@@ -23,7 +24,11 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_checkbox: ^0.2.1
-  just_tooltip: ^0.4.3
+  # 0.4.4 is a floor, not a preference: it stops a tooltip with nothing to draw
+  # from suppressing the row card, which this package used to do itself by not
+  # building such a tooltip at all. That guard is gone, so 0.4.3 would reissue
+  # the bug (#88) rather than merely miss the fix.
+  just_tooltip: ^0.4.4
 
 dev_dependencies:
   flutter_test:
