@@ -63,21 +63,20 @@ class TablePlusTheme {
   /// Theme configuration for the drag-selection rubber band rectangle.
   final TablePlusDragSelectionTheme dragSelectionTheme;
 
-  /// Returns a new [TablePlusTheme] with all dimensional values scaled by [factor].
+  /// Returns a new [TablePlusTheme] with all dimensional values scaled by
+  /// [factor], by delegating to each dimensional sub-theme's `scaledBy`.
   ///
-  /// Delegates to each sub-theme's `scaledBy` method.
-  /// Tooltip theme is NOT scaled (renders in overlay, outside table viewport).
+  /// Names only the sub-themes it scales, and leans on [copyWith] to carry the
+  /// rest. The scrollbar and the three tooltip themes render in an overlay,
+  /// outside the table viewport, so they are not scaled — and because they are
+  /// never named here, a new one cannot be dropped by forgetting to list it.
   TablePlusTheme scaledBy(double factor) {
     if (factor == 1.0) return this;
-    return TablePlusTheme(
+    return copyWith(
       headerTheme: headerTheme.scaledBy(factor),
       bodyTheme: bodyTheme.scaledBy(factor),
-      scrollbarTheme: scrollbarTheme,
       checkboxTheme: checkboxTheme.scaledBy(factor),
       editableTheme: editableTheme.scaledBy(factor),
-      tooltipTheme: tooltipTheme,
-      rowTooltipTheme: rowTooltipTheme,
-      headerTooltipTheme: headerTooltipTheme,
       hoverButtonTheme: hoverButtonTheme.scaledBy(factor),
       dragSelectionTheme: dragSelectionTheme.scaledBy(factor),
     );

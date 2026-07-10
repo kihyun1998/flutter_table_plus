@@ -62,8 +62,7 @@ void main() {
       expect(r.tooltipBuilder, isNull);
     });
 
-    test('carries the theme anchor down both the builder and message paths',
-        () {
+    test('overrides no anchor, leaving the theme to decide', () {
       const theme = TablePlusTooltipTheme(anchor: TooltipAnchor.pointer);
 
       final builderPath = _wrap(
@@ -73,13 +72,10 @@ void main() {
       final messagePath =
           _wrap(shouldShow: true, theme: theme) as FlutterTooltipPlus;
 
-      expect(builderPath.anchor, TooltipAnchor.pointer);
-      expect(messagePath.anchor, TooltipAnchor.pointer);
-    });
-
-    test('defaults to anchoring on the child', () {
-      final r = _wrap(shouldShow: true) as FlutterTooltipPlus;
-      expect(r.anchor, TooltipAnchor.child);
+      expect(builderPath.anchor, isNull);
+      expect(messagePath.anchor, isNull);
+      expect(builderPath.theme.anchor, TooltipAnchor.pointer);
+      expect(messagePath.theme.anchor, TooltipAnchor.pointer);
     });
   });
 }
