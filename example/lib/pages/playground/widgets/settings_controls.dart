@@ -93,14 +93,19 @@ Widget buildSwitchTile({
     padding: const EdgeInsets.symmetric(vertical: 4),
     child: Row(
       children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
+        // The panel is a fixed 380 wide. The label has to yield the space the
+        // control needs, not push it off the edge — a wider text scale, or a
+        // longer translation, will ask it to.
+        Expanded(
+          child: Text(
+            label,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ),
-        const Spacer(),
         Switch(
           value: value,
           onChanged: onChanged,
@@ -120,14 +125,16 @@ Widget buildDropdownRow<T>({
 }) {
   return Row(
     children: [
-      Text(
-        label,
-        style: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
+      Expanded(
+        child: Text(
+          label,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
         ),
       ),
-      const Spacer(),
       DropdownButton<T>(
         value: value,
         onChanged: (T? newValue) {
