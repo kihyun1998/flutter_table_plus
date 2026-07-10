@@ -1,10 +1,18 @@
+## 2.15.1
+
+*   **DEPS**: `just_tooltip: ^0.4.2` → `^0.4.3`. No API change — 0.4.3 declares the same public classes, enums and fields, and touches two internal files. All 378 package tests and 28 example tests pass against it unmodified, and its SDK floor is the same, so this package's Flutter 3.13 floor stands
+    *   It fixes an `interactive` tooltip dying for good once the cursor returns from the tooltip body to its child ([just_tooltip#43](https://github.com/kihyun1998/just_tooltip/issues/43)). Leaving the tooltip armed a 100 ms bridge that re-entering the child never cancelled; it fired unseen, started a fade-out, and a pointer already inside the child sends no further `onEnter` to revive it. The tooltip vanished roughly 250 ms after the cursor came home and stayed gone
+    *   **This was reachable from the defaults.** `TablePlusTooltipTheme.interactive` is `true` and every cell, header and row tooltip passes it. `TooltipAnchor.pointer`, added in 2.15.0, draws the tooltip beside the cursor — exactly the arrangement that walks the cursor into the tooltip body
+*   **EXAMPLE**: The playground's settings panel is searchable
+    *   68 controls across five sections, and no way to find one except to remember which section held it. Typing narrows the panel to the controls whose labels match; a section holding a match opens to show them, one holding none stands aside, and clearing the search restores what was open before
+    *   The row card gained its own wait duration, separate from the cells'. A card interrupts more than a line of text does. Its transparent background and zero padding stay fixed: the builder draws its own surface, so a tooltip surface behind it would be a second card
+    *   `Tooltip Enabled` also silences the row card, which the toggle never said. It says so now
+*   **INTERNAL**: No library code changed in this release — `lib/` is byte-for-byte the 2.15.0 tree
+
 ## 2.15.0
 
-*   **BREAKING**: minimum Flutter is now `3.13.0` (Dart `3.1.0`), up from `3.10.0`. `just_tooltip` 0.4.2 walks `RenderObject.parent`, which was `AbstractNode?` — a type with no `describeApproximatePaintClip` — before Flutter 3.13. The `just_tooltip: ^0.4.0` constraint already resolved 0.4.2, so the old floor had quietly become a promise this package could not keep; raising it is the honest fix, not the cause. 0.4.3 keeps the same floor
-*   **DEPS**: `just_tooltip: ^0.4.3`, which brings two upstream changes this package can reach
-    *   0.4.2 anchors `TooltipAnchor.child` to the *visible* part of the child, re-aims a shown tooltip when its child moves, and hides it once the child is clipped out of sight. No cell, header or row tooltip here changes behaviour as a result
-    *   0.4.3 fixes an `interactive` tooltip dying for good after the cursor returns from the tooltip body to its child ([just_tooltip#43](https://github.com/kihyun1998/just_tooltip/issues/43)). **This one was reachable from the defaults**: `TablePlusTooltipTheme.interactive` is `true`, every tooltip here passes it, and the `TooltipAnchor.pointer` added below makes the bug easy to hit — the tooltip is drawn beside the cursor, so the cursor crosses into it. The tooltip vanished roughly 250 ms after the pointer came home and did not come back
-    *   No API change: 0.4.3 declares the same public classes, enums and fields as 0.4.2, and touches two internal files. All 378 package tests and 28 example tests pass against it unmodified
+*   **BREAKING**: minimum Flutter is now `3.13.0` (Dart `3.1.0`), up from `3.10.0`. `just_tooltip` 0.4.2 walks `RenderObject.parent`, which was `AbstractNode?` — a type with no `describeApproximatePaintClip` — before Flutter 3.13. The `just_tooltip: ^0.4.0` constraint already resolved 0.4.2, so the old floor had quietly become a promise this package could not keep; raising it is the honest fix, not the cause
+*   **DEPS**: `just_tooltip: ^0.4.2`. Upstream now anchors `TooltipAnchor.child` to the *visible* part of the child, re-aims a shown tooltip when its child moves, and hides it once the child is clipped out of sight. Cell and row tooltip behaviour here is unchanged; all 378 tests pass unmodified
 
 *   **FEAT**: `TablePlusTooltipTheme.anchor` — position a tooltip beside the cursor instead of beside the widget it wraps
     *   `TooltipAnchor.child` (the default) anchors to the visible part of the hovered widget's rect. That is wrong whenever the widget is far wider than the neighbourhood the user is pointing at: a cell in a column wider than the viewport gets a tooltip at the centre of whatever slice is on screen, wherever the cursor may be. `TooltipAnchor.pointer` keeps the same hover region and anchors at the cursor
