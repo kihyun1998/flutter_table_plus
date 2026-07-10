@@ -373,6 +373,7 @@ TablePlusTooltipTheme(
   enableHover: true,
   enableTap: false,
   interactive: true,
+  hideOnEmptyMessage: true,             // an empty message builds no tooltip at all
 
   // Animation
   animation: TooltipAnimation.fade,     // none, fade, scale, slide, fadeScale, fadeSlide, rotation
@@ -413,6 +414,19 @@ Row tooltips built by `rowTooltipBuilder` always anchor at the pointer and
 ignore this field. A row is as wide as the table's content, so a child anchor
 would aim at the centre of whatever slice of the row is on screen — visible, but
 unrelated to where along the row you are pointing.
+
+### Empty messages
+
+`hideOnEmptyMessage` (default `true`) means a tooltip whose message resolves to
+an empty string is **not built at all**, rather than built and hidden. The two
+differ once tooltips nest. A tooltip suppresses the ones around it the moment
+the pointer enters it — so a cell tooltip that were built and then declined to
+draw would take a `rowTooltipBuilder` card down with it, and the cell would show
+nothing at all. Not building it leaves the card intact.
+
+Set it to `false` and the empty bubble is drawn, and suppresses the card the way
+any other cell tooltip does. `tooltipBuilder` content is not a message, so the
+flag does not apply to it.
 
 ---
 

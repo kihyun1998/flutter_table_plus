@@ -3,7 +3,8 @@
 *   **FIX**: a cell whose `tooltipFormatter` returns an empty string no longer swallows the `rowTooltipBuilder` card. Hovering such a cell showed nothing at all — not the cell's tooltip, not the row's
     *   A tooltip suppresses its ancestors from `MouseRegion.onEnter`, *before* it decides whether it has anything to draw, and `hideOnEmptyMessage` decides "nothing" inside `_show()`. The cell had already taken the card down. Hoisting that guard to where the cell is wrapped means a tooltip that cannot show is never built, so it cannot suppress anything. The header has guarded this way all along — an empty label gets no tooltip — but a cell's message is only known once `tooltipFormatter` has run
     *   `hideOnEmptyMessage: false` is unchanged: that asks for the empty bubble, and it still wins over the card
-*   **DOCS**: `rowTooltipBuilder`'s "the whole row is the hover region" is now pinned by tests, including over a cell whose value is empty. It was never broken there — a row's `MouseRegion` is opaque and hit-tests itself, so a zero-width `Text` under the pointer changes nothing — but nothing said so, and the neighbouring `tooltipFormatter` bug looked exactly like a hole in that region
+*   **DOCS**: `rowTooltipBuilder`'s "the whole row is the hover region" is now pinned by tests, including over a cell whose value is empty. It was never broken there — a row's `MouseRegion` is opaque and hit-tests itself, so a zero-width `Text` under the pointer changes nothing — but nothing said so, and the neighbouring `tooltipFormatter` bug looked exactly like a hole in that region. The doc comment now says which boundaries the region actually has, and which cells take the card's place
+*   **DOCS**: `TablePlusTooltipTheme.hideOnEmptyMessage` was absent from `docs/THEMING.md` altogether. It was a footnote when a tooltip stood alone; it decides whether the row card appears once one nests inside another
 
 ## 2.15.1
 
