@@ -9,13 +9,16 @@ import 'flutter_tooltip_plus.dart';
 ///
 /// Shared by the normal cell and the merged cell, which previously inlined the
 /// same builder/formatter/message ladder. Returns [child] unchanged when no
-/// tooltip should show — including when the resolved message is empty and the
-/// theme would hide it anyway. That last case looks like a tooltip nobody would
-/// miss, but a tooltip suppresses its ancestors the moment the pointer enters
-/// it, and it does so before deciding it has nothing to draw. Wrapping [child]
-/// in one would take the row card down with it and put nothing in its place.
-/// The header has always guarded this way (an empty label gets no tooltip); the
-/// message the cell resolves is only known after [tooltipFormatter] runs.
+/// tooltip should show.
+///
+/// An empty resolved message is *not* one of those cases, though it was until
+/// just_tooltip 0.4.4. A tooltip claims its ancestors the moment the pointer
+/// enters it, so one built over an empty message used to take a
+/// `rowTooltipBuilder` card down and then decline to draw, leaving the cell
+/// showing nothing; the wrap had to be skipped here to prevent it. 0.4.4 gates
+/// that claim on having something to draw, so an empty-message tooltip is now
+/// inert — built, silent, and harmless to the card. Hence the `^0.4.4` floor:
+/// under 0.4.3 this function reissues that bug.
 Widget wrapWithTooltip<T>({
   required bool shouldShow,
   required Widget child,
@@ -39,7 +42,6 @@ Widget wrapWithTooltip<T>({
   final message = (tooltipFormatter != null && data != null)
       ? tooltipFormatter(data)
       : fallbackMessage;
-  if (message.isEmpty && theme.hideOnEmptyMessage) return child;
 
   return FlutterTooltipPlus(
     message: message,
