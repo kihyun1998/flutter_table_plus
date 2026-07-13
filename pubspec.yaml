@@ -1,6 +1,6 @@
 name: flutter_table_plus
 description: "A highly customizable and efficient table widget for Flutter, featuring synchronized scrolling, theming, sorting, selection, column reordering, hover buttons, and expandable rows."
-version: 2.15.3
+version: 2.16.0
 homepage: https://github.com/kihyun1998/flutter_table_plus
 repository: https://github.com/kihyun1998/flutter_table_plus
 topics:
@@ -10,20 +10,22 @@ topics:
   - grid
   - datagrid
 
-# Raised from Dart 3.0.0 / Flutter 3.10.0 by just_tooltip 0.4.2, whose ancestor
-# clip walk reads `RenderObject.parent`. That was `AbstractNode?` — a type with
-# no `describeApproximatePaintClip` — until Flutter 3.13. Our `^0.4.0` already
-# resolved 0.4.2, so the old floor had quietly become a promise we could not
-# keep; raising it is the honest fix, not the cause. 0.4.3 and 0.4.4 keep the
-# same floor.
+# The binding floor now comes from flutter_checkbox 0.3.0, which honestly
+# declares its real minimum — Dart `^3.9.2` (first ships with Flutter 3.35) and
+# Flutter `>=3.35.0` (it uses `Color.withValues`, 3.27+). That subsumes the
+# Flutter 3.13 floor just_tooltip 0.4.2 imposed (its `RenderObject.parent`
+# ancestor walk needs `describeApproximatePaintClip`, added in 3.13). Taking
+# `flutter_checkbox: ^0.3.0` makes 3.35 the transitive requirement, so declaring
+# anything lower here would be a promise we could not keep — raising it is the
+# honest fix, as with the 3.13 raise before it.
 environment:
-  sdk: ">=3.1.0 <4.0.0"
-  flutter: ">=3.13.0"
+  sdk: ">=3.9.2 <4.0.0"
+  flutter: ">=3.35.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  flutter_checkbox: ^0.2.1
+  flutter_checkbox: ^0.3.0
   # 0.4.4 is a floor, not a preference: it stops a tooltip with nothing to draw
   # from suppressing the row card, which this package used to do itself by not
   # building such a tooltip at all. That guard is gone, so 0.4.3 would reissue

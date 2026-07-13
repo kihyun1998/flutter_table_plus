@@ -1,3 +1,10 @@
+## 2.16.0
+
+*   **BREAKING**: minimum Flutter is now `3.35.0` (Dart `3.9.2`), up from `3.13.0` (Dart `3.1.0`). No class, method or field in this package changed — the *floor* did. `flutter_checkbox` 0.3.0 corrected its own declared minimum from a `flutter create` default (`>=1.17.0`) to its real one, `Dart ^3.9.2` / `Flutter >=3.35.0` (it uses `Color.withValues`, 3.27+, and 3.9.2 language features). Taking `^0.3.0` makes 3.35 the transitive requirement, so any floor lower than that here would be a promise this package could not keep — the same honesty the 3.13 raise served in 2.15.0. This subsumes the Flutter 3.13 floor `just_tooltip` imposed, which still stands unchanged upstream
+    *   An app that pinned an older SDK can stay on 2.15.3; upgrading to 2.16.0 requires Flutter 3.35+
+*   **DEPS**: `flutter_checkbox: ^0.2.1` → `^0.3.0`. 0.3.0 is purely additive over the surface this package uses — it *adds* constructor-level `activeColor` / `checkColor` / `semanticLabel`, `CheckboxStyle.copyWith`, style-resolved overlay colors, and `CheckboxStyle.checkScale`, and removes nothing (the last removals were 0.2.0, which this package already sits above). So `lib/` is byte-for-byte unchanged; all 382 package tests and 67 example tests pass against 0.3.0 unmodified
+    *   Reachable from the defaults: 0.3.0 merges the checkbox's state semantics and its tap action onto one node (`MergeSemantics`), where before a screen reader saw two. Every selection checkbox this table renders — row, header select-all, merged-row — now announces and activates as a single control to assistive tech, with no code change here
+
 ## 2.15.3
 
 *   **DEPS**: `just_tooltip: ^0.4.3` → `^0.4.4`. **A floor, not a preference.** 0.4.4 stops a tooltip that has nothing to draw from displacing the tooltips around it ([just_tooltip#46](https://github.com/kihyun1998/just_tooltip/issues/46)) — the very guarantee 2.15.2 secured for itself by never building such a tooltip. That guard is gone now, so under 0.4.3 this package would *reissue* the bug 2.15.2 fixed, rather than merely miss an upstream improvement
