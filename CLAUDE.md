@@ -9,6 +9,12 @@ routing, boundary rule, proof methods, surfaces, gate matrix) live in
 #58–#65, #69, #88→#96 …) in **`docs/agents/lessons.md`**. Read both before
 starting; add new war-stories to lessons.
 
+The successor skill **`thegraph`** also has a compiled build here —
+**`docs/agents/thegraph.md`** — so `/thegraph` runs against this repo's own node
+graph (which nodes exist, each one's guard and decider) instead of a fixed step
+list. It reads the same bindings and the same lessons. **The two coexist**: use
+either, and add war-stories to `lessons.md` regardless of which one you ran.
+
 ## Package philosophy
 
 Flutter Table Plus is a **UI-only, data-agnostic** table widget: synchronized

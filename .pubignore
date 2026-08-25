@@ -20,3 +20,7 @@ example/assets/
 # Read on GitHub, where their relative links resolve.
 docs/
 .github/
+
+# Agent tooling, not part of the package.
+scripts/
+.claude/
