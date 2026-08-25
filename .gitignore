@@ -31,3 +31,6 @@ migrate_working_dir/
 build/
 # Test coverage output
 coverage/
+
+# thegraph run state (a cache; the issue is the durable record).
+.thegraph/
