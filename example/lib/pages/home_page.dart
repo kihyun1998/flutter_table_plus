@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../shell/shell_page.dart';
 import '../theme/theme_mode_button.dart';
 import 'playground/playground_page.dart';
 import 'viewport_lab/viewport_lab_page.dart';
@@ -19,6 +20,12 @@ class HomePage extends StatelessWidget {
       ),
       body: ListView(
         children: [
+          _DemoTile(
+            icon: Icons.dashboard_outlined,
+            title: 'Table Plus',
+            summary: 'The menu: every demo, at any viewport',
+            open: () => const ShellPage(),
+          ),
           _DemoTile(
             icon: Icons.tune,
             title: 'Playground',
