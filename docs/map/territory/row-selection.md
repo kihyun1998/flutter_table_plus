@@ -22,9 +22,14 @@ differently, and it is currently discoverable only from the signature list.
   never mutates it.
 - **Select-all is derived, never stored.** `selectAllState` maps
   (total, selectedCount) to checked / unchecked / indeterminate, so the header
-  checkbox cannot disagree with the rows.
+  checkbox cannot disagree with the rows. Whether it is *drawn* is
+  `showSelectAllCheckbox && onSelectAll != null` and nothing else — the mode is
+  not a term, so a single-selection table still shows a working select-all
+  unless the caller withholds one of the two.
 - **Single mode is a policy, not a different mechanism** — the same callbacks
-  fire; what changes is what the caller is expected to do with them.
+  fire; what changes is what the caller is expected to do with them. The only
+  thing `selectionMode` decides inside the package is whether drag-select is
+  wired; `selectedRows` is never written to, in either mode.
 - **The checkbox column is a column**, laid out and width-resolved like any
   other, which is why hiding it is a column concern and not a selection one.
 
@@ -55,4 +60,14 @@ differently, and it is currently discoverable only from the signature list.
 
 ## Known holes / open
 
-**None.**
+Two doc-comments claimed behaviour this territory does not have, and both were
+found from the consumer side (#103) rather than by a failing test — nothing
+could fail, because the code was right and only the prose was wrong.
+`SelectionMode.single` said the previous selection is "automatically cleared";
+`showSelectAllCheckbox` said it is "automatically disabled for single selection
+mode". Both are corrected and pinned by `test/selection_mode_contract_test.dart`.
+
+Open, as proposals rather than defects: whether `single` should emit a deselect
+callback for the outgoing row (the package already receives `selectedRows`, so
+it *could*), and whether select-all should consult the mode. Both are behaviour
+changes, and both would move the boundary toward managing the caller's set.

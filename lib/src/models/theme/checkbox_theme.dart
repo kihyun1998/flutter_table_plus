@@ -51,7 +51,13 @@ class TablePlusCheckboxTheme {
   /// Whether to show the select-all checkbox in the table header.
   ///
   /// If false, only individual row selection is available.
-  /// Automatically disabled for single selection mode.
+  ///
+  /// **Not affected by [SelectionMode].** The header draws this checkbox when
+  /// this flag is true *and* `onSelectAll` is non-null, and consults nothing
+  /// else — so a table in [SelectionMode.single] still shows a working
+  /// select-all unless you withhold one of the two. Passing `onSelectAll: null`
+  /// is the usual way to withhold it, because the callback is what the button
+  /// would call.
   final bool showSelectAllCheckbox;
 
   /// The width of the checkbox column in logical pixels.

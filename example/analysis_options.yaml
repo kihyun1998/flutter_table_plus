@@ -9,6 +9,17 @@
 # packages, and plugins designed to encourage good coding practices.
 include: package:flutter_lints/flutter.yaml
 
+analyzer:
+  exclude:
+    # Generated output, not source. A recipe's own `.dart` file is bundled as an
+    # asset so the app can read back the code it is running, and the asset
+    # bundler copies it into `build/unit_test_assets/` — where it sits outside
+    # its package and every relative import it makes is unresolvable. Measured
+    # 2026-08-25: seventeen errors on a file that is correct where it lives.
+    # Excluding generated output is not lowering a threshold; no hand-written
+    # code lives here.
+    - build/**
+
 linter:
   # The lint rules applied to this project can be customized in the
   # section below to disable rules from the `package:flutter_lints/flutter.yaml`

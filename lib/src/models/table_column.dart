@@ -29,8 +29,23 @@ enum SelectionMode {
   /// Shows checkboxes and select-all functionality.
   multiple,
 
-  /// Only one row can be selected at a time.
-  /// Previous selection is automatically cleared when a new row is selected.
+  /// Only one row is *meant* to be selected at a time.
+  ///
+  /// **You clear the previous row; the table does not.** `selectedRows` is your
+  /// set and the package never writes to it — in either mode it renders exactly
+  /// what you hand it. The callbacks are identical too: a tap still reports
+  /// `(rowId, isSelected)` and nothing else changes. So collapse the set
+  /// yourself when the callback fires:
+  ///
+  /// ```dart
+  /// onRowSelectionChanged: (rowId, isSelected) {
+  ///   setState(() => _selectedRows = isSelected ? {rowId} : {});
+  /// },
+  /// ```
+  ///
+  /// Add to the set instead and you get multi-selection wearing a
+  /// single-select label. What this value *does* change is that drag-to-select
+  /// is inactive: it is wired only in [multiple].
   single,
 }
 

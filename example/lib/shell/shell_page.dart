@@ -9,6 +9,8 @@ import '../preview/preview_stage.dart';
 import '../preview/viewport_spec.dart';
 import '../theme/theme_mode_button.dart';
 import 'destinations/employee_demo.dart';
+import 'destinations/recipe_destination.dart';
+import 'recipe_catalog.dart';
 import 'shell_destination.dart';
 import 'shell_menu.dart';
 
@@ -37,6 +39,12 @@ class ShellPage extends StatefulWidget {
 class _ShellPageState extends State<ShellPage> {
   final _employeeDemo = EmployeeDemo();
 
+  /// One per recipe, owned here so a recipe's selection and its knobs survive
+  /// every rebuild of the shell around them.
+  late final Map<String, RecipeDemo> _recipeDemos = {
+    for (final recipe in recipeCatalog) recipe.featureId: RecipeDemo(recipe),
+  };
+
   late final List<ShellDestination> _destinations = [
     StageDestination(
       id: 'employees',
@@ -45,6 +53,7 @@ class _ShellPageState extends State<ShellPage> {
       stage: (context) => EmployeeDemoTable(demo: _employeeDemo),
       knobs: (context) => EmployeeDemoKnobs(demo: _employeeDemo),
     ),
+    ...recipeDestinations(_recipeDemos),
     RouteDestination(
       id: 'playground',
       label: 'Every setting',
@@ -66,6 +75,9 @@ class _ShellPageState extends State<ShellPage> {
   @override
   void dispose() {
     _employeeDemo.dispose();
+    for (final demo in _recipeDemos.values) {
+      demo.dispose();
+    }
     super.dispose();
   }
 

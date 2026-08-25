@@ -143,12 +143,19 @@ FlutterTablePlus<User>(
 
 ### Single Selection
 
+**The `{rowId}` below is required, not stylistic.** `selectedRows` is your set
+and the table never writes to it, so `SelectionMode.single` does not clear the
+previous row for you — replace the set on every change, or you get
+multi-selection wearing a single-select label. The mode's own effect is
+narrower: drag-to-select is wired only in `SelectionMode.multiple`.
+
 ```dart
 FlutterTablePlus<User>(
   isSelectable: true,
-  selectionMode: SelectionMode.single,  // Only one row at a time
+  selectionMode: SelectionMode.single,
   selectedRows: _selectedRowIds,
   onRowSelectionChanged: (rowId, isSelected) {
+    // Replace, never add — this line is what makes `single` mean single.
     setState(() {
       _selectedRowIds = isSelected ? {rowId} : {};
     });
@@ -157,6 +164,11 @@ FlutterTablePlus<User>(
 ```
 
 ### Hide Select-All Checkbox
+
+The header draws its select-all checkbox when `showSelectAllCheckbox` is true
+**and** `onSelectAll` is non-null. It does not consult `selectionMode`, so a
+single-selection table still shows a working select-all until you withhold one
+of the two — usually the callback, since that is what the button would call.
 
 ```dart
 // Set onSelectAll to null to hide the select-all checkbox

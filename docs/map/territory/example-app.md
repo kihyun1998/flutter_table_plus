@@ -31,6 +31,15 @@ notes.
   panel from becoming the god-file it started as.
 - **Presets are named combinations**, so a bug report can name a state instead of
   describing a sequence of toggles.
+- **`lib/recipes/` is the pasteable zone.** One feature, one self-contained
+  file, importing only Flutter, this package, and the example's shared demo data
+  and palette. The rule is a property of the *directory*, checked by reading the
+  imports, so "copy-pasteable" is a thing that can fail rather than a claim.
+- **A recipe is knob-driven without knowing about knobs.** The shell holds the
+  settings object and translates it into the recipe's plain parameters, so the
+  same file serves the demo and the reader. The catalogue names the feature; the
+  feature never names a recipe, because pointing the playground's description at
+  the shell would invert the dependency.
 
 ## Code
 
@@ -40,6 +49,10 @@ notes.
 `lib/pages/playground/widgets/feature_list_pane.dart`
 `lib/pages/playground/widgets/feature_detail_pane.dart`
 `lib/pages/tooltip_anchor/tooltip_anchor_page.dart`
+`lib/shell/shell_page.dart`
+`lib/shell/recipe_catalog.dart`
+`lib/shell/destinations/recipe_destination.dart`
+`lib/recipes/selection_recipe.dart`
 
 ## Reference behaviour
 

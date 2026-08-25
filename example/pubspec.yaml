@@ -25,6 +25,10 @@ flutter:
   uses-material-design: true
   assets:
     - assets/icons/
+    # A recipe's own source, bundled so the app can read back the file it is
+    # running rather than a copy pasted into a string. What is on screen and
+    # what executes cannot disagree if they are the same bytes.
+    - lib/recipes/
   fonts:
     - family: Pretendard
       fonts:
