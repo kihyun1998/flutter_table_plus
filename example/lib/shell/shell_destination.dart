@@ -41,6 +41,7 @@ class StageDestination extends ShellDestination {
     required this.category,
     required this.stage,
     required this.knobs,
+    this.source,
   });
 
   @override
@@ -51,6 +52,15 @@ class StageDestination extends ShellDestination {
 
   /// That destination's own controls — the ones it owns, and no others.
   final WidgetBuilder knobs;
+
+  /// The asset key of the file this destination *is*, when it is one file.
+  ///
+  /// Null is the ordinary answer. A recipe is one self-contained file and can
+  /// show it; a demo assembled from several widgets is not, and offering a
+  /// Code tab there would have to pick one of them and call it the source. So
+  /// the shell draws the control only where this is non-null — absent rather
+  /// than present-and-lying.
+  final String? source;
 }
 
 /// A destination that opens on its own route.

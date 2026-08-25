@@ -155,6 +155,11 @@ void main() {
     });
 
     test('every recipe source exists and is bundled as an asset', () {
+      // The declaration half. `source_pane_test.dart` asks the bundle whether
+      // the bytes actually arrive, which is the stronger claim — but the two
+      // failures are worth telling apart: a missing declaration and a stale
+      // `build/unit_test_assets` both report "Unable to load asset", and only
+      // this one can say which.
       final assets = _declaredAssets();
 
       for (final recipe in recipeCatalog) {

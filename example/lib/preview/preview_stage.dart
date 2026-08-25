@@ -88,8 +88,8 @@ class ViewportBar extends StatelessWidget {
   /// Icons only, with the label moved to the tooltip.
   ///
   /// The labelled form is a page's whole toolbar. Inside the shell the toolbar
-  /// is shared — the Preview / Code control lands to its left in #104 — so this
-  /// one has to earn its width.
+  /// is shared with the Preview / Code control on its left, so this one has to
+  /// earn its width.
   final bool compact;
 
   @override

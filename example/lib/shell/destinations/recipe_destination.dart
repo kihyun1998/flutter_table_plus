@@ -88,5 +88,8 @@ List<StageDestination> recipeDestinations(Map<String, RecipeDemo> demos) => [
           category: ShellCategory.recipes,
           stage: (context) => RecipeStage(demo: demos[recipe.featureId]!),
           knobs: (context) => RecipeKnobs(demo: demos[recipe.featureId]!),
+          // The asset key is the path exactly as `pubspec.yaml` declares it,
+          // which is the same string the catalogue already holds.
+          source: recipe.source,
         ),
     ];

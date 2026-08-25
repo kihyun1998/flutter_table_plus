@@ -40,6 +40,14 @@ notes.
   same file serves the demo and the reader. The catalogue names the feature; the
   feature never names a recipe, because pointing the playground's description at
   the shell would invert the dependency.
+- **The code on screen is the file, read from the bundle at runtime.** A recipe's
+  `.dart` is declared as an asset and displayed from those bytes, so the shown
+  code cannot drift from the running code — there is nothing for it to drift
+  *against*. Two consequences that are not obvious: `build/**` leaves the
+  analyzer, because the bundler copies the file outside its package where every
+  relative import is unresolvable; and the Code view replaces the stage
+  **region** rather than the stage's child, because source has no viewport and
+  scaling it into one answers a question nobody asked.
 
 ## Code
 
@@ -53,6 +61,7 @@ notes.
 `lib/shell/recipe_catalog.dart`
 `lib/shell/destinations/recipe_destination.dart`
 `lib/recipes/selection_recipe.dart`
+`lib/shell/source_pane.dart`
 
 ## Reference behaviour
 

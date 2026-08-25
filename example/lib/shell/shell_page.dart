@@ -13,6 +13,7 @@ import 'destinations/recipe_destination.dart';
 import 'recipe_catalog.dart';
 import 'shell_destination.dart';
 import 'shell_menu.dart';
+import 'source_pane.dart';
 
 /// Three regions: a category menu, a preview stage, and a knob region.
 ///
@@ -71,6 +72,14 @@ class _ShellPageState extends State<ShellPage> {
   /// The default, because the question the preview answers is "what does this
   /// look like on a desktop" — and a clipped 1:1 slice answers a different one.
   bool _fit = true;
+
+  /// Whether the stage region is showing the open recipe's source instead of
+  /// the recipe running.
+  ///
+  /// Kept across destination switches on purpose: a reader comparing two
+  /// recipes' code should not have to press Code again for each one. It is
+  /// ignored — and the control is not drawn — for a destination with no source.
+  bool _showCode = false;
 
   @override
   void dispose() {
@@ -170,6 +179,8 @@ class _ShellPageState extends State<ShellPage> {
 
   Widget _stageRegion(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final source = _open.source;
+    final showingCode = _showCode && source != null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -178,39 +189,71 @@ class _ShellPageState extends State<ShellPage> {
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
           child: Row(
             children: [
-              // Left of here is where the Preview / Code control lands in #104.
-              const Spacer(),
-              Tooltip(
-                message: _fit
-                    ? 'Shrink the whole viewport into view'
-                    : 'Show real pixels and scroll',
-                child: TextButton.icon(
-                  onPressed: () => setState(() => _fit = !_fit),
-                  icon: Icon(
-                    _fit ? Icons.fit_screen_outlined : Icons.crop_free,
-                    size: 18,
+              if (source != null)
+                SegmentedButton<bool>(
+                  showSelectedIcon: false,
+                  style: const ButtonStyle(
+                    visualDensity: VisualDensity.compact,
                   ),
-                  label: Text(_fit ? 'Fit' : '1:1'),
+                  segments: const [
+                    ButtonSegment(
+                      value: false,
+                      label: Text('Preview'),
+                      icon: Icon(Icons.play_arrow_outlined, size: 17),
+                    ),
+                    ButtonSegment(
+                      value: true,
+                      label: Text('Code'),
+                      icon: Icon(Icons.code, size: 17),
+                    ),
+                  ],
+                  selected: {showingCode},
+                  onSelectionChanged: (s) =>
+                      setState(() => _showCode = s.first),
                 ),
-              ),
-              const SizedBox(width: 8),
-              ViewportBar(
-                compact: true,
-                selected: _viewport,
-                onChanged: (v) => setState(() => _viewport = v),
-              ),
+              const Spacer(),
+              // Source has no viewport, and no fit factor either. Leaving these
+              // on screen over a block of code would say the code was being
+              // rendered at 390px, which is not a thing that happens.
+              if (!showingCode) ...[
+                Tooltip(
+                  message: _fit
+                      ? 'Shrink the whole viewport into view'
+                      : 'Show real pixels and scroll',
+                  child: TextButton.icon(
+                    onPressed: () => setState(() => _fit = !_fit),
+                    icon: Icon(
+                      _fit ? Icons.fit_screen_outlined : Icons.crop_free,
+                      size: 18,
+                    ),
+                    label: Text(_fit ? 'Fit' : '1:1'),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                ViewportBar(
+                  compact: true,
+                  selected: _viewport,
+                  onChanged: (v) => setState(() => _viewport = v),
+                ),
+              ],
             ],
           ),
         ),
         Expanded(
-          child: ColoredBox(
-            color: scheme.surfaceContainerHighest,
-            child: PreviewFrame(
-              spec: _viewport,
-              fit: _fit,
-              child: _open.stage(context),
-            ),
-          ),
+          child: showingCode
+              // Beside the frame, not inside it. A `PreviewFrame` would scale
+              // the source to whatever factor fits 1440px into the pane and
+              // then clip it to a phone, which is unreadable and answers a
+              // question nobody asked.
+              ? SourcePane(assetPath: source)
+              : ColoredBox(
+                  color: scheme.surfaceContainerHighest,
+                  child: PreviewFrame(
+                    spec: _viewport,
+                    fit: _fit,
+                    child: _open.stage(context),
+                  ),
+                ),
         ),
       ],
     );
