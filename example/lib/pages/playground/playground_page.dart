@@ -4,6 +4,7 @@ import 'package:flutter_table_plus/flutter_table_plus.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../demo_data/demo_data.dart';
+import '../../theme/table_palette.dart';
 import '../../theme/theme_mode_button.dart';
 import 'models/playground_settings.dart';
 import 'models/settings_presets.dart';
@@ -814,85 +815,6 @@ TextStyle _fontTextStyle(
   };
 }
 
-/// The colours the demo's table wears, in one brightness.
-///
-/// The demo used to paint the table blue in eleven places. Nothing chose that
-/// blue — the package's own defaults are already near-neutral (a `#F5F5F5`
-/// header on `#E0E0E0` rules over a white body), and the blues were laid over
-/// them. Once the app chrome went achromatic the table held the only colour on
-/// screen, which made an inherited colour into a claim. So it is neutral, and
-/// deliberately so.
-///
-/// **Neutral is the default, not the ceiling.** Every colour here is a theme
-/// field a consumer sets, and several are settings the playground already
-/// exposes. Showing them neutral says what the package looks like out of the
-/// box; the knobs are where a reader finds out it can be anything.
-///
-/// Interaction states are neutral too — selection is a band of value, not of
-/// hue. That is the expensive part of an achromatic table: with no colour to
-/// carry state, the bands have to be far enough apart in lightness to be
-/// unmistakable, which is why [selectedBand] sits well clear of [altBand]
-/// rather than a shade away from it.
-///
-/// The one exemption is the editing markers, which stay amber. An editing cell
-/// is a transient state a reader has to notice — the same argument that keeps
-/// `error` red in the app chrome.
-class _TablePalette {
-  const _TablePalette({
-    required this.headerBand,
-    required this.headerLine,
-    required this.rule,
-    required this.headerInk,
-    required this.sortIcon,
-    required this.sortIconIdle,
-    required this.surface,
-    required this.altBand,
-    required this.ink,
-    required this.mutedInk,
-    required this.selectedBand,
-  });
-
-  final Color headerBand;
-  final Color headerLine;
-  final Color rule;
-  final Color headerInk;
-  final Color sortIcon;
-  final Color sortIconIdle;
-  final Color surface;
-  final Color altBand;
-  final Color ink;
-  final Color mutedInk;
-  final Color selectedBand;
-
-  static const light = _TablePalette(
-    headerBand: Color(0xFFF1F1F1),
-    headerLine: Color(0xFFD8D8D8),
-    rule: Color(0xFFE0E0E0),
-    headerInk: Color(0xFF1F1F1F),
-    sortIcon: Color(0xFF3D3D3D),
-    sortIconIdle: Color(0xFFAFAFAF),
-    surface: Color(0xFFFFFFFF),
-    altBand: Color(0xFFF7F7F7),
-    ink: Color(0xFF1A1A1A),
-    mutedInk: Color(0xFF8A8A8A),
-    selectedBand: Color(0xFFDCDCDC),
-  );
-
-  static const dark = _TablePalette(
-    headerBand: Color(0xFF1E1E1E),
-    headerLine: Color(0xFF343434),
-    rule: Color(0xFF2C2C2C),
-    headerInk: Color(0xFFEDEDED),
-    sortIcon: Color(0xFFCFCFCF),
-    sortIconIdle: Color(0xFF5F5F5F),
-    surface: Color(0xFF141414),
-    altBand: Color(0xFF1B1B1B),
-    ink: Color(0xFFE6E6E6),
-    mutedInk: Color(0xFF7E7E7E),
-    selectedBand: Color(0xFF383838),
-  );
-}
-
 /// The table theme for [settings], in [brightness].
 ///
 /// One builder, with the palette handed in. There is deliberately no "light
@@ -905,12 +827,12 @@ TablePlusTheme buildPlaygroundTheme(
 }) {
   return _buildPlaygroundTheme(
     settings,
-    brightness == Brightness.dark ? _TablePalette.dark : _TablePalette.light,
+    brightness == Brightness.dark ? TablePalette.dark : TablePalette.light,
   );
 }
 
 TablePlusTheme _buildPlaygroundTheme(
-    PlaygroundSettings settings, _TablePalette p) {
+    PlaygroundSettings settings, TablePalette p) {
   final cellTooltip = TablePlusTooltipTheme(
     enabled: settings.tooltipEnabled,
     waitDuration: Duration(milliseconds: settings.tooltipWaitDurationMs),

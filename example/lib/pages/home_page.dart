@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/theme_mode_button.dart';
 import 'playground/playground_page.dart';
+import 'viewport_lab/viewport_lab_page.dart';
 import 'tooltip_anchor/tooltip_anchor_page.dart';
 
 /// Lists the demos this example ships, so a reader after one feature does not
@@ -23,6 +24,12 @@ class HomePage extends StatelessWidget {
             title: 'Playground',
             summary: 'Every feature at once, with a knob for each',
             open: () => const PlaygroundPage(),
+          ),
+          _DemoTile(
+            icon: Icons.aspect_ratio,
+            title: 'Viewport lab',
+            summary: 'The same table at desktop, tablet and phone widths',
+            open: () => const ViewportLabPage(),
           ),
           _DemoTile(
             icon: Icons.my_location,

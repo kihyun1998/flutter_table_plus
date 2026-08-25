@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:example/pages/playground/models/playground_settings.dart';
 import 'package:example/pages/playground/playground_page.dart';
 import 'package:example/theme/example_theme.dart';
+import 'package:example/theme/table_palette.dart';
 import 'package:example/theme/theme_mode_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
@@ -267,6 +268,61 @@ void main() {
       await tester.tap(find.byType(IconButton));
       await tester.pump();
       expect(controller.mode, ThemeMode.light);
+    });
+  });
+
+  group('demoTableTheme', () {
+    // The palette the playground uses, lifted out of it so the lab and the
+    // recipes can read it without importing the playground — the dependency a
+    // recipe is forbidden to have. These pin that lifting it did not quietly
+    // change what it holds.
+
+    bool grey(Color c) {
+      final v = c.toARGB32();
+      final r = (v >> 16) & 0xFF, g = (v >> 8) & 0xFF, b = v & 0xFF;
+      return r == g && g == b;
+    }
+
+    test('is achromatic in both brightnesses', () {
+      for (final brightness in Brightness.values) {
+        final t = demoTableTheme(brightness);
+        for (final c in [
+          t.headerTheme.backgroundColor,
+          t.bodyTheme.backgroundColor,
+          t.bodyTheme.selectedRowColor,
+          t.bodyTheme.dividerColor,
+        ]) {
+          expect(grey(c), isTrue, reason: '$c carries a hue');
+        }
+      }
+    });
+
+    test('the two brightnesses are different tables', () {
+      final light = demoTableTheme(Brightness.light);
+      final dark = demoTableTheme(Brightness.dark);
+
+      expect(dark.bodyTheme.backgroundColor,
+          isNot(light.bodyTheme.backgroundColor));
+      expect(dark.headerTheme.backgroundColor,
+          isNot(light.headerTheme.backgroundColor));
+      expect(dark.bodyTheme.selectedRowColor,
+          isNot(light.bodyTheme.selectedRowColor));
+    });
+
+    test('selection stands clear of the alternating band', () {
+      // The cost of an achromatic table: with no hue to carry it, selection is
+      // a step in value, and a step too small to see is the whole feature gone.
+      int lum(Color c) => (c.toARGB32() >> 16) & 0xFF;
+
+      for (final brightness in Brightness.values) {
+        final t = demoTableTheme(brightness);
+        final gap = (lum(t.bodyTheme.selectedRowColor) -
+                lum(t.bodyTheme.alternateRowColor!))
+            .abs();
+        expect(gap, greaterThan(20),
+            reason: 'a selected row and an alternating row are '
+                '$gap apart in value — not enough to read as different');
+      }
     });
   });
 }
