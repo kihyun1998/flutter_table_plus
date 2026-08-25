@@ -24,14 +24,14 @@ cache; the GitHub issue is the durable record.
 |---|---|---|
 | `classify` | 1 | catalog |
 | `spine` | 1 | GitHub sub-issues are live here (`gh api repos/{owner}/{repo}/issues/N/sub_issues` returns `[]`, not 404) — the roster is a **relation**, never prose |
-| `map` | 1 | the module map below, promoted to a territory map |
+| `map` | 1 | the MAP — [`docs/map/`](../map/README.md), 23 territories + 6 cross-cutting invariants |
 | `reference` | 4 | the routing table's rows naming an external source (below) |
 | `enumerate` | 1 | catalog · never delegated |
 | `boundary` | 1 | catalog · never delegated. The seam is the published package plus the `../just_tooltip` / `../flutter_checkbox` membrane |
 | `implement` | 3 | one per layer |
 | `proof` | 3 | one per layer |
 | `verify` | 2 | 1 gap-hunter + 1 refuter, bought by a non-empty sacred-path list |
-| `sweep` | 1 | fanning out over 9 surfaces |
+| `sweep` | 1 | fanning out over 10 surfaces |
 | `gate` | 1 | 5 commands, extracted as a script |
 | `search` | once per candidate | catalog |
 | `batch` | 1+ | catalog · human · never bypassed |
@@ -44,24 +44,21 @@ cache; the GitHub issue is the durable record.
 
 ---
 
-## `map` — the module map as territory
+## `map` — the MAP
 
-Single Flutter package; the public surface is the barrel
-`lib/flutter_table_plus.dart`. Each row says not only what a module *is* but
-**what moves with it** and **which decision gave it that shape** — that pairing is
-what makes this a territory map rather than a role index.
+**Read [`docs/map/README.md`](../map/README.md) before drawing the boundary.**
+23 territories and 6 cross-cutting invariants, indexed by *what the system does*
+rather than by the event that produced them.
 
-| Module (`lib/src/`) | Role | Moves with it | Shape decided by |
-|---|---|---|---|
-| `widgets/flutter_table_plus.dart` | main `FlutterTablePlus<T>`; owns the `DragSelectionController`; falls back `rowTooltipTheme`/`headerTooltipTheme` → `tooltipTheme` at the call site | the `Listener` placement (outside the body's horizontal `Scrollable`), the `GlobalKey` reach into `TablePlusBodyState`, the theme fallback chain | the single viewport-local coordinate frame (`CLAUDE.md`); the local empty-message guard's removal (#96) |
-| `widgets/table_header.dart` | header row — sorting, reordering, column resizing | `synced_scroll_controllers` (header is `NeverScrollableScrollPhysics`), every `minWidth`/`maxWidth` `clamp()` path, `table_header_cell`'s `label.isEmpty` **`shouldShow` policy** (stays — a header tooltip nests inside nothing) | #51 wrote "header and cell share an anchor"; #52 deleted it |
-| `widgets/table_body.dart` | body `ListView`, a **pure row renderer**; implements `RowLocator` through the public `TablePlusBodyState` | `row_locator.dart`, `drag_selection_controller`, merged-row rendering, row geometry | the port decision: drag-select must not depend on the body's caching |
-| `widgets/row_locator.dart` | the narrow port — `indexAt`, `idsBetween` | its one implementation (body), its one consumer (controller), and the test fakes | same |
-| `widgets/drag_selection_controller.dart` | drag-to-select state machine + rubber-band geometry + auto-scroll `Timer`; scroll application injected as callbacks | `row_locator`, the `Listener` coordinate frame, `fakeAsync` tests | unit-testable without pumping |
-| `widgets/synced_scroll_controllers.dart` | header/body/scrollbar horizontal sync — **body is the input master** | header physics, the scrollbar, the horizontal offset every drag coordinate is read against | `CLAUDE.md` |
-| `widgets/table_plus_merged_row.dart`, `custom_ink_well.dart` | merged-row rendering; custom tap handling | `table_row_height_calculator`, row geometry, edit-mode row gestures | — |
-| `models/` | `table_column`, `table_columns_builder`, `merged_row_group`, `theme/theme`, `tooltip_behavior` | `scaledBy`/`copyWith` reaches **every** sub-theme; the columns builder is the only safe ordering path | #50 — `scaledBy()` rebuilt on `copyWith`, naming only the six sub-themes it scales |
-| `utils/` | `table_row_height_calculator`, `text_overflow_detector` | the overflow cache, and every widget test's text measurement | #65 — 34 overflow instances resolved to **two** shared helper lines; a defect count is not an instance count |
+This node used to carry a hand-written module table. It does not any more, on
+purpose: a second copy of the same answer is somewhere for the two to disagree,
+and the MAP is now the only place it lives. Open the territory your change
+enters, and read its `## Blast radius` as a **checklist** — each linked territory
+gets opened. Finding nothing to change in one is a correct outcome; not opening
+it is the failure the layer exists to prevent.
+
+The MAP's own gate is `python scripts/map/check_map.py docs/map` — links,
+anchors, symbol names, file attribution, section sets, and invariant reciprocity.
 
 ---
 
@@ -159,6 +156,18 @@ sources, systematically enumerated. **Never drop a corpus because the fix is
 small.** Plus the grade table (`thegraph`'s, unchanged), the **tie-breaker row for
 this layer**, and the **deliberate-divergence list** — both below.
 
+### Promotion — the obligation on the way out
+
+**Is the fact this pass revealed also true outside the territory the change
+entered?** If yes, a cross-cutting invariant note is part of *this* change, not a
+follow-up: the first site to hit such a fact is where it is cheapest to record
+and the one place no node for it exists yet. A map that only gains invariants
+after the third rediscovery is a post-hoc archive.
+
+The concrete form here: *does this hold at any site that shares the same
+dimension, the same coordinate frame, the same sibling dependency, or the same
+test fixture?* — a question answerable by grep rather than by judgement.
+
 ### Second lens
 
 Same material, opposite job: the first hunts gaps, the second tries to **refute**
@@ -208,7 +217,7 @@ The tie-breaker says who wins an argument; this says which arguments are closed.
 
 ---
 
-## `sweep` — 9 surfaces
+## `sweep` — 10 surfaces
 
 | Surface | How it is read |
 |---|---|
@@ -220,6 +229,7 @@ The tie-breaker says who wins an argument; this says which arguments are closed.
 | `example/pubspec.lock` | it once recorded a nonexistent `2.16.0` — a self-contradictory tree is not a thing to tag |
 | `.pubignore` | excludes `docs/`, `.github/`, `CLAUDE.md`, `coverage/`, `benchmark/`, `build/`, `scripts/`. A root `.pubignore` **disables git-based file listing**, so anything unlisted ships |
 | **now-false rationale** | a wrong *rationale* is more dangerous than a wrong *conclusion*: no test catches a wrong reason, and the next reader follows it. #69 (six rationales), #96 (five call sites + `THEMING.md` + two test comments) |
+| **the MAP** (`docs/map/`) | a territory note describes behaviour, so it drifts when behaviour moves. Update the note whose territory the change entered — `## Design model`, `## Code` symbols, `## Blast radius` — and run `python scripts/map/check_map.py docs/map`. A refactor that moves symbols decays **file attribution** and nothing else: the gate catches exactly that |
 | the **cluster anchor** | this is `spine`'s flush, not a separate obligation: the root confirmed or falsified, the numbers measured, any new sibling **enrolled as a sub-issue**, what is still open. The roster never goes in the body |
 
 **Judge a sweep by what it cannot see, never by its hit count.** When a hit turns

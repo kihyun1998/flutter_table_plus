@@ -3,3 +3,4 @@
 
 # Shell scripts must stay LF — a CRLF shebang line breaks the interpreter.
 *.sh text eol=lf
+*.py text eol=lf

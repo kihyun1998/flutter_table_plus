@@ -9,6 +9,13 @@ routing, boundary rule, proof methods, surfaces, gate matrix) live in
 #58–#65, #69, #88→#96 …) in **`docs/agents/lessons.md`**. Read both before
 starting; add new war-stories to lessons.
 
+**Before drawing a boundary, read the MAP — [`docs/map/README.md`](docs/map/README.md).**
+23 territories and 6 cross-cutting invariants, indexed by *what the system does*
+rather than by the event that produced them. Open the territory your change
+enters and treat its `## Blast radius` as a checklist. On the way out, ask
+whether the fact you just found is true outside that territory — if it is, an
+invariant note is part of the change.
+
 The successor skill **`thegraph`** also has a compiled build here —
 **`docs/agents/thegraph.md`** — so `/thegraph` runs against this repo's own node
 graph (which nodes exist, each one's guard and decider) instead of a fixed step
