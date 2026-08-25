@@ -106,7 +106,7 @@ void main() {
 
       expect(_stageSpec(tester), ViewportSpec.desktop);
 
-      await tester.tap(find.text(ViewportSpec.mobile.label));
+      await tester.tap(find.byTooltip(ViewportSpec.mobile.label));
       await tester.pumpAndSettle();
 
       expect(_stageSpec(tester), ViewportSpec.mobile);
@@ -120,7 +120,7 @@ void main() {
       final menuBefore = tester.getSize(find.byType(ShellMenu));
       final knobsBefore = tester.getSize(find.byType(EmployeeDemoKnobs));
 
-      await tester.tap(find.text(ViewportSpec.mobile.label));
+      await tester.tap(find.byTooltip(ViewportSpec.mobile.label));
       await tester.pumpAndSettle();
 
       expect(tester.getSize(find.byType(ShellMenu)), menuBefore,

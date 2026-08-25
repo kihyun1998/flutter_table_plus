@@ -4,6 +4,7 @@ library;
 import 'package:flutter/material.dart';
 
 import '../pages/playground/playground_page.dart';
+import '../preview/preview_frame.dart';
 import '../preview/preview_stage.dart';
 import '../preview/viewport_spec.dart';
 import '../theme/theme_mode_button.dart';
@@ -55,6 +56,12 @@ class _ShellPageState extends State<ShellPage> {
   late String _selectedId =
       _destinations.whereType<StageDestination>().first.id;
   ViewportSpec _viewport = ViewportSpec.desktop;
+
+  /// Shrink the whole viewport into view, rather than showing a 1:1 slice of it.
+  ///
+  /// The default, because the question the preview answers is "what does this
+  /// look like on a desktop" — and a clipped 1:1 slice answers a different one.
+  bool _fit = true;
 
   @override
   void dispose() {
@@ -156,49 +163,40 @@ class _ShellPageState extends State<ShellPage> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: ViewportBar(
-              selected: _viewport,
-              onChanged: (v) => setState(() => _viewport = v),
-            ),
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
+          child: Row(
+            children: [
+              // Left of here is where the Preview / Code control lands in #104.
+              const Spacer(),
+              Tooltip(
+                message: _fit
+                    ? 'Shrink the whole viewport into view'
+                    : 'Show real pixels and scroll',
+                child: TextButton.icon(
+                  onPressed: () => setState(() => _fit = !_fit),
+                  icon: Icon(
+                    _fit ? Icons.fit_screen_outlined : Icons.crop_free,
+                    size: 18,
+                  ),
+                  label: Text(_fit ? 'Fit' : '1:1'),
+                ),
+              ),
+              const SizedBox(width: 8),
+              ViewportBar(
+                compact: true,
+                selected: _viewport,
+                onChanged: (v) => setState(() => _viewport = v),
+              ),
+            ],
           ),
         ),
         Expanded(
-          child: Container(
+          child: ColoredBox(
             color: scheme.surfaceContainerHighest,
-            // Centred while it fits, scrolling once it does not. The stage is
-            // never scaled: a transform above the table would put the
-            // drag-selection coordinate frame in question, and #101 measured
-            // that a scaled stage is not pointer-equivalent to an unscaled one.
-            child: LayoutBuilder(
-              builder: (context, constraints) => SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: SingleChildScrollView(
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minWidth: constraints.maxWidth,
-                      minHeight: constraints.maxHeight,
-                    ),
-                    child: Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(20),
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            border: Border.all(color: scheme.outline),
-                            color: scheme.surface,
-                          ),
-                          child: PreviewStage(
-                            spec: _viewport,
-                            child: _open.stage(context),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+            child: PreviewFrame(
+              spec: _viewport,
+              fit: _fit,
+              child: _open.stage(context),
             ),
           ),
         ),

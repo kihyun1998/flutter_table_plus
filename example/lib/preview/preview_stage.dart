@@ -25,11 +25,19 @@ import 'viewport_spec.dart';
 /// measured and is false. The override is kept for the reason above, which is
 /// the real one.
 ///
-/// **Scale stays at 1.0.** Drag selection reads pointer positions in one
-/// viewport-local frame, and its rubber-band geometry and auto-scroll timer are
-/// written against that frame; putting the stage under a transform would put
-/// all three in question. When a viewport is wider than the space available,
-/// this scrolls rather than scaling.
+/// **This one never scales.** It constrains and it reports; scaling a whole
+/// viewport down so all of it is visible is [PreviewFrame]'s job, one layer up.
+///
+/// An earlier version of this comment said scale must stay at 1.0 because a
+/// transform above the table would put drag selection's viewport-local
+/// coordinate frame in question. **Measured afterwards and withdrawn:**
+/// `Transform` applies the inverse to hit testing, so `event.localPosition`
+/// reaches the gesture code already in the child's untransformed frame, and a
+/// drag inside a frame rendered at roughly half size selects exactly the rows it
+/// crosses. See `test/preview_frame_test.dart`, "interaction survives the
+/// scale". The evidence that had looked damning was a test whose own arithmetic
+/// mixed scaled screen coordinates with unscaled logical ones.
+///
 class PreviewStage extends StatelessWidget {
   const PreviewStage({
     super.key,
@@ -71,10 +79,18 @@ class ViewportBar extends StatelessWidget {
     super.key,
     required this.selected,
     required this.onChanged,
+    this.compact = false,
   });
 
   final ViewportSpec selected;
   final ValueChanged<ViewportSpec> onChanged;
+
+  /// Icons only, with the label moved to the tooltip.
+  ///
+  /// The labelled form is a page's whole toolbar. Inside the shell the toolbar
+  /// is shared — the Preview / Code control lands to its left in #104 — so this
+  /// one has to earn its width.
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -84,7 +100,8 @@ class ViewportBar extends StatelessWidget {
           ButtonSegment<String>(
             value: v.id,
             icon: Icon(_iconFor(v)),
-            label: Text(v.label),
+            label: compact ? null : Text(v.label),
+            tooltip: v.label,
           ),
       ],
       selected: {selected.id},

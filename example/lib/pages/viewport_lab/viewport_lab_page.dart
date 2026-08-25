@@ -124,10 +124,15 @@ class _ViewportLabPageState extends State<ViewportLabPage> {
           Expanded(
             child: Container(
               color: scheme.surfaceContainerHighest,
-              // Centred while it fits, scrolling once it does not — the stage is
-              // never scaled to make it fit, because a transform above the table
-              // would put the drag-selection coordinate frame in question, and
-              // keeping that question closed is the whole point of this page.
+              // Centred while it fits, scrolling once it does not. This page
+              // shows real pixels and does not shrink to fit.
+              //
+              // It used to say scaling was unsafe — a transform above the table
+              // putting the drag coordinate frame in question. That was measured
+              // afterwards and withdrawn; scaling is fine, and the shell's
+              // `PreviewFrame` does it. This page still does not, because what it
+              // was built to settle is 1:1 layout, and a control that changes
+              // what it measures stops being one.
               //
               // `ConstrainedBox` with the viewport's own minimums is what makes
               // both true at once: the child is at least as big as the space, so
