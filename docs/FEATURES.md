@@ -389,21 +389,26 @@ TablePlusTheme(
 
 Mouse drag to select row ranges (Excel/Finder style).
 
+**Every line below marked required is required.** Drag selection wires no
+handler at all unless all four hold, and when one is missing the feature is
+inert rather than broken — no error, no warning, dragging simply does nothing.
+Passing only `onDragSelectionEnd` is the usual way to hit this.
+
 ```dart
 FlutterTablePlus<User>(
-  isSelectable: true,
-  selectionMode: SelectionMode.multiple,
+  isSelectable: true,                     // required
+  selectionMode: SelectionMode.multiple,  // required — single mode never drags
   selectedRows: _selectedRowIds,
-  enableDragSelection: true,
+  enableDragSelection: true,              // required
 
-  // Live updates during drag
+  // required — without this callback no drag is detected at all
   onDragSelectionUpdate: (Set<String> draggedRowIds) {
     setState(() {
       _selectedRowIds = draggedRowIds;
     });
   },
 
-  // Final callback when drag ends (optional)
+  // optional — if omitted, onDragSelectionUpdate is also the final callback
   onDragSelectionEnd: (Set<String> draggedRowIds) {
     // Finalize selection
   },

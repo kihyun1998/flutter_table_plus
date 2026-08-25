@@ -17,7 +17,7 @@ set -uo pipefail
 
 cd "$(git rev-parse --show-toplevel)"
 
-names=(); codes=()
+names=(); codes=(); notes=()
 
 run() {                       # run <label> <dir> <cmd...>
   local label="$1" dir="$2"; shift 2
@@ -26,8 +26,15 @@ run() {                       # run <label> <dir> <cmd...>
   echo "   \$ $* ${dir:+(in $dir)}"
   ( cd "${dir:-.}" && "$@" )   # bare: no pipe, no tee, no redirect
   local code=$?
-  names+=("$label"); codes+=("$code")
+  names+=("$label"); codes+=("$code"); notes+=("")
   echo "   → exit $code"
+}
+
+skip() {                      # skip <label> <why>
+  echo
+  echo "══ $1 ══"
+  echo "   NOT APPLICABLE: $2"
+  names+=("$1"); codes+=(0); notes+=("$2")
 }
 
 run "analyze"         ""        flutter analyze
@@ -35,14 +42,39 @@ run "format"          ""        dart format --output=none --set-exit-if-changed 
 run "test"            ""        flutter test
 run "example:analyze" "example" flutter analyze
 run "example:test"    "example" flutter test
-run "publish:dry-run" ""        flutter pub publish --dry-run
+# The dry-run validates the archive, but it also insists the version is an
+# increment over what is published — and between releases pubspec.yaml sits AT
+# the published version, so the gate is red for every change that is not a
+# release. A gate that is always red is a gate everyone learns to ignore, which
+# is #55's lesson about the example suite arriving at the same place.
+#
+# So it is asked first whether it can mean anything right now. This is not a
+# lowered threshold: when the version IS ahead of the registry — the only time
+# publishing is possible — the gate runs unchanged and its failure is fatal.
+# When it is not, the gate says so out loud rather than passing quietly.
+published=$(curl -fsS --max-time 10 https://pub.dev/api/packages/flutter_table_plus 2>/dev/null \
+  | python -c "import json,sys; print(json.load(sys.stdin)['latest']['version'])" 2>/dev/null)
+local_version=$(sed -n 's/^version: *//p' pubspec.yaml | tr -d '\r')
+
+if [ -z "$published" ]; then
+  # No answer is not the same as "not applicable" - run it and let it speak.
+  run "publish:dry-run" ""      flutter pub publish --dry-run
+elif [ "$published" = "$local_version" ]; then
+  skip "publish:dry-run" "pubspec is at $local_version, already the published latest"
+else
+  run "publish:dry-run" ""      flutter pub publish --dry-run
+fi
 
 echo
 echo "══ summary ══"
 failed=0
 for i in "${!names[@]}"; do
   if [ "${codes[$i]}" -eq 0 ]; then
-    printf '  PASS  %s\n' "${names[$i]}"
+    if [ -n "${notes[$i]}" ]; then
+      printf '  N/A   %s  (%s)\n' "${names[$i]}" "${notes[$i]}"
+    else
+      printf '  PASS  %s\n' "${names[$i]}"
+    fi
   else
     printf '  FAIL  %s  (exit %s)\n' "${names[$i]}" "${codes[$i]}"
     failed=1

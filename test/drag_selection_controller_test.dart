@@ -185,6 +185,45 @@ void main() {
           equals(const Rect.fromLTRB(70, 50, 200, 180)));
     });
 
+    test('rubber band origin is corrected by the delta, not the offset', () {
+      // The test above starts at horizontalOffset 0, so the offset *since the
+      // drag began* and the *absolute* offset are the same number and it passes
+      // either way. This one starts somewhere else, which is the only place the
+      // two answers differ.
+      //
+      // `docs/map/invariant/viewport-local-frame.md` names this shape exactly:
+      // a violation "reproduces only when the horizontal scroll is non-zero,
+      // which is why it survives a manual check on a table narrow enough to
+      // fit." A user reaches it by scrolling sideways to find the column they
+      // care about and *then* starting to drag.
+      final locator = _FakeRowLocator(rowHeight: 40, rowCount: 20);
+      double vOffset = 120;
+      double hOffset = 200;
+
+      final controller = DragSelectionController(
+        locator: () => locator,
+        verticalOffset: () => vOffset,
+        horizontalOffset: () => hOffset,
+      );
+
+      const down = Offset(100, 100);
+      const current = Offset(200, 180);
+
+      controller.down(
+          local: down, global: down, viewport: const Size(400, 300));
+      controller.move(local: current, global: current);
+
+      // Same 30 right / 50 down as the test above, but from 200 / 120 rather
+      // than from 0 / 0.
+      hOffset = 230;
+      vOffset = 170;
+
+      expect(controller.rubberBandRect(),
+          equals(const Rect.fromLTRB(70, 50, 200, 180)),
+          reason: 'the origin was corrected by the absolute scroll offset '
+              'instead of by the distance scrolled since the drag began');
+    });
+
     test('rubber band rect is null before the drag threshold is crossed', () {
       final locator = _FakeRowLocator(rowHeight: 40, rowCount: 20);
       final controller = DragSelectionController(

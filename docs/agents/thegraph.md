@@ -254,12 +254,27 @@ flutter analyze                                     # 0 issues
 dart format --output=none --set-exit-if-changed lib test
 flutter test
 cd example && flutter analyze && flutter test        # the example is a gate
-flutter pub publish --dry-run                        # 0 warnings — it does NOT check the tree
+flutter pub publish --dry-run                        # only when the version is ahead
+                                                     # of the registry - see below
 ```
 
 **Each runs bare, never piped** — a pipeline's exit status is the last command's,
 so `test … | tail -1 && commit` always commits. A gate you cannot fail is not a
 gate. **Never move a threshold to turn a build green.**
+
+**`publish:dry-run` runs only when it can mean something.** The dry-run validates
+the archive, but it also insists the version is an *increment* over what is
+published — and between releases `pubspec.yaml` sits **at** the published
+version, so the gate was red for every change that was not a release. A gate
+that is always red is a gate everyone learns to ignore, which is #55's lesson
+about the example suite arriving at the same destination.
+
+So the script asks the registry first and compares. Version equal to the
+published latest → the gate reports **N/A with the reason on screen**, never a
+quiet pass. Version ahead, or the registry unreachable → it runs unchanged and
+its failure is fatal. This is not a lowered threshold: measured 2026-08-25, with
+the version bumped to an unpublished one the gate ran and failed exactly as
+before.
 
 ### Known blind spots
 
@@ -269,12 +284,14 @@ gate. **Never move a threshold to turn a build green.**
 - `dart format` covers `lib test` only — **`example/lib` is outside the formatter
   gate.** Deliberate (the example is a demo, not published API), and recorded here
   so it is not later mistaken for an oversight.
-- `flutter pub publish --dry-run` is the only gate that reads the archive — and
-  because the root `.pubignore` **disables git-based file listing**, pub never
-  consults git and therefore **never warns about uncommitted changes**. Measured
-  2026-08-25: a tree with two modified files and three untracked paths passed with
-  `0 warnings`. **A green dry-run is not evidence of a clean tree** — check
-  `git status` separately before tagging.
+- `flutter pub publish --dry-run` is the only gate that reads the archive. It
+  **does** report uncommitted changes to files that are *inside* the archive — measured
+  2026-08-25, it named a modified `example/lib/pages/home_page.dart`. What it cannot
+  see is anything the root `.pubignore` excludes (`docs/`, `scripts/`, `benchmark/`
+  …), because a root `.pubignore` turns off git-based file listing for those paths.
+  An earlier note here said it saw nothing at all; that measurement's modified files
+  were themselves inside excluded paths. **A green dry-run is still not evidence of a
+  clean tree** — check `git status` separately before tagging.
 - Anything that opens a window (`flutter run`) is **not** an agent gate — ask the
   user to drive and say what to look for.
 

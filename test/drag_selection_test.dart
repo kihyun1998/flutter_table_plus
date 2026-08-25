@@ -393,4 +393,115 @@ void main() {
               'set, replacing the individual member row IDs');
     });
   });
+
+  group('Drag selection — starting from a non-zero horizontal offset', () {
+    // What this group pins, stated narrowly on purpose: a drag that *begins*
+    // at a non-zero horizontal offset still maps Y to the same rows it would
+    // have at zero. The auto-scroll tests above reach a non-zero offset during
+    // a drag; beginning at one is a different entry, and it is the one a user
+    // makes after scrolling sideways to find the column they care about.
+    //
+    // What it does **not** pin, despite what the horizontal offset in its name
+    // suggests: the frame violation `docs/map/invariant/viewport-local-frame.md`
+    // describes. Row lookup goes through `RowLocator.indexAt(double localY)` —
+    // Y only. The horizontal coordinate never reaches it, so a frame that
+    // drifted horizontally would select exactly these rows anyway and this
+    // group would stay green through it.
+    //
+    // The horizontal coordinate is used by the **rubber band**, whose origin is
+    // corrected by the offset scrolled *since the drag began* rather than by
+    // the absolute offset. Those two answers are the same number for a drag
+    // starting at zero and different for any other, which is what makes the
+    // invariant's "reproduces only when the horizontal scroll is non-zero"
+    // true of that site and not of this one. It is pinned where it belongs, in
+    // `drag_selection_controller_test.dart` — 'rubber band origin is corrected
+    // by the delta, not the offset', which is the only test in this repository
+    // that reddens when that correction is replaced by the absolute offset.
+
+    /// The body's own horizontal position — the one with somewhere to go.
+    ///
+    /// Selected by property rather than by index: the table builds several
+    /// `Scrollable`s and their order is an implementation detail.
+    ScrollPosition horizontalBody(WidgetTester tester) {
+      return tester
+          .stateList<ScrollableState>(find.byType(Scrollable))
+          .map((s) => s.position)
+          .firstWhere(
+            (p) => p.axis == Axis.horizontal && p.maxScrollExtent > 0,
+            orElse: () => throw StateError(
+              'the table is not clipped horizontally, so this group is not '
+              'testing what it claims to',
+            ),
+          );
+    }
+
+    testWidgets('selects the same rows it would have selected at offset zero',
+        (tester) async {
+      // contentWidth = 4 * 250 = 1000 against a 400 viewport, so there is 600px
+      // of offset available to be wrong by.
+      final h = await _pumpDragTable(
+        tester,
+        rowCount: 8,
+        colCount: 4,
+        colWidth: 250,
+        tableWidth: 400,
+        tableHeight: 400,
+      );
+
+      final pos = horizontalBody(tester);
+      pos.jumpTo(pos.maxScrollExtent);
+      await tester.pumpAndSettle();
+      expect(pos.pixels, greaterThan(0),
+          reason: 'the scroll did not take, so this test proves nothing');
+
+      final start = _bodyPoint(tester, h.tableKey, x: 50, row: 0.5);
+      final end = _bodyPoint(tester, h.tableKey, x: 50, row: 3.5);
+
+      final gesture = await tester.startGesture(start);
+      await tester.pump();
+      await gesture.moveTo(end);
+      await tester.pump();
+      await gesture.up();
+      await tester.pumpAndSettle();
+
+      expect(h.ends, hasLength(1));
+      expect(h.ends.single, {'0', '1', '2', '3'},
+          reason: 'a pre-existing horizontal offset changed which rows a '
+              'vertical drag covers');
+    });
+
+    testWidgets('a drag confined to one row still selects exactly that row',
+        (tester) async {
+      // The side condition. The set above could be right by accident if the
+      // drag had selected everything it crossed and more.
+      final h = await _pumpDragTable(
+        tester,
+        rowCount: 8,
+        colCount: 4,
+        colWidth: 250,
+        tableWidth: 400,
+        tableHeight: 400,
+      );
+
+      final pos = horizontalBody(tester);
+      pos.jumpTo(pos.maxScrollExtent);
+      await tester.pumpAndSettle();
+
+      // Inside row 2 the whole way, but genuinely moving: a press that never
+      // moves resolves as a tap and emits no drag at all.
+      final start = _bodyPoint(tester, h.tableKey, x: 50, row: 2.1);
+      final end = _bodyPoint(tester, h.tableKey, x: 50, row: 2.9);
+
+      final gesture = await tester.startGesture(start);
+      await tester.pump();
+      await gesture.moveTo(end);
+      await tester.pump();
+      await gesture.up();
+      await tester.pumpAndSettle();
+
+      expect(h.updates, isNotEmpty,
+          reason: 'no drag was delivered, so the assertion below is vacuous');
+      expect(h.ends.single, {'2'});
+    });
+  });
 }

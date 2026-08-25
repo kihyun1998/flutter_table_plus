@@ -116,16 +116,35 @@ class FlutterTablePlus<T> extends StatefulWidget {
   final void Function(bool selectAll)? onSelectAll;
 
   /// Whether drag-to-select is enabled.
-  /// Only works when [isSelectable] is true and [selectionMode] is [SelectionMode.multiple].
+  ///
+  /// **All four of these must hold**, or no drag handler is wired at all and
+  /// dragging does nothing — silently, with no error and no warning:
+  ///
+  /// * this flag is `true`,
+  /// * [isSelectable] is `true`,
+  /// * [selectionMode] is [SelectionMode.multiple], and
+  /// * [onDragSelectionUpdate] is **not null**.
+  ///
+  /// The last one is the easy one to miss: passing only [onDragSelectionEnd]
+  /// leaves the feature completely inert. It is quoted in full here on purpose
+  /// — an abridged condition reads as a promise the widget does not keep.
   final bool enableDragSelection;
 
-  /// Callback fired during drag-selection with the set of row IDs in the drag range.
+  /// Callback fired during drag-selection with the set of row IDs in the drag
+  /// range.
+  ///
+  /// **Required for [enableDragSelection] to do anything.** This is not an
+  /// optional live-preview refinement: with it null, the drag handlers are
+  /// never attached and no drag is ever detected.
+  ///
   /// Only contains IDs from the current drag — the parent decides whether to
   /// replace or merge with existing [selectedRows].
   final void Function(Set<String> draggedRowIds)? onDragSelectionUpdate;
 
   /// Callback fired once when drag-selection ends with the final drag range set.
-  /// If null, [onDragSelectionUpdate] serves as both live and final callback.
+  ///
+  /// Genuinely optional — unlike [onDragSelectionUpdate]. If null,
+  /// [onDragSelectionUpdate] serves as both live and final callback.
   final void Function(Set<String> draggedRowIds)? onDragSelectionEnd;
 
   /// Callback when a row is double-tapped.
