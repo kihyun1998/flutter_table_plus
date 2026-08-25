@@ -1,4 +1,4 @@
-import 'package:example/pages/playground/models/employee.dart';
+import 'package:example/demo_data/demo_data.dart';
 import 'package:example/pages/playground/playground_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../theme/theme_mode_button.dart';
 import 'playground/playground_page.dart';
 import 'tooltip_anchor/tooltip_anchor_page.dart';
 
@@ -11,7 +12,10 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('FlutterTablePlus Examples')),
+      appBar: AppBar(
+        title: const Text('FlutterTablePlus Examples'),
+        actions: const [ThemeModeButton()],
+      ),
       body: ListView(
         children: [
           _DemoTile(
