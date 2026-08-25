@@ -82,14 +82,15 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
 
   /// The row tooltip's card. It draws its own surface, which is why the
   /// playground gives `rowTooltipTheme` a transparent, unpadded one.
-  Widget _rowCard(Employee e) {
+  Widget _rowCard(BuildContext context, Employee e) {
+    final scheme = Theme.of(context).colorScheme;
     return Container(
       width: 260,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: scheme.surface,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.indigo, width: 2),
+        border: Border.all(color: scheme.primary, width: 2),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -579,7 +580,8 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
+                    color:
+                        Theme.of(context).colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
@@ -615,9 +617,9 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
                 Container(
                   width: 380,
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    border:
-                        Border(right: BorderSide(color: Colors.grey.shade300)),
+                    border: Border(
+                      right: BorderSide(color: Theme.of(context).dividerColor),
+                    ),
                   ),
                   child: Column(
                     children: [
@@ -655,7 +657,8 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
   Widget _buildTableArea() {
     return Container(
       margin: const EdgeInsets.all(16),
-      color: Colors.white,
+      // The table paints its own ground from its theme; a white box behind it
+      // only showed through in a dark app.
       child: FlutterTablePlus<Employee>(
         columns: _columns,
         data: _data,
@@ -701,7 +704,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         isEditable: _settings.editingEnabled,
         // The row is the hover region; the card is anchored beside the pointer.
         rowTooltipBuilder: _settings.rowCardTooltip
-            ? (context, employee) => _rowCard(employee)
+            ? (context, employee) => _rowCard(context, employee)
             : null,
         onCellChanged: _handleCellChanged,
         onRowSecondaryTapDown: _handleRowSecondaryTapDown,
@@ -715,20 +718,27 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         noDataWidget: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.inbox_outlined, size: 64, color: Colors.grey.shade400),
+            Icon(
+              Icons.inbox_outlined,
+              size: 64,
+              color: Theme.of(context).colorScheme.outline,
+            ),
             const SizedBox(height: 12),
             Text(
               'No employees found',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: Colors.grey.shade600,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: 4),
             Text(
               'Try generating data or adjusting filters',
-              style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+              style: TextStyle(
+                fontSize: 13,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
         ),
@@ -909,6 +919,10 @@ TablePlusTheme _buildPlaygroundTheme(
         ),
       ),
       sortIconWidth: settings.sortIconWidth,
+    ),
+    scrollbarTheme: TablePlusScrollbarTheme(
+      trackColor: p.scrollTrack,
+      thumbColor: p.scrollThumb,
     ),
     bodyTheme: TablePlusBodyTheme(
       backgroundColor: p.surface,

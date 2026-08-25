@@ -40,6 +40,8 @@ class TablePalette {
     required this.ink,
     required this.mutedInk,
     required this.selectedBand,
+    required this.scrollTrack,
+    required this.scrollThumb,
   });
 
   final Color headerBand;
@@ -54,6 +56,15 @@ class TablePalette {
   final Color mutedInk;
   final Color selectedBand;
 
+  /// The scrollbar's own two colours.
+  ///
+  /// The package defaults them to a light `#E0E0E0` track and a `#757575`
+  /// thumb, which cannot know the brightness the consumer is drawing in — a
+  /// dark table gets a bright track. Deciding them here is the demo doing what
+  /// any consumer has to do.
+  final Color scrollTrack;
+  final Color scrollThumb;
+
   static const light = TablePalette(
     headerBand: Color(0xFFF1F1F1),
     headerLine: Color(0xFFD8D8D8),
@@ -66,6 +77,8 @@ class TablePalette {
     ink: Color(0xFF1A1A1A),
     mutedInk: Color(0xFF8A8A8A),
     selectedBand: Color(0xFFDCDCDC),
+    scrollTrack: Color(0xFFEDEDED),
+    scrollThumb: Color(0xFF9A9A9A),
   );
 
   static const dark = TablePalette(
@@ -80,6 +93,8 @@ class TablePalette {
     ink: Color(0xFFE6E6E6),
     mutedInk: Color(0xFF7E7E7E),
     selectedBand: Color(0xFF383838),
+    scrollTrack: Color(0xFF232323),
+    scrollThumb: Color(0xFF5E5E5E),
   );
 
   /// The palette for [brightness].
@@ -107,6 +122,10 @@ TablePlusTheme demoTableTheme(Brightness brightness) {
       ),
       bottomBorder: TablePlusHeaderBorderTheme(show: true, color: p.rule),
       verticalDivider: TablePlusHeaderDividerTheme(show: true, color: p.rule),
+    ),
+    scrollbarTheme: TablePlusScrollbarTheme(
+      trackColor: p.scrollTrack,
+      thumbColor: p.scrollThumb,
     ),
     bodyTheme: TablePlusBodyTheme(
       backgroundColor: p.surface,

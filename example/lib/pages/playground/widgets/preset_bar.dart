@@ -23,9 +23,13 @@ class PresetBar extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+      // No ground of its own: the Scaffold already paints `colorScheme.surface`
+      // beneath this, and painting white over it is what left the bar bright in
+      // a dark app. Only the rule is decided here.
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: Colors.grey.shade300)),
+        border: Border(
+          bottom: BorderSide(color: Theme.of(context).dividerColor),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -49,7 +53,10 @@ class PresetBar extends StatelessWidget {
             // it turned on, but what to watch now that they are.
             Text(
               active.lookFor,
-              style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+              style: TextStyle(
+                fontSize: 12,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
         ],

@@ -38,7 +38,7 @@ SettingsControl _withNote(SettingsControl control, String? note) {
           padding: const EdgeInsets.only(left: 8, bottom: 4),
           child: Text(
             note,
-            style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+            style: const TextStyle(fontSize: 11),
           ),
         ),
       ],

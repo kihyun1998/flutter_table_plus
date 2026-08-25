@@ -57,8 +57,10 @@ class _FeatureListPaneState extends State<FeatureListPane> {
       width: 220,
       height: double.infinity,
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        border: Border(right: BorderSide(color: Colors.grey.shade300)),
+        color: Theme.of(context).colorScheme.surfaceContainerLow,
+        border: Border(
+          right: BorderSide(color: Theme.of(context).dividerColor),
+        ),
       ),
       child: Column(
         children: [
@@ -115,7 +117,7 @@ class _FeatureListPaneState extends State<FeatureListPane> {
           fontSize: 11,
           fontWeight: FontWeight.w700,
           letterSpacing: 0.8,
-          color: Colors.grey.shade600,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
       ),
     );
@@ -161,7 +163,10 @@ class _FeatureListPaneState extends State<FeatureListPane> {
                 ? null
                 : Text(
                     '${feature.options.length}',
-                    style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
                   ),
           ),
           if (match.matchedLabels.isNotEmpty) _matched(match),
@@ -216,7 +221,9 @@ class _Dot extends StatelessWidget {
         child: Icon(
           on ? Icons.circle : Icons.circle_outlined,
           size: 14,
-          color: on ? Colors.blue.shade600 : Colors.grey.shade400,
+          color: on
+              ? Theme.of(context).colorScheme.primary
+              : Theme.of(context).colorScheme.outline,
         ),
       ),
     );

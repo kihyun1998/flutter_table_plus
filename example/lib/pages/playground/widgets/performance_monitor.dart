@@ -53,8 +53,8 @@ class PerformanceMonitor extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        border: Border.all(color: Colors.grey.shade300),
+        color: Theme.of(context).colorScheme.surfaceContainerLow,
+        border: Border.all(color: Theme.of(context).dividerColor),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
@@ -84,6 +84,7 @@ class PerformanceMonitor extends StatelessWidget {
 
           // Row count
           _buildMetricRow(
+            context: context,
             icon: Icons.table_rows,
             label: 'Total Rows',
             value: _formatNumber(metrics.rowCount),
@@ -94,6 +95,7 @@ class PerformanceMonitor extends StatelessWidget {
           // Data generation time
           if (metrics.dataGenerationTimeMs != null)
             _buildMetricRow(
+              context: context,
               icon: Icons.construction,
               label: 'Data Generation',
               value: _formatTime(metrics.dataGenerationTimeMs!),
@@ -106,6 +108,7 @@ class PerformanceMonitor extends StatelessWidget {
           // Sort time
           if (metrics.lastSortTimeMs != null)
             _buildMetricRow(
+              context: context,
               icon: Icons.sort,
               label: 'Last Sort',
               value: _formatTime(metrics.lastSortTimeMs!),
@@ -116,6 +119,7 @@ class PerformanceMonitor extends StatelessWidget {
           // Render time
           if (metrics.lastRenderTimeMs != null)
             _buildMetricRow(
+              context: context,
               icon: Icons.brush,
               label: 'Last Render',
               value: _formatTime(metrics.lastRenderTimeMs!),
@@ -130,7 +134,7 @@ class PerformanceMonitor extends StatelessWidget {
             'Last updated: ${_formatDateTime(metrics.lastUpdate)}',
             style: TextStyle(
               fontSize: 11,
-              color: Colors.grey.shade600,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               fontStyle: FontStyle.italic,
             ),
           ),
@@ -140,6 +144,7 @@ class PerformanceMonitor extends StatelessWidget {
   }
 
   Widget _buildMetricRow({
+    required BuildContext context,
     required IconData icon,
     required String label,
     required String value,
@@ -148,10 +153,14 @@ class PerformanceMonitor extends StatelessWidget {
   }) {
     return Container(
       padding: const EdgeInsets.all(12),
+      // The metric's status colour survives on the icon and the value, where it
+      // is ink on the surface and reads in either theme. It does not survive as
+      // the *ground*: `shade50` is a light-theme decision, and a row of pale
+      // pastel slabs in a dark app is how this pane used to look.
       decoration: BoxDecoration(
-        color: color.shade50,
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: color.shade200),
+        border: Border.all(color: Theme.of(context).dividerColor),
       ),
       child: Row(
         children: [

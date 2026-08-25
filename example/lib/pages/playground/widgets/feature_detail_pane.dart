@@ -43,12 +43,12 @@ class FeatureDetailPane extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
-          if (feature.interactions.isNotEmpty) _affects(),
+          if (feature.interactions.isNotEmpty) _affects(context),
           const SizedBox(height: 12),
           if (feature.switchId != null) _draw(feature.switchId!),
-          if (feature.id == 'data') _rowCountBadge(),
+          if (feature.id == 'data') _rowCountBadge(context),
           if (feature.options.isNotEmpty) _options(),
-          if (feature.id == 'data') ..._dataExtras(),
+          if (feature.id == 'data') ..._dataExtras(context),
         ],
       ),
     );
@@ -64,14 +64,18 @@ class FeatureDetailPane extends StatelessWidget {
   /// Stated in the direction it happens. "A merged row carries no card" and
   /// "the card is never built for a merged row" are different claims; only one
   /// of them is what `table_body.dart` does.
-  Widget _affects() {
+  Widget _affects(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(top: 12),
       padding: const EdgeInsets.all(12),
+      // A callout, so it needs a ground of its own — but a fixed amber slab is
+      // a light-theme decision, and this pane is drawn in both. The container
+      // roles carry the same "set apart from the surface" meaning through the
+      // scheme, whatever the scheme happens to be.
       decoration: BoxDecoration(
-        color: Colors.amber.shade50,
+        color: Theme.of(context).colorScheme.secondaryContainer,
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: Colors.amber.shade200),
+        border: Border.all(color: Theme.of(context).colorScheme.outline),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -96,7 +100,10 @@ class FeatureDetailPane extends StatelessWidget {
             // as a square of the font size. This wraps; it must never be a Row.
             Text(
               i.effect,
-              style: TextStyle(fontSize: 12, color: Colors.grey.shade800),
+              style: TextStyle(
+                fontSize: 12,
+                color: Theme.of(context).colorScheme.onSecondaryContainer,
+              ),
             ),
           ],
         ],
@@ -137,7 +144,7 @@ class FeatureDetailPane extends StatelessWidget {
 
   Widget _draw(String id) => settingsRegistry[id]!(settings, onSettingsChanged);
 
-  Widget _rowCountBadge() {
+  Widget _rowCountBadge(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -151,7 +158,7 @@ class FeatureDetailPane extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
           decoration: BoxDecoration(
-            color: Colors.green.shade100,
+            color: Theme.of(context).colorScheme.secondaryContainer,
             borderRadius: BorderRadius.circular(4),
           ),
           child: Text(
@@ -169,7 +176,7 @@ class FeatureDetailPane extends StatelessWidget {
 
   /// The quick counts and the generate button need [onGenerateData], which no
   /// registry entry is handed, so the pane draws them itself.
-  List<Widget> _dataExtras() {
+  List<Widget> _dataExtras(BuildContext context) {
     return [
       const SizedBox(height: 8),
       Wrap(
@@ -177,7 +184,7 @@ class FeatureDetailPane extends StatelessWidget {
         runSpacing: 8,
         children: [
           for (final value in [5, 100, 1000, 10000, 100000])
-            _quickButton(value),
+            _quickButton(context, value),
         ],
       ),
       const SizedBox(height: 12),
@@ -194,22 +201,25 @@ class FeatureDetailPane extends StatelessWidget {
               : const Icon(Icons.refresh),
           label: Text(isGenerating ? 'Generating...' : 'Generate Data'),
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.green.shade600,
-            foregroundColor: Colors.white,
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            foregroundColor: Theme.of(context).colorScheme.onPrimary,
           ),
         ),
       ),
     ];
   }
 
-  Widget _quickButton(int value) {
+  Widget _quickButton(BuildContext context, int value) {
     final selected = settings.rowCount == value;
     return ElevatedButton(
       onPressed: () => onSettingsChanged(settings.copyWith(rowCount: value)),
       style: ElevatedButton.styleFrom(
-        backgroundColor:
-            selected ? Colors.green.shade600 : Colors.grey.shade200,
-        foregroundColor: selected ? Colors.white : Colors.grey.shade700,
+        backgroundColor: selected
+            ? Theme.of(context).colorScheme.primary
+            : Theme.of(context).colorScheme.surfaceContainerHighest,
+        foregroundColor: selected
+            ? Theme.of(context).colorScheme.onPrimary
+            : Theme.of(context).colorScheme.onSurfaceVariant,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         minimumSize: Size.zero,
       ),
