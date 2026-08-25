@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
 
-import 'models/employee.dart';
+import '../../demo_data/demo_data.dart';
 import 'models/playground_settings.dart';
 import 'playground_format.dart';
 

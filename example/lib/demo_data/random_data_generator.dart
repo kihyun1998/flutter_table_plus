@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import '../models/employee.dart';
+import 'employee.dart';
 
 /// Utility class for generating random employee data for testing
 /// Supports generating 10 to 100,000+ records efficiently

@@ -3,13 +3,13 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'models/employee.dart';
+import '../../demo_data/demo_data.dart';
+import '../../theme/theme_mode_button.dart';
 import 'models/playground_settings.dart';
 import 'models/settings_presets.dart';
 import 'models/settings_spec.dart';
 import 'playground_columns.dart';
 import 'playground_format.dart';
-import 'utils/random_data_generator.dart';
 import 'widgets/feature_detail_pane.dart';
 import 'widgets/feature_list_pane.dart';
 import 'widgets/performance_monitor.dart';
@@ -545,10 +545,8 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('FlutterTablePlus Playground'),
-        backgroundColor: Colors.blue.shade700,
-        foregroundColor: Colors.white,
-        elevation: 2,
         actions: [
+          const ThemeModeButton(),
           // Scale indicator
           if (_settings.scale != 1.0)
             Padding(
@@ -781,7 +779,10 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
             );
           });
         },
-        theme: buildPlaygroundTheme(_settings),
+        theme: buildPlaygroundTheme(
+          _settings,
+          brightness: Theme.of(context).brightness,
+        ),
       ),
     );
   }
@@ -813,7 +814,103 @@ TextStyle _fontTextStyle(
   };
 }
 
-TablePlusTheme buildPlaygroundTheme(PlaygroundSettings settings) {
+/// The colours the demo's table wears, in one brightness.
+///
+/// The demo used to paint the table blue in eleven places. Nothing chose that
+/// blue — the package's own defaults are already near-neutral (a `#F5F5F5`
+/// header on `#E0E0E0` rules over a white body), and the blues were laid over
+/// them. Once the app chrome went achromatic the table held the only colour on
+/// screen, which made an inherited colour into a claim. So it is neutral, and
+/// deliberately so.
+///
+/// **Neutral is the default, not the ceiling.** Every colour here is a theme
+/// field a consumer sets, and several are settings the playground already
+/// exposes. Showing them neutral says what the package looks like out of the
+/// box; the knobs are where a reader finds out it can be anything.
+///
+/// Interaction states are neutral too — selection is a band of value, not of
+/// hue. That is the expensive part of an achromatic table: with no colour to
+/// carry state, the bands have to be far enough apart in lightness to be
+/// unmistakable, which is why [selectedBand] sits well clear of [altBand]
+/// rather than a shade away from it.
+///
+/// The one exemption is the editing markers, which stay amber. An editing cell
+/// is a transient state a reader has to notice — the same argument that keeps
+/// `error` red in the app chrome.
+class _TablePalette {
+  const _TablePalette({
+    required this.headerBand,
+    required this.headerLine,
+    required this.rule,
+    required this.headerInk,
+    required this.sortIcon,
+    required this.sortIconIdle,
+    required this.surface,
+    required this.altBand,
+    required this.ink,
+    required this.mutedInk,
+    required this.selectedBand,
+  });
+
+  final Color headerBand;
+  final Color headerLine;
+  final Color rule;
+  final Color headerInk;
+  final Color sortIcon;
+  final Color sortIconIdle;
+  final Color surface;
+  final Color altBand;
+  final Color ink;
+  final Color mutedInk;
+  final Color selectedBand;
+
+  static const light = _TablePalette(
+    headerBand: Color(0xFFF1F1F1),
+    headerLine: Color(0xFFD8D8D8),
+    rule: Color(0xFFE0E0E0),
+    headerInk: Color(0xFF1F1F1F),
+    sortIcon: Color(0xFF3D3D3D),
+    sortIconIdle: Color(0xFFAFAFAF),
+    surface: Color(0xFFFFFFFF),
+    altBand: Color(0xFFF7F7F7),
+    ink: Color(0xFF1A1A1A),
+    mutedInk: Color(0xFF8A8A8A),
+    selectedBand: Color(0xFFDCDCDC),
+  );
+
+  static const dark = _TablePalette(
+    headerBand: Color(0xFF1E1E1E),
+    headerLine: Color(0xFF343434),
+    rule: Color(0xFF2C2C2C),
+    headerInk: Color(0xFFEDEDED),
+    sortIcon: Color(0xFFCFCFCF),
+    sortIconIdle: Color(0xFF5F5F5F),
+    surface: Color(0xFF141414),
+    altBand: Color(0xFF1B1B1B),
+    ink: Color(0xFFE6E6E6),
+    mutedInk: Color(0xFF7E7E7E),
+    selectedBand: Color(0xFF383838),
+  );
+}
+
+/// The table theme for [settings], in [brightness].
+///
+/// One builder, with the palette handed in. There is deliberately no "light
+/// theme, then darkened" pair: a variant that re-derives a theme is a place a
+/// sub-theme can be dropped, which is how `rowTooltipTheme` went missing once.
+/// With a single builder there is no variant to drop anything.
+TablePlusTheme buildPlaygroundTheme(
+  PlaygroundSettings settings, {
+  Brightness brightness = Brightness.light,
+}) {
+  return _buildPlaygroundTheme(
+    settings,
+    brightness == Brightness.dark ? _TablePalette.dark : _TablePalette.light,
+  );
+}
+
+TablePlusTheme _buildPlaygroundTheme(
+    PlaygroundSettings settings, _TablePalette p) {
   final cellTooltip = TablePlusTooltipTheme(
     enabled: settings.tooltipEnabled,
     waitDuration: Duration(milliseconds: settings.tooltipWaitDurationMs),
@@ -832,20 +929,20 @@ TablePlusTheme buildPlaygroundTheme(PlaygroundSettings settings) {
         indent: settings.resizeHandleIndent,
         endIndent: settings.resizeHandleEndIndent,
       ),
-      backgroundColor: Colors.blue.shade50,
+      backgroundColor: p.headerBand,
       topBorder: TablePlusHeaderBorderTheme(
         show: settings.headerTopBorderShow,
-        color: Colors.blue.shade200,
+        color: p.headerLine,
         thickness: settings.headerTopBorderThickness,
       ),
       bottomBorder: TablePlusHeaderBorderTheme(
         show: settings.headerBottomBorderShow,
-        color: Colors.grey.shade300,
+        color: p.rule,
         thickness: settings.headerBottomBorderThickness,
       ),
       verticalDivider: TablePlusHeaderDividerTheme(
         show: settings.headerVerticalDividerShow,
-        color: Colors.grey.shade300,
+        color: p.rule,
         thickness: settings.headerVerticalDividerThickness,
         indent: settings.headerVerticalDividerIndent,
         endIndent: settings.headerVerticalDividerEndIndent,
@@ -853,7 +950,7 @@ TablePlusTheme buildPlaygroundTheme(PlaygroundSettings settings) {
       textStyle: _fontTextStyle(
         settings,
         fontWeight: FontWeight.w600,
-        color: Colors.blue.shade800,
+        color: p.headerInk,
         fontSize: settings.fontSize,
       ),
       padding: EdgeInsets.symmetric(
@@ -866,7 +963,7 @@ TablePlusTheme buildPlaygroundTheme(PlaygroundSettings settings) {
           width: settings.sortIconWidth,
           height: settings.sortIconWidth,
           colorFilter: ColorFilter.mode(
-            Colors.blue.shade700,
+            p.sortIcon,
             BlendMode.srcIn,
           ),
         ),
@@ -875,7 +972,7 @@ TablePlusTheme buildPlaygroundTheme(PlaygroundSettings settings) {
           width: settings.sortIconWidth,
           height: settings.sortIconWidth,
           colorFilter: ColorFilter.mode(
-            Colors.blue.shade700,
+            p.sortIcon,
             BlendMode.srcIn,
           ),
         ),
@@ -883,8 +980,8 @@ TablePlusTheme buildPlaygroundTheme(PlaygroundSettings settings) {
           'assets/icons/upndown.svg',
           width: settings.sortIconWidth,
           height: settings.sortIconWidth,
-          colorFilter: const ColorFilter.mode(
-            Colors.grey,
+          colorFilter: ColorFilter.mode(
+            p.sortIconIdle,
             BlendMode.srcIn,
           ),
         ),
@@ -892,24 +989,26 @@ TablePlusTheme buildPlaygroundTheme(PlaygroundSettings settings) {
       sortIconWidth: settings.sortIconWidth,
     ),
     bodyTheme: TablePlusBodyTheme(
-      backgroundColor: Colors.white,
-      alternateRowColor: settings.showAlternateRows
-          ? Colors.blue.shade50.withValues(alpha: 0.3)
-          : null,
+      backgroundColor: p.surface,
+      alternateRowColor: settings.showAlternateRows ? p.altBand : null,
       textStyle: _fontTextStyle(
         settings,
         fontSize: settings.fontSize,
-        color: Colors.black87,
+        color: p.ink,
       ),
       padding: EdgeInsets.symmetric(
         horizontal: settings.horizontalPadding,
         vertical: settings.verticalPadding,
       ),
-      dividerColor:
-          settings.showDividers ? Colors.grey.shade300 : Colors.transparent,
+      dividerColor: settings.showDividers ? p.rule : Colors.transparent,
       showHorizontalDividers: settings.showDividers,
       showVerticalDividers: settings.showDividers,
-      selectedRowColor: Colors.blue.shade100.withValues(alpha: 0.6),
+      selectedRowColor: p.selectedBand,
+      dimRowTextStyle: _fontTextStyle(
+        settings,
+        fontSize: settings.fontSize,
+        color: p.mutedInk,
+      ),
       splashColor: settings.splashColor.color,
       hoverColor: settings.hoverColor.color,
       highlightColor: settings.highlightColor.color,
