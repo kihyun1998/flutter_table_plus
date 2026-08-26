@@ -45,7 +45,6 @@ class TablePlusMergedRow<T> extends TablePlusRowWidget<T> {
     this.onRowDoubleTap,
     this.onRowSecondaryTapDown,
     this.onMergedCellChanged,
-    this.onMergedRowExpandToggle,
     this.calculatedHeight,
     this.individualHeights,
     this.needsVerticalScroll = false,
@@ -94,7 +93,6 @@ class TablePlusMergedRow<T> extends TablePlusRowWidget<T> {
       bool isSelected)? onRowSecondaryTapDown;
   final void Function(String groupId, String columnKey, dynamic newValue)?
       onMergedCellChanged;
-  final void Function(String groupId)? onMergedRowExpandToggle;
   @override
   final double? calculatedHeight;
 
@@ -345,7 +343,7 @@ class _TablePlusMergedRowState<T>
           context, column, rowKey, rowData, maxHeight, rowIndex, columnIndex));
     }
 
-    if (widget.mergeGroup.isExpandable && widget.mergeGroup.isExpanded) {
+    if (widget.mergeGroup.isExpanded) {
       cells.add(_buildSummaryRowCell(context, column, maxHeight));
     }
 

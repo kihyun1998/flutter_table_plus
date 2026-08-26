@@ -181,7 +181,6 @@ class _MergedRowsRecipeState extends State<MergedRowsRecipe> {
             // is how a column stays per-row. `shouldMerge: false` says the same
             // thing more loudly; absence is the default.
           },
-          isExpandable: true,
           isExpanded: _expanded.contains('dept_${entry.key}'),
           summaryBuilder: (columnKey) => _summaryFor(columnKey, entry.value),
         ),

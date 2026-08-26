@@ -26,8 +26,21 @@ row ids — which is the question every callback in this area answers implicitly
 - **Per-column merge configuration.** `MergeCellConfig` decides, per column,
   what a merged cell renders — so a group can merge some columns and keep others
   per-row.
-- **Expansion is caller state**, reported through `onMergedRowExpandToggle`, like
-  every other piece of state here.
+- **Expansion is caller state, and so is the affordance.** `isExpanded` adds
+  a summary row — it does not hide the member rows, which is the one place
+  this API's vocabulary misleads. The package draws no expand/collapse
+  control and reports no toggle: the caller puts one in the merged cell's
+  `mergedContent` and drives its own `setState`, because a `MergedRowGroup`
+  is an immutable value that gets rebuilt.
+  - This bullet used to say expansion was *"reported through
+    `onMergedRowExpandToggle`"*. That callback existed, was threaded through
+    three widgets, and was never invoked; `docs/FEATURES.md` showed it as
+    working too. Both were removed in 2.17.0 along with `isExpandable`, which
+    was an extra `&&` in front of `isExpanded` — deleting it from all five
+    consumption sites left the whole suite green. **A callback that is
+    plumbed but never called reads exactly like one that works**, from the
+    declaration and from the docs alike; only a grep for the *call* tells
+    them apart.
 
 ## Code
 

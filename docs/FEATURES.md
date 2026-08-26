@@ -356,7 +356,7 @@ FlutterTablePlus<User>(
 > so a stored width still means the same thing when the app reopens at a
 > different zoom. `minWidth` and `maxWidth` are declared in the same space and
 > the table converts them itself, so a column stops at the range you wrote at
-> every zoom level, not at a range scaled along with it. (Before 2.16.2 the drag
+> every zoom level, not at a range scaled along with it. (Before 2.17.0 the drag
 > path did not convert them, so at `scale: 2.0` a declared `maxWidth: 300`
 > behaved as 150.)
 
@@ -499,22 +499,49 @@ MergedRowGroup<User>(
       isEditable: true,
     ),
   },
-  isExpandable: true,
-  isExpanded: true,
+  // Adds the summary row. It does not hide the member rows.
+  isExpanded: _expandedGroups.contains('group_1'),
+  summaryBuilder: (columnKey) => columnKey == 'notes'
+      ? const Text('Total', style: TextStyle(fontWeight: FontWeight.w700))
+      : null,
 )
 
 // Handle merged cell edits
 onMergedCellChanged: (String groupId, String columnKey, dynamic newValue) {
   // Update your data
 },
-
-// Handle expand/collapse
-onMergedRowExpandToggle: (String groupId) {
-  setState(() {
-    // Toggle expand state
-  });
-},
 ```
+
+**The expand control is yours to draw.** The package renders no
+expand/collapse affordance anywhere and fires no callback for one — put an
+`IconButton` in the merged cell's `mergedContent` and wire it to your own
+`setState`:
+
+```dart
+'department': MergeCellConfig(
+  shouldMerge: true,
+  mergedContent: Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      IconButton(
+        icon: Icon(expanded ? Icons.expand_less : Icons.expand_more),
+        onPressed: () => setState(() { /* toggle your own state */ }),
+      ),
+      Text(department),
+    ],
+  ),
+),
+```
+
+A `MergedRowGroup` is an immutable value you rebuild, so the state has to
+live where your data does. `example/lib/recipes/merged_rows_recipe.dart` is
+a complete working version.
+
+> **Changed in 2.17.0.** `onMergedRowExpandToggle` and `isExpandable` were
+> removed. The callback was declared, threaded through three widgets and
+> never invoked — this document showed it as working, which is the reason it
+> went unnoticed. `isExpandable` was an extra `&&` in front of `isExpanded`
+> and gated nothing on its own. Delete both arguments; nothing else changes.
 
 ---
 
@@ -879,7 +906,7 @@ When `onScaleChanged` is non-null:
 
 Resized widths are stored in **logical (unscaled) units**. The `onColumnResized` callback always reports logical widths, and `initialResizedWidths` expects logical widths. This means saved widths work correctly regardless of the current scale.
 
-`minWidth` and `maxWidth` are declared in the same units and travel the other way — the table multiplies them by `scale` before they bound a drag measured on screen. So the range a column stops at is the range you wrote, not a range scaled along with the zoom. (Fixed in 2.16.2; from 2.9.0 to 2.16.1 the drag path compared them unconverted, so at `scale: 2.0` a declared `maxWidth: 300` behaved as 150.)
+`minWidth` and `maxWidth` are declared in the same units and travel the other way — the table multiplies them by `scale` before they bound a drag measured on screen. So the range a column stops at is the range you wrote, not a range scaled along with the zoom. (Fixed in 2.17.0; from 2.9.0 to 2.16.1 the drag path compared them unconverted, so at `scale: 2.0` a declared `maxWidth: 300` behaved as 150.)
 
 > **One caveat on the reported number.** Multiplying by `scale` and dividing back is exact for most factors but not all — at a scale accumulated by repeated Ctrl+wheel steps, `onColumnResized` can report a width outside the declared bound by around 1e-14. Layout re-clamps in logical space and is never outside it. Compare with a tolerance if you assert on the callback's value.
 

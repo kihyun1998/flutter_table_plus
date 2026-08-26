@@ -907,7 +907,6 @@ void main() {
         groupId: 'g1',
         rowKeys: ['1', '2'],
         mergeConfig: {},
-        isExpandable: true,
         isExpanded: false,
       );
 
@@ -919,7 +918,6 @@ void main() {
         groupId: 'g1',
         rowKeys: ['1', '2'],
         mergeConfig: {},
-        isExpandable: true,
         isExpanded: true,
       );
 
