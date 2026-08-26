@@ -118,6 +118,115 @@ void main() {
     expect(spacing, closeTo(80, 0.5));
   });
 
+  testWidgets('and re-measures when only calculateRowHeight changes',
+      (tester) async {
+    // The list is built once and passed to both pumps **on purpose**.
+    //
+    // `_pump` builds a fresh one per call, and a fresh list makes
+    // `!identical(widget.data, oldWidget.data)` true — which invalidates every
+    // height cache on the way past and hides the thing under test. That is why
+    // the test above could sit next to this bug without ever reaching it: it
+    // pumps once, so no invalidation path runs at all.
+    //
+    // Holding `data` identical is not a contrivance either. A height function
+    // that closes over state — a density toggle, a font-size slider — is a new
+    // closure on every build while the list it reads is the same one. That is
+    // the ordinary way to write one, and it is the case that was broken: a
+    // static tear-off, which is what every other test here passes, can never
+    // change identity and so can never expose it.
+    final data = [
+      for (int i = 0; i < 3; i++) {'id': '$i', 'name': 'R$i'}
+    ];
+
+    Future<void> pumpWith(double height) => tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: FlutterTablePlus<Map<String, dynamic>>(
+                columns: _columns(),
+                data: data,
+                rowId: (r) => r['id'] as String,
+                calculateRowHeight: (i, r) => height,
+              ),
+            ),
+          ),
+        );
+
+    await pumpWith(100);
+    await tester.pumpAndSettle();
+    final before = tester.getCenter(find.text('R1')).dy -
+        tester.getCenter(find.text('R0')).dy;
+    expect(before, closeTo(100, 0.5));
+
+    await pumpWith(40);
+    await tester.pumpAndSettle();
+    final after = tester.getCenter(find.text('R1')).dy -
+        tester.getCenter(find.text('R0')).dy;
+
+    expect(after, closeTo(40, 0.5),
+        reason: 'the body kept its cached heights — a new height function over '
+            'the same list changed nothing on screen. The parent watches '
+            'calculateRowHeight and re-measured; TablePlusBody.didUpdateWidget '
+            'did not, so its rows and the total height the parent reports were '
+            'measured by different functions');
+
+    // The side condition, so the assertion above cannot be satisfied by a
+    // table that simply stopped drawing rows at their measured height.
+    expect(after, isNot(closeTo(before, 0.5)));
+    expect(find.text('R2'), findsOneWidget);
+  });
+
+  testWidgets('and re-measures when only scale changes', (tester) async {
+    // The sibling of the test above, and it is here because a mutation found
+    // that nothing covered it.
+    //
+    // `scale` has always been in this branch — it is the clause
+    // `calculateRowHeight` was missing from. But deleting it left the whole
+    // suite green, so the line was carrying the behaviour on trust. Reaching it
+    // needs two things at once: a table that uses `calculateRowHeight`, and a
+    // rebuild that changes `scale` and nothing else. No test had both.
+    //
+    // A cached height is already multiplied by `scale` when it is stored, so
+    // without the invalidation a zoomed table draws its rows at the previous
+    // zoom's heights — the same defect as above, in the clause next door.
+    final data = [
+      for (int i = 0; i < 3; i++) {'id': '$i', 'name': 'R$i'}
+    ];
+
+    // One function object, reused, so `calculateRowHeight` identity cannot be
+    // what triggers the rebuild. Only `scale` differs between the two pumps.
+    double? height(int i, Map<String, dynamic> r) => 50;
+
+    Future<void> pumpAt(double scale) => tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: FlutterTablePlus<Map<String, dynamic>>(
+                columns: _columns(),
+                data: data,
+                rowId: (r) => r['id'] as String,
+                calculateRowHeight: height,
+                scale: scale,
+              ),
+            ),
+          ),
+        );
+
+    await pumpAt(1.0);
+    await tester.pumpAndSettle();
+    final before = tester.getCenter(find.text('R1')).dy -
+        tester.getCenter(find.text('R0')).dy;
+    expect(before, closeTo(50, 0.5));
+
+    await pumpAt(2.0);
+    await tester.pumpAndSettle();
+    final after = tester.getCenter(find.text('R1')).dy -
+        tester.getCenter(find.text('R0')).dy;
+
+    expect(after, closeTo(100, 0.5),
+        reason: 'the body kept heights measured at the previous scale');
+    expect(after, isNot(closeTo(before, 0.5)));
+    expect(find.text('R2'), findsOneWidget);
+  });
+
   testWidgets('hovering a cell shows its tooltip', (tester) async {
     await _pump(tester, rows: 2); // columns default to TooltipBehavior.always
 

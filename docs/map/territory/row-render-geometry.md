@@ -24,6 +24,23 @@ calculation ultimately asks.
 - **Decoration is derived, not stored.** `rowBackgroundColor` and `rowDecoration`
   are functions of (state, theme), so a row cannot be left wearing a stale
   colour after a rebuild.
+- **Cache invalidation is split by what the change *is*, not by which field
+  carried it.** `TablePlusBodyState.didUpdateWidget` has two branches:
+  *structure* (`data`, `mergedGroups`) drops everything, because which rows
+  exist has moved; *measurement* (`scale`, `calculateRowHeight`) keeps
+  `RowLookup` and the renderable indices — those are answers about identity —
+  and drops only the heights and the geometry accumulated from them. A new
+  field goes in whichever branch that question puts it in. The split used to be
+  a list of fields, and `calculateRowHeight` was simply missing from it while
+  `FlutterTablePlus` watched it (#120), which is the failure a list has and a
+  question does not.
+- **The two widgets' invalidation conditions must be read together.** The
+  parent's cached total height feeds `needsVerticalScroll`; the body's cache
+  feeds the rows *and* `itemExtentBuilder`. So a field the parent watches and
+  the body does not produces a table whose scroll decision and whose rows were
+  measured by different functions — while the extent and the rows stay
+  consistent with each other, which is what makes it look like nothing is
+  wrong.
 - **The last row's border is a named behaviour**, not an edge case:
   `LastRowBorderBehavior` makes the choice explicit rather than implicit in a
   conditional.

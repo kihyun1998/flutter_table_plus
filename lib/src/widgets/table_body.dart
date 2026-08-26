@@ -204,12 +204,40 @@ class TablePlusBodyState<T> extends State<TablePlusBody<T>>
   @override
   void didUpdateWidget(covariant TablePlusBody<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
+    // Two branches, and the split is what the change *is* rather than which
+    // field carried it.
+    //
+    // Structure changed — which rows exist, which index maps to which row,
+    // which of them a group swallows. Everything is stale, including the
+    // heights.
     if (!identical(widget.data, oldWidget.data) ||
         !identical(widget.mergedGroups, oldWidget.mergedGroups)) {
       _rebuildCaches();
-    } else if (widget.scale != oldWidget.scale) {
-      // Clear cached row heights (and the geometry that derives from them)
-      // when scale changes.
+    } else if (widget.scale != oldWidget.scale ||
+        !identical(widget.calculateRowHeight, oldWidget.calculateRowHeight)) {
+      // Measurements changed and structure did not. `RowLookup` and the
+      // renderable indices are answers about identity, so they survive; only
+      // the heights and the geometry accumulated from them go.
+      //
+      // `calculateRowHeight` sits here rather than above because its identity
+      // changing says nothing about which rows exist — and it was missing from
+      // this method entirely until #120, while `FlutterTablePlus` has always
+      // watched it. So a new height function over the same list changed
+      // nothing here: measured before the fix, a swap from 100 to 40 with
+      // `data` identity held left the rows at 100.
+      //
+      // What that cost is narrower than it looks, and worth stating exactly
+      // because the obvious guess is wrong. The ListView's scroll extent is
+      // **not** implicated: `itemExtentBuilder` reads this same cache, so the
+      // extent was stale in step with the rows. What did move on without them
+      // is the parent's own total-height figure, which decides
+      // `needsVerticalScroll` — handed back down here, and the input to the
+      // last row's bottom border.
+      //
+      // A tear-off can never trigger it, which is why nothing caught it: every
+      // test and both example recipes passed a static function. A closure over
+      // state — a density toggle, a font-size slider — is a new object every
+      // build, and that is the ordinary way to write one.
       _cachedRowHeights = {};
       _rowGeometry = null;
     }
