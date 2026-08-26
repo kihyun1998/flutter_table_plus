@@ -328,8 +328,13 @@ class _TablePlusHeaderState<T> extends State<TablePlusHeader<T>> {
               // they were one space is a bug the factor makes invisible: at
               // 1.0 they coincide, so every test sees the right number while a
               // consumer at 2.0 gets a ceiling half of what it declared.
-              // `_handleColumnAutoFit` converts the same two values the same
-              // way for the same reason — one rule, two paths into it.
+              // `_handleColumnAutoFit`'s *measurement* branch converts the
+              // same two values the same way for the same reason. Its
+              // `autoFitColumnWidth` override branch deliberately does not:
+              // that callback returns logical pixels, so it is clamped logical
+              // against logical. Three clamps, two spaces, and the asymmetry is
+              // correct — `test/auto_fit_test.dart` pins both so that
+              // "fixing the inconsistency" fails instead of shipping.
               minWidth: column.minWidth * widget.scale,
               maxWidth: column.maxWidth == null
                   ? null

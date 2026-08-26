@@ -57,11 +57,10 @@ It has since gained one measured failure of its own: **#114**, where three of th
 eighteen sites clamped against operands from the wrong space, so the rule was
 satisfied by inspection and violated in fact.
 
-The related failure is the *inverse* one: `scaledBy(1.0)` returning the receiver
-meant a whole class of scale-path defects was invisible at the factor everyone
-tests with (#50) — a reminder that the extremes are where this rule is
-observable at all. Both are now
-[one note](scale-one-hides-it.md).
+The related measured failure is the *inverse* one: `scaledBy(1.0)` returning the
+receiver meant a whole class of scale-path defects was invisible at the factor
+everyone tests with (#50) — a reminder that the extremes are where this rule is
+observable at all.
 
 ## Where it will recur
 

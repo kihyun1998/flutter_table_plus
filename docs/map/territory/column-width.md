@@ -47,7 +47,6 @@ of this territory and is currently readable only from the source.
 
 → [Widths and offsets are clamped on every path](../invariant/clamped-dimensions.md) — five of the eighteen sites are in this territory alone
 → [The widget-test font is a square per glyph](../invariant/test-font-square.md) — any test that asserts a measured width is measuring the square font, not the screen
-→ [A scale of 1.0 hides every missing conversion](../invariant/scale-one-hides-it.md) — widths are resolved in logical space and multiplied out, so every bound this applies is a crossing
 
 ## Blast radius
 

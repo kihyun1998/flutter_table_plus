@@ -155,8 +155,15 @@ class TablePlusColumn<T> {
   ///
   /// Like [width] and like the widths `onColumnResized` reports, this is the
   /// number the column would have at `scale: 1.0` — the table converts it into
-  /// rendered pixels itself. So a bound means the same thing at every zoom, and
+  /// rendered pixels itself, so a bound means the same thing at every zoom and
   /// a value you persisted survives the app reopening at a different one.
+  ///
+  /// The conversion is a multiply on the way in and a divide on the way out,
+  /// which is exact for most factors but not all: at a `scale` built up by
+  /// repeated `scaleStep` addition, `onColumnResized` can report a width
+  /// outside this bound by around 1e-14. What the table *lays out* is clamped
+  /// again in logical space and is never outside it. Compare with a tolerance
+  /// if you assert on the reported number.
   final double minWidth;
 
   /// The maximum width of the column, in **logical (unscaled) pixels**.
