@@ -177,8 +177,13 @@ class _SelectionRecipeState extends State<SelectionRecipe> {
       // Select-all is a callback, not a flag: withhold it and the header
       // checkbox has nothing to do.
       onSelectAll: widget.selectAllEnabled ? _selectAll : null,
+      // `copyWith` on the sub-theme, never a fresh `TablePlusCheckboxTheme`.
+      // Constructing one keeps only the three fields named here and silently
+      // drops every other — including `style`, which is what colours the box
+      // and the tick. This is the failure class #50 recorded: hand-listing
+      // fields loses the ones you forget, and nothing goes red.
       theme: theme.copyWith(
-        checkboxTheme: TablePlusCheckboxTheme(
+        checkboxTheme: theme.checkboxTheme.copyWith(
           showCheckboxColumn: widget.showCheckboxColumn,
           showRowCheckbox: widget.showRowCheckbox,
           cellTapTogglesCheckbox: widget.cellTapTogglesCheckbox,

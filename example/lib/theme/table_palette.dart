@@ -48,6 +48,9 @@ class TablePalette {
     required this.editingCell,
     required this.editingLine,
     required this.editingCursor,
+    required this.checkboxFill,
+    required this.checkboxTick,
+    required this.checkboxEdge,
     required this.scrollTrack,
     required this.scrollThumb,
   });
@@ -72,6 +75,21 @@ class TablePalette {
   /// (#110): no demo rendered it.
   final Color dragBand;
   final Color dragBandEdge;
+
+  /// The selection checkbox: the box when checked, the tick inside it, and the
+  /// outline when it is not.
+  ///
+  /// **These are load-bearing, not decorative.** `flutter_checkbox` resolves
+  /// `activeColor` from `ColorScheme.primary` but hard-codes `checkColor` to
+  /// `Colors.white`, and this app's dark scheme has `primary == #FFFFFF` — so
+  /// leaving them unset draws a white tick on a white box and the checkmark
+  /// disappears. Measured 2026-08-26. That is an upstream asymmetry (one term
+  /// of a pair follows the theme, the other does not) and it is raised there;
+  /// setting them here is what any consumer with a non-default scheme has to do
+  /// anyway, which is why this is policy rather than a workaround.
+  final Color checkboxFill;
+  final Color checkboxTick;
+  final Color checkboxEdge;
 
   /// The editing markers, and the one place this palette is not achromatic.
   ///
@@ -110,6 +128,9 @@ class TablePalette {
     editingCell: Color(0xFFFFF3D6),
     editingLine: Color(0xFFB8860B),
     editingCursor: Color(0xFFB8860B),
+    checkboxFill: Color(0xFF1A1A1A),
+    checkboxTick: Color(0xFFFFFFFF),
+    checkboxEdge: Color(0xFF9A9A9A),
   );
 
   static const dark = TablePalette(
@@ -131,6 +152,9 @@ class TablePalette {
     editingCell: Color(0xFF3A2F14),
     editingLine: Color(0xFFD9A93A),
     editingCursor: Color(0xFFD9A93A),
+    checkboxFill: Color(0xFFE6E6E6),
+    checkboxTick: Color(0xFF141414),
+    checkboxEdge: Color(0xFF6E6E6E),
   );
 
   /// The palette for [brightness].
@@ -174,6 +198,14 @@ TablePlusTheme demoTableTheme(Brightness brightness) {
         ascending: Icon(Icons.arrow_upward, size: 16, color: p.sortIcon),
         descending: Icon(Icons.arrow_downward, size: 16, color: p.sortIcon),
         unsorted: Icon(Icons.unfold_more, size: 16, color: p.sortIconIdle),
+      ),
+    ),
+    checkboxTheme: TablePlusCheckboxTheme(
+      style: CheckboxStyle(
+        size: 18,
+        activeColor: p.checkboxFill,
+        checkColor: p.checkboxTick,
+        borderColor: p.checkboxEdge,
       ),
     ),
     dragSelectionTheme: TablePlusDragSelectionTheme(

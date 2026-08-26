@@ -2,6 +2,7 @@ import 'package:example/demo_data/demo_data.dart';
 import 'package:example/pages/playground/models/settings_spec.dart';
 import 'package:example/recipes/cell_editing_recipe.dart';
 import 'package:example/recipes/drag_selection_recipe.dart';
+import 'package:example/recipes/selection_recipe.dart';
 import 'package:example/recipes/sorting_recipe.dart';
 import 'package:example/shell/recipe_catalog.dart';
 import 'package:example/theme/table_palette.dart';
@@ -283,6 +284,48 @@ void main() {
             reason: 'the package default blue edit border survived ($brightness)');
         expect(theme.editableTheme.cursorColor, isNot(const Color(0xFF2196F3)));
       }
+    });
+
+    test('the checkbox tick is not the same colour as the box', () {
+      // Measured 2026-08-26: `flutter_checkbox` resolves `activeColor` from
+      // `ColorScheme.primary` but hard-codes `checkColor` to `Colors.white`.
+      // This app's dark scheme has `primary == #FFFFFF`, so leaving the style
+      // unset draws a white tick on a white box and the checkmark vanishes.
+      // Ordinary themes hide this — it only surfaces when `primary` is white.
+      for (final brightness in Brightness.values) {
+        final style = demoTableTheme(brightness).checkboxTheme.style;
+
+        expect(style.activeColor, isNotNull,
+            reason: 'unset falls through to ColorScheme.primary ($brightness)');
+        expect(style.checkColor, isNotNull,
+            reason: 'unset falls through to a hard-coded white ($brightness)');
+        expect(style.checkColor, isNot(style.activeColor),
+            reason: 'the tick is the same colour as the box it sits in '
+                '($brightness) — invisible');
+      }
+    });
+
+    testWidgets('and a recipe that reshapes the checkbox keeps that style',
+        (tester) async {
+      // #50's failure class, in a new place. Building a fresh
+      // `TablePlusCheckboxTheme` to set three flags keeps those three and
+      // silently drops `style`, so the tick goes back to white-on-white in dark
+      // mode with nothing going red. `copyWith` on the sub-theme is the fix,
+      // and this is what notices if it is ever unwritten.
+      await _pump(tester, const SelectionRecipe(), brightness: Brightness.dark);
+
+      final applied = tester
+          .widget<FlutterTablePlus<Employee>>(
+              find.byType(FlutterTablePlus<Employee>))
+          .theme
+          .checkboxTheme;
+      final palette = demoTableTheme(Brightness.dark).checkboxTheme;
+
+      expect(applied.style.checkColor, palette.style.checkColor,
+          reason: 'the recipe rebuilt the checkbox sub-theme and lost `style`');
+      expect(applied.style.activeColor, palette.style.activeColor);
+      // And the three flags it meant to set are still set.
+      expect(applied.showCheckboxColumn, isTrue);
     });
 
     test('and the sort icons are coloured, unsorted included', () {
