@@ -381,11 +381,35 @@ void main() {
       }
     });
 
-    test('and each knob set is small', () {
+    test('and each knob set is small, with one enumerated exception', () {
       // The point of the whole shell: a feature's controls, not sixty.
+      //
+      // `tooltips` is over the bound and is named here rather than the bound
+      // being raised to fit it. Its twelve are twelve independent theme fields
+      // — when, where, how long, which anchor, which direction, which
+      // alignment, arrow, offset, and two content overrides — and there is no
+      // smaller honest set: dropping one would mean a knob the playground has
+      // and the recipe silently does not. Naming it keeps a ninth knob on any
+      // *other* recipe a failure, which is what the bound is for.
+      const exceptions = {'tooltips': 12};
+
       for (final recipe in recipeCatalog) {
-        expect(recipe.knobIds.length, lessThanOrEqualTo(8),
-            reason: '${recipe.featureId} owns ${recipe.knobIds.length} knobs');
+        final allowed = exceptions[recipe.featureId] ?? 8;
+        expect(recipe.knobIds.length, lessThanOrEqualTo(allowed),
+            reason: '${recipe.featureId} owns ${recipe.knobIds.length} knobs, '
+                'over its allowance of $allowed');
+      }
+
+      // And an exception that stops being one is a stale exception: it would
+      // sit here forever, quietly permitting a bound nothing needs.
+      for (final entry in exceptions.entries) {
+        final recipe =
+            recipeCatalog.where((r) => r.featureId == entry.key).firstOrNull;
+        expect(recipe, isNotNull,
+            reason: '${entry.key} is exempted and has no recipe');
+        expect(recipe!.knobIds.length, greaterThan(8),
+            reason: '${entry.key} no longer needs its exemption — it owns '
+                '${recipe.knobIds.length} knobs, which the plain bound allows');
       }
     });
   });

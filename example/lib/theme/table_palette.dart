@@ -54,6 +54,8 @@ class TablePalette {
     required this.resizeGrip,
     required this.scrollTrack,
     required this.scrollThumb,
+    required this.tooltipBand,
+    required this.tooltipInk,
   });
 
   final Color headerBand;
@@ -121,6 +123,20 @@ class TablePalette {
   final Color scrollTrack;
   final Color scrollThumb;
 
+  /// The tooltip bubble, and the text on it.
+  ///
+  /// **A tooltip is the one surface that is deliberately not the table's.** It
+  /// is drawn over the page rather than in it, so it inverts: near-ink on paper
+  /// in the light theme, near-paper on ink in the dark one. That is the same
+  /// reason a tooltip is dark in a light app everywhere else — it has to read
+  /// as *above* the surface, and matching the surface is how it stops doing so.
+  ///
+  /// The package's default is a fixed `#616161` with white text, which cannot
+  /// know which brightness it is being drawn in. It is legible in both, which
+  /// is exactly why nothing forced the decision until a recipe drew one.
+  final Color tooltipBand;
+  final Color tooltipInk;
+
   static const light = TablePalette(
     headerBand: Color(0xFFF1F1F1),
     headerLine: Color(0xFFD8D8D8),
@@ -144,6 +160,8 @@ class TablePalette {
     checkboxTick: Color(0xFFFFFFFF),
     checkboxEdge: Color(0xFF9A9A9A),
     resizeGrip: Color(0xFF4A4A4A),
+    tooltipBand: Color(0xFF2B2B2B),
+    tooltipInk: Color(0xFFF2F2F2),
   );
 
   static const dark = TablePalette(
@@ -169,6 +187,8 @@ class TablePalette {
     checkboxTick: Color(0xFF141414),
     checkboxEdge: Color(0xFF6E6E6E),
     resizeGrip: Color(0xFFC4C4C4),
+    tooltipBand: Color(0xFFE8E8E8),
+    tooltipInk: Color(0xFF1A1A1A),
   );
 
   /// The palette for [brightness].
@@ -184,13 +204,27 @@ class TablePalette {
 /// them is precisely the dependency a recipe is forbidden to have. So the
 /// palette lives here, and both sides read it.
 ///
-/// **Five of the ten sub-themes are still at package defaults**, and that is
-/// not an oversight — it is the measurement behind #112. Nothing here can be
-/// derived from the app's `ColorScheme`, so every colour below is a decision
-/// this demo makes by hand, and the ones it has no reason to make yet stay
-/// default. Two of them stopped being safe to leave the moment #105 rendered
-/// drag selection and cell editing: both ship blues (`#448AFF`, `#2196F3`) that
-/// #110's sweep never saw, because no demo drew them.
+/// **Three sub-themes are still at package defaults**, and they are named
+/// rather than counted: `hoverButtonTheme`, `rowTooltipTheme` and
+/// `headerTooltipTheme`. A count says nothing about which one grew a reason to
+/// be decided, and it was wrong here for two tickets — it read "five" while six
+/// of the ten were set. Naming them means the next addition is visible in the
+/// diff instead of arithmetic nobody re-runs.
+///
+/// Each is left for a reason rather than by omission. `hoverButtonTheme` is
+/// unset because no recipe draws hover buttons yet. `headerTooltipTheme` is
+/// unset *deliberately and permanently*: null is what makes the header fall
+/// back to `tooltipTheme`, and the tooltips recipe exists partly to walk that
+/// fallback. `rowTooltipTheme` is unset because a row card needs a transparent,
+/// unpadded bubble and nothing else does — the row-card recipe overrides it
+/// locally rather than making every table here pay for it.
+///
+/// That is the measurement behind #112: nothing here can be derived from the
+/// app's `ColorScheme`, so every colour below is a decision this demo makes by
+/// hand, and the ones it has no reason to make yet stay default. Three stopped
+/// being safe to leave the moment a demo rendered them — drag selection and
+/// cell editing at #105 (`#448AFF`, `#2196F3`, blues #110's sweep never saw
+/// because no demo drew them), and the tooltip bubble at #107.
 TablePlusTheme demoTableTheme(Brightness brightness) {
   final p = TablePalette.of(brightness);
 
@@ -236,6 +270,13 @@ TablePlusTheme demoTableTheme(Brightness brightness) {
     scrollbarTheme: TablePlusScrollbarTheme(
       trackColor: p.scrollTrack,
       thumbColor: p.scrollThumb,
+    ),
+    // The header tooltip theme stays null on purpose: that is what makes the
+    // header fall back to this one. Handing it a copy would look identical and
+    // mean something else.
+    tooltipTheme: TablePlusTooltipTheme(
+      backgroundColor: p.tooltipBand,
+      textStyle: TextStyle(fontSize: 12, color: p.tooltipInk),
     ),
     bodyTheme: TablePlusBodyTheme(
       backgroundColor: p.surface,

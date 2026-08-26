@@ -3,12 +3,14 @@
 ## What it is
 
 `example/` — a Flutter application with its own manifest, its own analyzer run
-and its own test suite, containing a feature list, per-feature detail panes, a
-playground with named presets, and a settings registry that drives every table
-option from the UI.
+and its own test suite, containing a shell menu whose entries are recipes (one
+feature per self-contained file, shown beside its own source), a viewport
+preview stage, a feature list with per-feature detail panes, a playground with
+named presets, and a settings registry that drives every table option from the
+UI.
 
-It is the single largest area by issue count in this repository (19 issues are
-about it), and it is a **gate**, not a demo folder.
+It is the single largest area by issue count in this repository, and it is a
+**gate**, not a demo folder.
 
 ## Governing decisions
 
@@ -48,11 +50,16 @@ notes.
   relative import is unresolvable; and the Code view replaces the stage
   **region** rather than the stage's child, because source has no viewport and
   scaling it into one answers a question nobody asked.
-- **A recipe may carry demo scaffolding, and says so in the file.** Three of the
-  seven draw a strip the reader is told to delete on paste. They exist where the
-  feature's mechanism has no on-screen consequence to point at: drag selection's
-  four-term activation condition, a column's `order` values, a resized width in
-  logical pixels. Everything else in a recipe is code a reader keeps.
+- **A recipe may carry demo scaffolding, and says so in the file.** Some
+  recipes draw a strip above the table, marked in its own doc-comment with
+  *"This is the demo explaining itself; delete it when you paste."* — **grep
+  that sentence rather than counting them.** The count was written as "three of
+  the seven" in the same commit that added a fourth, and stayed wrong for two
+  tickets; the marker is the index and a number is not. A strip exists where the
+  feature's mechanism has no on-screen consequence to point at — a four-term
+  activation condition, a column's `order` values, a width in logical pixels,
+  the `Set<String>` a merged-row selection actually reports. Everything else in
+  a recipe is code a reader keeps.
 - **The preview frame owns an overlay, because a viewport does.** Everything
   that opens *above* the page — a `Draggable`'s feedback, a tooltip, a menu —
   goes to `Overlay.of(context)`, the *nearest* one, and `just_tooltip` also reads
@@ -64,8 +71,10 @@ notes.
   workaround for the scaling.
 - **A knob pane only draws its own feature's controls**, so an interaction
   between two features is not reachable from either one's knobs. Where the
-  interaction is the point — resized widths against zoom — the second control
-  goes in the stage as scaffolding rather than widening the pane.
+  interaction is the point — resized widths against zoom, a row card against a
+  merged row — the second control goes in the stage as scaffolding rather than
+  widening the pane. Two independent arrivals at the same shape, so it is the
+  rule rather than one recipe's workaround.
 
 ## Code
 
@@ -78,13 +87,11 @@ notes.
 `lib/shell/shell_page.dart`
 `lib/shell/recipe_catalog.dart`
 `lib/shell/destinations/recipe_destination.dart`
-`lib/recipes/selection_recipe.dart`
-`lib/recipes/sorting_recipe.dart`
-`lib/recipes/drag_selection_recipe.dart`
-`lib/recipes/cell_editing_recipe.dart`
-`lib/recipes/column_reorder_recipe.dart`
-`lib/recipes/column_resize_recipe.dart`
-`lib/recipes/zoom_recipe.dart`
+`lib/recipes/` — one file per feature. Listed as a directory on purpose: the
+pasteability rule is a property of the *directory* and
+`test/recipe_seam_test.dart` walks it rather than the catalogue, so naming the
+files here would be a second roster to keep in step and nothing would catch it
+drifting
 `lib/theme/table_palette.dart`
 `lib/shell/source_pane.dart`
 `lib/preview/preview_stage.dart`

@@ -2,6 +2,7 @@
 library;
 
 import 'package:flutter/widgets.dart';
+import 'package:flutter_table_plus/flutter_table_plus.dart';
 
 import '../pages/playground/models/playground_settings.dart';
 import '../pages/playground/models/settings_spec.dart';
@@ -9,8 +10,12 @@ import '../recipes/cell_editing_recipe.dart';
 import '../recipes/column_reorder_recipe.dart';
 import '../recipes/column_resize_recipe.dart';
 import '../recipes/drag_selection_recipe.dart';
+import '../recipes/dynamic_row_height_recipe.dart';
+import '../recipes/merged_rows_recipe.dart';
+import '../recipes/row_card_recipe.dart';
 import '../recipes/selection_recipe.dart';
 import '../recipes/sorting_recipe.dart';
+import '../recipes/tooltips_recipe.dart';
 import '../recipes/zoom_recipe.dart';
 
 /// One feature, demonstrated in one self-contained file.
@@ -121,6 +126,55 @@ final List<Recipe> recipeCatalog = [
     build: (settings) => ZoomRecipe(
       scale: settings.scale,
       blockModifierScroll: settings.blockModifierScroll,
+    ),
+  ),
+  Recipe(
+    featureId: 'tooltips',
+    source: 'lib/recipes/tooltips_recipe.dart',
+    build: (settings) => TooltipsRecipe(
+      enabled: settings.tooltipEnabled,
+      behavior: settings.tooltipBehavior,
+      headerBehavior: settings.headerTooltipBehavior,
+      waitDuration: Duration(milliseconds: settings.tooltipWaitDurationMs),
+      direction: settings.tooltipDirection,
+      alignment: settings.tooltipAlignment,
+      anchor: settings.tooltipAnchor,
+      // The playground's three-way choice becomes a nullable anchor, because
+      // that is what the package's API actually is: null *is* "follow the
+      // cells". The enum exists in the settings layer so a radio group has
+      // three labels to draw; translating it here is what keeps a recipe from
+      // importing a settings type it is not allowed to see.
+      headerAnchor: switch (settings.headerTooltipAnchor) {
+        HeaderTooltipAnchor.followCells => null,
+        HeaderTooltipAnchor.child => TooltipAnchor.child,
+        HeaderTooltipAnchor.pointer => TooltipAnchor.pointer,
+      },
+      showArrow: settings.tooltipShowArrow,
+      offset: settings.tooltipOffset,
+      showFormatter: settings.showTooltipFormatter,
+      showBuilder: settings.showTooltipBuilder,
+    ),
+  ),
+  Recipe(
+    featureId: 'rowCard',
+    source: 'lib/recipes/row_card_recipe.dart',
+    build: (settings) => RowCardRecipe(
+      enabled: settings.rowCardTooltip,
+      waitDuration: Duration(milliseconds: settings.rowCardWaitDurationMs),
+    ),
+  ),
+  Recipe(
+    featureId: 'mergedRows',
+    source: 'lib/recipes/merged_rows_recipe.dart',
+    build: (settings) => MergedRowsRecipe(
+      merged: settings.mergedRowsEnabled,
+    ),
+  ),
+  Recipe(
+    featureId: 'dynamicRowHeight',
+    source: 'lib/recipes/dynamic_row_height_recipe.dart',
+    build: (settings) => DynamicRowHeightRecipe(
+      perRowHeight: settings.dynamicRowHeight,
     ),
   ),
 ];
