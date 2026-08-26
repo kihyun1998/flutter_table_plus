@@ -156,8 +156,9 @@ class _TooltipAnchorPageState extends State<TooltipAnchorPage> {
                 ),
                 const _Note(
                   'The row card ignores both. A row is as wide as the table\'s '
-                  'content, so anchoring to it would aim at a point that can '
-                  'be off screen; it always anchors at the pointer.',
+                  'content, so its centre is the middle of the viewport rather '
+                  'than the cell you are pointing at; it always anchors at the '
+                  'pointer.',
                 ),
                 const _Note(
                   'Alignment changes meaning with the anchor. Against a point '
