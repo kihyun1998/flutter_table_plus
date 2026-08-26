@@ -5,7 +5,10 @@ import 'package:flutter/widgets.dart';
 
 import '../pages/playground/models/playground_settings.dart';
 import '../pages/playground/models/settings_spec.dart';
+import '../recipes/cell_editing_recipe.dart';
+import '../recipes/drag_selection_recipe.dart';
 import '../recipes/selection_recipe.dart';
+import '../recipes/sorting_recipe.dart';
 
 /// One feature, demonstrated in one self-contained file.
 ///
@@ -65,6 +68,28 @@ final List<Recipe> recipeCatalog = [
       selectAllEnabled: settings.selectAllEnabled,
       showRowCheckbox: settings.showRowCheckbox,
       cellTapTogglesCheckbox: settings.cellTapTogglesCheckbox,
+    ),
+  ),
+  Recipe(
+    featureId: 'sorting',
+    source: 'lib/recipes/sorting_recipe.dart',
+    build: (settings) => SortingRecipe(
+      sortable: settings.sortingEnabled,
+      sortCycleOrder: settings.sortCycleOrder,
+    ),
+  ),
+  Recipe(
+    featureId: 'dragSelection',
+    source: 'lib/recipes/drag_selection_recipe.dart',
+    build: (settings) => DragSelectionRecipe(
+      dragSelection: settings.dragSelectionEnabled,
+    ),
+  ),
+  Recipe(
+    featureId: 'editing',
+    source: 'lib/recipes/cell_editing_recipe.dart',
+    build: (settings) => CellEditingRecipe(
+      editable: settings.editingEnabled,
     ),
   ),
 ];

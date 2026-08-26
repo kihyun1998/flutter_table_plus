@@ -24,9 +24,12 @@ import 'package:flutter_table_plus/flutter_table_plus.dart';
 /// unmistakable, which is why [selectedBand] sits well clear of [altBand]
 /// rather than a shade away from it.
 ///
-/// The one exemption is the editing markers, which stay amber. An editing cell
-/// is a transient state a reader has to notice — the same argument that keeps
-/// `error` red in the app chrome.
+/// The one exemption is the editing markers ([editingCell], [editingLine],
+/// [editingCursor]), which stay amber. An editing cell is a transient state a
+/// reader has to notice — the same argument that keeps `error` red in the app
+/// chrome. That sentence stood here for two tickets while the class carried no
+/// editing colours at all, which made it a rationale for a decision nothing
+/// implemented; the fields arrived with the cell-editing recipe (#105).
 class TablePalette {
   const TablePalette({
     required this.headerBand,
@@ -40,6 +43,11 @@ class TablePalette {
     required this.ink,
     required this.mutedInk,
     required this.selectedBand,
+    required this.dragBand,
+    required this.dragBandEdge,
+    required this.editingCell,
+    required this.editingLine,
+    required this.editingCursor,
     required this.scrollTrack,
     required this.scrollThumb,
   });
@@ -55,6 +63,24 @@ class TablePalette {
   final Color ink;
   final Color mutedInk;
   final Color selectedBand;
+
+  /// The rubber band drag-select draws, and its edge.
+  ///
+  /// The package defaults these to `#33448AFF` / `#448AFF` — a blue nothing in
+  /// this app chose. It is invisible until a table is both selectable and
+  /// dragged, which is why it survived the sweep that took the other blues out
+  /// (#110): no demo rendered it.
+  final Color dragBand;
+  final Color dragBandEdge;
+
+  /// The editing markers, and the one place this palette is not achromatic.
+  ///
+  /// A cell that is open for editing is a *transient* state with a keystroke's
+  /// worth of consequence behind it, so it is the one thing here allowed to
+  /// shout. Neutral would be correct and useless.
+  final Color editingCell;
+  final Color editingLine;
+  final Color editingCursor;
 
   /// The scrollbar's own two colours.
   ///
@@ -79,6 +105,11 @@ class TablePalette {
     selectedBand: Color(0xFFDCDCDC),
     scrollTrack: Color(0xFFEDEDED),
     scrollThumb: Color(0xFF9A9A9A),
+    dragBand: Color(0x22000000),
+    dragBandEdge: Color(0xFF6B6B6B),
+    editingCell: Color(0xFFFFF3D6),
+    editingLine: Color(0xFFB8860B),
+    editingCursor: Color(0xFFB8860B),
   );
 
   static const dark = TablePalette(
@@ -95,6 +126,11 @@ class TablePalette {
     selectedBand: Color(0xFF383838),
     scrollTrack: Color(0xFF232323),
     scrollThumb: Color(0xFF5E5E5E),
+    dragBand: Color(0x33FFFFFF),
+    dragBandEdge: Color(0xFFA6A6A6),
+    editingCell: Color(0xFF3A2F14),
+    editingLine: Color(0xFFD9A93A),
+    editingCursor: Color(0xFFD9A93A),
   );
 
   /// The palette for [brightness].
@@ -105,10 +141,18 @@ class TablePalette {
 /// A neutral table theme for a demo that has no settings panel behind it.
 ///
 /// The playground assembles its own theme, because sixty-odd settings feed into
-/// it. Everything else in this example — the viewport lab today, the recipes
-/// after it — wants the same colours without the machinery, and reaching into
-/// the playground for them is precisely the dependency a recipe is forbidden to
-/// have. So the palette lives here, and both sides read it.
+/// it. Everything else in this example — the viewport lab, the recipes — wants
+/// the same colours without the machinery, and reaching into the playground for
+/// them is precisely the dependency a recipe is forbidden to have. So the
+/// palette lives here, and both sides read it.
+///
+/// **Five of the ten sub-themes are still at package defaults**, and that is
+/// not an oversight — it is the measurement behind #112. Nothing here can be
+/// derived from the app's `ColorScheme`, so every colour below is a decision
+/// this demo makes by hand, and the ones it has no reason to make yet stay
+/// default. Two of them stopped being safe to leave the moment #105 rendered
+/// drag selection and cell editing: both ship blues (`#448AFF`, `#2196F3`) that
+/// #110's sweep never saw, because no demo drew them.
 TablePlusTheme demoTableTheme(Brightness brightness) {
   final p = TablePalette.of(brightness);
 
@@ -120,8 +164,27 @@ TablePlusTheme demoTableTheme(Brightness brightness) {
         fontWeight: FontWeight.w600,
         color: p.headerInk,
       ),
-      bottomBorder: TablePlusHeaderBorderTheme(show: true, color: p.rule),
+      bottomBorder: TablePlusHeaderBorderTheme(show: true, color: p.headerLine),
       verticalDivider: TablePlusHeaderDividerTheme(show: true, color: p.rule),
+      // `SortIcons` holds widgets, not colours, so the only way to colour a
+      // sort arrow is to rebuild the glyphs. The unsorted one is the reason:
+      // its package default hard-codes `Colors.grey`, which reads as an active
+      // state next to a neutral header rather than as "sortable, not sorted".
+      sortIcons: SortIcons(
+        ascending: Icon(Icons.arrow_upward, size: 16, color: p.sortIcon),
+        descending: Icon(Icons.arrow_downward, size: 16, color: p.sortIcon),
+        unsorted: Icon(Icons.unfold_more, size: 16, color: p.sortIconIdle),
+      ),
+    ),
+    dragSelectionTheme: TablePlusDragSelectionTheme(
+      fillColor: p.dragBand,
+      borderColor: p.dragBandEdge,
+    ),
+    editableTheme: TablePlusEditableTheme(
+      editingCellColor: p.editingCell,
+      editingBorderColor: p.editingLine,
+      cursorColor: p.editingCursor,
+      editingTextStyle: TextStyle(fontSize: 13, color: p.ink),
     ),
     scrollbarTheme: TablePlusScrollbarTheme(
       trackColor: p.scrollTrack,

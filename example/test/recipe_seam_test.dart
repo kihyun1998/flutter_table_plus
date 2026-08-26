@@ -7,6 +7,7 @@ import 'package:example/pages/playground/widgets/settings_controls.dart';
 import 'package:example/recipes/selection_recipe.dart';
 import 'package:example/shell/destinations/recipe_destination.dart';
 import 'package:example/shell/recipe_catalog.dart';
+import 'package:example/shell/shell_menu.dart';
 import 'package:example/shell/shell_page.dart';
 import 'package:example/theme/example_theme.dart';
 import 'package:flutter/material.dart';
@@ -475,10 +476,32 @@ void main() {
     testWidgets('a feature with no recipe is simply absent', (tester) async {
       await pumpShell(tester);
 
-      // Absence is a data fact, not an error: sorting has no recipe yet, so it
-      // has no menu entry. The day it does, this line is what says so.
-      expect(recipeCatalog.map((r) => r.featureId), isNot(contains('sorting')));
-      expect(find.text(featureById('sorting').title), findsNothing);
+      // Derived, not named. This used to name `sorting`, which was correct
+      // until #105 gave sorting a recipe — so the test failed for the one
+      // reason it should never fail: the thing it describes came true.
+      final withoutRecipe = settingsSpec
+          .expand((g) => g.features)
+          .where((f) => !recipeCatalog.any((r) => r.featureId == f.id))
+          .toList();
+
+      expect(withoutRecipe, isNotEmpty,
+          reason: 'every feature has a recipe, so absence is no longer '
+              'observable — this test now proves nothing');
+
+      // Scoped to the menu. `find.text` matches anywhere on screen, and a
+      // feature title is a common word: `Rows` is also a heading in the
+      // Employees knob pane, so an unscoped finder would fail for the wrong
+      // reason (#58).
+      for (final feature in withoutRecipe) {
+        expect(
+          find.descendant(
+            of: find.byType(ShellMenu),
+            matching: find.text(feature.title),
+          ),
+          findsNothing,
+          reason: '${feature.id} has no recipe but is listed in the menu',
+        );
+      }
     });
   });
 }

@@ -61,6 +61,10 @@ notes.
 `lib/shell/recipe_catalog.dart`
 `lib/shell/destinations/recipe_destination.dart`
 `lib/recipes/selection_recipe.dart`
+`lib/recipes/sorting_recipe.dart`
+`lib/recipes/drag_selection_recipe.dart`
+`lib/recipes/cell_editing_recipe.dart`
+`lib/theme/table_palette.dart`
 `lib/shell/source_pane.dart`
 
 ## Reference behaviour

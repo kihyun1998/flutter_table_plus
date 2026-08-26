@@ -25,6 +25,8 @@ one being chosen.
 - **Three states, not two.** `SortDirection.none` is a real state, which is what
   makes "tap back to unsorted" expressible.
 - **Icons are theme data, not logic.** `SortIcons` supplies the three glyphs.
+  They are *widgets*, though, not colours — so a caller who wants a coloured
+  arrow rebuilds all three rather than setting a field.
 
 ## Code
 
@@ -49,4 +51,9 @@ one being chosen.
 
 ## Known holes / open
 
-**None.**
+`SortIcons.defaultIcons` hard-codes `Colors.grey` on the unsorted glyph, in
+`models/table_column.dart`. It is a colour decision living outside the theme
+files, so it is not in the count of hard-coded defaults that
+[#112](https://github.com/kihyun1998/flutter_table_plus/issues/112) measured,
+and a caller cannot change it without replacing all three icons. Found from the
+consumer side while building the example's sorting recipe (#105).
