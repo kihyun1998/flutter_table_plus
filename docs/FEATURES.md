@@ -350,6 +350,7 @@ FlutterTablePlus<User>(
 > Columns not in the map remain flexible and participate in proportional distribution.
 
 > **Every width here is logical (unscaled) pixels — including the bounds.**
+>
 > `onColumnResized` reports the width the column would have at `scale: 1.0`, not
 > the pixels the drag covered, and `initialResizedWidths` is read the same way —
 > so a stored width still means the same thing when the app reopens at a
@@ -877,7 +878,9 @@ When `onScaleChanged` is non-null:
 
 Resized widths are stored in **logical (unscaled) units**. The `onColumnResized` callback always reports logical widths, and `initialResizedWidths` expects logical widths. This means saved widths work correctly regardless of the current scale.
 
-`minWidth` and `maxWidth` are declared in the same units and travel the other way — the table multiplies them by `scale` before they bound a drag measured on screen. So the range a column stops at is the range you wrote, at every zoom level. (Fixed in 2.16.2; before that the drag path compared them unconverted.)
+`minWidth` and `maxWidth` are declared in the same units and travel the other way — the table multiplies them by `scale` before they bound a drag measured on screen. So the range a column stops at is the range you wrote, not a range scaled along with the zoom. (Fixed in 2.16.2; from 2.9.0 to 2.16.1 the drag path compared them unconverted, so at `scale: 2.0` a declared `maxWidth: 300` behaved as 150.)
+
+> **One caveat on the reported number.** Multiplying by `scale` and dividing back is exact for most factors but not all — at a scale accumulated by repeated Ctrl+wheel steps, `onColumnResized` can report a width outside the declared bound by around 1e-14. Layout re-clamps in logical space and is never outside it. Compare with a tolerance if you assert on the callback's value.
 
 ```dart
 FlutterTablePlus<User>(

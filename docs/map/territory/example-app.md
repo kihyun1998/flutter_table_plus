@@ -98,7 +98,6 @@ notes.
 
 → [The widget-test font is a square per glyph](../invariant/test-font-square.md) — the demo's own suite is where this was measured: a 19-character label measures 304px in a test against roughly 190 on screen
 → [Observe at the screen, assert by count](../invariant/observe-at-the-screen.md) — the demo's tests count controls rather than naming them, which is what let its widgets be reorganised without rewriting the suite
-→ [A scale of 1.0 hides every missing conversion](../invariant/scale-one-hides-it.md) — the zoom and resizing recipes are the only place a reader can move the factor at all, which makes them the only demo that could ever show one of these
 
 ## Blast radius
 

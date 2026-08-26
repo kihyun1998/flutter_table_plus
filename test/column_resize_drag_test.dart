@@ -36,16 +36,6 @@ Map<String, TablePlusColumn<Map<String, dynamic>>> _columns() {
   return b.build();
 }
 
-/// Drags `c0`'s handle by [dx] **screen** pixels and returns every width the
-/// table reported.
-///
-/// [dx] is screen space on purpose: that is what a pointer moves, and at a
-/// scale other than 1.0 it is not the same distance the column travels. What
-/// comes back is logical, so a caller converts one and not the other.
-///
-/// [viewport] has to hold the handle. It sits at the column's right edge in
-/// *rendered* pixels, so at scale 2.0 a 300px viewport puts it off screen and
-/// the drag never starts.
 /// Two columns, neither declaring a bound, so both take the defaults:
 /// `minWidth: 50` and `maxWidth: null`.
 Map<String, TablePlusColumn<Map<String, dynamic>>> _unboundedColumns() {
@@ -65,6 +55,16 @@ Map<String, TablePlusColumn<Map<String, dynamic>>> _unboundedColumns() {
   return b.build();
 }
 
+/// Drags `c0`'s handle by [dx] **screen** pixels and returns every width the
+/// table reported.
+///
+/// [dx] is screen space on purpose: that is what a pointer moves, and at a
+/// scale other than 1.0 it is not the same distance the column travels. What
+/// comes back is logical, so a caller converts one and not the other.
+///
+/// [viewport] has to hold the handle. It sits at the column's right edge in
+/// *rendered* pixels, so at scale 2.0 a 300px viewport puts it off screen and
+/// the drag never starts.
 Future<List<double>> _dragResize(
   WidgetTester tester,
   double dx, {
@@ -127,6 +127,55 @@ void main() {
 
     expect(resized.length, 1);
     expect(resized.single, 80); // clamped to minWidth
+  });
+
+  testWidgets('the boundary lands where the pointer left it, at scale 2.0',
+      (tester) async {
+    // Every other test in this file asserts the *reported* number. That number
+    // can be right while the column is wrong: deleting the `/ scale` in
+    // `_handleColumnResize` — the live path, not the report path — leaves the
+    // whole suite green while the boundary runs away from the pointer at 2.5x
+    // and stays there after release. Measured 2026-08-26: 200px of handle
+    // travel for 80px of pointer travel, reported as a correct 240.
+    //
+    // So this one watches the handle instead. It is the only assertion in the
+    // file on rendered geometry.
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: SizedBox(
+              width: 600,
+              height: 300,
+              child: FlutterTablePlus<Map<String, dynamic>>(
+                columns: _columns(),
+                data: const [
+                  {'id': '1', 'c0': 'a', 'c1': 'b', 'c2': 'c'}
+                ],
+                rowId: (r) => r['id'] as String,
+                resizable: true,
+                scale: 2.0,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final handle = find.byKey(const ValueKey('resize_c0'));
+    final before = tester.getTopLeft(handle).dx;
+
+    // 100 screen px less the 20px drag slop is 80 that reach the handle.
+    await tester.drag(handle, const Offset(100, 0));
+    await tester.pumpAndSettle();
+
+    expect(
+      tester.getTopLeft(handle).dx - before,
+      closeTo(80, 0.001),
+      reason: 'the boundary must track the pointer 1:1 in screen pixels — '
+          'a scale applied to the live width moves it by 2.5x instead',
+    );
   });
 
   group('the declared bounds mean the same logical numbers at any scale', () {

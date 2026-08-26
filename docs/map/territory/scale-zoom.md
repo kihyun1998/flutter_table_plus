@@ -33,9 +33,13 @@ widths and text do.
   resized width is stored and reported in logical units, so the caller's
   persisted state is scale-independent; the `minWidth` / `maxWidth` it is
   clamped against make the opposite trip, multiplied by the factor before they
-  can bound anything measured on screen. Every value that meets a rendered one
-  is converted first — a rule that is free to be broken silently, because at
-  1.0 the two spaces are the same numbers.
+  can bound anything measured on screen. The rule is free to be broken silently,
+  because at 1.0 the two spaces are the same numbers — which is how the bounds
+  went unconverted from 2.9.0 to 2.16.1.
+- **A value captured before a scale change is not re-based.** The conversions
+  above all read the *current* factor at build time; a resize drag's accumulator
+  does not, so changing the zoom mid-gesture leaves it in the old space. See
+  [column resizing](column-resize.md)'s open holes for the measurement.
 
 ## Code
 
@@ -52,7 +56,6 @@ widths and text do.
 
 → [Widths and offsets are clamped on every path](../invariant/clamped-dimensions.md) — both re-derived offsets are clamped into the new extents
 → [Never re-assemble by hand-listing fields](../invariant/no-hand-enumeration.md) — scaling a theme is the site that lost a field
-→ [A scale of 1.0 hides every missing conversion](../invariant/scale-one-hides-it.md) — this is where the factor enters, so it is the one territory whose tests are obliged to leave 1.0
 
 ## Blast radius
 

@@ -52,7 +52,6 @@ why, and nothing records the fallback chain's precedence as a decision either.
 
 → [Never re-assemble by hand-listing fields](../invariant/no-hand-enumeration.md) — this territory is where the invariant was learned
 → [Do not work around an upstream contract here](../invariant/upstream-contract.md) — the checkbox sub-theme wraps a sibling package's widget, and its Material-3 factory sits on that seam
-→ [A scale of 1.0 hides every missing conversion](../invariant/scale-one-hides-it.md) — `scaledBy` is the mechanism, and its 1.0 short-circuit — `if (factor == 1.0) return this` — is the concrete hiding place
 
 ## Blast radius
 
