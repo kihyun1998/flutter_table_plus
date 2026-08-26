@@ -29,10 +29,13 @@ widths and text do.
   offset and the ratio, and clamped into the new extents.
 - **Not everything scales.** Which theme fields participate is decided in the
   theme system, not here.
-- **What crosses back out is unscaled.** A resized width is stored and reported
-  in logical units, so the caller's persisted state is scale-independent. The
-  bounds it is clamped against are not converted the same way — see
-  [column resizing](column-resize.md)'s open hole.
+- **What crosses back out is unscaled, and what comes in is converted.** A
+  resized width is stored and reported in logical units, so the caller's
+  persisted state is scale-independent; the `minWidth` / `maxWidth` it is
+  clamped against make the opposite trip, multiplied by the factor before they
+  can bound anything measured on screen. Every value that meets a rendered one
+  is converted first — a rule that is free to be broken silently, because at
+  1.0 the two spaces are the same numbers.
 
 ## Code
 
@@ -49,6 +52,7 @@ widths and text do.
 
 → [Widths and offsets are clamped on every path](../invariant/clamped-dimensions.md) — both re-derived offsets are clamped into the new extents
 → [Never re-assemble by hand-listing fields](../invariant/no-hand-enumeration.md) — scaling a theme is the site that lost a field
+→ [A scale of 1.0 hides every missing conversion](../invariant/scale-one-hides-it.md) — this is where the factor enters, so it is the one territory whose tests are obliged to leave 1.0
 
 ## Blast radius
 

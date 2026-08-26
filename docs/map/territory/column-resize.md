@@ -32,9 +32,14 @@ demonstrated in `docs/FEATURES.md`.
   on the table — the one capability in this package that is not per-column,
   which is worth knowing because `sortable` and `editable` sitting next to each
   other make it look like there must be a third.
-- **Widths cross the boundary in logical units.** The handle drags in scaled
-  pixels; what is stored and what is reported are divided by the scale first, so
-  a persisted width survives a change of zoom.
+- **Widths cross the boundary in logical units, and so do the bounds.** The
+  handle drags in rendered pixels; what is stored and what is reported are
+  divided by the scale first, so a persisted width survives a change of zoom.
+  `minWidth` / `maxWidth` make the trip the other way — they are declared
+  logical and multiplied by the scale before they can bound a rendered drag.
+  Both conversions are the same rule, and the second one was missing until #114:
+  a bound compared in the wrong space is wrong by exactly the factor, and
+  invisible at 1.0.
 
 ## Code
 
@@ -51,6 +56,7 @@ demonstrated in `docs/FEATURES.md`.
 
 → [Widths and offsets are clamped on every path](../invariant/clamped-dimensions.md) — three sites in the handle alone, one per drag phase
 → [Viewport-local coordinates come from one frame](../invariant/viewport-local-frame.md) — this territory holds the site that satisfies it the other way, and it is the one a grep for the frame cannot see
+→ [A scale of 1.0 hides every missing conversion](../invariant/scale-one-hides-it.md) — the drag crosses the boundary three times from one pair of inputs, and got the bounds wrong in all three until #114
 
 ## Blast radius
 
@@ -61,12 +67,8 @@ demonstrated in `docs/FEATURES.md`.
 
 ## Known holes / open
 
-**The bounds are not converted, only the width is.** The handle accumulates
-scaled pixels and clamps them against `column.minWidth` / `column.maxWidth`,
-which are logical — two different spaces compared as one. Measured 2026-08-26:
-a column declaring `maxWidth: 260` at `scale: 2.0` reports **130** logical px
-and can never grow past it, and its floor is halved the same way. At
-`scale: 1.0` the two spaces coincide, which is why every test sees the right
-number. The auto-fit path in the same feature *does* convert
-(`column.minWidth * scale`), so the drag path is the outlier rather than a
-policy. Untracked as of this note.
+**None.**
+
+The bounds-conversion hole this section used to hold was fixed in #114. What it
+taught outlived it and moved to
+[A scale of 1.0 hides every missing conversion](../invariant/scale-one-hides-it.md).

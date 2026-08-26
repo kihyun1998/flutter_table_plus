@@ -31,6 +31,7 @@ class TablePlusHeader<T> extends StatefulWidget {
     this.onSelectAll,
     this.onColumnReorder,
     this.resizable = false,
+    this.scale = 1.0,
     this.onColumnResize,
     this.onColumnResizeEnd,
     this.sortColumnKey,
@@ -80,6 +81,15 @@ class TablePlusHeader<T> extends StatefulWidget {
 
   /// Whether columns can be resized by dragging their header edges.
   final bool resizable;
+
+  /// The zoom factor the table is rendering at.
+  ///
+  /// Everything else this header receives arrives with the factor already
+  /// applied — [columnWidths] are multiplied by it and [theme] has been through
+  /// `scaledBy`. The factor itself is needed for one thing only: a column's
+  /// `minWidth` / `maxWidth` are declared in logical units and have to be
+  /// converted before they can bound a drag measured in rendered pixels.
+  final double scale;
 
   /// Callback during column resize drag with live width updates.
   final void Function(String columnKey, double newWidth)? onColumnResize;
@@ -313,8 +323,17 @@ class _TablePlusHeaderState<T> extends State<TablePlusHeader<T>> {
             child: ResizeHandle(
               columnKey: column.key,
               columnWidth: width,
-              minWidth: column.minWidth,
-              maxWidth: column.maxWidth,
+              // Converted, because the handle drags in rendered pixels while
+              // these are declared in logical ones. Comparing the two as if
+              // they were one space is a bug the factor makes invisible: at
+              // 1.0 they coincide, so every test sees the right number while a
+              // consumer at 2.0 gets a ceiling half of what it declared.
+              // `_handleColumnAutoFit` converts the same two values the same
+              // way for the same reason — one rule, two paths into it.
+              minWidth: column.minWidth * widget.scale,
+              maxWidth: column.maxWidth == null
+                  ? null
+                  : column.maxWidth! * widget.scale,
               handleColor: handleColor,
               handleThickness: widget.theme.resizeHandle.thickness,
               handleIndent: widget.theme.resizeHandle.indent,

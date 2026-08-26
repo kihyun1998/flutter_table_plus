@@ -40,6 +40,11 @@ only shows at the extremes — the middle of the range behaves correctly, so a
 manual check passes and the defect waits for a user with a narrow window or a
 long column.
 
+**A clamp that exists is not a clamp that holds.** #114 is the measured case: all
+three of the resize handle's sites were present and none was reachable at its
+declared bound, because the bound and the value were in different spaces. Count
+the clamps to find a missing one; check the *operands* to find a wrong one.
+
 ## Discovery history
 
 **Thin, and honestly so.** No single incident produced this rule; it is the
@@ -48,10 +53,15 @@ invariant on that basis ("`minWidth`/`maxWidth` `clamp()` in every layout path")
 Seven independent arrivals at the same rule is the same signal a rediscovery is,
 recorded before rather than after the bug.
 
-The related measured failure is the *inverse* one: `scaledBy(1.0)` returning the
-receiver meant a whole class of scale-path defects was invisible at the factor
-everyone tests with (#50) — a reminder that the extremes are where this rule is
-observable at all.
+It has since gained one measured failure of its own: **#114**, where three of the
+eighteen sites clamped against operands from the wrong space, so the rule was
+satisfied by inspection and violated in fact.
+
+The related failure is the *inverse* one: `scaledBy(1.0)` returning the receiver
+meant a whole class of scale-path defects was invisible at the factor everyone
+tests with (#50) — a reminder that the extremes are where this rule is
+observable at all. Both are now
+[one note](scale-one-hides-it.md).
 
 ## Where it will recur
 

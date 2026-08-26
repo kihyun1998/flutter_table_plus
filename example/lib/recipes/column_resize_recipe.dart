@@ -23,13 +23,18 @@ import '../theme/table_palette.dart';
 /// one `resizable: true` on the table arms every boundary. What *is* per-column
 /// is the range: [TablePlusColumn.minWidth] and [TablePlusColumn.maxWidth]
 /// bound the drag, and the handle refuses to cross them rather than reporting a
-/// width you would have to reject yourself. Those bounds are declared in
-/// logical pixels like everything else here, but the drag is not currently
-/// bounded in the same space — so away from `scale: 1.0` the floor this recipe
-/// puts on a knob is approximate. That is a package defect, measured on
-/// 2026-08-26 (a column at `scale: 2.0` clamps to half its declared ceiling);
-/// it is called out here rather than designed around because a recipe that
-/// quietly avoided the bounds would be teaching the workaround.
+/// width you would have to reject yourself. Those bounds are logical pixels
+/// like everything else here, so the floor this recipe puts on a knob is the
+/// floor you get at any zoom — set the minimum to 120 and drag the boundary
+/// left at every scale chip in turn, and the column stops at 120 each time.
+///
+/// It did not always. Until #114 the drag was measured in screen pixels and
+/// bounded against logical ones, so at `scale: 2.0` a column clamped to half
+/// its declared ceiling. An earlier version of this comment named that defect
+/// rather than designing around it; the defect is gone and the note with it.
+/// What is worth keeping is why nobody had seen it: at `scale: 1.0` the two
+/// spaces are the same numbers, so the scale chips above are the only control
+/// on this page that could ever have shown it.
 ///
 /// **`initialResizedWidths` is misleadingly named.** It is not read once at
 /// startup: whenever the map you pass changes by value, the table adopts it.
