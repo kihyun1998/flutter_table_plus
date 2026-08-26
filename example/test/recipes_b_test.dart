@@ -225,6 +225,39 @@ void main() {
               'back through TableColumnsBuilder');
     });
 
+    testWidgets('the drop target past the last column is reachable',
+        (tester) async {
+      // It only exists in the space the columns leave over, and
+      // `TablePlusColumn.width` is a preference — flexible columns share the
+      // room in proportion to it and fill the viewport exactly, which leaves
+      // the trailing target zero pixels wide. Measured 2026-08-26: with the
+      // columns unpinned it sat at Rect.fromLTRB(1500, 35, 1500, 90). Pinning
+      // them with `maxWidth == width` is what gives it a body.
+      await _pump(tester, const ColumnReorderRecipe(),
+          size: const Size(1500, 900));
+
+      final targets = find.byType(DragTarget<int>);
+      final trailing = tester.getRect(targets.at(targets.evaluate().length - 1));
+      expect(trailing.width, greaterThan(100),
+          reason: 'the trailing drop target has no width, so a column can be '
+              'dragged past the last one and nothing accepts it');
+
+      // And it does what it says.
+      final start = tester.getCenter(find.text('Name'));
+      final gesture = await tester.startGesture(start);
+      final end = trailing.center;
+      final step = (end - start) / 8;
+      for (var i = 0; i < 8; i++) {
+        await gesture.moveBy(step);
+        await tester.pump();
+      }
+      await gesture.up();
+      await tester.pumpAndSettle();
+
+      expect(_displayOrder(tester).last, 'name',
+          reason: 'dropping past the last column did not send it to the end');
+    });
+
     testWidgets('with the knob off, dragging a header does nothing',
         (tester) async {
       // The side condition. Wiring `onColumnReorder` unconditionally passes

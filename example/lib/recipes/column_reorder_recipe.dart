@@ -39,6 +39,16 @@ import '../theme/table_palette.dart';
 /// What you write back is `order`, not a list position: order is a property of
 /// the column, which is why hiding a column and moving a column are independent
 /// operations rather than two edits to the same list.
+///
+/// **The columns below are pinned, and that is what makes the last drop target
+/// reachable.** [TablePlusColumn.width] is a *preference*, not a width: flexible
+/// columns share whatever room is left in proportion to it, so four columns
+/// totalling 820px render at 1500px wide in a 1500px viewport — and the strip of
+/// empty header to the right of the last one, which is where you drop a column
+/// to send it to the end, is then exactly zero pixels wide. Measured
+/// 2026-08-26. Setting `maxWidth` equal to `width` opts a column out of the
+/// distribution, which is the only lever there is. The empty band you see to the
+/// right here is not slack; it is that drop target.
 class ColumnReorderRecipe extends StatefulWidget {
   const ColumnReorderRecipe({super.key, this.reorderEnabled = true});
 
@@ -61,7 +71,8 @@ class _ColumnReorderRecipeState extends State<ColumnReorderRecipe> {
                 key: 'name',
                 label: 'Name',
                 order: 0,
-                width: 170,
+                width: 220,
+                maxWidth: 220,
                 valueAccessor: _name,
               ),
             )
@@ -71,7 +82,8 @@ class _ColumnReorderRecipeState extends State<ColumnReorderRecipe> {
                 key: 'department',
                 label: 'Department',
                 order: 0,
-                width: 160,
+                width: 200,
+                maxWidth: 200,
                 valueAccessor: _department,
               ),
             )
@@ -81,7 +93,8 @@ class _ColumnReorderRecipeState extends State<ColumnReorderRecipe> {
                 key: 'position',
                 label: 'Position',
                 order: 0,
-                width: 200,
+                width: 240,
+                maxWidth: 240,
                 valueAccessor: _position,
               ),
             )
@@ -91,7 +104,8 @@ class _ColumnReorderRecipeState extends State<ColumnReorderRecipe> {
                 key: 'salary',
                 label: 'Salary',
                 order: 0,
-                width: 120,
+                width: 160,
+                maxWidth: 160,
                 textAlign: TextAlign.right,
                 valueAccessor: _salary,
               ),
@@ -180,7 +194,9 @@ class _OrderStrip extends StatelessWidget {
         crossAxisAlignment: WrapCrossAlignment.center,
         children: [
           Text(
-            enabled ? 'drag a header' : 'reorder is off',
+            enabled
+                ? 'drag a header — drop past the last one to send it to the end'
+                : 'reorder is off',
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w700,

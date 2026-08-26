@@ -140,6 +140,15 @@ class TablePlusColumn<T> {
   final dynamic Function(T row) valueAccessor;
 
   /// The preferred width of the column in pixels.
+  ///
+  /// A *preference*, not a width. When the columns are narrower than the
+  /// viewport the flexible ones share the leftover space in proportion to this
+  /// value, so a column declaring 170 out of 650 renders at 392 in a 1500px
+  /// viewport. Only when the total exceeds the viewport does each column get
+  /// the width it asked for, and the table scrolls.
+  ///
+  /// To pin a column at exactly this width, set [maxWidth] to the same value —
+  /// that takes it out of the distribution. There is no separate flag.
   final double width;
 
   /// The minimum width of the column in pixels.

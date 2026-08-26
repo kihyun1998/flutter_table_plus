@@ -20,6 +20,10 @@ of this territory and is currently readable only from the source.
 - **Resolution is a pure function of (columns, resized widths, viewport).** It
   produces a `List<double>` positionally aligned with the visible column list;
   everything downstream indexes into it rather than re-deriving.
+- **A declared width is a preference, not a width.** Flexible columns share the
+  leftover space in proportion to it, so the number a caller writes is the one
+  they get only once the total overflows the viewport. Opting out is `maxWidth ==
+  width`; there is no flag, and nothing else in the package reads as one.
 - **`minWidth` / `maxWidth` bound every path into it** — declared, resized,
   stretched, auto-fitted, scaled. There is no path that is allowed to skip the
   bound, which is why this is an invariant rather than a rule of this note.
