@@ -871,7 +871,8 @@ When `onScaleChanged` is non-null:
 | Padding | Tooltip (overlay) |
 | Sort icon size (via FittedBox) | Duration values |
 | Resize handle | |
-| Checkbox hit area | |
+| Checkbox, via `CheckboxStyle.scale` | |
+| The selection column's width | |
 | `minWidth` / `maxWidth` (converted before they bound a drag) | |
 
 ### Column Width Persistence
@@ -898,5 +899,5 @@ FlutterTablePlus<User>(
 
 - `scale` must be greater than zero (`assert(scale > 0)`)
 - No min/max is enforced by the library — the caller clamps in `onScaleChanged`
-- Material `Checkbox` widget does not visually scale (controlled by `materialTapTargetSize` / `visualDensity`); only its hit-test area scales
+- The checkbox scales visually through `CheckboxStyle.scale`. Every other `CheckboxStyle` field is carried through untouched — this bullet used to say the opposite, describing the Material `Checkbox` that 2.10.0 replaced
 - Custom sort icons are automatically scaled via `FittedBox` to match the scaled `sortIconWidth`

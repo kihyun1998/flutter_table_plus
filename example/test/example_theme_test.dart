@@ -149,7 +149,7 @@ void main() {
     });
 
     test('the dark variant carries every configured sub-theme through', () {
-      // `rowTooltipTheme` went missing once because a variant was re-assembled
+      // `rowTooltipTheme` went missing once, and five `CheckboxStyle` fields later did too because a variant was re-assembled
       // by hand-listing the sub-themes it knew about. There is no variant here
       // — one builder takes a palette — but this pins the property rather than
       // the implementation, so it keeps its meaning if the structure changes

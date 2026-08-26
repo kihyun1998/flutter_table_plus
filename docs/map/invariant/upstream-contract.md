@@ -26,7 +26,7 @@ not strangers' code and each has its own tracker.
 
 → [Tooltips](../territory/tooltips.md) — where it was learned, twice, and where the removed local guard must not return
 → [Row selection](../territory/row-selection.md) — the checkbox is the sibling's widget
-→ [Theme system](../territory/theme-system.md) — the checkbox sub-theme and its Material-3 factory sit on the seam
+→ [Theme system](../territory/theme-system.md) — the checkbox sub-theme and its `colored()` factory sit on the seam
 → [Public barrel and re-exports](../territory/public-barrel.md) — seven sibling type names are re-exported by hand
 → [Publishing and release](../territory/publishing.md) — the floor half: a sibling's floor becomes ours the moment the constraint is raised
 
@@ -59,6 +59,15 @@ thing that is wrong is one layer down.**
   `flutter create` default to its real minimum. Taking `^0.3.0` made that our
   transitive requirement: `lib/` unchanged, 382+67 tests green, and a breaking
   release for users below it.
+
+  It was also, unnoticed, a **behaviour regression** (#116). 0.3.0 *added* five
+  `CheckboxStyle` fields, and this package hand-listed that type, so every one
+  was reset at any non-unit scale. `lib/` unchanged and every test green were
+  both true and neither was evidence: **a green suite says nothing about a field
+  no assertion names**, and against a hand-listed upstream type the newest
+  fields are exactly the unnamed ones. The entry called 0.3.0 *"purely
+  additive"* while naming `CheckboxStyle.copyWith` and `CheckboxStyle.checkScale`
+  in the same sentence — the remedy and the defect, neither recognised.
 
 ## Where it will recur
 

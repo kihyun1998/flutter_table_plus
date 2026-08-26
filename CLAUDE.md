@@ -45,10 +45,12 @@ merged rows. It does **not** manage or mutate your data.
   viewport-local on both axes. The gesture state machine, auto-scroll `Timer`, and
   rubber-band geometry live in a `DragSelectionController` (unit-testable in
   isolation); row lookups go through the narrow `RowLocator` port the body implements.
-- **`scaledBy()` is built on `copyWith`** and names only the six sub-themes it
-  scales — the scrollbar and three tooltip themes are never enumerated, so a field
-  added later cannot be dropped by forgetting to list it. Hand-listing is exactly
-  how `rowTooltipTheme` went missing (#50).
+- **`scaledBy()` is built on `copyWith` at every level** and names only what it
+  changes, so a field added later cannot be dropped by forgetting to list it.
+  Hand-listing is exactly how `rowTooltipTheme` went missing at the root (#50)
+  and how five `CheckboxStyle` fields went missing one level down (#116) — a
+  field set owned by `flutter_checkbox`, which grows with no commit here. Saying
+  this of the root alone is what let the second one live for six releases.
 - **Tooltips are arbitrated by `just_tooltip`, not here.** Nesting = innermost
   wins, and since 0.4.4 "innermost" means *the innermost tooltip with something to
   draw*. `^0.4.4` is a **floor, not a preference** — the old local

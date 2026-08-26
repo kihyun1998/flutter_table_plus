@@ -246,10 +246,14 @@ class TablePlusHeaderTheme {
       padding: padding * factor,
       sortIconSpacing: sortIconSpacing * factor,
       sortIconWidth: sortIconWidth * factor,
-      resizeHandle: TablePlusResizeHandleTheme(
+      // `copyWith` down both levels, never a fresh sub-theme — the same rule
+      // the root `scaledBy` follows, and the one this repository's own resize
+      // recipe states about this exact class. Listing all five fields was
+      // complete when it was written; that is the state a hand-list is in
+      // right up until someone adds a sixth, and `color` is the field that
+      // makes the handle visible at all.
+      resizeHandle: resizeHandle.copyWith(
         width: resizeHandle.width * factor,
-        color: resizeHandle.color,
-        thickness: resizeHandle.thickness,
         indent: resizeHandle.indent * factor,
         endIndent: resizeHandle.endIndent * factor,
       ),
