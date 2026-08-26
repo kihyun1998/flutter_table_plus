@@ -56,7 +56,7 @@ differently, and it is currently discoverable only from the signature list.
 → [Row identity](row-identity.md) — the set is ids, so identity rules bind
 → [Row interaction](row-interaction.md) — tap-to-select shares the gesture path with double tap and secondary tap
 → [Column width resolution](column-width.md) — the checkbox column participates in width resolution
-→ [Theme system](theme-system.md) — checkbox theming has its own sub-theme and its own Material-3 factory
+→ [Theme system](theme-system.md) — checkbox theming has its own sub-theme and its own `colored()` factory
 
 ## Known holes / open
 

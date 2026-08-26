@@ -85,32 +85,34 @@ class TablePlusCheckboxTheme {
   /// Defaults to true.
   final bool showRowCheckbox;
 
-  /// Returns a new [TablePlusCheckboxTheme] with dimensional values scaled by [factor].
+  /// Returns a new [TablePlusCheckboxTheme] with dimensional values scaled by
+  /// [factor].
   ///
-  /// Uses [CheckboxStyle.scale] to uniformly scale the checkbox rendering.
-  /// Also scales [checkboxColumnWidth] for consistent table layout.
+  /// [CheckboxStyle.scale] is what makes the checkbox itself render larger.
+  ///
+  /// [checkboxColumnWidth] is also multiplied, and **the table's layout does not
+  /// read the result**: the selection column is built from the *unscaled* theme
+  /// and its width goes through the same logical-space resolution as every
+  /// other column, which applies the factor once at the end. Measured
+  /// 2026-08-26 — `checkboxColumnWidth: 100` at `scale: 2.0` renders a 200px
+  /// selection cell, not 400. Scaling it here is therefore inert *and* an armed
+  /// trap: one line changed at the construction site would make the width
+  /// `factor` squared. Kept because a caller reading this theme back is entitled
+  /// to a consistent set of numbers.
   TablePlusCheckboxTheme scaledBy(double factor) {
     if (factor == 1.0) return this;
+    // `copyWith`, naming only what changes. This used to construct a fresh
+    // `CheckboxStyle` and list its fields, which by 0.3.1 had fallen five
+    // behind — `checkScale`, `hoverColor`, `focusColor`, `splashColor` and
+    // `disabledOpacity` reverted to their defaults at any factor but 1.0 — and
+    // six behind by 0.3.2, which adds `shadows`.
+    //
+    // The field set belongs to `flutter_checkbox`, so it moves when that
+    // package ships and nothing in this repository changes. A list cannot stay
+    // complete against a type it does not own. `copyWith` merges with
+    // `?? this.x`, so a field it is not told about is kept rather than reset.
     return copyWith(
-      style: CheckboxStyle(
-        shape: style.shape,
-        size: style.size,
-        scale: style.scale * factor,
-        activeColor: style.activeColor,
-        checkColor: style.checkColor,
-        borderColor: style.borderColor,
-        inactiveColor: style.inactiveColor,
-        borderWidth: style.borderWidth,
-        borderRadius: style.borderRadius,
-        checkStrokeWidth: style.checkStrokeWidth,
-        hoverRingPadding: style.hoverRingPadding,
-        hoverRingShape: style.hoverRingShape,
-        hoverRingBorderRadius: style.hoverRingBorderRadius,
-        animationDuration: style.animationDuration,
-        animationCurve: style.animationCurve,
-        morphDuration: style.morphDuration,
-        morphCurve: style.morphCurve,
-      ),
+      style: style.copyWith(scale: style.scale * factor),
       checkboxColumnWidth: checkboxColumnWidth * factor,
     );
   }

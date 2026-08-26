@@ -530,7 +530,7 @@ TablePlusTheme(
 
 ## Scale-Aware Theming
 
-All theme classes provide a `scaledBy(double factor)` method that returns a new instance with dimensional values multiplied by the factor. This is used internally by the `scale` parameter on `FlutterTablePlus`.
+Every dimensional theme class provides a `scaledBy(double factor)` method that returns a new instance with dimensional values multiplied by the factor. This is used internally by the `scale` parameter on `FlutterTablePlus`. `TablePlusTooltipTheme` has none — tooltips render in an overlay and are deliberately not scaled.
 
 ```dart
 // Manual usage (usually not needed — FlutterTablePlus handles this internally)
@@ -543,9 +543,9 @@ final scaledTheme = theme.scaledBy(1.5);
 |-------------|--------|------------|
 | `TablePlusHeaderTheme` | height, fontSize, padding, sortIconSpacing, sortIconWidth, resizeHandle | colors, borders, dividers, decorations |
 | `TablePlusBodyTheme` | rowHeight, fontSize, padding | colors, dividerThickness, booleans, durations |
-| `TablePlusCheckboxTheme` | size, tapTargetSize, checkboxColumnWidth, splashRadius | colors, shapes, booleans |
+| `TablePlusCheckboxTheme` | `CheckboxStyle.scale`, checkboxColumnWidth | every other `CheckboxStyle` field, and the layout flags |
 | `TablePlusEditableTheme` | fontSize, borderWidth, padding | colors, borderRadius, booleans |
-| `TablePlusScrollbarTheme` | *(excluded from scaling)* | all properties |
+| `TablePlusScrollbarTheme` | *(has `scaledBy`, but the root never calls it)* | all properties, in practice |
 | `TablePlusTooltipTheme` | *(excluded from scaling)* | all properties |
 | `TablePlusHoverButtonTheme` | horizontalOffset | — |
 

@@ -55,7 +55,7 @@ widths and text do.
 ## Cross-cutting invariants
 
 → [Widths and offsets are clamped on every path](../invariant/clamped-dimensions.md) — both re-derived offsets are clamped into the new extents
-→ [Never re-assemble by hand-listing fields](../invariant/no-hand-enumeration.md) — scaling a theme is the site that lost a field
+→ [Never re-assemble by hand-listing fields](../invariant/no-hand-enumeration.md) — scaling a theme is where a field has gone missing twice — #50 at the root, #116 one level down
 
 ## Blast radius
 
