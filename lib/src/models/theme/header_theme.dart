@@ -84,9 +84,16 @@ class TablePlusHeaderDividerTheme {
 /// Theme configuration for the column resize handle in the header.
 ///
 /// Controls the appearance of the drag-to-resize indicator shown at
-/// column boundaries when a column is `resizable`. The [width] defines
-/// the invisible hit-test area, while [thickness], [color], [indent],
-/// and [endIndent] control the visible indicator line.
+/// column boundaries when the *table* sets `resizable: true` — it is a
+/// table-wide switch, not a column property. The [width] defines the invisible
+/// hit-test area, while [thickness], [color], [indent], and [endIndent]
+/// control the visible indicator line.
+///
+/// The indicator draws only while the pointer is over a boundary or dragging
+/// one, so leaving [color] null is louder than it looks: it falls back to
+/// `TablePlusHeaderTheme.verticalDivider`'s colour, which is chosen to be a
+/// barely-visible hairline. An affordance nobody can see and one that is not
+/// there look the same.
 class TablePlusResizeHandleTheme {
   /// Creates a [TablePlusResizeHandleTheme] with the specified styling properties.
   const TablePlusResizeHandleTheme({

@@ -3,8 +3,9 @@
 ## What it is
 
 What a column *is* — its key, how it reads a value out of a row, how it renders,
-what it allows (sorting, editing, resizing) — and the order the visible ones
-appear in. Every other column territory starts from this object.
+what it allows (sorting, editing) and within what bounds (`minWidth`,
+`maxWidth`) — and the order the visible ones appear in. Resizing is *not* here:
+it is armed on the table, not on the column. Every other column territory starts from this object.
 
 ## Governing decisions
 

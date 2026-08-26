@@ -51,6 +51,7 @@ class TablePalette {
     required this.checkboxFill,
     required this.checkboxTick,
     required this.checkboxEdge,
+    required this.resizeGrip,
     required this.scrollTrack,
     required this.scrollThumb,
   });
@@ -90,6 +91,17 @@ class TablePalette {
   final Color checkboxFill;
   final Color checkboxTick;
   final Color checkboxEdge;
+
+  /// The resize handle's indicator line.
+  ///
+  /// **Its default is not a colour, it is an inheritance**: unset, the handle
+  /// falls back to `headerTheme.verticalDivider.color` — the hairline between
+  /// two header cells. A divider is chosen to be barely there, and the handle
+  /// is an affordance that has to be seen the moment the pointer finds it, so
+  /// the fallback is the one colour on the header guaranteed to be wrong for
+  /// it. The handle only draws on hover or drag, which is exactly why nothing
+  /// noticed: an invisible affordance and an absent one look identical.
+  final Color resizeGrip;
 
   /// The editing markers, and the one place this palette is not achromatic.
   ///
@@ -131,6 +143,7 @@ class TablePalette {
     checkboxFill: Color(0xFF1A1A1A),
     checkboxTick: Color(0xFFFFFFFF),
     checkboxEdge: Color(0xFF9A9A9A),
+    resizeGrip: Color(0xFF4A4A4A),
   );
 
   static const dark = TablePalette(
@@ -155,6 +168,7 @@ class TablePalette {
     checkboxFill: Color(0xFFE6E6E6),
     checkboxTick: Color(0xFF141414),
     checkboxEdge: Color(0xFF6E6E6E),
+    resizeGrip: Color(0xFFC4C4C4),
   );
 
   /// The palette for [brightness].
@@ -194,6 +208,7 @@ TablePlusTheme demoTableTheme(Brightness brightness) {
       // sort arrow is to rebuild the glyphs. The unsorted one is the reason:
       // its package default hard-codes `Colors.grey`, which reads as an active
       // state next to a neutral header rather than as "sortable, not sorted".
+      resizeHandle: TablePlusResizeHandleTheme(color: p.resizeGrip),
       sortIcons: SortIcons(
         ascending: Icon(Icons.arrow_upward, size: 16, color: p.sortIcon),
         descending: Icon(Icons.arrow_downward, size: 16, color: p.sortIcon),

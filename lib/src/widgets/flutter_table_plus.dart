@@ -211,15 +211,34 @@ class FlutterTablePlus<T> extends StatefulWidget {
   final void Function(String groupId)? onMergedRowExpandToggle;
 
   /// Callback when columns are reordered.
+  ///
+  /// Both indices count positions in the columns **as displayed** — sorted by
+  /// [TablePlusColumn.order], with invisible columns dropped and the synthetic
+  /// selection column excluded, so index 0 is always the first real column. A
+  /// caller that indexes its own `Map` directly agrees with this only while
+  /// that map's iteration order still matches the order values.
+  ///
+  /// The package changes nothing itself: rewrite [TablePlusColumn.order] and
+  /// pass the new column set on the next build. Withholding this callback is
+  /// what disables the drag; there is no separate flag.
   final void Function(int oldIndex, int newIndex)? onColumnReorder;
 
   /// Whether columns can be resized by dragging their header edges.
+  ///
+  /// Table-wide. Unlike [TablePlusColumn.sortable] and
+  /// [TablePlusColumn.editable] there is no per-column equivalent; what a
+  /// column contributes is its range, [TablePlusColumn.minWidth] and
+  /// [TablePlusColumn.maxWidth].
   final bool resizable;
 
   /// Callback when a column resize drag ends.
   ///
   /// Called once per resize operation with the column key and final width.
   /// Use this to persist column widths externally.
+  ///
+  /// The width is **logical (unscaled)** — the number the column would have at
+  /// `scale: 1.0`, not the pixels the drag covered. A stored width therefore
+  /// still means the same thing when the app reopens at a different [scale].
   final void Function(String columnKey, double newWidth)? onColumnResized;
 
   /// Initial column widths to restore from a previous session.
@@ -229,8 +248,14 @@ class FlutterTablePlus<T> extends StatefulWidget {
   /// Columns not in this map remain flexible and participate in
   /// proportional distribution.
   ///
-  /// Only applied once at widget creation (in [State.initState]).
-  /// Subsequent user resizes override these values at runtime.
+  /// Read at widget creation, and **re-adopted whenever this map changes by
+  /// value** — not only once. That is what lets a caller store the width
+  /// [onColumnResized] hands back and pass it straight down again on the next
+  /// build. Passing an unchanged map leaves the table's own state alone, so a
+  /// resize in progress is never interrupted by a rebuild.
+  ///
+  /// Widths here are logical (unscaled), like the ones [onColumnResized]
+  /// reports.
   final Map<String, double>? initialResizedWidths;
 
   /// The theme configuration for the table.

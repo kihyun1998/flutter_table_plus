@@ -29,6 +29,10 @@ widths and text do.
   offset and the ratio, and clamped into the new extents.
 - **Not everything scales.** Which theme fields participate is decided in the
   theme system, not here.
+- **What crosses back out is unscaled.** A resized width is stored and reported
+  in logical units, so the caller's persisted state is scale-independent. The
+  bounds it is clamped against are not converted the same way — see
+  [column resizing](column-resize.md)'s open hole.
 
 ## Code
 

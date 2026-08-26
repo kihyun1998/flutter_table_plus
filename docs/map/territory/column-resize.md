@@ -28,6 +28,13 @@ demonstrated in `docs/FEATURES.md`.
   by imitation.
 - **Auto-fit is a measurement, not a heuristic** — it delegates to width
   resolution's text measurement and is bounded like any other width.
+- **Resizing is armed table-wide.** There is no `resizable` on the column, only
+  on the table — the one capability in this package that is not per-column,
+  which is worth knowing because `sortable` and `editable` sitting next to each
+  other make it look like there must be a third.
+- **Widths cross the boundary in logical units.** The handle drags in scaled
+  pixels; what is stored and what is reported are divided by the scale first, so
+  a persisted width survives a change of zoom.
 
 ## Code
 
@@ -50,8 +57,16 @@ demonstrated in `docs/FEATURES.md`.
 → [Column width resolution](column-width.md) — resized widths re-enter resolution and must survive its ordering
 → [Synced scrolling](synced-scrolling.md) — the resize auto-scroll drives the shared horizontal controller
 → [Drag selection](drag-selection.md) — shares the auto-scroller; a change to edge behaviour lands in both gestures
-→ [Column model and ordering](column-model.md) — `resizable` and the bounds are column properties
+→ [Column model and ordering](column-model.md) — the bounds are column properties; `resizable` itself is not, and never was
 
 ## Known holes / open
 
-**None.**
+**The bounds are not converted, only the width is.** The handle accumulates
+scaled pixels and clamps them against `column.minWidth` / `column.maxWidth`,
+which are logical — two different spaces compared as one. Measured 2026-08-26:
+a column declaring `maxWidth: 260` at `scale: 2.0` reports **130** logical px
+and can never grow past it, and its floor is halved the same way. At
+`scale: 1.0` the two spaces coincide, which is why every test sees the right
+number. The auto-fit path in the same feature *does* convert
+(`column.minWidth * scale`), so the drag path is the outlier rather than a
+policy. Untracked as of this note.

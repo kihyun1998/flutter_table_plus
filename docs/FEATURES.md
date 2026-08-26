@@ -266,22 +266,26 @@ Drag-and-drop to reorder columns.
 FlutterTablePlus<User>(
   onColumnReorder: (int oldIndex, int newIndex) {
     setState(() {
-      final entries = _columns.entries.toList();
+      // Both indices count the columns *as displayed*: sorted by `order`,
+      // invisible ones dropped, selection column excluded. Sort before
+      // indexing — a Map's own iteration order agrees only by coincidence.
+      final entries = _columns.entries.toList()
+        ..sort((a, b) => a.value.order.compareTo(b.value.order));
+
       final item = entries.removeAt(oldIndex);
       entries.insert(newIndex, item);
 
-      // Update order values
-      _columns = Map.fromEntries(
-        entries.asMap().entries.map((e) => MapEntry(
-          e.value.key,
-          e.value.value.copyWith(order: e.key),
-        )),
-      );
+      // Renumber from 1: `TableColumnsBuilder` reserves 0 and below, and the
+      // synthetic selection column sits at -1.
+      _columns = {
+        for (var i = 0; i < entries.length; i++)
+          entries[i].key: entries[i].value.copyWith(order: i + 1),
+      };
     });
   },
 )
 
-// Disable reordering
+// Disable reordering — there is no separate flag
 onColumnReorder: null,
 ```
 
@@ -338,9 +342,17 @@ FlutterTablePlus<User>(
 )
 ```
 
-> **Note:** `initialResizedWidths` is only applied once at widget creation (`initState`).
-> Subsequent user resizes override the initial values at runtime.
+> **Note:** `initialResizedWidths` is read at widget creation and **re-adopted
+> whenever the map changes by value** — it is not a one-shot despite the name.
+> That is what makes the loop above work: store what `onColumnResized` hands
+> back, pass it down on the next build. An unchanged map leaves the table's own
+> state alone, so a rebuild never interrupts a resize in progress.
 > Columns not in the map remain flexible and participate in proportional distribution.
+
+> **Both directions are logical (unscaled) pixels.** `onColumnResized` reports
+> the width the column would have at `scale: 1.0`, not the pixels the drag
+> covered, and `initialResizedWidths` is read the same way — so a stored width
+> still means the same thing when the app reopens at a different zoom.
 
 ### Auto-Fit (Double-Tap)
 

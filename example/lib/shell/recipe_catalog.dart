@@ -6,9 +6,12 @@ import 'package:flutter/widgets.dart';
 import '../pages/playground/models/playground_settings.dart';
 import '../pages/playground/models/settings_spec.dart';
 import '../recipes/cell_editing_recipe.dart';
+import '../recipes/column_reorder_recipe.dart';
+import '../recipes/column_resize_recipe.dart';
 import '../recipes/drag_selection_recipe.dart';
 import '../recipes/selection_recipe.dart';
 import '../recipes/sorting_recipe.dart';
+import '../recipes/zoom_recipe.dart';
 
 /// One feature, demonstrated in one self-contained file.
 ///
@@ -90,6 +93,34 @@ final List<Recipe> recipeCatalog = [
     source: 'lib/recipes/cell_editing_recipe.dart',
     build: (settings) => CellEditingRecipe(
       editable: settings.editingEnabled,
+    ),
+  ),
+  Recipe(
+    featureId: 'columnReorder',
+    source: 'lib/recipes/column_reorder_recipe.dart',
+    build: (settings) => ColumnReorderRecipe(
+      reorderEnabled: settings.columnReorderEnabled,
+    ),
+  ),
+  Recipe(
+    featureId: 'resizing',
+    source: 'lib/recipes/column_resize_recipe.dart',
+    build: (settings) => ColumnResizeRecipe(
+      resizable: settings.resizableEnabled,
+      columnMinWidth: settings.columnMinWidth,
+      stretchLastColumn: settings.stretchLastColumn,
+      handleWidth: settings.resizeHandleWidth,
+      handleThickness: settings.resizeHandleThickness,
+      handleIndent: settings.resizeHandleIndent,
+      handleEndIndent: settings.resizeHandleEndIndent,
+    ),
+  ),
+  Recipe(
+    featureId: 'zoom',
+    source: 'lib/recipes/zoom_recipe.dart',
+    build: (settings) => ZoomRecipe(
+      scale: settings.scale,
+      blockModifierScroll: settings.blockModifierScroll,
     ),
   ),
 ];

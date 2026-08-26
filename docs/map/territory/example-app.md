@@ -48,6 +48,15 @@ notes.
   relative import is unresolvable; and the Code view replaces the stage
   **region** rather than the stage's child, because source has no viewport and
   scaling it into one answers a question nobody asked.
+- **A recipe may carry demo scaffolding, and says so in the file.** Three of the
+  seven draw a strip the reader is told to delete on paste. They exist where the
+  feature's mechanism has no on-screen consequence to point at: drag selection's
+  four-term activation condition, a column's `order` values, a resized width in
+  logical pixels. Everything else in a recipe is code a reader keeps.
+- **A knob pane only draws its own feature's controls**, so an interaction
+  between two features is not reachable from either one's knobs. Where the
+  interaction is the point — resized widths against zoom — the second control
+  goes in the stage as scaffolding rather than widening the pane.
 
 ## Code
 
@@ -64,6 +73,9 @@ notes.
 `lib/recipes/sorting_recipe.dart`
 `lib/recipes/drag_selection_recipe.dart`
 `lib/recipes/cell_editing_recipe.dart`
+`lib/recipes/column_reorder_recipe.dart`
+`lib/recipes/column_resize_recipe.dart`
+`lib/recipes/zoom_recipe.dart`
 `lib/theme/table_palette.dart`
 `lib/shell/source_pane.dart`
 
