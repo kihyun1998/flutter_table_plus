@@ -23,7 +23,6 @@ void main() {
         groupId: 'g1',
         rowKeys: [],
         mergeConfig: {},
-        isExpandable: true,
         isExpanded: true,
       );
       // rowCount 0 + 1 summary row when expanded.

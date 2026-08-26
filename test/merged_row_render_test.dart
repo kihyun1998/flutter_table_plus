@@ -43,7 +43,6 @@ MergedRowGroup<Map<String, dynamic>> _group({
   Map<String, MergeCellConfig> config = const {
     'group': MergeCellConfig(shouldMerge: true),
   },
-  bool expandable = false,
   bool expanded = false,
   Widget? Function(String columnKey)? summary,
 }) {
@@ -51,7 +50,6 @@ MergedRowGroup<Map<String, dynamic>> _group({
     groupId: 'g1',
     rowKeys: const ['1', '2'],
     mergeConfig: config,
-    isExpandable: expandable,
     isExpanded: expanded,
     summaryBuilder: summary,
   );
@@ -108,13 +106,11 @@ void main() {
     expect(find.text('GA'), findsNothing); // replaced by the custom content
   });
 
-  testWidgets('the summary row renders only when expandable and expanded',
-      (tester) async {
+  testWidgets('the summary row renders only when expanded', (tester) async {
     Widget? summary(String col) =>
         col == 'value' ? const Text('SUMMARY') : null;
 
-    await _pump(tester,
-        groups: [_group(expandable: true, expanded: true, summary: summary)]);
+    await _pump(tester, groups: [_group(expanded: true, summary: summary)]);
     expect(find.text('SUMMARY'), findsOneWidget);
   });
 
@@ -122,8 +118,7 @@ void main() {
     Widget? summary(String col) =>
         col == 'value' ? const Text('SUMMARY') : null;
 
-    await _pump(tester,
-        groups: [_group(expandable: true, expanded: false, summary: summary)]);
+    await _pump(tester, groups: [_group(expanded: false, summary: summary)]);
     expect(find.text('SUMMARY'), findsNothing);
   });
 

@@ -55,7 +55,6 @@ class FlutterTablePlus<T> extends StatefulWidget {
     this.rowTooltipBuilder,
     this.onCellChanged,
     this.onMergedCellChanged,
-    this.onMergedRowExpandToggle,
     this.onColumnReorder,
     this.resizable = false,
     this.onColumnResized,
@@ -208,7 +207,6 @@ class FlutterTablePlus<T> extends StatefulWidget {
       onMergedCellChanged;
 
   /// Callback when a merged row group's expand/collapse state should be toggled.
-  final void Function(String groupId)? onMergedRowExpandToggle;
 
   /// Callback when columns are reordered.
   ///
@@ -559,8 +557,8 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
       }
     }
 
-    // Add summary row height if expandable and expanded
-    if (mergeGroup.isExpandable && mergeGroup.isExpanded) {
+    // Add summary row height if expanded
+    if (mergeGroup.isExpanded) {
       totalHeight += widget.theme.bodyTheme.rowHeight * widget.scale;
     }
 
@@ -950,8 +948,6 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
                           onCellTap: _handleCellTap,
                           onStopEditing: _stopEditing,
                           onMergedCellChanged: widget.onMergedCellChanged,
-                          onMergedRowExpandToggle:
-                              widget.onMergedRowExpandToggle,
                           calculateRowHeight: widget.calculateRowHeight,
                           scale: scale,
                           scrollPhysics: widget.onScaleChanged != null

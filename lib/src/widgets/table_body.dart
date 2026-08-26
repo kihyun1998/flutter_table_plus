@@ -49,7 +49,6 @@ class TablePlusBody<T> extends StatefulWidget {
     this.onCellTap,
     this.onStopEditing,
     this.onMergedCellChanged,
-    this.onMergedRowExpandToggle,
     this.calculateRowHeight,
     this.scale = 1.0,
     this.scrollPhysics = const ClampingScrollPhysics(),
@@ -138,9 +137,6 @@ class TablePlusBody<T> extends StatefulWidget {
   /// Callback when a merged cell value is changed.
   final void Function(String groupId, String columnKey, dynamic newValue)?
       onMergedCellChanged;
-
-  /// Callback when a merged row group's expand/collapse state should be toggled.
-  final void Function(String groupId)? onMergedRowExpandToggle;
 
   /// Callback to calculate the height of a specific row.
   final double? Function(int rowIndex, T rowData)? calculateRowHeight;
@@ -461,7 +457,7 @@ class TablePlusBodyState<T> extends State<TablePlusBody<T>>
         total += widget.theme.rowHeight;
       }
     }
-    if (group.isExpandable && group.isExpanded) {
+    if (group.isExpanded) {
       total += widget.theme.rowHeight;
     }
     return total;
@@ -520,7 +516,7 @@ class TablePlusBodyState<T> extends State<TablePlusBody<T>>
             }
           }
 
-          if (mergeGroup.isExpandable && mergeGroup.isExpanded) {
+          if (mergeGroup.isExpanded) {
             heights.add(widget.theme.rowHeight);
             totalHeight += widget.theme.rowHeight;
           }
@@ -558,7 +554,6 @@ class TablePlusBodyState<T> extends State<TablePlusBody<T>>
           onRowDoubleTap: widget.onRowDoubleTap,
           onRowSecondaryTapDown: widget.onRowSecondaryTapDown,
           onMergedCellChanged: widget.onMergedCellChanged,
-          onMergedRowExpandToggle: widget.onMergedRowExpandToggle,
           calculatedHeight: mergedHeight,
           individualHeights: individualHeights,
           needsVerticalScroll: widget.needsVerticalScroll,

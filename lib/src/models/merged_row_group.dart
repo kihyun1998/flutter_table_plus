@@ -36,7 +36,6 @@ class MergedRowGroup<T> {
     required this.groupId,
     required this.rowKeys,
     required this.mergeConfig,
-    this.isExpandable = false,
     this.isExpanded = false,
     this.summaryBuilder,
   });
@@ -53,12 +52,24 @@ class MergedRowGroup<T> {
   /// Key: column key, Value: merge configuration for that column.
   final Map<String, MergeCellConfig> mergeConfig;
 
-  /// Whether this merge group supports expandable summary row functionality.
-  /// When true, an expand/collapse icon will be shown and summary row can be displayed.
-  final bool isExpandable;
-
-  /// Whether the summary row is currently expanded.
-  /// This state should be managed by the parent widget.
+  /// Whether this group shows its summary row.
+  ///
+  /// **Caller state, and so is the control that changes it.** The package
+  /// draws no expand/collapse affordance anywhere — put one in the merged
+  /// cell's `mergedContent` and wire it to your own `setState`, the way
+  /// `example/lib/recipes/merged_rows_recipe.dart` does. A group is an
+  /// immutable value you rebuild, so the state has to live where the data
+  /// does.
+  ///
+  /// Note that "expanded" *adds* the summary row; it does not hide the
+  /// member rows, which is the opposite of what the word suggests and the
+  /// one place this API's vocabulary will mislead you.
+  ///
+  /// Until 2.17.0 this was gated behind a second flag, `isExpandable`, and
+  /// a doc-comment promising an icon the package has never drawn. Both are
+  /// gone: the flag was an extra `&&` in front of this one, and the icon
+  /// was never going to arrive without taking the merged cell's layout
+  /// away from the caller.
   final bool isExpanded;
 
   /// Builder function to create summary content for a specific column.
@@ -119,5 +130,5 @@ class MergedRowGroup<T> {
   }
 
   /// Returns the effective row count including summary row if expanded.
-  int get effectiveRowCount => rowCount + (isExpandable && isExpanded ? 1 : 0);
+  int get effectiveRowCount => rowCount + (isExpanded ? 1 : 0);
 }
