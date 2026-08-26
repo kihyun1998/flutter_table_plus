@@ -53,6 +53,15 @@ notes.
   feature's mechanism has no on-screen consequence to point at: drag selection's
   four-term activation condition, a column's `order` values, a resized width in
   logical pixels. Everything else in a recipe is code a reader keeps.
+- **The preview frame owns an overlay, because a viewport does.** Everything
+  that opens *above* the page — a `Draggable`'s feedback, a tooltip, a menu —
+  goes to `Overlay.of(context)`, the *nearest* one, and `just_tooltip` also reads
+  that overlay's render box to position itself. With no overlay inside the frame
+  they resolve to the app's root, which sits above the fit transform: the table
+  draws at 0.46× and the thing dragged out of it at 1:1, over the whole window.
+  Measured 2026-08-26 — 91.7px against 200px. The frame therefore contains its
+  own overlay, which is a statement about what a viewport *is* rather than a
+  workaround for the scaling.
 - **A knob pane only draws its own feature's controls**, so an interaction
   between two features is not reachable from either one's knobs. Where the
   interaction is the point — resized widths against zoom — the second control
@@ -78,6 +87,8 @@ notes.
 `lib/recipes/zoom_recipe.dart`
 `lib/theme/table_palette.dart`
 `lib/shell/source_pane.dart`
+`lib/preview/preview_stage.dart`
+`lib/preview/preview_frame.dart`
 
 ## Reference behaviour
 

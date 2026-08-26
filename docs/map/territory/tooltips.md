@@ -57,6 +57,8 @@ there — never the pub.dev rendering.
 
 ## Blast radius
 
+→ [Example app](example-app.md) — a tooltip opens in the *nearest* `Overlay` and reads its render box to place itself, so a tooltip inside the scaled preview frame needs that frame to own an overlay
+
 → [Theme system](theme-system.md) — the row and header tooltip themes fall back to the shared one at the call site, and that chain is resolved outside this territory
 → [Text overflow detection](text-overflow.md) — "show a tooltip only when the text is clipped" makes overflow detection a precondition for showing one
 → [Merged rows](merged-rows.md) — merged cells wire tooltips separately from ordinary cells

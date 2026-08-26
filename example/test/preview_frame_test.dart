@@ -200,4 +200,122 @@ void main() {
               'the drag landed on different rows once the frame was scaled');
     });
   });
+
+  group('an overlay belongs to the viewport it opens in', () {
+    // `Draggable` puts its feedback in the nearest `Overlay`, and `just_tooltip`
+    // does the same with its tooltip — including reading that overlay's render
+    // box to place itself. With no overlay inside the frame, "nearest" is the
+    // app's root one, which sits *above* the `FittedBox`. The frame then draws
+    // the table at 0.47x and the thing dragged out of it at 1:1, roughly twice
+    // the size of the row it came from, floating over the whole window.
+    testWidgets('a drag feedback is drawn at the scale of its own frame',
+        (tester) async {
+      _surface(tester, const Size(700, 500));
+
+      await tester.pumpWidget(const MaterialApp(
+        home: Scaffold(
+          body: PreviewFrame(
+            spec: ViewportSpec.desktop,
+            child: Center(
+              child: Draggable<int>(
+                data: 1,
+                feedback: SizedBox(
+                  key: ValueKey('feedback'),
+                  width: 200,
+                  height: 100,
+                  child: ColoredBox(color: Color(0xFF000000)),
+                ),
+                // Coloured, not bare: a `SizedBox` with no child is invisible
+                // to hit testing, so the pointer would go straight past the
+                // `Draggable` and no drag would start.
+                child: SizedBox(
+                  key: ValueKey('source'),
+                  width: 200,
+                  height: 100,
+                  child: ColoredBox(color: Color(0xFF888888)),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      final source = tester.getRect(find.byKey(const ValueKey('source')));
+      // The premise: this frame really is shrunk. Without it the test passes
+      // at 1:1 and says nothing.
+      expect(source.width, lessThan(190),
+          reason: 'the frame did not scale, so there is nothing to escape');
+
+      final gesture = await tester.startGesture(source.center);
+      for (var i = 0; i < 5; i++) {
+        await gesture.moveBy(const Offset(12, 0));
+        await tester.pump();
+      }
+
+      final feedback = tester.getRect(find.byKey(const ValueKey('feedback')));
+      expect(feedback.width, closeTo(source.width, 0.5),
+          reason: 'the feedback is drawn at a different scale from the frame '
+              'it was dragged out of — it went to an overlay above the '
+              'FittedBox');
+      expect(feedback.height, closeTo(source.height, 0.5));
+
+      await gesture.up();
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('because the overlay it lands in is inside the frame',
+        (tester) async {
+      // The structural half, and the one that names the fix. In the broken
+      // state the feedback is a child of the app's root overlay, so it is not
+      // a descendant of the frame at all — a scale assertion alone would leave
+      // someone free to "fix" it by scaling the feedback by hand.
+      _surface(tester, const Size(700, 500));
+
+      await tester.pumpWidget(const MaterialApp(
+        home: Scaffold(
+          body: PreviewFrame(
+            spec: ViewportSpec.desktop,
+            child: Center(
+              child: Draggable<int>(
+                data: 1,
+                feedback: SizedBox(
+                  key: ValueKey('feedback'),
+                  width: 200,
+                  height: 100,
+                  child: ColoredBox(color: Color(0xFF000000)),
+                ),
+                child: SizedBox(
+                  key: ValueKey('source'),
+                  width: 200,
+                  height: 100,
+                  child: ColoredBox(color: Color(0xFF888888)),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      final source = tester.getRect(find.byKey(const ValueKey('source')));
+      final gesture = await tester.startGesture(source.center);
+      for (var i = 0; i < 5; i++) {
+        await gesture.moveBy(const Offset(12, 0));
+        await tester.pump();
+      }
+
+      expect(
+        find.descendant(
+          of: find.byType(PreviewStage),
+          matching: find.byKey(const ValueKey('feedback')),
+        ),
+        findsOneWidget,
+        reason: 'the feedback went to an overlay outside the stage',
+      );
+
+      await gesture.up();
+      await tester.pumpAndSettle();
+    });
+  });
 }

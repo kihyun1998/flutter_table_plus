@@ -25,6 +25,17 @@ import 'viewport_spec.dart';
 /// measured and is false. The override is kept for the reason above, which is
 /// the real one.
 ///
+/// **It also owns an overlay, and that is a third thing.** `Draggable` puts its
+/// feedback in `Overlay.of(context)` — the *nearest* one — and `just_tooltip`
+/// does the same with its tooltip, going further and reading that overlay's
+/// render box to place itself. With no overlay inside the frame, "nearest" is
+/// the app's root one, which sits above [PreviewFrame]'s `FittedBox`: the table
+/// is drawn at 0.46× and the header cell dragged out of it at 1:1, measured
+/// 2026-08-26 at 91.7px against 200px, floating over the whole window at more
+/// than twice the size of the row it came from. A real viewport contains its own
+/// overlays, so a preview of one has to as well — which is what makes this
+/// containment rather than a scaling workaround.
+///
 /// **This one never scales.** It constrains and it reports; scaling a whole
 /// viewport down so all of it is visible is [PreviewFrame]'s job, one layer up.
 ///
@@ -67,10 +78,47 @@ class PreviewStage extends StatelessWidget {
       ),
       child: SizedBox.fromSize(
         size: spec.size,
-        child: child,
+        child: _ContainedOverlay(child: child),
       ),
     );
   }
+}
+
+/// An [Overlay] whose only entry is [child].
+///
+/// A `StatefulWidget` because `Overlay.initialEntries` is read once, in
+/// `initState` — a fresh `OverlayEntry` handed over on a later build is simply
+/// ignored. So the entry is created once, and its builder reads `widget.child`
+/// rather than a value captured when it was made. That distinction is the whole
+/// of this class: capturing the first child instead freezes the stage on
+/// whatever it was showing when the frame opened, with nothing on screen to say
+/// why. Measured 2026-08-26 — three existing tests redden, including "its knobs
+/// reach the table".
+///
+/// Nothing here asks the entry to rebuild. It does not need to: this widget's
+/// own `build` produces a new `Overlay`, which rebuilds its entries, which
+/// re-reads `widget.child`. An explicit `markNeedsBuild` in `didUpdateWidget`
+/// was written here first and removed after mutation testing showed it changed
+/// nothing.
+///
+/// There is no `dispose` either. The entry is this overlay's only entry and dies
+/// with it; disposing it from here asserts, because an `OverlayEntry` has to
+/// leave its `Overlay` before it can be disposed and this one never does.
+class _ContainedOverlay extends StatefulWidget {
+  const _ContainedOverlay({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_ContainedOverlay> createState() => _ContainedOverlayState();
+}
+
+class _ContainedOverlayState extends State<_ContainedOverlay> {
+  late final OverlayEntry _entry =
+      OverlayEntry(builder: (context) => widget.child);
+
+  @override
+  Widget build(BuildContext context) => Overlay(initialEntries: [_entry]);
 }
 
 /// Chooses which [ViewportSpec] the stage is showing.
