@@ -14,9 +14,8 @@ import 'package:flutter_test/flutter_test.dart';
 // What `copyWith` does NOT close is the other half: a **dimensional** field
 // added upstream will be carried through faithfully and never scaled, which is
 // wrong in a different direction and just as quiet. `shadows`, added in 0.3.2,
-// happens to be safe — upstream's own changelog says it is not scaled, like
-// `borderWidth` and `borderRadius`. The next one may not come with that
-// sentence.
+// is safe — upstream's own changelog says so. The next one may not come with
+// that sentence, which is why this fails loudly rather than assuming.
 //
 // So this test fails when the field set moves, and its failure means "go read
 // the new field and decide whether the factor applies to it". It asserts
@@ -50,6 +49,16 @@ const _known = <String>{
   'animationCurve',
   'morphDuration',
   'morphCurve',
+  // Added by 0.3.2, and adjudicated the way this test asks for: upstream's
+  // changelog says it is **not** scaled by `scale` — "like `borderWidth`,
+  // `borderRadius` and `checkStrokeWidth`, shadow offsets and radii stay in
+  // logical pixels while `scale` resizes the box". So `copyWith` carrying it
+  // untouched is correct and nothing in `scaledBy` changes.
+  //
+  // This is what using the tripwire looks like: it fired on the first real
+  // upgrade, named the field, and the answer came from the sibling's contract
+  // rather than from a guess here.
+  'shadows',
 };
 
 void main() {

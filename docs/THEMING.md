@@ -6,7 +6,7 @@ Complete reference for Flutter Table Plus theming system.
 
 ## Overview
 
-Flutter Table Plus uses a composable theme system with **7 nested theme classes** (plus 3 header sub-themes):
+Flutter Table Plus uses a composable theme system with **8 nested theme classes** over 10 fields — the three tooltip fields share `TablePlusTooltipTheme` — plus 3 header sub-themes:
 
 ```dart
 TablePlusTheme(
