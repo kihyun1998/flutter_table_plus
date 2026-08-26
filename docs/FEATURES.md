@@ -349,10 +349,15 @@ FlutterTablePlus<User>(
 > state alone, so a rebuild never interrupts a resize in progress.
 > Columns not in the map remain flexible and participate in proportional distribution.
 
-> **Both directions are logical (unscaled) pixels.** `onColumnResized` reports
-> the width the column would have at `scale: 1.0`, not the pixels the drag
-> covered, and `initialResizedWidths` is read the same way — so a stored width
-> still means the same thing when the app reopens at a different zoom.
+> **Every width here is logical (unscaled) pixels — including the bounds.**
+> `onColumnResized` reports the width the column would have at `scale: 1.0`, not
+> the pixels the drag covered, and `initialResizedWidths` is read the same way —
+> so a stored width still means the same thing when the app reopens at a
+> different zoom. `minWidth` and `maxWidth` are declared in the same space and
+> the table converts them itself, so a column stops at the range you wrote at
+> every zoom level, not at a range scaled along with it. (Before 2.16.2 the drag
+> path did not convert them, so at `scale: 2.0` a declared `maxWidth: 300`
+> behaved as 150.)
 
 ### Auto-Fit (Double-Tap)
 
@@ -866,10 +871,13 @@ When `onScaleChanged` is non-null:
 | Sort icon size (via FittedBox) | Duration values |
 | Resize handle | |
 | Checkbox hit area | |
+| `minWidth` / `maxWidth` (converted before they bound a drag) | |
 
 ### Column Width Persistence
 
 Resized widths are stored in **logical (unscaled) units**. The `onColumnResized` callback always reports logical widths, and `initialResizedWidths` expects logical widths. This means saved widths work correctly regardless of the current scale.
+
+`minWidth` and `maxWidth` are declared in the same units and travel the other way — the table multiplies them by `scale` before they bound a drag measured on screen. So the range a column stops at is the range you wrote, at every zoom level. (Fixed in 2.16.2; before that the drag path compared them unconverted.)
 
 ```dart
 FlutterTablePlus<User>(

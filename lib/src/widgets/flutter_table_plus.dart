@@ -903,6 +903,7 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
                   onSelectAll: widget.onSelectAll,
                   onColumnReorder: widget.onColumnReorder,
                   resizable: widget.resizable,
+                  scale: scale,
                   onColumnResize: _handleColumnResize,
                   onColumnResizeEnd: _handleColumnResizeEnd,
                   onColumnAutoFit: _handleColumnAutoFit,

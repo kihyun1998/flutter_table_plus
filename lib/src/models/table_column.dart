@@ -151,11 +151,18 @@ class TablePlusColumn<T> {
   /// that takes it out of the distribution. There is no separate flag.
   final double width;
 
-  /// The minimum width of the column in pixels.
+  /// The minimum width of the column, in **logical (unscaled) pixels**.
+  ///
+  /// Like [width] and like the widths `onColumnResized` reports, this is the
+  /// number the column would have at `scale: 1.0` — the table converts it into
+  /// rendered pixels itself. So a bound means the same thing at every zoom, and
+  /// a value you persisted survives the app reopening at a different one.
   final double minWidth;
 
-  /// The maximum width of the column in pixels.
-  /// If null, the column can grow indefinitely.
+  /// The maximum width of the column, in **logical (unscaled) pixels**.
+  ///
+  /// Null means the column can grow indefinitely. See [minWidth] for the space
+  /// this is measured in.
   final double? maxWidth;
 
   /// The alignment of content within the column cells.

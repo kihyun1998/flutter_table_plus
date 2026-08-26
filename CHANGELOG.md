@@ -1,3 +1,10 @@
+## 2.16.2
+
+*   **FIX**: dragging a column boundary now honours `minWidth` / `maxWidth` at any `scale`. The handle accumulates the drag in **rendered** pixels and clamped it against bounds a caller declares in **logical** ones — two coordinate spaces compared as one, so away from `scale: 1.0` a column's declared range was wrong by exactly the factor. Measured 2026-08-26: a column declaring `minWidth: 80, maxWidth: 300` at `scale: 2.0` reported **40** and **150**, and since it already sat past that halved ceiling at rest, touching the handle at all snapped it there before the pointer had moved anywhere
+    *   `onColumnResized` therefore reports different numbers than 2.16.1 did for an app running at a scale other than 1.0. The old numbers were the defect: `minWidth` / `maxWidth` are documented as logical and were being enforced as rendered. Nothing in the public API changed, and at `scale: 1.0` — where the two spaces coincide — no behaviour moves at all
+    *   The bounds are now converted where the handle is built, the same way `_handleColumnAutoFit` has always converted them for the double-tap path. One rule, and both paths into the shared `clamp` now reach it
+    *   **Why no test caught it:** all three drag-to-resize tests ran at `scale: 1.0`, where logical and rendered pixels are the same numbers — so no assertion *could* have separated the two implementations. The suite now drags at 2.0 as well, including a column that declares no `maxWidth`, which is a separate branch of the conversion that nothing else reaches
+
 ## 2.16.1
 
 *   **DEPS**: `flutter_checkbox: ^0.3.0` → `^0.3.1`, which **lowers this package's minimum Flutter to `3.27.0` (Dart `3.6.0`)**, down from the `3.35.0` (Dart `3.9.2`) that 2.16.0 declared. `lib/` is byte-for-byte unchanged; all package and example tests pass against 0.3.1 unmodified

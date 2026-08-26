@@ -43,7 +43,7 @@ cheapest to record and where no node for it exists yet.
 
 ## Why this layer exists — the measured rediscoveries
 
-Not hypothetical. Two facts in this repository were each found more than once,
+Not hypothetical. Three facts in this repository were each found more than once,
 and in one case by two different packages independently:
 
 - **The tooltip workaround.** #33 routed around an upstream anchor defect and it
@@ -58,6 +58,13 @@ and in one case by two different packages independently:
   failed; #65 then estimated 12 overflows and measured 34, all resolving to two
   shared helper lines. **Two rediscoveries, one fact** — now
   [one note](invariant/test-font-square.md).
+- **A scale of 1.0.** #50 lost a theme field to a hand-listed `scaledBy`, unseen
+  because `scaledBy(1.0)` returns its receiver. #114 then compared a drag's
+  bounds in the wrong space, unseen because at 1.0 the two spaces are the same
+  numbers. Different mechanisms, identical concealment: in both, the suite was
+  green and no assertion *could* have separated the two implementations.
+  **Two rediscoveries, one fact** — now
+  [one note](invariant/scale-one-hides-it.md).
 
 ## What was measured while building this
 
@@ -97,7 +104,7 @@ These numbers exist in no note file, and they re-ordered the map:
 ## Coverage, and what an absent note means
 
 **Coverage is complete** for `lib/`, `example/`, and the release surface — 23
-territories, 6 invariants. This is not a pilot.
+territories, 7 invariants. This is not a pilot.
 
 So **an absent note is not a backlog item; it means the area is not part of the
 system.** A note becomes owed when either of these happens:
