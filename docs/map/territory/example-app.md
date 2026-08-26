@@ -69,6 +69,19 @@ notes.
   Measured 2026-08-26 — 91.7px against 200px. The frame therefore contains its
   own overlay, which is a statement about what a viewport *is* rather than a
   workaround for the scaling.
+- **The bundled font is a subset, and the subset is a claim.** Four Pretendard
+  weights ship with the app, cut from the full faces to a Latin charset written
+  down as Unicode ranges in `scripts/fonts/subset_pretendard.py`. Two properties
+  follow and neither is obvious. A missing glyph **does not throw** — Flutter
+  draws it from a platform face, so the failure looks like a typeface seam
+  mid-sentence rather than like an error, which is how the em dash stayed
+  missing for six commits under a comment claiming the subset carried Korean it
+  had never had (#122). And `fontFamilyFallback` **cannot** displace the family:
+  Flutter resolves `fontFamily` first, a `TextStyle` inherits the ambient one,
+  so a style listing only fallbacks renders in the chrome font — which is what
+  the Code pane did from #104 to #123 while looking monospace-configured.
+  Charset changes are checked by reading the shipped `cmap`, never by reading
+  the script that produced it.
 - **A knob pane only draws its own feature's controls**, so an interaction
   between two features is not reachable from either one's knobs. Where the
   interaction is the point — resized widths against zoom, a row card against a
@@ -93,7 +106,9 @@ pasteability rule is a property of the *directory* and
 files here would be a second roster to keep in step and nothing would catch it
 drifting
 `lib/theme/table_palette.dart`
+`lib/theme/example_theme.dart`
 `lib/shell/source_pane.dart`
+`../scripts/fonts/subset_pretendard.py` — the font charset, as ranges
 `lib/preview/preview_stage.dart`
 `lib/preview/preview_frame.dart`
 
