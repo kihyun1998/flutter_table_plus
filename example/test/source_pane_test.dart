@@ -308,4 +308,66 @@ void main() {
       expect(pane.bundle, isNull);
     });
   });
+
+  group('the code is drawn in a monospace face', () {
+    // Not a preference. The pane's own rule is that a line is a line — it
+    // scrolls horizontally rather than wrapping — and indentation only lines up
+    // into columns when every glyph is the same width.
+    //
+    // The trap this pins is that `fontFamilyFallback` alone does nothing here.
+    // Flutter resolves `fontFamily` first and consults the fallback list only
+    // for glyphs that family lacks, and a `TextStyle` with `inherit: true` —
+    // the default — merges the ambient `DefaultTextStyle`, which carries
+    // `ThemeData.fontFamily`. So a style that names only fallbacks renders in
+    // the chrome font, and the fallback list is never reached except by the
+    // handful of characters Pretendard's subset is missing.
+    //
+    // Asserted on the resolved style rather than on `SourcePane`'s own
+    // `TextStyle`: the merge is the thing that was wrong, so a test that reads
+    // the unmerged style would have passed throughout.
+
+    testWidgets('the source body, not the chrome font', (tester) async {
+      await _pumpPane(
+        tester,
+        path: 'lib/recipes/selection_recipe.dart',
+        bundle: _FakeBundle('class Sentinel {}'),
+      );
+
+      final editable = tester.widget<EditableText>(find.byType(EditableText));
+
+      expect(editable.style.fontFamily, SourcePane.monoFamily);
+      expect(editable.style.fontFamilyFallback, SourcePane.monoFallback);
+      // The side condition is the whole point: the family that used to win.
+      expect(editable.style.fontFamily, isNot(exampleChromeFont));
+    });
+
+    testWidgets('and the path header too', (tester) async {
+      // Its own instance of the same bug, one screen away from the one above
+      // and easy to fix in isolation.
+      await _pumpPane(
+        tester,
+        path: 'lib/recipes/selection_recipe.dart',
+        bundle: _FakeBundle('class Sentinel {}'),
+      );
+
+      final header = tester.widget<RichText>(
+        find.descendant(
+          of: find.text('lib/recipes/selection_recipe.dart'),
+          matching: find.byType(RichText),
+        ),
+      );
+
+      expect(header.text.style?.fontFamily, SourcePane.monoFamily);
+      expect(header.text.style?.fontFamilyFallback, SourcePane.monoFallback);
+      expect(header.text.style?.fontFamily, isNot(exampleChromeFont));
+    });
+
+    test('the family is not also the first fallback', () {
+      // Naming it twice would read as belt-and-braces and is the shape that
+      // hides the bug: `monoFallback.first` looking like the family is exactly
+      // why nobody noticed the family was never set.
+      expect(SourcePane.monoFallback, isNot(contains(SourcePane.monoFamily)));
+      expect(SourcePane.monoFallback.last, 'monospace');
+    });
+  });
 }

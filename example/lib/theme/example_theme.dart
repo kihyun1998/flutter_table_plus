@@ -30,7 +30,7 @@ import 'package:flutter/material.dart';
 /// Pretendard ships with this example already, as a font the table can be told
 /// to use. Borrowing it for the chrome adds no dependency and no asset, and it
 /// carries Korean text — which the demo data contains.
-const _chromeFont = 'Pretendard';
+const exampleChromeFont = 'Pretendard';
 
 // Flutter derives the scheme; this file only says which one.
 //
@@ -71,7 +71,7 @@ ThemeData exampleTheme(Brightness brightness) {
   return ThemeData(
     useMaterial3: true,
     colorScheme: scheme,
-    fontFamily: _chromeFont,
+    fontFamily: exampleChromeFont,
     scaffoldBackgroundColor: scheme.surface,
     appBarTheme: AppBarTheme(
       backgroundColor: scheme.surface,
@@ -81,7 +81,7 @@ ThemeData exampleTheme(Brightness brightness) {
       scrolledUnderElevation: 0,
       shape: Border(bottom: BorderSide(color: scheme.outlineVariant)),
       titleTextStyle: TextStyle(
-        fontFamily: _chromeFont,
+        fontFamily: exampleChromeFont,
         fontSize: 16,
         fontWeight: FontWeight.w600,
         letterSpacing: -0.2,
@@ -105,13 +105,13 @@ ThemeData exampleTheme(Brightness brightness) {
     listTileTheme: ListTileThemeData(
       iconColor: scheme.primary,
       titleTextStyle: TextStyle(
-        fontFamily: _chromeFont,
+        fontFamily: exampleChromeFont,
         fontSize: 15.5,
         fontWeight: FontWeight.w600,
         color: scheme.onSurface,
       ),
       subtitleTextStyle: TextStyle(
-        fontFamily: _chromeFont,
+        fontFamily: exampleChromeFont,
         fontSize: 13,
         color: scheme.secondary,
       ),
@@ -119,7 +119,7 @@ ThemeData exampleTheme(Brightness brightness) {
     segmentedButtonTheme: SegmentedButtonThemeData(
       style: ButtonStyle(
         textStyle: WidgetStatePropertyAll(
-          TextStyle(fontFamily: _chromeFont, fontSize: 13),
+          TextStyle(fontFamily: exampleChromeFont, fontSize: 13),
         ),
       ),
     ),

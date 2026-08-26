@@ -30,13 +30,30 @@ class SourcePane extends StatefulWidget {
   /// The asset key, which is the path exactly as `pubspec.yaml` declares it.
   final String assetPath;
 
-  /// Platform monospace faces, in the order they are likely to exist.
+  /// The monospace face this pane asks for.
+  ///
+  /// **Naming a family is what displaces the inherited one**, and that is the
+  /// whole reason this constant exists apart from [monoFallback]. Flutter
+  /// resolves `fontFamily` first and reaches `fontFamilyFallback` only for
+  /// glyphs that family lacks; a `TextStyle` with `inherit: true` — the default
+  /// — merges the ambient `DefaultTextStyle`, which carries
+  /// [exampleChromeFont] from `ThemeData.fontFamily`. So a style that lists
+  /// only fallbacks renders in the proportional chrome font, and the list below
+  /// is reached by nothing but the few characters Pretendard's subset is
+  /// missing. This pane did exactly that from #104 until #123.
+  static const monoFamily = 'Consolas';
+
+  /// Platform monospace faces, in the order they are likely to exist, for where
+  /// [monoFamily] does not.
+  ///
+  /// [monoFamily] is deliberately **not** repeated here: a family that is also
+  /// the first fallback reads as belt-and-braces and is the shape that hid the
+  /// bug, because `monoFallback.first` looked like the family was set.
   ///
   /// Not `GoogleFonts.firaCode`, which the playground uses: that fetches over
   /// the network on first use, and a pane whose whole job is to show bytes
   /// already on disk should not need the network to draw them.
   static const monoFallback = [
-    'Consolas',
     'SF Mono',
     'Menlo',
     'DejaVu Sans Mono',
@@ -143,6 +160,7 @@ class _PathBar extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: 12,
+                fontFamily: SourcePane.monoFamily,
                 fontFamilyFallback: SourcePane.monoFallback,
                 color: scheme.onSurfaceVariant,
               ),
@@ -238,6 +256,7 @@ class _CodeState extends State<_Code> {
               style: TextStyle(
                 fontSize: 12.5,
                 height: 1.45,
+                fontFamily: SourcePane.monoFamily,
                 fontFamilyFallback: SourcePane.monoFallback,
                 color: widget.scheme.onSurface,
               ),
