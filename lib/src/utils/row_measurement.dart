@@ -45,14 +45,19 @@
 /// that also rebuilds its row lookup.
 ///
 /// **`rowId` is absent for a different reason, and the two are worth keeping
-/// apart.** It is not a measurement input at all — but it is also the one
-/// caller function this package could not watch even if it wanted to. It is
+/// apart.** It is not a measurement input at all — and it is also the one
+/// caller function this predicate's own technique cannot reach. `rowId` is
 /// *required*, so every call site writes an inline closure, and the cost the
 /// comment below prices at "one cache rebuild" becomes one per build per
-/// caller. `calculateRowHeight` is watchable precisely because it is optional,
-/// so `identical(null, null)` holds for most callers. See
-/// `FlutterTablePlus.rowId`, which states the contract that replaces the
-/// guard.
+/// caller; `calculateRowHeight` escapes that only because it is optional and
+/// so is usually the same `null` twice running.
+///
+/// **Comparing `rowId`'s answers rather than its identity does work**, costs
+/// about a tenth of the rebuild it prevents, and is the shape
+/// `utils/overflow_cache.dart` already uses. It is not here yet because
+/// switching it on turns an in-place `RangeError` into a silently missing row
+/// until `computeRenderableIndices` is fixed. Until then the contract on
+/// `FlutterTablePlus.rowId` stands in for it.
 bool rowMeasurementChanged<T>({
   required double? Function(int index, T row)? oldCalculateRowHeight,
   required double? Function(int index, T row)? newCalculateRowHeight,
