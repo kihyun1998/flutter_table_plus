@@ -20,7 +20,8 @@ import '../models/merged_row_group.dart';
 class RowLookup<T> {
   RowLookup._(this._ids, this._idToIndex, this._idToGroup);
 
-  /// Derives the lookups from a snapshot of [data] and [mergedGroups].
+  /// Derives the lookups from a snapshot of [data], [rowId] and
+  /// [mergedGroups].
   ///
   /// [rowId] extracts the stable id from a row. When ids collide, the last
   /// occurrence wins (mirroring the previous map-building behavior).

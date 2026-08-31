@@ -154,6 +154,11 @@ FlutterTablePlus<User>(  // Add generic type
 )
 ```
 
+`rowId` is called on demand and is **not** compared across rebuilds, so `data`
+and `rowId` are read as one snapshot: changing the id space means passing a
+**new** `data` list, the same way any other data change is signalled. See the
+doc-comment on `FlutterTablePlus.rowId`.
+
 ---
 
 ### 4. Update Dim Row Logic

@@ -41,13 +41,15 @@ import '../theme/table_palette.dart';
 /// nothing warning you. A `static` function is the cheapest possible fix: the
 /// same object every time.
 ///
-/// The second reason is the one that bites rather than costs. Row heights are
-/// also cached *per index*, one layer down, and that cache is not keyed on the
-/// callback — so handing the table a function that answers **differently** for
-/// the same rows leaves the old heights on screen. Measured 2026-08-26:
-/// swapping a callback returning 100 for one returning 40, with the data list
-/// unchanged, kept a row pitch of 100.5px. A pure function of the row cannot
-/// hit this, because its old answer and its new answer are the same answer.
+/// The second reason used to bite rather than cost, and no longer does. Row
+/// heights are also cached *per index*, one layer down, and that cache was not
+/// keyed on the callback: measured 2026-08-26, swapping a callback returning
+/// 100 for one returning 40 with the data list unchanged kept a row pitch of
+/// 100.5px. **Fixed in 2.17.0** — both layers now invalidate through one
+/// `rowMeasurementChanged` predicate, so a function that answers differently
+/// is honoured. The advice is unchanged and its reason is not: hold the
+/// callback still because the walk above is not free, not because a stale
+/// height will be drawn. A pure function of the row makes both moot.
 ///
 /// **Heights accumulate.** Once rows differ, a row's top edge is the sum of
 /// every row above it rather than `index * rowHeight`. Everything downstream —

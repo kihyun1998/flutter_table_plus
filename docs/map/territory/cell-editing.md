@@ -27,6 +27,14 @@ session and key-action sources.
   value.
 - **Editing is per column**, gated by the column's own `editable` flag, so the
   same table can mix editable and read-only columns without a mode.
+- **The open session re-pins itself by id, and only on a `data` identity
+  change.** `_reconcileEditingAfterDataChange` runs from the same condition
+  that rebuilds every id-keyed cache, so a list mutated in place is not seen
+  and a swapped `rowId` skips the re-pin entirely — leaving a commit reporting
+  an id from the previous id space. That is the caller obligation stated in
+  [Row identity](row-identity.md), reaching this territory; it is part of the
+  answer to the open question above about surviving a rebuild with different
+  data.
 
 ## Code
 

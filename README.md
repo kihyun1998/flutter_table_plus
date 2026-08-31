@@ -169,8 +169,10 @@ Flutter Table Plus follows a **UI-only, data-agnostic** design:
 ```dart
 // You handle sorting
 onSort: (columnKey, direction) {
-  // Sort your data however you want
-  _myData.sort(...);
+  // Sort your data however you want -- into a NEW list.
+  // `data` and `rowId` are read as one snapshot and invalidated on the
+  // list's identity, so an in-place `_myData.sort(...)` is not seen.
+  _myData = List.of(_myData)..sort(...);
 }
 
 // You handle selection

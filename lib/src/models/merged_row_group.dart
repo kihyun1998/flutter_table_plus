@@ -59,7 +59,9 @@ class MergedRowGroup<T> {
   /// cell's `mergedContent` and wire it to your own `setState`, the way
   /// `example/lib/recipes/merged_rows_recipe.dart` does. A group is an
   /// immutable value you rebuild, so the state has to live where the data
-  /// does.
+  /// does. **Rebuild the enclosing list too** — assigning a new group back as
+  /// `groups[0] = newGroup` keeps the list identical and is not seen; see
+  /// `FlutterTablePlus.mergedGroups`.
   ///
   /// Note that "expanded" *adds* the summary row; it does not hide the
   /// member rows, which is the opposite of what the word suggests and the
