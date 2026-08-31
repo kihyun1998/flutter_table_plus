@@ -142,13 +142,25 @@ build over the same data.
 
   **The resolution was a contract, not another list entry, and that is the
   finding.** Watching `rowId` is unaffordable and the number says so: it is
-  *required*, so every call site writes an inline closure (all twelve in this
+  *required*, so every call site writes an inline closure (all fifteen in this
   repo's example), and an inline closure is a new object on every build even
   when it captures nothing — so the guard would fire for every caller on every
   build. Measured cost of the lookup rebuild alone: 0.22% of a 16.7ms frame at
   100 rows, 0.50% at 1,000, 8.06% at 10,000 — before the row-height cache it
   would also drop, which is the cache this package ships
   `TableRowHeightCalculator.calculateTextHeight` to make worth having.
+
+  **Two qualifications on that figure, both found by the pass that checked
+  it.** The amplifier is real for `FlutterTablePlusState`, whose
+  `_rebuildCaches` re-runs `computeTableMetrics` and calls `calculateRowHeight`
+  once per row *uncached*, and it is **not** real for the body, where a
+  `rowId`-only branch would keep the index-keyed heights untouched because
+  `rowId` does not move an index. And the rule this was generalised into —
+  *required plus closure-typed* — is wider than the evidence: what was measured
+  is how a caller **happens to write** the argument, not whether the parameter
+  is optional. `playground_page.dart` passes an inline `calculateRowHeight`
+  closure and pays the full cost on every build today; a required `rowId`
+  passed as a top-level tear-off would be perfectly watchable.
 
   So shape 2 has a **second exit**: name the input as the caller's obligation
   and record why it is not watched. It is available here and was not available
@@ -161,9 +173,20 @@ build over the same data.
   either compares it or caches nothing from it.
 
   The check for the next one is a grep and the number is worth recording: of
-  the **fifteen** function-typed parameters on the public widget, exactly
+  the **nineteen** function-typed parameters on the public widget, exactly
   **two** have cached results — `rowId` and `calculateRowHeight` — and the other
-  thirteen are called live at build.
+  seventeen are called live at build.
+
+  **That number was first written as fifteen, and how it got there belongs in
+  this note more than the number does.** It came from
+  `grep -c "final .*Function.*;"`, which misses two declarations that wrap onto
+  a second line (`onRowSecondaryTapDown`, `onMergedCellChanged`) and two whose
+  types do not contain the token `Function` at all (`CellChangedCallback<T>?`,
+  `ValueChanged<double>?`). So the guard against a hand-maintained list was
+  itself a hand-run grep, reported as a census — #65's shape, inside the note
+  that exists to catch it. **Count the declarations, not the lines that match a
+  pattern**, and say which command produced the number so the next reader can
+  find it wrong the same way.
 
 ## Where it will recur
 

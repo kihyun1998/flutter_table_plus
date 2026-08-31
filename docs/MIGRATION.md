@@ -198,15 +198,18 @@ onCellChanged: (String rowId, String columnKey, dynamic newValue) {
 ```dart
 onCellChanged: (User row, String columnKey, int rowIndex, dynamic oldValue, dynamic newValue) {
   setState(() {
+    // A new list: `data` is invalidated on the list's identity, so an
+    // in-place `data[rowIndex] = ...` renders the new value and keeps the
+    // cached row height.
     switch (columnKey) {
       case 'name':
-        data[rowIndex] = row.copyWith(name: newValue as String);
+        data = List.of(data)..[rowIndex] = row.copyWith(name: newValue as String);
         break;
       case 'email':
-        data[rowIndex] = row.copyWith(email: newValue as String);
+        data = List.of(data)..[rowIndex] = row.copyWith(email: newValue as String);
         break;
       case 'age':
-        data[rowIndex] = row.copyWith(age: int.parse(newValue.toString()));
+        data = List.of(data)..[rowIndex] = row.copyWith(age: int.parse(newValue.toString()));
         break;
     }
   });

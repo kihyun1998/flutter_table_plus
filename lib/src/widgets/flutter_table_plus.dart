@@ -93,6 +93,13 @@ class FlutterTablePlus<T> extends StatefulWidget {
   ///
   /// So mutating this list in place, or swapping [rowId] while keeping it, is
   /// not seen. Pass a new list.
+  ///
+  /// **"Not seen" is not always benign.** On a table with [mergedGroups],
+  /// *shrinking* this list in place leaves a cached render-index list longer
+  /// than the data and the body throws a `RangeError` on the next build,
+  /// rather than drawing a stale row. Without merged groups the same edit is
+  /// merely stale, because the row count falls through to this list's live
+  /// length.
   final List<T> data;
 
   /// Function to extract a unique row ID string from a row object.
@@ -107,10 +114,17 @@ class FlutterTablePlus<T> extends StatefulWidget {
   /// A [rowId] that returns different ids for the same row is therefore a
   /// change to [data] and is signalled the same way: pass a new list. Keep the
   /// same list and swap this function, and the rows on screen use the new ids
-  /// while the drag callbacks keep reporting the old ones — and, because
-  /// `didUpdateWidget` gates them on the same list identity, an in-flight cell
-  /// edit commits against the abandoned id space and the duplicate-id
-  /// validator never runs against the new one.
+  /// while the drag callbacks keep reporting the old ones. The duplicate-id
+  /// validator does not run either, for the same reason.
+  ///
+  /// **Commit or cancel an open cell edit before you change the id space**,
+  /// including the supported way. An edit session is pinned by *index* and
+  /// re-pinned by *id*: a new [data] list makes it search that list for the id
+  /// it captured, which is an id from the space you just left. It is not
+  /// found, the session is disposed, and the typed text goes with it without
+  /// an `onCellChanged`. A commit itself never uses an id — it reports
+  /// `data[rowIndex]` and the index — so the risk is losing the edit, not
+  /// misreporting it.
   final String Function(T) rowId;
 
   /// List of merged row groups.
@@ -119,6 +133,13 @@ class FlutterTablePlus<T> extends StatefulWidget {
   /// value, so changing one means a new group object -- but assigning it back
   /// as `groups[0] = newGroup` keeps the *list* identical and is not seen.
   /// Rebuild the list as well.
+  ///
+  /// **Keep this list and [data] in step, and rebuild both together.** They
+  /// are never validated against each other, and a new [data] list that no
+  /// longer holds a row some group names does not fail: when the missing key
+  /// was the group's *first*, the group's other members stop rendering
+  /// entirely, and a group missing any member still reserves that member's
+  /// height.
   final List<MergedRowGroup<T>> mergedGroups;
 
   /// Function to determine if a row should be visually dimmed.

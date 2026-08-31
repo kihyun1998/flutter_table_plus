@@ -223,12 +223,15 @@ FlutterTablePlus<User>(
   // 2. Handle cell changes
   onCellChanged: (User row, String columnKey, int rowIndex, dynamic oldValue, dynamic newValue) {
     setState(() {
+      // A new list, as with the sort above: an in-place
+      // `_users[rowIndex] = ...` renders the new value but keeps the cached
+      // row height.
       switch (columnKey) {
         case 'name':
-          _users[rowIndex] = row.copyWith(name: newValue as String);
+          _users = List.of(_users)..[rowIndex] = row.copyWith(name: newValue as String);
           break;
         case 'email':
-          _users[rowIndex] = row.copyWith(email: newValue as String);
+          _users = List.of(_users)..[rowIndex] = row.copyWith(email: newValue as String);
           break;
       }
     });
