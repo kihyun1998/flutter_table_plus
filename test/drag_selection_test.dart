@@ -67,13 +67,33 @@ Future<_DragHarness> _pumpDragTable(
   double tableWidth = 400,
   double tableHeight = 300,
   List<MergedRowGroup<Map<String, dynamic>>> mergedGroups = const [],
+  // --- re-pump support, for the geometry-staleness tests at the bottom ---
+  //
+  // Every caller above builds a fresh `data` list, and a fresh list makes
+  // `!identical(widget.data, oldWidget.data)` true — which rebuilds every cache
+  // on the way past. That is fine for a test that pumps once and is fatal for
+  // one that pumps twice, because the thing under test only happens while the
+  // list stays the same object. Passing `data` and `harness` back in is what
+  // makes the second pump an *update* rather than a fresh mount.
+  List<Map<String, dynamic>>? data,
+  _DragHarness? harness,
+  double? Function(int, Map<String, dynamic>)? calculateRowHeight,
+  double scale = 1.0,
 }) async {
+  // `rowCount` is ignored entirely when `data` is supplied, so the two can
+  // disagree in silence and a reader would believe the wrong one.
+  assert(
+      data == null || data.length == rowCount,
+      'rowCount ($rowCount) is ignored because data was supplied '
+      '(${data.length} rows) — keep them in agreement or drop one');
   tester.view.physicalSize = const Size(_surfaceWidth, _surfaceHeight);
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
 
-  final harness = _DragHarness();
+  // A local, because a nullable *parameter* does not promote inside the
+  // callback closures below.
+  final h = harness ?? _DragHarness();
 
   await tester.pumpWidget(
     MaterialApp(
@@ -83,19 +103,21 @@ Future<_DragHarness> _pumpDragTable(
             width: tableWidth,
             height: tableHeight,
             child: FlutterTablePlus<Map<String, dynamic>>(
-              key: harness.tableKey,
+              key: h.tableKey,
               columns: _buildColumns(count: colCount, width: colWidth),
-              data: _buildData(rowCount, colCount: colCount),
+              data: data ?? _buildData(rowCount, colCount: colCount),
               rowId: (r) => r['id'] as String,
               isSelectable: true,
               enableDragSelection: true,
               mergedGroups: mergedGroups,
+              calculateRowHeight: calculateRowHeight,
+              scale: scale,
               theme: TablePlusTheme(
                 bodyTheme: TablePlusBodyTheme(rowHeight: rowHeight),
                 headerTheme: TablePlusHeaderTheme(height: headerHeight),
               ),
-              onDragSelectionUpdate: (ids) => harness.updates.add(Set.of(ids)),
-              onDragSelectionEnd: (ids) => harness.ends.add(Set.of(ids)),
+              onDragSelectionUpdate: (ids) => h.updates.add(Set.of(ids)),
+              onDragSelectionEnd: (ids) => h.ends.add(Set.of(ids)),
             ),
           ),
         ),
@@ -103,7 +125,7 @@ Future<_DragHarness> _pumpDragTable(
     ),
   );
   await tester.pumpAndSettle();
-  return harness;
+  return h;
 }
 
 /// Returns a screen-space Offset inside the body of the table at (x, row),
@@ -502,6 +524,163 @@ void main() {
       expect(h.updates, isNotEmpty,
           reason: 'no drag was delivered, so the assertion below is vacuous');
       expect(h.ends.single, {'2'});
+    });
+  });
+
+  group('Drag selection — hit-test geometry after a height change', () {
+    // #128. `TablePlusBodyState` snapshots each row's height and id into a
+    // `RowGeometry` and answers every `indexAt` / `idsBetween` from it. The
+    // snapshot is built **lazily on the first drag query** and held until
+    // something clears it — and until this group existed, nothing checked that
+    // it ever was cleared: deleting the clear left all 405 tests green, because
+    // every other drag test here runs on one uniform height and never re-pumps.
+    //
+    // Three things have to line up or the test proves nothing, and each one on
+    // its own is enough to make it vacuous:
+    //
+    //   1. the data list is the **same object** across both pumps, or the
+    //      structure branch rebuilds every cache and the measurement branch is
+    //      never reached;
+    //   2. a drag runs **before** the change, or the snapshot is still null
+    //      afterwards and gets built fresh from the new heights — green with or
+    //      without the invalidation;
+    //   3. the two heights put the same pixel over **different rows**, or the
+    //      stale answer and the fresh answer agree.
+    //
+    // Rendering is not the thing under test and never was: `itemExtentBuilder`
+    // reads the heights live, so the rows are drawn correctly either way. What
+    // goes stale is only what the pointer is resolved against, which is why
+    // this is asserted on the ids the callback reports.
+
+    /// The six rows both pumps share — **a value, not a function**.
+    ///
+    /// It was `List<...> sharedRows() => _buildData(6)`, and that was a trap: a
+    /// docstring promising one object, in front of a helper that built a new
+    /// one per call. Writing `data: sharedRows()` at the second pump — one
+    /// token, and the name invites it — makes both tests pass with the
+    /// production invalidation deleted. Measured, not argued. A `final` cannot
+    /// be called twice, so the invariant is enforced by the language now rather
+    /// than by whoever edits next.
+    final sharedRows = _buildData(6);
+
+    /// A point inside the body, `y` logical pixels below the body's **top**.
+    ///
+    /// The body top is measured, not assumed. `_bodyPoint` above adds the
+    /// `_headerHeight` constant, which is right only at `scale: 1.0`: `scaledBy`
+    /// scales `headerTheme.height` too, so at 2.0 the header draws at 80 and the
+    /// constant is 40px short. Measured 2026-08-31 — the body's `ListView` sits
+    /// 40px below the table at scale 1.0 and 80px below it at 2.0. With the
+    /// constant, the scale test's priming drag ran from body-local 0 to 80 while
+    /// its comment claimed 40 to 120, and got the right answer by coincidence:
+    /// both pairs land on rows 0 and 1.
+    Offset at(WidgetTester tester, GlobalKey key, double y) => Offset(
+          tester.getRect(find.byKey(key)).left + 50,
+          tester.getRect(find.byType(ListView)).top + y,
+        );
+
+    Future<void> dragFromTo(
+      WidgetTester tester,
+      Offset from,
+      Offset to,
+    ) async {
+      final gesture = await tester.startGesture(from);
+      await tester.pump();
+      await gesture.moveTo(to);
+      await tester.pump();
+      await gesture.up();
+      await tester.pump();
+    }
+
+    testWidgets('a new calculateRowHeight re-resolves the pointer',
+        (tester) async {
+      final rows = sharedRows;
+
+      // Tall rows first: 6 x 80 = 480, plus a 40px header, inside 560.
+      final h = await _pumpDragTable(
+        tester,
+        rowCount: 6,
+        data: rows,
+        tableHeight: 560,
+        calculateRowHeight: (i, r) => 80,
+      );
+
+      // Load-bearing: builds the snapshot at 80px. Without it the snapshot is
+      // still null after the second pump and the test cannot fail.
+      await dragFromTo(
+          tester, at(tester, h.tableKey, 40), at(tester, h.tableKey, 120));
+      expect(h.ends, hasLength(1),
+          reason: 'the priming drag did not emit, so the snapshot this test '
+              'depends on was never built');
+      expect(h.ends.last, equals(<String>{'0', '1'}),
+          reason: 'the priming drag did not resolve against 80px rows');
+
+      // Same list object, new height function — the measurement branch.
+      await _pumpDragTable(
+        tester,
+        rowCount: 6,
+        data: rows,
+        harness: h,
+        tableHeight: 560,
+        calculateRowHeight: (i, r) => 40,
+      );
+
+      // y=20 is row 0 and y=140 is row 3, at 40px. Against a stale 80px
+      // snapshot the same two points are rows 0 and 1.
+      await dragFromTo(
+          tester, at(tester, h.tableKey, 20), at(tester, h.tableKey, 140));
+
+      // The witness matters: a second drag that silently did not emit leaves
+      // `ends.last` holding the priming drag's `{0, 1}` — the same value a
+      // stale snapshot produces, so a red would not say which happened.
+      expect(h.ends, hasLength(2), reason: 'the second drag did not emit');
+      expect(h.ends.last, equals(<String>{'0', '1', '2', '3'}),
+          reason: 'the pointer was resolved against the previous heights: the '
+              'rows are drawn at 40px but the drag answered as if they were '
+              'still 80px');
+    });
+
+    testWidgets('a scale change re-resolves the pointer', (tester) async {
+      // The other arm of the same branch, and the one that was never covered
+      // even before #120: a cached height is stored already multiplied by
+      // `scale`, so a zoom leaves the snapshot describing the previous zoom.
+      final rows = sharedRows;
+
+      // One function object, reused, so `calculateRowHeight` identity cannot be
+      // what triggers the rebuild. Only `scale` differs between the pumps.
+      double? height(int i, Map<String, dynamic> r) => 40;
+
+      final h = await _pumpDragTable(
+        tester,
+        rowCount: 6,
+        data: rows,
+        tableHeight: 560,
+        calculateRowHeight: height,
+        scale: 2.0,
+      );
+
+      await dragFromTo(
+          tester, at(tester, h.tableKey, 40), at(tester, h.tableKey, 120));
+      expect(h.ends, hasLength(1), reason: 'the priming drag did not emit');
+      expect(h.ends.last, equals(<String>{'0', '1'}),
+          reason: 'the priming drag did not resolve against 80px rows — at '
+              'scale 2.0 a 40px height renders at 80');
+
+      await _pumpDragTable(
+        tester,
+        rowCount: 6,
+        data: rows,
+        harness: h,
+        tableHeight: 560,
+        calculateRowHeight: height,
+        scale: 1.0,
+      );
+
+      await dragFromTo(
+          tester, at(tester, h.tableKey, 20), at(tester, h.tableKey, 140));
+
+      expect(h.ends, hasLength(2), reason: 'the second drag did not emit');
+      expect(h.ends.last, equals(<String>{'0', '1', '2', '3'}),
+          reason: 'the pointer was resolved against the previous scale');
     });
   });
 }

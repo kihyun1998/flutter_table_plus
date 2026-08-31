@@ -76,4 +76,24 @@ calculation ultimately asks.
 
 ## Known holes / open
 
-**None.**
+- **The geometry snapshot is invalidated by four inputs and built from five.**
+  `_buildGeometry` falls back to `theme.rowHeight` for any row without a
+  per-row height, and reads it again three times in the merged-group path;
+  `didUpdateWidget` watches `data`, `mergedGroups`, `calculateRowHeight` and
+  `scale`, and not the theme. So changing `bodyTheme.rowHeight` while the data
+  list keeps its identity leaves the hit-test geometry describing the previous
+  height.
+  - Measured 2026-08-31, through the real widget: rows drawn at 40px, a drag
+    across four of them reporting the two it would have covered at 80px.
+    Rendering is unaffected — `itemExtentBuilder` and the uniform `itemExtent`
+    both read the theme live — so **only the pointer is wrong**, which is why
+    nothing looks broken.
+  - The parent has the same omission with a different symptom: its cached total
+    height feeds `needsVerticalScroll`, so the vertical scrollbar can fail to
+    appear. Measured the same day.
+  - Reachable from this repo's own example: the playground's `rowHeight` slider
+    edits the body theme while `_data` stays one object.
+  - **The shape is #50/#116 one layer down** — a hand-listed field set that a
+    later field was never added to. `CLAUDE.md` states the invariant for
+    `copyWith`/`scaledBy`; an invalidation branch is the same shape without the
+    same protection.

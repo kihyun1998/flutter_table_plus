@@ -188,7 +188,13 @@ class TablePlusBodyState<T> extends State<TablePlusBody<T>>
   Map<int, double> _cachedRowHeights = const {};
 
   /// Cached pure hit-test geometry for the [RowLocator] port. Built lazily on
-  /// the first drag query, invalidated on data/mergedGroups/scale change.
+  /// the first drag query, and dropped by [didUpdateWidget] on a `data`,
+  /// `mergedGroups`, `calculateRowHeight` or `scale` change.
+  ///
+  /// That list is **not** the set of inputs [_buildGeometry] reads — see
+  /// `## Known holes` in `docs/map/territory/row-render-geometry.md`. It said
+  /// "data/mergedGroups/scale" until #128; `calculateRowHeight` had been added
+  /// to the branch by #120 and this comment was left behind.
   RowGeometry? _rowGeometry;
 
   @override
