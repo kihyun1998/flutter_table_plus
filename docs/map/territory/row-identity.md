@@ -68,9 +68,14 @@ from that choice.
     `displayStringForOption` — a caller-supplied `T` to `String` extractor — is
     compared anywhere or carries any documented obligation. The SDK does what
     this package does, in the one place it meets the same shape.
-  - **Unmet, the failure is a divergence and not a lag.** Measured: the rows on
-    screen and the selection highlight follow the new `rowId` live, while the
-    drag callbacks keep reporting ids from the space the caller abandoned.
+  - **That was measured as a divergence, and it is what the guard closed.** The
+    rows on screen and the selection highlight followed the new `rowId` live
+    while the drag callbacks kept reporting ids from the space the caller had
+    abandoned — screen right, answer wrong, #128's shape. Since #135 the ids are
+    compared and the swap is seen. What survives is narrower and worth keeping
+    separate: an element replaced **under the same id** leaves the ids
+    identical, so the index-keyed height cache still holds the pre-edit
+    measurement.
 - **Exactly two caller-supplied functions have cached results, and they are
   treated oppositely.** `rowId` is excluded by the contract above;
   `calculateRowHeight` is watched by `rowMeasurementChanged`, and can be
@@ -84,15 +89,18 @@ from that choice.
     passed as an inline closure is exactly as unwatchable, and
     `playground_page.dart` pays that cost for `calculateRowHeight` on every
     build today.
-  - **And the axis is avoidable, which is the part that matters.** Comparing
-    the *ids* rather than the function is complete however the caller writes
-    it, and costs about a tenth of the rebuild it prevents: 0.971% of a 16.7ms
-    frame at 10,000 rows against 10.0%, measured AOT. `utils/overflow_cache.dart`
-    is the same pattern already shipping here. It is **not** taken yet for one
-    reason — `computeRenderableIndices` drops a group's remaining members when
-    the missing row was the group's first key, so switching the guard on turns
-    an in-place `RangeError` into a silently missing row. Measured. **Fix the
-    derivation, then guard.**
+  - **And the axis was avoidable, which is what shipped.** `RowLookup.idsMatch`
+    compares the *ids* rather than the function: complete however the caller
+    writes the argument, and about a tenth of the rebuild it prevents — 0.971%
+    of a 16.7ms frame at 10,000 rows against 10.0%, measured AOT.
+    `utils/overflow_cache.dart` is the same pattern, already shipping here and
+    four files away from the code that needed it.
+  - **The order it landed in is the load-bearing part.** Switching the guard on
+    first would have turned an in-place `RangeError` into a *silently missing
+    row*, because the rebuild it triggers ran a `computeRenderableIndices` that
+    dropped a group whose first key was gone — a loud failure traded for a quiet
+    one, with which of the two you got depending on which member the caller
+    removed. The derivation was fixed first and the guard second (#135).
 - **Why the SDK does not have this problem.** There, identity rides on the data
   — a `Key` on the child — so the data's identity covers every cache derived
   from it. All three peer packages do the same: `pluto_grid` mints a

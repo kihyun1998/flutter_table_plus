@@ -42,6 +42,38 @@ row ids — which is the question every callback in this area answers implicitly
     declaration and from the docs alike; only a grep for the *call* tells
     them apart.
 
+- **`data` and `mergedGroups` are two caller lists and nothing validates one
+  against the other.** A group may name a row `data` does not hold; the table
+  renders what it has, anchoring the group at its **earliest present member**
+  and reserving no height for the absent ones. It does not warn — the drift
+  stays the caller's to notice.
+  - **Seven derivations answer "which rows, and how tall", and three of them
+    disagreed with the rest.** `computeTableMetrics` anchors on the earliest
+    present member and `_getMergedRowHeight` skips an unresolvable key;
+    `computeRenderableIndices` anchored on `rowKeys.first`,
+    `_getMergedGroupExtent` added `theme.rowHeight` for a key it could not
+    find, and inside the widget `_buildRowWidget` kept its **own** copy of the
+    anchor and its own copy of the phantom while `_buildStackedCells` drew an
+    empty cell for the absent member. So the parent counted a group the body
+    drew nothing for, and the body laid out one row height the parent had not
+    totalled (#135).
+  - **The count was written as four and the real number was seven**, and the
+    three that were missed are the three that live in a **widget** while the
+    four that were found live in pure functions and state methods. A hand-list
+    audited only where it is testable in isolation reports itself complete —
+    the pure tests were all green while the screen was still wrong.
+  - The anchor has one home now, `TablePlusBodyState._mergedGroupAnchor`, so a
+    fourth copy cannot be written by accident.
+  - **What that cost is worth stating, because "the two disagree" understates
+    it.** Anchoring on `rowKeys.first` made the render condition *unsatisfiable*
+    when that key was gone, while the loop still marked every other member
+    processed — so one absent row took its whole group off the screen. Measured
+    2026-08-31: a group over `['0','1']` and a `data` list without `'0'` drew
+    neither. The same shape with the keys merely out of order was pinned as
+    correct by a test named *"preserves the out-of-order-rowKeys quirk"*.
+  - The rule is one sentence and every site holds it: **a group is anchored,
+    measured and drawn on the members that are actually there.**
+
 ## Code
 
 `models/merged_row_group.dart` — `MergedRowGroup`, `MergeCellConfig`
@@ -55,7 +87,7 @@ row ids — which is the question every callback in this area answers implicitly
 
 ## Cross-cutting invariants
 
-**None.**
+→ [Never hand-maintain a list a later addition must join](../invariant/no-hand-enumeration.md) — four derivations of one fact, two of them wrong, and no mechanism that made them agree (#135)
 
 ## Blast radius
 

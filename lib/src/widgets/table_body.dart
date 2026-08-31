@@ -223,7 +223,11 @@ class TablePlusBodyState<T> extends State<TablePlusBody<T>>
     // which of them a group swallows. Everything is stale, including the
     // heights.
     if (!identical(widget.data, oldWidget.data) ||
-        !identical(widget.mergedGroups, oldWidget.mergedGroups)) {
+        !identical(widget.mergedGroups, oldWidget.mergedGroups) ||
+        // Identity is watched by value, not by the extractor's object identity:
+        // see `RowLookup.idsMatch`. Ordered last so the two `identical` checks
+        // short-circuit it on the builds where something already changed.
+        !_rowLookup.idsMatch(widget.data, widget.rowId)) {
       _rebuildCaches();
     } else if (rowMeasurementChanged<T>(
       oldCalculateRowHeight: oldWidget.calculateRowHeight,
@@ -473,10 +477,14 @@ class TablePlusBodyState<T> extends State<TablePlusBody<T>>
     double total = 0;
     for (final rowKey in group.rowKeys) {
       final rowIndex = _rowLookup.indexOf(rowKey);
+      // A key absent from `data` contributes nothing, which is what
+      // `FlutterTablePlusState._getMergedRowHeight` has always done. This used
+      // to add `theme.rowHeight` for it, so the two totals disagreed by exactly
+      // one row height per missing member -- the parent deciding whether a
+      // vertical scrollbar is needed from a number the body was not laying out
+      // (#135).
       if (rowIndex != null) {
         total += _calculateRowHeight(rowIndex) ?? widget.theme.rowHeight;
-      } else {
-        total += widget.theme.rowHeight;
       }
     }
     if (group.isExpanded) {
@@ -503,19 +511,49 @@ class TablePlusBodyState<T> extends State<TablePlusBody<T>>
     return null;
   }
 
+  /// The data index a merged group is drawn at: its **earliest present
+  /// member**.
+  ///
+  /// One home for a rule that had three copies and two answers.
+  /// `computeTableMetrics` reaches a group at its earliest member by scanning
+  /// forward, `computeRenderableIndices` now does the same explicitly, and this
+  /// is what `_buildRowWidget` compares against. `null` means no member of the
+  /// group is in `data` at all, and the group is drawn nowhere — which is the
+  /// only case where a group legitimately disappears (#135).
+  int? _mergedGroupAnchor(MergedRowGroup<T> group) {
+    int? lowest;
+    for (final rowKey in group.rowKeys) {
+      final idx = _rowLookup.indexOf(rowKey);
+      if (idx != null && (lowest == null || idx < lowest)) lowest = idx;
+    }
+    return lowest;
+  }
+
   /// Build a row widget for the given index.
   TablePlusRowWidget<T> _buildRowWidget(int index, int renderIndex) {
     final mergeGroup = _getMergedGroupForRow(index);
 
     if (mergeGroup != null) {
-      final firstRowKey = mergeGroup.rowKeys.first;
-      final firstRowIndex = _rowLookup.indexOf(firstRowKey);
-      if (firstRowIndex != null && firstRowIndex == index) {
+      // The same anchor `computeRenderableIndices` uses: the group's earliest
+      // **present** member. This read `indexOf(rowKeys.first)` and compared it
+      // to `index`, which is a third copy of the rule and disagreed with the
+      // other two — a group whose first key was absent, or merely out of data
+      // order, failed the test here and fell through to the plain-row branch
+      // below. The renderable list had already marked its other members
+      // processed, so those rows were drawn by neither branch (#135).
+      final anchorIndex = _mergedGroupAnchor(mergeGroup);
+      if (anchorIndex != null && anchorIndex == index) {
         final isSelected = widget.selectedRows.contains(mergeGroup.groupId);
-        final firstRowData = widget.data[firstRowIndex];
+        final firstRowData = widget.data[anchorIndex];
         final isDimmed = widget.isDimRow?.call(firstRowData) ?? false;
 
-        double? mergedHeight;
+        // Always the extent the ListView actually allocated for this group,
+        // never a number the widget recomputes for itself. Left null, the
+        // widget falls back to `theme.rowHeight * effectiveRowCount`, and
+        // `effectiveRowCount` counts `rowKeys` — including a member `data` does
+        // not hold — so a short group asked for one row height more than it was
+        // given and squeezed its own cells (#135).
+        double? mergedHeight = _getMergedGroupExtent(mergeGroup);
         List<double>? individualHeights;
         if (widget.calculateRowHeight != null) {
           final heights = <double>[];
@@ -523,19 +561,14 @@ class TablePlusBodyState<T> extends State<TablePlusBody<T>>
 
           for (final rowKey in mergeGroup.rowKeys) {
             final rowIndex = _rowLookup.indexOf(rowKey);
-            if (rowIndex != null) {
-              final height = _calculateRowHeight(rowIndex);
-              if (height != null) {
-                heights.add(height);
-                totalHeight += height;
-              } else {
-                heights.add(widget.theme.rowHeight);
-                totalHeight += widget.theme.rowHeight;
-              }
-            } else {
-              heights.add(widget.theme.rowHeight);
-              totalHeight += widget.theme.rowHeight;
-            }
+            // A key `data` does not hold contributes no member and no height,
+            // matching `_getMergedGroupExtent` and the parent's
+            // `_getMergedRowHeight`. It used to add `theme.rowHeight` here as
+            // well, so this list was longer than the members being drawn.
+            if (rowIndex == null) continue;
+            final height = _calculateRowHeight(rowIndex);
+            heights.add(height ?? widget.theme.rowHeight);
+            totalHeight += height ?? widget.theme.rowHeight;
           }
 
           if (mergeGroup.isExpanded) {

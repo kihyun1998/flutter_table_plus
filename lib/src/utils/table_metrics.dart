@@ -46,11 +46,18 @@ TableMetrics computeTableMetrics<T>({
 /// The data indices that actually render, one entry per render row, or `null`
 /// when there are no merged groups (the body then renders raw indices).
 ///
-/// Pure extraction of the body's renderable-index loop. A merged group
-/// contributes the index of `rowKeys.first`, and only when that index is the
-/// one currently being visited — matching the existing behavior exactly,
-/// including its quirk for out-of-order `rowKeys` (where a group whose first key
-/// is not its earliest data row is skipped rather than rendered).
+/// A merged group contributes **the lowest data index any of its members
+/// occupies**, which is the index this forward scan reaches it at: every member
+/// is marked processed the first time the group is seen, so arriving here at
+/// all means no member came earlier.
+///
+/// That is the same anchor [computeTableMetrics] has always used, and the two
+/// used to disagree. This function anchored on `indexOf(rowKeys.first)`, so a
+/// group whose first key was not its earliest data row rendered nothing while
+/// the metrics counted it — and a group whose first key was **absent from
+/// `data`** dropped every one of its members from the screen while they sat in
+/// the list. It was a pure extraction of the body's loop and preserved that
+/// behaviour deliberately, which is why the quirk outlived the extraction (#135).
 List<int>? computeRenderableIndices<T>({
   required List<T> data,
   required RowLookup<T> lookup,
@@ -67,8 +74,12 @@ List<int>? computeRenderableIndices<T>({
 
     final group = lookup.groupOf(rowId(data[i]));
     if (group != null) {
-      final firstRowIndex = lookup.indexOf(group.rowKeys.first);
-      if (firstRowIndex == i) renderable.add(i);
+      // `i` is the group's earliest present member: the `continue` above skips
+      // anything already processed, and every member is processed together
+      // below, so reaching a grouped row means no member of it came first.
+      // No `rowKeys.first` lookup — a key absent from `data` used to make this
+      // condition unsatisfiable and take the whole group off the screen.
+      renderable.add(i);
       for (final gRowKey in group.rowKeys) {
         final idx = lookup.indexOf(gRowKey);
         if (idx != null) processed.add(idx);

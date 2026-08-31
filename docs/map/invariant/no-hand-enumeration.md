@@ -158,15 +158,19 @@ build over the same data.
   function it is handed. **The whole first analysis asked "compare the closure
   or not" and the answer was four files away in the same directory.**
 
-  **What stops it being taken here is what it would do once switched on.**
-  Prototyped and measured: 412/412 green, and an in-place `removeWhere` that
-  used to throw a `RangeError` no longer throws. But on a merged-group table
-  the guard's rebuild runs `computeRenderableIndices`, which drops a group's
-  remaining members when the removed row was the group's **first** key — so a
-  loud crash becomes a **silently missing row**, and which of the two you get
-  depends on which member the caller removed. The guard is correct and the
-  derivation under it is not, so the order has to be: fix the derivation, then
-  guard. Until then the contract is what is honest.
+  **It shipped in #135, and the order it shipped in is the finding.** Switched
+  on alone it would have made things worse, not better: 412/412 green and the
+  in-place `RangeError` gone, but on a merged-group table the rebuild it
+  triggers ran a `computeRenderableIndices` that dropped a group whose first
+  key was missing — a loud crash traded for a **silently missing row**, with
+  which of the two you got depending on which member the caller removed. The
+  derivation was fixed first and the guard second.
+
+  **So a hand-list can have a mechanical fix that is unsafe to apply yet**, and
+  the thing to record is not the fix but the sequence. #132 wrote the contract
+  and said the guard was unaffordable, which was wrong; the corrected reason was
+  that it was ordered behind something else, and that reason had an expiry date
+  the first one did not.
 
   **Two qualifications on that figure, both found by the pass that checked
   it.** The amplifier is real for `FlutterTablePlusState`, whose

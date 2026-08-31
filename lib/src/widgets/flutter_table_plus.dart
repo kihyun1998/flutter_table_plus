@@ -91,31 +91,38 @@ class FlutterTablePlus<T> extends StatefulWidget {
   /// cached and re-derived when this list is a *different object* -- the rule
   /// Flutter applies to its own `SliverChildListDelegate.children`.
   ///
-  /// So mutating this list in place, or swapping [rowId] while keeping it, is
-  /// not seen. Pass a new list.
+  /// **Pass a new list.** It is the cheapest signal — a different object is
+  /// seen by an identity check, with nothing else to compute.
   ///
-  /// **"Not seen" is not always benign.** On a table with [mergedGroups],
-  /// *shrinking* this list in place leaves a cached render-index list longer
-  /// than the data and the body throws a `RangeError` on the next build,
-  /// rather than drawing a stale row. Without merged groups the same edit is
-  /// merely stale, because the row count falls through to this list's live
-  /// length.
+  /// A caller who mutates in place instead is caught, not corrupted: the
+  /// snapshot's ids are compared by value, so a list **sorted** or **shrunk**
+  /// in place is re-derived like any other change (`RowLookup.idsMatch`). That
+  /// is a safety net rather than a second supported route, and it does not
+  /// cover everything — **replacing an element under the same id** leaves the
+  /// ids identical, so the index-keyed row-height cache keeps the pre-edit
+  /// measurement and a table whose heights depend on cell content draws the
+  /// old layout.
   final List<T> data;
 
   /// Function to extract a unique row ID string from a row object.
   ///
-  /// Called on demand, and deliberately **not** compared across rebuilds. An
-  /// inline closure is a new object on every build even when it captures
-  /// nothing, and this parameter is required -- so every caller writes one, and
-  /// comparing it would drop every cache on every build. That is the opposite
-  /// of [calculateRowHeight], which is optional and therefore usually the same
-  /// `null` from one build to the next.
+  /// **The function is never compared; its answers are.** An inline closure is
+  /// a new object on every build even when it captures nothing, and this
+  /// parameter is required — so every caller writes one, and comparing the
+  /// closure would drop every cache on every build. That is the opposite of
+  /// [calculateRowHeight], which is optional and so is usually the same `null`
+  /// twice running.
   ///
-  /// A [rowId] that returns different ids for the same row is therefore a
-  /// change to [data] and is signalled the same way: pass a new list. Keep the
-  /// same list and swap this function, and the rows on screen use the new ids
-  /// while the drag callbacks keep reporting the old ones. The duplicate-id
-  /// validator does not run either, for the same reason.
+  /// Instead the ids themselves are compared against the snapshot's, which
+  /// costs about a tenth of the rebuild it prevents and is complete rather
+  /// than sampled — so swapping this function over an unchanged [data] list
+  /// **is** seen, and so is a list sorted or shrunk in place. Passing a new
+  /// list is still the cheaper signal and still the documented one.
+  ///
+  /// **The duplicate-id validator does not run on a swap**, and neither does
+  /// the open cell edit's re-pin: both are gated on [data]'s own identity, not
+  /// on this. The re-pin being skipped is correct here — the list did not
+  /// move, so the session's index is still the row it was editing.
   ///
   /// **Commit or cancel an open cell edit before you change the id space**,
   /// including the supported way. An edit session is pinned by *index* and
@@ -134,12 +141,12 @@ class FlutterTablePlus<T> extends StatefulWidget {
   /// as `groups[0] = newGroup` keeps the *list* identical and is not seen.
   /// Rebuild the list as well.
   ///
-  /// **Keep this list and [data] in step, and rebuild both together.** They
-  /// are never validated against each other, and a new [data] list that no
-  /// longer holds a row some group names does not fail: when the missing key
-  /// was the group's *first*, the group's other members stop rendering
-  /// entirely, and a group missing any member still reserves that member's
-  /// height.
+  /// **A group may name a row [data] does not hold**, and the table renders
+  /// what it has: the group anchors at its earliest present member and
+  /// reserves no height for the absent ones. Nothing warns you, so the two
+  /// lists drifting apart stays *your* bug to notice — but it is a group drawn
+  /// one row short, not rows silently vanishing off the screen, which is what
+  /// it was until 2.17.0.
   ///
   /// **Rebuilding more often than you need has a cost too**, and it is the
   /// easier mistake to make once the rule above is known. A getter that
@@ -530,7 +537,12 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
           newScale: widget.scale,
           oldRowHeight: oldWidget.theme.bodyTheme.rowHeight,
           newRowHeight: widget.theme.bodyTheme.rowHeight,
-        )) {
+        ) ||
+        // Identity watched by value, not by the extractor's object identity:
+        // see `RowLookup.idsMatch`. Ordered last so the two `identical` checks
+        // and the cheaper measurement predicate short-circuit it on any build
+        // where something already changed.
+        !_rowLookup.idsMatch(widget.data, widget.rowId)) {
       _rebuildCaches();
     }
     // Correct scroll positions when scale changes.
