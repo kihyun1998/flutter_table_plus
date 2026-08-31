@@ -5,16 +5,43 @@ many, each one's guard and decider, and the artifacts generated for them.
 `thegraph` holds the portable *method* (node-type catalog, four invariants,
 reasoning habits); this file is its **contract** for this repo.
 
-Compiled from [`theflow.md`](theflow.md) — the frozen predecessor's bindings,
-which stay valid while both coexist. Per-incident evidence lives in
-[`lessons.md`](lessons.md); identity and invariants in `CLAUDE.md`.
+Per-incident evidence lives in [`lessons.md`](lessons.md); identity and
+invariants in `CLAUDE.md`.
 
-**Build stamp: `thegraph@100dbdb10d85`** (SKILL.md sha256[0:12], 2026-08-24).
+**Build stamp: `thegraph@08b7768e9e35`** (SKILL.md sha256[0:12], 2026-08-31).
 Every generated artifact carries it. When the stamp is behind, `thegraph` says so
 and continues — it never rebuilds on its own.
 
 **Run state:** `.thegraph/` at the repo root, append-only, git-ignored. It is a
 cache; the GitHub issue is the durable record.
+
+---
+
+## Compile notes — the 2026-08-31 update
+
+This was an **update build**: the graph was the input, diffed against the repo.
+`theflow.md` was **not** re-read — it was consumed by the 2026-08-25 first build
+and is spent. What the diff found:
+
+| # | Slot | Was | Now |
+|---|---|---|---|
+| 1 | `place` | **absent from the roster** | added. The catalog gives it 1, unconditionally — every repo has a tree |
+| 2 | build stamp | `100dbdb10d85` | `08b7768e9e35` on all 8 artifacts |
+| 3 | `gate` | 5 commands | 7. `python scripts/map/check_map.py docs/map` **existed and was in neither the list nor `gates.sh`**, though `map` and `sweep` both named it; `tree-rule.sh` is new |
+| 4 | `gate` blind spots | *"publish:dry-run does NOT see uncommitted changes"* | `gates.sh` carried a claim this doc had **already corrected**. The script now matches: it *does* report modified files **inside** the archive |
+| 5 | `sweep` | header said 10, extraction plan said 9 | 10, stated once |
+| 6 | `verify` sacred paths | 8 | 12 — the row-height / geometry axis (#120, #121, #128) |
+| 7 | `reference` | 4 source classes | 5 — `peers`, confirmed by the maintainer for `place` |
+
+**`build_gaps` read first, as the drift detector.** The tracker carried none. The
+run-state cache carried one (`.thegraph/101.md`): the spine roster was filed as
+prose parents against a build that already said *relation*. That was a
+**compliance** miss, already substituted in that run — not a wrong build value,
+so nothing here changes for it.
+
+**`docs/agents/theflow.md` is spent** and was already reported as such at the
+first build. Nothing reads it, nothing maintains it. It is the maintainer's to
+delete; this skill writes the build and never product docs.
 
 ---
 
@@ -25,14 +52,15 @@ cache; the GitHub issue is the durable record.
 | `classify` | 1 | catalog |
 | `spine` | 1 | GitHub sub-issues are live here (`gh api repos/{owner}/{repo}/issues/N/sub_issues` returns `[]`, not 404) — the roster is a **relation**, never prose |
 | `map` | 1 | the MAP — [`docs/map/`](../map/README.md), 23 territories + 6 cross-cutting invariants |
-| `reference` | 4 | the routing table's rows naming an external source (below) |
+| `reference` | 5 | the routing table's rows naming an external source (below) |
 | `enumerate` | 1 | catalog · never delegated |
 | `boundary` | 1 | catalog · never delegated. The seam is the published package plus the `../just_tooltip` / `../flutter_checkbox` membrane |
+| `place` | 1 | catalog, unconditional — nothing in the input settles whether it exists. What the input settled is the **tree rule** (below) |
 | `implement` | 3 | one per layer |
 | `proof` | 3 | one per layer |
 | `verify` | 2 | 1 gap-hunter + 1 refuter, bought by a non-empty sacred-path list |
 | `sweep` | 1 | fanning out over 10 surfaces |
-| `gate` | 1 | 5 commands, extracted as a script |
+| `gate` | 1 | 7 commands, extracted as a script |
 | `search` | once per candidate | catalog |
 | `batch` | 1+ | catalog · human · never bypassed |
 | `stop` | edge-triggered | catalog · human |
@@ -59,10 +87,17 @@ it is the failure the layer exists to prevent.
 
 The MAP's own gate is `python scripts/map/check_map.py docs/map` — links,
 anchors, symbol names, file attribution, section sets, and invariant reciprocity.
+It is now in the `gate` command list, where it belongs; naming it only here is
+how it stayed out of every gate run.
+
+**It checks attribution, not location.** `resolve_dart` searches
+`lib/src → lib → example → .` in order, so a `.dart` path in a territory note
+resolves wherever the file actually sits. The MAP therefore cannot enforce the
+tree rule, and `place`'s guard does not duplicate it.
 
 ---
 
-## `reference` — 4 source classes, none summarized
+## `reference` — 5 source classes, none summarized
 
 Every class is read as **raw source**, so any of them can produce a `CONFIRMED`
 finding. Read whole files, then grep the actual lines; never a summarizing fetch.
@@ -71,6 +106,7 @@ finding. Read whole files, then grep the actual lines; never a summarizing fetch
 |---|---|---|
 | `siblings` | `../just_tooltip`, `../flutter_checkbox` — **source + CHANGELOG**, not pub docs | tooltip arbitration, checkbox behavior, and any `environment:` / floor change in their changelogs. Same author, each with its own tracker: fix there what belongs there |
 | `sdk` | Flutter SDK source | rendering, gestures, coordinates, scroll physics |
+| `peers` | `flutter/packages` → `packages/two_dimensional_scrollables` · `bosskmk/pluto_grid` · `maxim-saplin/data_table_2` | layout prior art for `place`. **Named, never stored** — read the repository's real tree (`gh api repos/OWNER/REPO/git/trees/BRANCH?recursive=1`), never a write-up about one. Confirmed by the maintainer 2026-08-31, who deliberately excluded this author's own packages so shared habits would surface as differences rather than as agreements |
 | `consumer` | the reporting repo, derived on the spot from `../*/pubspec.yaml` | any downstream bug claim — verify, do not assume |
 | `registry` | `https://pub.dev/api/packages/flutter_table_plus`, and `archive_url` for the published tree | publish state, which is **queried, never assumed**; identify the published commit by unpacking the archive and diffing against `git show <commit>:<path>` with `tr -d '\r'` (archive is CRLF, git blob is LF). If *all* candidates fail — or all pass — suspect the checker |
 
@@ -79,6 +115,95 @@ finding. Read whole files, then grep the actual lines; never a summarizing fetch
 To pin a runtime fact (a coordinate, a call order, an emitted event), instrument a
 throwaway probe, read the number, delete the probe, and record the number in the
 issue. Reading the code is not observing what it does.
+
+---
+
+## `place` — the tree rule
+
+**Decider: AI. Never delegated.** This node runs **before `implement`**: a file
+written to the wrong directory breaks the seam while producing no error, no
+failing test, and no warning, and reading the rule after the tests are green
+means everything it would have told you arrives as rework.
+
+Established 2026-08-31 by `plat` against the three confirmed `peers` above, read
+at full depth via the git-trees API. **No layout rule was declared anywhere** —
+`CLAUDE.md` states identity, not directories, and the MAP checks attribution
+rather than location — so induction was the only input, and `plat`'s
+*"a declaration outranks the tree"* never fired.
+
+### The rule, as concrete paths
+
+```
+lib/flutter_table_plus.dart      the barrel — the only public entry point.
+                                 A new public symbol is exported here or it is not public.
+lib/src/models/*.dart            value types the consumer constructs and passes in   (5/5 exported)
+lib/src/models/theme/*.dart      theme value types                                   (9/9 exported)
+lib/src/utils/*.dart             computation that does not know the widget tree.
+                                 No Widget subclass.                                 (0/15 — clean)
+lib/src/widgets/*.dart           widgets, or collaborators only a widget uses
+lib/src/widgets/cells/*.dart     cell widgets a body row draws
+test/*.dart                      tests. Flat — no subdirectories
+benchmark/*.dart                 standalone benchmarks. Outside every gate, excluded from the archive
+example/lib/**                   the example, a package of its own
+example/test/**                  the example's gate (#55)
+docs/*.md                        public prose — THEMING, FEATURES, MIGRATION
+docs/map/README.md               the MAP's entry point
+docs/map/territory/*.md          MAP territory notes (23)
+docs/map/invariant/*.md          MAP cross-cutting invariant notes (6)
+docs/agents/*.md                 agent bindings
+scripts/thegraph/*.sh            generated scripts (bash)
+scripts/map/*.py                 the MAP gate (python)
+scripts/fonts/*.py               one-off asset tooling (python)
+.claude/agents/ftp-*.md          generated agents
+```
+
+Everything outside those roots — `pubspec.yaml`, `CHANGELOG.md`, `README.md`,
+`LICENSE`, `analysis_options.yaml`, `.pubignore`, `coverage/`, `build/`, and
+`example/`'s platform scaffolding — is **out of scope**, not unruled. The tree
+rule assigns ownership inside the roots it names; it does not adjudicate where a
+manifest goes. `tree-rule.sh` counts those files and checks nothing about them.
+
+**Four of the rows above came from auditing the rule against the whole tree
+rather than from the peer comparison** — `benchmark/`, `docs/*.md`,
+`docs/map/README.md`, and `scripts/fonts/*.py` all exist and none was named until
+the rule was run over what is actually on disk. A rule that has never been
+matched against the tree it describes is a rule with unmeasured holes, which is
+why `tree-rule.sh` carries an `--audit` mode.
+
+**The `utils` / `widgets` axis is *widget-awareness*, not Widget-subclass-hood.**
+Four axes were sorted by content and only this one came out clean. Exported-ness
+does not sort them (`utils` is 2 public / 13 internal); importing Flutter does not
+(10 / 5); holding mutable state does not — `overflow_cache.dart` carries six
+instance fields and stays in `utils/` because it does not know the widget tree.
+That is the rule, not drift. Equally, `drag_selection_controller.dart` stays in
+`widgets/` though it is not a Widget: `CLAUDE.md`'s *"unit-testable in isolation"*
+is a claim about testability, not about location.
+
+### Unclassified — reported, not resolved
+
+`plat` forbids settling these by majority; a difference nobody decided is drift
+wearing a rule's clothes, and the guard script does **not** check them.
+
+- **U1 — `widgets/cells/` (3) vs `widgets/table_header_cell.dart`.** All four are
+  `StatelessWidget` cells. The only axis that splits them is the consumer: a body
+  row draws the first three, the header draws the fourth.
+- **U2 — `test/` flat at 55 files.** The peers split 2:1 —
+  `two_dimensional_scrollables` mirrors `lib/src`, `pluto_grid` splits by
+  scenario, `data_table_2` is flat like us.
+
+### Guard and edges
+
+**Guard mechanism: `scripts/thegraph/tree-rule.sh`, a match over the diff** — not
+a recollection. Prose alone would make this node a bar with no firing mechanism,
+which is the exact defect its own argument is against. It runs twice: here,
+before `implement`, and again in `gate` over the final diff.
+
+**Out-edge to `decide`. Guard:** the change needs a new top-level area, or the
+rule and the peers disagree and the tie-breaker does not settle it. Both are
+structure calls.
+
+**Writes `triggers`** when the same placement is argued twice. A tree rule that
+keeps being re-decided is a record waiting to be written, and `promote` counts it.
 
 ---
 
@@ -135,11 +260,15 @@ a clean diff.
 
 | Path | Why it costs more than a wrong number |
 |---|---|
-| `lib/src/models/theme/**` | a field can be dropped **silently** — no test breaks, and `scaledBy(1.0)` hides it (#50) |
+| `lib/src/models/theme/**` | a field can be dropped **silently** — no test breaks, and `scaledBy(1.0)` hides it (#50, #116) |
 | `lib/src/widgets/drag_selection_controller.dart` | the auto-scroll `Timer` and the gesture state machine — a leak keeps scrolling in the consumer's app |
 | `lib/src/widgets/row_locator.dart` | the port both sides of drag-select agree on |
 | `lib/src/widgets/synced_scroll_controllers.dart` | the single-coordinate-frame invariant; break it and every drag coordinate is wrong by an offset |
 | `lib/src/widgets/flutter_table_plus.dart` | where edit commits and selection callbacks cross into the **consumer's data** |
+| `lib/src/widgets/row_geometry.dart` | drag-select hit-testing reads row geometry, and #128 records that it has **never** been exercised against changing row heights |
+| `lib/src/widgets/table_body.dart` | it caches measured row heights; #120 shipped stale ones when `calculateRowHeight` changed identity |
+| `lib/src/widgets/table_plus_merged_row.dart` | #121 — member rows split a group's height equally and ignore their own measurement |
+| `lib/src/utils/table_row_height_calculator.dart` | a **public API** (exported from the barrel) that every row's geometry is derived from |
 | `pubspec.yaml` | a false floor breaks users' trees while `pub get` still succeeds here (#69); a dep's floor rise is BREAKING for us even with `lib/` untouched (2.16.0) |
 | `CHANGELOG.md` | pub.dev snapshots at publish — a published entry edited in place splits the repo from the registry (2.15.0) |
 | `.pubignore` | it decides the archive's contents, and the archive **cannot be un-published** |
@@ -186,13 +315,15 @@ What wins when prior art and this project's own evidence disagree.
 | public API shape, theming, feature scope | **this repo's measurement + `CLAUDE.md`'s identity.** UI-only / data-agnostic is not a call prior art gets to reverse |
 | tooltip / checkbox integration | **`../just_tooltip` · `../flutter_checkbox`'s contract.** If the contract is wrong, fix it **there** — no workaround here (#33, #88→#96) |
 | versioning, publishing, semver | **the pub / Dart convention.** A dependency floor rise is BREAKING even when `lib/` is untouched (2.16.0) |
+| directory ownership | **this repo's measured sort**, then the confirmed `peers`. A peer's layout answers *their* boundary: `two_dimensional_scrollables` splits `lib/src` by feature because it ships two widgets, and that reason does not transfer to a package shipping one |
 
 ---
 
 ## Deliberate divergence — arguments that are already over
 
 The tie-breaker says who wins an argument; this says which arguments are closed.
-`verify`'s restatement test is checked against this list.
+`verify`'s restatement test is checked against this list. Rows 1–8 are the
+project's; **L1–L4 are `plat`'s layout rows** — one list, two contributors.
 
 1. **No data management.** Sort / filter / paginate stay with the caller,
    communicated through callbacks. — `CLAUDE.md`
@@ -211,9 +342,22 @@ The tie-breaker says who wins an argument; this says which arguments are closed.
    `NeverScrollableScrollPhysics`. — `CLAUDE.md`
 6. **`scaledBy()` is built on `copyWith`** and names only the six sub-themes it
    scales. Hand-listing fields is forbidden: that is exactly how `rowTooltipTheme`
-   went missing. — #50
+   went missing at the root, and five `CheckboxStyle` fields one level down. — #50, #116
 7. **Widget observation happens at the screen** — `byIcon` over `byType`. — #62
 8. **Assert counts, not names.** — #59
+9. **L1 — `lib/src` is split by layer, not by feature.** `two_dimensional_scrollables`
+   splits by feature because it ships two widgets (`TableView`, `TreeView`). We ship
+   one, so the axis does not transfer. Judged on role, this is not a difference at
+   all. — plat 2026-08-31
+10. **L2 — the example lives at `example/`, not `demo/`.** pub.dev gives `example/`
+    its own tab. `pluto_grid` uses `demo/` and loses it. — plat 2026-08-31
+11. **L3 — `example/test/` is a gate.** Of the three peers only
+    `two_dimensional_scrollables` has example tests at all. — #55, plat 2026-08-31
+12. **L4 — the `utils` / `widgets` axis is widget-*awareness*.** Not
+    Widget-subclass-hood, not exported-ness, not statefulness — those three were
+    sorted by content and none came out clean. So `overflow_cache.dart` stays in
+    `utils/` with its six fields, and `drag_selection_controller.dart` stays in
+    `widgets/` though it is not a Widget. — plat 2026-08-31
 
 ---
 
@@ -241,7 +385,7 @@ up, widen the pattern with the phrasing that produced it *before* fixing the hit
 
 ---
 
-## `gate` — 5 commands, each run bare
+## `gate` — 7 commands, each run bare
 
 **There is no CI.** These are the only gates, and they run on this machine — the
 Flutter SDK is on `PATH`, so run them; do not ask. (`thegraph`'s "name the CI
@@ -254,6 +398,8 @@ flutter analyze                                     # 0 issues
 dart format --output=none --set-exit-if-changed lib test
 flutter test
 cd example && flutter analyze && flutter test        # the example is a gate
+python scripts/map/check_map.py docs/map             # the MAP's own gate
+scripts/thegraph/tree-rule.sh                        # the tree rule, over the final diff
 flutter pub publish --dry-run                        # only when the version is ahead
                                                      # of the registry - see below
 ```
@@ -292,6 +438,12 @@ before.
   An earlier note here said it saw nothing at all; that measurement's modified files
   were themselves inside excluded paths. **A green dry-run is still not evidence of a
   clean tree** — check `git status` separately before tagging.
+- `check_map.py` verifies **attribution, not location**: `resolve_dart` searches
+  `lib/src → lib → example → .`, so a moved file still resolves. The tree rule is
+  `tree-rule.sh`'s job, and the two do not overlap.
+- `tree-rule.sh` deliberately does **not** check `place`'s unclassified rows U1
+  and U2 — an undecided difference is not a rule, and a guard that enforced one
+  would be ratifying drift. It prints them as a banner instead.
 - Anything that opens a window (`flutter run`) is **not** an agent gate — ask the
   user to drive and say what to look for.
 
@@ -315,9 +467,8 @@ moment you can say which artifact a candidate touches, before any probe.
 
 **Areas already carrying a decision record: none** — accepted or proposed.
 `docs/adr/` does not exist yet, so **no area preempts an anchor** today. A
-descriptive note (the module map above) does **not** preempt one either: it is
-descriptive and lives in a file, while a roster is current state and needs a
-mutable home.
+descriptive note (the MAP) does **not** preempt one either: it is descriptive and
+lives in a file, while a roster is current state and needs a mutable home.
 
 **Tracker capability: GitHub, with parent/child sub-issues available.** So the
 follow-up tree and the anchor's roster are **relations**, never prose — a `spawned
@@ -368,6 +519,9 @@ place by **deriving** decisions already taken, not by listing them. Promotion
 closes the anchor and copies the roster **through the anchor's exclusion list** —
 into the record's *context*, never into the record as a list.
 
+`place` can now feed this: it writes `triggers` when the same placement is argued
+twice, and the unclassified rows U1 and U2 are the two likeliest sources.
+
 ---
 
 ## `downstream` — after release
@@ -388,30 +542,58 @@ additive release obliges consumers to do nothing — **say so explicitly**.
 
 ## Extraction plan
 
-Generated artifacts are **thin**: this project's data only, method deferred to
-`thegraph`. Each carries the build stamp above.
+Generated artifacts are **thin**: this project's data only, method deferred. Each
+carries the build stamp above. An artifact never names *where* a method lives — a
+method may move between `thegraph` and a sibling skill, and an artifact holding
+only data slots is indifferent to that move.
 
 | Artifact | Node | Carries |
 |---|---|---|
-| `.claude/agents/ftp-source-fetcher.md` | `reference` | the 4 source classes, how each is reached, `summarized: none` |
-| `.claude/agents/ftp-gap-lens.md` | `verify` #1 | corpora paths · the tie-breaker table · the 8-item divergence list |
+| `.claude/agents/ftp-source-fetcher.md` | `reference` | the 5 source classes, how each is reached, `summarized: none` |
+| `.claude/agents/ftp-gap-lens.md` | `verify` #1 | corpora paths · the tie-breaker table · the 12-item divergence list |
 | `.claude/agents/ftp-refute-lens.md` | `verify` #2 | the same, with the refuting stance in its brief |
-| `.claude/agents/ftp-surface-sweeper.md` | `sweep` | the 9 surfaces and how each is read |
-| `scripts/thegraph/sacred-diff.sh` | `verify` guard | the sacred-path list matched against the diff, **printing the patterns it evaluated** |
-| `scripts/thegraph/gates.sh` | `gate` | the 5 commands, each invoked **bare** |
+| `.claude/agents/ftp-surface-sweeper.md` | `sweep` | the 10 surfaces and how each is read |
+| `scripts/thegraph/sacred-diff.sh` | `verify` guard | the 12 sacred paths matched against the diff, **printing the patterns it evaluated** |
+| `scripts/thegraph/tree-rule.sh` | `place`, and `gate` on the final diff | the tree rule as a path list matched against the changed paths; the `utils/` Widget-subclass check; U1/U2 printed as **not checked** |
+| `scripts/thegraph/gates.sh` | `gate` | the 7 commands, each invoked **bare** |
 | `scripts/thegraph/cluster.sh` | `search` | the `gh` query by artifact, and the (currently empty) list of areas carrying a record |
 
-**Script language: bash** (Git Bash, on `PATH`), `set -euo pipefail`.
+**Script language: bash** (Git Bash, on `PATH`), `set -euo pipefail`. The MAP gate
+is python and stays python — it is not a generated artifact.
 
-**Never extracted** — invariant ①: `enumerate`, `boundary`, `implement`, `proof`,
-`batch`, `stop`, `decide`, `promote`, `downstream`. They adjudicate, so they run
-on the main thread.
+**Never extracted** — invariant ①: `enumerate`, `boundary`, `place`, `implement`,
+`proof`, `batch`, `stop`, `decide`, `promote`, `downstream`. They adjudicate, so
+they run on the main thread.
+
+---
+
+## Schema coverage — 4 slots thegraph has not placed
+
+Walking *"What the build must supply"* against `thegraph`'s own
+invariant / build / issue split, four entries land on **neither side**. Each is
+answered above — the schema asked, so the build answers — but `thegraph` never
+says *who* answers it. This is the same shape as the seams gap `thegraph` itself
+records: a value stays answerable in the schema while reading as unowned in the
+split.
+
+| Slot | Status | Why it reads unowned |
+|---|---|---|
+| `proof` method per layer + tautological traps | filled · **pending — needs a thegraph change** | the build side names *source / surface / command / path* lists, and a proof **method** is none of those. `redden` owns the test-trust method, so this is a live routing question rather than a wording one. Strongest of the four |
+| areas already carrying a decision record | filled · **pending — needs a thegraph change** | a numbered roster; not one of the four list types |
+| tracker capability | filled · **pending — needs a thegraph change** | a fact about the environment |
+| war-story index | filled · **pending — needs a thegraph change** | a precedent list |
+
+**The change is to *place* these, never to add them.** They already exist in the
+schema; what is missing is the sentence saying which side owns them. This table is
+the finding — not a per-slot owner column, because which side owns a slot is
+`thegraph`'s fact rather than this project's data, and a column of them would be
+stale the day `thegraph` re-places one.
 
 ---
 
 ## War-story index
 
 The evidence that keeps every rule above from reading as an abstraction — #22,
-#33, #38, #50–#52, #55, #58–#63, #65, #69, #88→#96, the 2.15.0 publish/tag
-incident and the 2.16.0 floor-rise incident — lives in [`lessons.md`](lessons.md),
-indexed by step. **Read it before starting.**
+#33, #38, #50–#52, #55, #58–#63, #65, #69, #88→#96, #114, #116, #119–#121, #128,
+the 2.15.0 publish/tag incident and the 2.16.0 floor-rise incident — lives in
+[`lessons.md`](lessons.md), indexed by step. **Read it before starting.**

@@ -4,7 +4,7 @@ description: Refuting second lens for flutter_table_plus (thegraph `verify` #2).
 tools: Read, Grep, Glob, Bash
 ---
 
-Built from `thegraph@100dbdb10d85`. Method: `thegraph`'s `verify` node
+Built from `thegraph@08b7768e9e35`. Method: `thegraph`'s `verify` node
 (`~/.claude/skills/thegraph/SKILL.md`) — the grade table, the restatement test,
 and the second-lens rule live there, not here. Stamp behind? Say so and continue.
 Never rebuild.
@@ -56,8 +56,19 @@ the half a refutation pass produces that nothing else does.
 
 No data management · `rowId` required · row tooltip on `TooltipAnchor.pointer`
 (#33/#69) · no local tooltip priority logic, `^0.4.4` floor (#88→#96) · body is the
-input master · `scaledBy()` on `copyWith` (#50) · observe at the screen (#62) ·
-count, don't name (#59).
+input master · `scaledBy()` on `copyWith` (#50, #116) · observe at the screen
+(#62) · count, don't name (#59).
+
+Layout, from `plat` 2026-08-31: **L1** `lib/src` splits by layer, not feature ·
+**L2** `example/`, not `demo/` · **L3** `example/test/` is a gate · **L4** the
+`utils` / `widgets` axis is widget-**awareness**, so `overflow_cache.dart` stays
+in `utils/` with six fields and `drag_selection_controller.dart` stays in
+`widgets/` without being a Widget.
+
+**Unclassified, and not to be settled by majority:** **U1** `widgets/cells/` (3)
+vs `widgets/table_header_cell.dart` · **U2** `test/` flat at 55 files. If the gap
+lens graded either `DELIBERATE`, that is an over-grade — regrade it. They are
+undecided, which is a different thing from decided-against.
 
 ## Return
 

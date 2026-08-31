@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # gates.sh — thegraph `gate` node for flutter_table_plus.
-# Built from thegraph@100dbdb10d85.
+# Built from thegraph@08b7768e9e35.
 #
 # There is NO CI in this repo. These are the only gates.
 #
@@ -42,6 +42,8 @@ run "format"          ""        dart format --output=none --set-exit-if-changed 
 run "test"            ""        flutter test
 run "example:analyze" "example" flutter analyze
 run "example:test"    "example" flutter test
+run "map:check"       ""        python scripts/map/check_map.py docs/map
+run "tree-rule"       ""        scripts/thegraph/tree-rule.sh
 # The dry-run validates the archive, but it also insists the version is an
 # increment over what is published — and between releases pubspec.yaml sits AT
 # the published version, so the gate is red for every change that is not a
@@ -85,9 +87,16 @@ cat <<'NOTE'
 
   Known blind spots — these gates do NOT cover them:
   · example/lib is outside `dart format` (deliberate: a demo, not published API)
-  · publish:dry-run does NOT see uncommitted changes — the root .pubignore turns
-    off git-based file listing, so a dirty tree still passes with 0 warnings.
-    A green dry-run is not evidence of a clean tree; run `git status` yourself.
+  · publish:dry-run DOES report uncommitted changes to files inside the archive
+    (measured 2026-08-25: it named a modified example/lib/pages/home_page.dart).
+    What it cannot see is anything the root .pubignore excludes — docs/, scripts/,
+    benchmark/ — because a root .pubignore turns off git-based file listing there.
+    A green dry-run is still not evidence of a clean tree; run `git status`.
+  · map:check verifies ATTRIBUTION, not location: resolve_dart searches
+    lib/src -> lib -> example -> . , so a moved file still resolves. Placement is
+    tree-rule's job and the two do not overlap.
+  · tree-rule deliberately does NOT check place's unclassified rows U1 and U2.
+    An undecided difference is not a rule, and enforcing one would ratify drift.
   · anything that opens a window (flutter run) is not an agent gate — ask the user
 NOTE
 
