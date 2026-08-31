@@ -140,15 +140,33 @@ build over the same data.
   while the rows rendered — and the selection highlight tracked — `X0..X5`. The
   screen right, the callback wrong, which is #128's shape exactly.
 
-  **The resolution was a contract, not another list entry, and that is the
-  finding.** Watching `rowId` is unaffordable and the number says so: it is
-  *required*, so every call site writes an inline closure (all fifteen in this
-  repo's example), and an inline closure is a new object on every build even
-  when it captures nothing — so the guard would fire for every caller on every
-  build. Measured cost of the lookup rebuild alone: 0.22% of a 16.7ms frame at
-  100 rows, 0.50% at 1,000, 8.06% at 10,000 — before the row-height cache it
-  would also drop, which is the cache this package ships
-  `TableRowHeightCalculator.calculateTextHeight` to make worth having.
+  **The resolution was a contract, not another list entry — and the reason is
+  ordering, not cost.** The first reason recorded here was that watching
+  `rowId` is unaffordable, and that was wrong. It is right about the *obvious*
+  guard: `rowId` is required, every call site writes an inline closure (all
+  fifteen in this repo's example), an inline closure is a new object on every
+  build even when it captures nothing, so `!identical(rowId)` fires for every
+  caller on every build and rebuilds both lookups. Measured AOT, both widgets:
+  0.08% of a 16.7ms frame at 100 rows, 0.70% at 1,000, **10.0%** at 10,000.
+
+  **But there was a third option nobody costed: compare the answers.**
+  `RowLookup` already stores the ids, so regenerating them through the current
+  closure and comparing is complete rather than heuristic, and measured AOT
+  costs 0.010% / 0.112% / **0.971%** at the same three sizes — about ten times
+  less. It is not a new pattern here either: `utils/overflow_cache.dart` keys
+  on the derived `(text, width)` pair and never compares the `measure`
+  function it is handed. **The whole first analysis asked "compare the closure
+  or not" and the answer was four files away in the same directory.**
+
+  **What stops it being taken here is what it would do once switched on.**
+  Prototyped and measured: 412/412 green, and an in-place `removeWhere` that
+  used to throw a `RangeError` no longer throws. But on a merged-group table
+  the guard's rebuild runs `computeRenderableIndices`, which drops a group's
+  remaining members when the removed row was the group's **first** key — so a
+  loud crash becomes a **silently missing row**, and which of the two you get
+  depends on which member the caller removed. The guard is correct and the
+  derivation under it is not, so the order has to be: fix the derivation, then
+  guard. Until then the contract is what is honest.
 
   **Two qualifications on that figure, both found by the pass that checked
   it.** The amplifier is real for `FlutterTablePlusState`, whose
@@ -163,14 +181,22 @@ build over the same data.
   passed as a top-level tear-off would be perfectly watchable.
 
   So shape 2 has a **second exit**: name the input as the caller's obligation
-  and record why it is not watched. It is available here and was not available
-  for #120 or #128, and the difference is a property of the input rather than a
-  matter of taste — `calculateRowHeight` is *optional*, so `identical(null,
-  null)` holds for most callers and watching it is free. **Required plus
-  closure-typed is what makes an input unwatchable.** Flutter agrees by
-  omission: it states the new-list obligation four times over for lists and
-  states none anywhere for a function, because where it takes a function it
-  either compares it or caches nothing from it.
+  and record why it is not watched. **The exit is real and the reason has to be
+  the true one** — here it is that the guard is ready and the code beneath it
+  is not, which is a statement with an expiry date, not a principle. Recording
+  "unaffordable" would have closed the question permanently on a number that
+  was measuring the wrong guard.
+
+  Flutter states the new-list obligation four times over
+  for lists and states none anywhere for a function — and, contrary to what
+  this note first said, it does **not** always either compare a caller function
+  or refuse to cache from it. `RawAutocomplete.optionsBuilder` is required, its
+  result is cached in `_options`, `didUpdateWidget` compares only the
+  controller and the focus node, and neither it nor `displayStringForOption` —
+  a caller-supplied `T` to `String` extractor, the closest analogue to `rowId`
+  in the SDK — is compared anywhere. So the precedent supports the contract
+  more directly than the argument that was made for it, and the argument that
+  was made for it is refutable in one grep.
 
   The check for the next one is a grep and the number is worth recording: of
   the **nineteen** function-typed parameters on the public widget, exactly

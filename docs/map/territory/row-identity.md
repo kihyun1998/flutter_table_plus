@@ -38,8 +38,11 @@ from that choice.
     build even when it captures nothing. Measured 2026-08-31 across two builds
     of one element, **under `identical`**: an inline non-capturing lambda, an
     inline capturing lambda and a `State` method tear-off all come back
-    `false`; only a top-level or `static` tear-off is stable. Watching it would
-    drop every cache on every build for every caller.
+    `false`; only a top-level or `static` tear-off is stable. **That was
+    measured in the JIT test VM** — under AOT the instance tear-off comes back
+    `identical == true`, so that row does not survive a release build while the
+    two lambda rows do. Watching the closure's identity would drop every cache
+    on every build for every caller.
     - **`==` is not the same measurement, and the difference is a live
       question.** On the same four shapes `==` agrees with `identical` on both
       closures and differs on the instance tear-off, where it is `true` because
@@ -53,10 +56,15 @@ from that choice.
     `TwoDimensionalChildListDelegate`, `MultiChildRenderObjectWidget.children`,
     and `PlatformMenuBar.menus`, the last being a list of non-Widget data
     objects and so the nearest documented shape to `mergedGroups`. It states it
-    **nowhere for a function**, because where the SDK takes one it either
-    compares it (`ListWheelChildBuilderDelegate.shouldRebuild`) or caches
-    nothing from it (`AnimatedList` reads `itemBuilder` live). This package is
-    on neither side by construction, which is what the contract closes.
+    **nowhere for a function**. It *often* either compares one
+    (`ListWheelChildBuilderDelegate.shouldRebuild`) or caches nothing from it
+    (`AnimatedList` reads `itemBuilder` live) — but not always, and the
+    exception is the closest analogue there is. `RawAutocomplete.optionsBuilder`
+    is **required**, its result is cached in `_options`, `didUpdateWidget`
+    compares only the controller and the focus node, and neither it nor
+    `displayStringForOption` — a caller-supplied `T` to `String` extractor — is
+    compared anywhere or carries any documented obligation. The SDK does what
+    this package does, in the one place it meets the same shape.
   - **Unmet, the failure is a divergence and not a lag.** Measured: the rows on
     screen and the selection highlight follow the new `rowId` live, while the
     drag callbacks keep reporting ids from the space the caller abandoned.
@@ -67,13 +75,21 @@ from that choice.
   the **nineteen** function-typed parameters on the public widget the other
   seventeen are called live at build; a twentieth that starts caching its
   result inherits this question.
-  - **Optional-vs-required is the wrong axis to state the rule on**, even
-    though it is what separates these two in practice. What decides
-    watchability is how the caller *writes* the argument: an optional parameter
+  - **Optional-vs-required is the wrong axis**, even though it is what
+    separates these two in practice. What decides watchability *under
+    `identical`* is how the caller writes the argument: an optional parameter
     passed as an inline closure is exactly as unwatchable, and
     `playground_page.dart` pays that cost for `calculateRowHeight` on every
-    build today. A required `rowId` passed as a top-level tear-off would be
-    watchable.
+    build today.
+  - **And the axis is avoidable, which is the part that matters.** Comparing
+    the *ids* rather than the function is complete however the caller writes
+    it, and costs about a tenth of the rebuild it prevents: 0.971% of a 16.7ms
+    frame at 10,000 rows against 10.0%, measured AOT. `utils/overflow_cache.dart`
+    is the same pattern already shipping here. It is **not** taken yet for one
+    reason — `computeRenderableIndices` drops a group's remaining members when
+    the missing row was the group's first key, so switching the guard on turns
+    an in-place `RangeError` into a silently missing row. Measured. **Fix the
+    derivation, then guard.**
 - **Why the SDK does not have this problem.** There, identity rides on the data
   — a `Key` on the child — so the data's identity covers every cache derived
   from it. All three peer packages do the same: `pluto_grid` mints a
