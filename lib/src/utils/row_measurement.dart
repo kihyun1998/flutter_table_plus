@@ -66,10 +66,26 @@ bool rowMeasurementChanged<T>({
   required double oldRowHeight,
   required double newRowHeight,
 }) {
-  // `identical`, not `==`: a closure over caller state is a new object on every
-  // build even when it computes the same thing. Treating that as a change costs
-  // one cache rebuild; treating a real swap as unchanged is #120.
-  return !identical(oldCalculateRowHeight, newCalculateRowHeight) ||
+  // `==`, not `identical`. The two agree on every shape a caller actually
+  // writes except one, and on that one `==` is right and `identical` is wrong:
+  //
+  //   inline lambda, capturing or not   identical false   ==  false
+  //   `State` method tear-off           identical false*  ==  true
+  //   top-level or `static` tear-off    identical true    ==  true
+  //
+  // A tear-off compares equal because it *is* the same function on the same
+  // receiver, so there is no swap to miss — `==` is never less discriminating
+  // here, which is what the comment this replaces asserted and #137 measured
+  // false. Under `identical` a caller writing `calculateRowHeight: _myHeight`
+  // dropped the height cache and the drag geometry on every build.
+  //
+  // (*) and `identical` is not even stable there: measured 2026-08-31, a
+  // `State` tear-off is `false` in the JIT test VM and `true` under AOT, so a
+  // guard built on it behaves differently in the build users ship.
+  //
+  // Two tear-offs of the same method on *different* receivers still compare
+  // unequal, which is the case that has to keep working.
+  return oldCalculateRowHeight != newCalculateRowHeight ||
       oldScale != newScale ||
       oldRowHeight != newRowHeight;
 }
