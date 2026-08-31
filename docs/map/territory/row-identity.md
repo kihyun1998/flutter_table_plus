@@ -43,13 +43,16 @@ from that choice.
     `identical == true`, so that row does not survive a release build while the
     two lambda rows do. Watching the closure's identity would drop every cache
     on every build for every caller.
-    - **`==` is not the same measurement, and the difference is a live
-      question.** On the same four shapes `==` agrees with `identical` on both
-      closures and differs on the instance tear-off, where it is `true` because
-      it is the same function on the same receiver. So `==` is never *less*
-      discriminating here than `identical` — which is worth holding against
-      `rowMeasurementChanged`'s own comment, where the choice of `identical` is
-      justified by a hazard `==` does not actually have.
+    - **`==` is the comparison `rowMeasurementChanged` uses, and the reason is
+      this measurement.** On the same four shapes `==` agrees with `identical`
+      on both closures and differs on the instance tear-off, where it is `true`
+      because it *is* the same function on the same receiver. So `==` is never
+      less discriminating here — the predicate's original comment justified
+      `identical` by a hazard `==` does not have, and under it a caller writing
+      `calculateRowHeight: _myHeight` dropped the height cache and the drag
+      geometry on every build. Two tear-offs of the same method on *different*
+      receivers still compare unequal, which is the case that had to keep
+      working and is pinned by a test (#137).
   - **So changing the id space is a change to `data`**, signalled the same way:
     pass a new list. That is the obligation Flutter states four times over for
     lists — `SliverChildListDelegate.children`,
