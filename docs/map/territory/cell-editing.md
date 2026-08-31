@@ -27,14 +27,21 @@ session and key-action sources.
   value.
 - **Editing is per column**, gated by the column's own `editable` flag, so the
   same table can mix editable and read-only columns without a mode.
-- **The open session re-pins itself by id, and only on a `data` identity
-  change.** `_reconcileEditingAfterDataChange` runs from the same condition
-  that rebuilds every id-keyed cache, so a list mutated in place is not seen
-  and a swapped `rowId` skips the re-pin entirely — leaving a commit reporting
-  an id from the previous id space. That is the caller obligation stated in
-  [Row identity](row-identity.md), reaching this territory; it is part of the
-  answer to the open question above about surviving a rebuild with different
-  data.
+- **A session is pinned by index and re-pinned by id, and the seam between
+  those two is where an edit is lost.** `_reconcileEditingAfterDataChange`
+  runs from the same condition that rebuilds every id-keyed cache, so a list
+  mutated in place is not seen at all and the session simply keeps its index.
+  Passing a **new** list is what fires the re-pin — and `CellEditSession.repin`
+  searches it for the id the session captured, so if the caller also changed
+  the id space that id is not there: the session is disposed and the typed
+  text is discarded with no `onCellChanged`.
+  - **A commit never uses an id**, which is the part that reads backwards until
+    you look: `_stopEditing` reports `data[session.rowIndex]`, the column key
+    and the index. So the hazard is *losing* an edit, never misreporting one —
+    measured, a commit after a `rowId` swap over an unchanged list is correct.
+  - That is part of the answer to the open question above about surviving a
+    rebuild with different data, and the other part is
+    [Row identity](row-identity.md)'s snapshot rule reaching this territory.
 
 ## Code
 

@@ -52,6 +52,9 @@ class _DragHarness {
   final List<Set<String>> updates = [];
   final List<Set<String>> ends = [];
   final GlobalKey tableKey = GlobalKey();
+
+  /// The `data` list of the most recent pump, for `requireSameData`.
+  List<Map<String, dynamic>>? lastData;
 }
 
 /// Pumps a [FlutterTablePlus] inside a fixed-size SizedBox at the center of
@@ -77,6 +80,12 @@ Future<_DragHarness> _pumpDragTable(
   // makes the second pump an *update* rather than a fresh mount.
   List<Map<String, dynamic>>? data,
   _DragHarness? harness,
+  // Enforces the premise a same-object test rests on. `data: rows` -> `data:
+  // _buildData(6)` is a one-token edit that makes such a test pass with its
+  // subject deleted — measured: with the body's `mergedGroups` clause removed,
+  // that single change turned the whole suite green. The comment saying "rows
+  // is deliberately the same object" could not stop it; this can.
+  bool requireSameData = false,
   double? Function(int, Map<String, dynamic>)? calculateRowHeight,
   double scale = 1.0,
   // Identity, for the group at the bottom. Defaults to the plain `id` field so
@@ -97,6 +106,12 @@ Future<_DragHarness> _pumpDragTable(
   // A local, because a nullable *parameter* does not promote inside the
   // callback closures below.
   final h = harness ?? _DragHarness();
+  assert(
+      !requireSameData || (h.lastData != null && identical(h.lastData, data)),
+      'requireSameData: this pump must reuse the previous pump\'s data list. '
+      'A fresh list rebuilds every cache through the structure branch, which '
+      'is not the branch under test.');
+  h.lastData = data;
 
   await tester.pumpWidget(
     MaterialApp(
@@ -831,14 +846,16 @@ void main() {
       expect(h.ends.last, equals(<String>{'g0', '2'}));
 
       // Expanding adds a summary row, so the group grows by one row's height
-      // and the same 90px reach no longer gets past it. `rows` is deliberately
-      // the same object: the group list alone is what changed.
+      // and the same 90px reach no longer gets past it. `rows` must be the
+      // same object — the group list alone is what changed — and
+      // `requireSameData` is what enforces that rather than this sentence.
       await _pumpDragTable(
         tester,
         rowCount: 6,
         harness: h,
         tableHeight: 400,
         data: rows,
+        requireSameData: true,
         mergedGroups: const [
           MergedRowGroup<Map<String, dynamic>>(
             groupId: 'g0',

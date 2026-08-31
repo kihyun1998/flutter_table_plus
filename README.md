@@ -183,8 +183,11 @@ onRowSelectionChanged: (rowId, isSelected) {
 
 // You handle editing
 onCellChanged: (row, columnKey, rowIndex, oldValue, newValue) {
-  // Update your data model
-  _myData[rowIndex] = row.copyWith(name: newValue);
+  // Update your data model -- again into a NEW list. An in-place
+  // `_myData[rowIndex] = ...` renders the new value but leaves the cached
+  // row height, so a `calculateRowHeight` that measures the cell keeps the
+  // pre-edit height.
+  _myData = List.of(_myData)..[rowIndex] = row.copyWith(name: newValue);
 }
 ```
 

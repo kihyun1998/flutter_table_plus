@@ -33,13 +33,20 @@ from that choice.
   from — is built from the pair and dropped when `data` is a *different object*.
   `rowId` is compared nowhere in the package.
   - **That is a decision with a measured reason, not an omission.** `rowId` is
-    **required**, so every call site writes an inline closure — all twelve in
+    **required**, so every call site writes an inline closure — all fifteen in
     this repo's own example do — and an inline closure is a new object on every
-    build even when it captures nothing. Measured 2026-08-31: of four shapes,
-    an inline non-capturing lambda, an inline capturing lambda and a `State`
-    method tear-off all come back `identical == false` across two builds; only
-    a top-level tear-off is stable. Watching it would drop every cache on every
-    build for every caller.
+    build even when it captures nothing. Measured 2026-08-31 across two builds
+    of one element, **under `identical`**: an inline non-capturing lambda, an
+    inline capturing lambda and a `State` method tear-off all come back
+    `false`; only a top-level or `static` tear-off is stable. Watching it would
+    drop every cache on every build for every caller.
+    - **`==` is not the same measurement, and the difference is a live
+      question.** On the same four shapes `==` agrees with `identical` on both
+      closures and differs on the instance tear-off, where it is `true` because
+      it is the same function on the same receiver. So `==` is never *less*
+      discriminating here than `identical` — which is worth holding against
+      `rowMeasurementChanged`'s own comment, where the choice of `identical` is
+      justified by a hazard `==` does not actually have.
   - **So changing the id space is a change to `data`**, signalled the same way:
     pass a new list. That is the obligation Flutter states four times over for
     lists — `SliverChildListDelegate.children`,
@@ -55,11 +62,18 @@ from that choice.
     drag callbacks keep reporting ids from the space the caller abandoned.
 - **Exactly two caller-supplied functions have cached results, and they are
   treated oppositely.** `rowId` is excluded by the contract above;
-  `calculateRowHeight` is watched by `rowMeasurementChanged` — and *can* be,
-  because it is **optional**, so most callers leave it `null` and
-  `identical(null, null)` holds. The other thirteen function-typed parameters
-  on the public widget are called live at build. A fourteenth that starts
-  caching its result inherits this question.
+  `calculateRowHeight` is watched by `rowMeasurementChanged`, and can be
+  because most callers leave it `null` and `identical(null, null)` holds. Of
+  the **nineteen** function-typed parameters on the public widget the other
+  seventeen are called live at build; a twentieth that starts caching its
+  result inherits this question.
+  - **Optional-vs-required is the wrong axis to state the rule on**, even
+    though it is what separates these two in practice. What decides
+    watchability is how the caller *writes* the argument: an optional parameter
+    passed as an inline closure is exactly as unwatchable, and
+    `playground_page.dart` pays that cost for `calculateRowHeight` on every
+    build today. A required `rowId` passed as a top-level tear-off would be
+    watchable.
 - **Why the SDK does not have this problem.** There, identity rides on the data
   — a `Key` on the child — so the data's identity covers every cache derived
   from it. All three peer packages do the same: `pluto_grid` mints a

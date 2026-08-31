@@ -177,26 +177,34 @@ class TablePlusBody<T> extends StatefulWidget {
 /// rendering rows.
 class TablePlusBodyState<T> extends State<TablePlusBody<T>>
     implements RowLocator {
-  /// Cached renderable indices — recomputed only when data or mergedGroups change.
+  /// Cached renderable indices — recomputed when the `data` or `mergedGroups`
+  /// **list object** changes, not when its contents do.
   List<int>? _cachedRenderableIndices;
 
-  /// Shared home for the row→index / row→group derivation (rebuilt on data or
-  /// mergedGroups change). The renderable-index list and height cache below are
-  /// this widget's own consumers and are kept separate.
+  /// Shared home for the row→index / row→group derivation. Rebuilt when either
+  /// **list object** changes — not when its contents do, and not when `rowId`
+  /// changes, which is compared nowhere in the package; the contract that
+  /// replaces that guard is on `FlutterTablePlus.rowId`. The renderable-index
+  /// list and height cache below are this widget's own consumers and are kept
+  /// separate.
   late RowLookup<T> _rowLookup;
 
   /// Cached row heights.
   Map<int, double> _cachedRowHeights = const {};
 
   /// Cached pure hit-test geometry for the [RowLocator] port. Built lazily on
-  /// the first drag query, and dropped by [didUpdateWidget] on a `data`,
-  /// `mergedGroups`, `calculateRowHeight` or `scale` change.
+  /// the first drag query, and dropped by [didUpdateWidget] on a `data` or
+  /// `mergedGroups` **identity** change, or when `rowMeasurementChanged`
+  /// fires — `calculateRowHeight`, `scale`, or `theme.rowHeight`.
   ///
   /// The measurement half of that list lives in `rowMeasurementChanged`, shared
   /// with `FlutterTablePlusState` so the two cannot drift again. This comment
   /// said "data/mergedGroups/scale" until #128: `calculateRowHeight` had been
   /// added to the branch by #120 and the comment was left behind, and
-  /// `theme.rowHeight` was in neither.
+  /// `theme.rowHeight` was in neither. **#132 found the sentence above still
+  /// omitting `theme.rowHeight` while this paragraph said it had been** — the
+  /// narrative was corrected and the list it narrates was not, which is the
+  /// same failure one layer up from the one it describes.
   RowGeometry? _rowGeometry;
 
   @override
