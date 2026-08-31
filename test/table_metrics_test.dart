@@ -59,9 +59,14 @@ void main() {
       );
     });
 
-    test('preserves the out-of-order-rowKeys quirk (group skipped)', () {
-      // rowKeys.first (c@2) is not the group's earliest data row (b@1), so the
-      // group is processed but never added — the existing behavior.
+    test('out-of-order rowKeys still render, at the earliest member', () {
+      // `rowKeys.first` (c@2) is not the group's earliest data row (b@1). This
+      // used to render nothing for the group at all — `[0, 3]`, with both b and
+      // c simply absent from a table that held them — and a test here pinned
+      // that as correct, under the name "preserves the out-of-order-rowKeys
+      // quirk". #135 measured what the quirk costs and this is the fix: the
+      // anchor is the earliest present member, which is what `computeTableMetrics`
+      // three groups down has always used.
       final g = _group('g1', ['c', 'b']);
       expect(
         computeRenderableIndices<Map<String, dynamic>>(
@@ -70,8 +75,52 @@ void main() {
           rowId: _idOf,
           hasMergedGroups: true,
         ),
-        [0, 3],
+        [0, 1, 3],
       );
+    });
+
+    test('a group whose first key is absent from data still renders', () {
+      // The extreme of the case above, and the one that reaches a user: the
+      // caller passes a list that no longer holds `b`, the group still names it,
+      // and `indexOf('b')` is null. Anchoring on `rowKeys.first` made the render
+      // condition unsatisfiable while the loop still marked `c` processed, so
+      // **both** rows left the screen for the sake of one that was gone.
+      final g = _group('g1', ['b', 'c']);
+      expect(
+        computeRenderableIndices<Map<String, dynamic>>(
+          data: _rows(['a', 'c', 'd']),
+          lookup: _lookup(['a', 'c', 'd'], [g]),
+          rowId: _idOf,
+          hasMergedGroups: true,
+        ),
+        [0, 1, 2],
+        reason: 'a(0), the group anchored at its surviving member c(1), d(2)',
+      );
+    });
+
+    test('and it agrees with computeTableMetrics, which is the point', () {
+      // The two derive the same fact and used to disagree about it. A test that
+      // only pinned this one would let them drift apart again, so the anchor is
+      // asserted against the count that shares it.
+      final g = _group('g1', ['b', 'c']);
+      final ids = ['a', 'c', 'd'];
+      final lookup = _lookup(ids, [g]);
+
+      final rendered = computeRenderableIndices<Map<String, dynamic>>(
+        data: _rows(ids),
+        lookup: lookup,
+        rowId: _idOf,
+        hasMergedGroups: true,
+      );
+      final counted = computeTableMetrics<Map<String, dynamic>>(
+        data: _rows(ids),
+        lookup: lookup,
+        rowHeightOf: (_) => 10,
+        mergedGroupHeightOf: (_) => 10,
+      );
+
+      expect(rendered!.length, counted.totalCount,
+          reason: 'the body renders one row per thing the parent counted');
     });
   });
 

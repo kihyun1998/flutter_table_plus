@@ -335,10 +335,17 @@ class _TablePlusMergedRowState<T>
         widget.individualHeights?.reduce((a, b) => a > b ? a : b) ??
             widget.theme.rowHeight;
 
+    // One cell per member that `data` actually holds. This walked `rowKeys`
+    // unconditionally, so a group naming a row the caller no longer passes drew
+    // an empty cell for it — and since #135 made the group's *height* count only
+    // the present members, the cell count and the height it is divided into had
+    // stopped agreeing. `_getRowData` returning null is the test, because that
+    // is exactly what an unresolvable key produces.
     for (final entry in widget.mergeGroup.rowKeys.asMap().entries) {
       final rowIndex = entry.key;
       final rowKey = entry.value;
       final rowData = _getRowData(rowKey);
+      if (rowData == null) continue;
       cells.add(_buildStackedRowCell(
           context, column, rowKey, rowData, maxHeight, rowIndex, columnIndex));
     }

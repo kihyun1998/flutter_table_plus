@@ -55,6 +55,45 @@ class RowLookup<T> {
   /// The number of rows in the snapshot.
   int get rowCount => _ids.length;
 
+  /// Whether [rowId] over [data] still produces the ids this snapshot holds.
+  ///
+  /// **The invalidation guard for identity, and it compares answers rather than
+  /// functions.** `data` and `mergedGroups` are watched by object identity, and
+  /// `rowId` cannot be: it is required, so every call site writes an inline
+  /// closure, and an inline closure is a new object on every build even when it
+  /// captures nothing — watching *that* would rebuild both lookups on every
+  /// build for every caller, and this is roughly a tenth of that rebuild while
+  /// being complete rather than sampled.
+  ///
+  /// The numbers, with what produced them, because the two modes differ by
+  /// about 3x and quoting one without saying which is how a wrong row got into
+  /// `docs/map/territory/row-identity.md`'s own measurement table:
+  ///
+  /// * **this function, JIT (`flutter test`)** — 0.128% of a 16.7ms frame at
+  ///   100 rows, 0.256% at 1,000, 2.968% at 10,000, summed over both widgets.
+  /// * **the same shape, AOT (`dart compile exe`)** — 0.010% / 0.112% /
+  ///   0.971%, against 10.0% at 10,000 for the rebuild it replaces.
+  ///
+  /// AOT is what a released app runs; JIT is what anyone re-measuring here
+  /// will get.
+  ///
+  /// `utils/overflow_cache.dart` is the same shape already shipping here: it
+  /// takes the `measure` function, never compares it, and keys on the derived
+  /// `(text, width)` pair. #135.
+  ///
+  /// What it catches, beyond a swapped [rowId]: a `data` list **sorted in
+  /// place** (the ids move), and one **shrunk in place** (the lengths differ).
+  /// What it does not catch is an element replaced in place under the same id —
+  /// the ids are unchanged, and what goes stale there is the index-keyed height
+  /// cache, which is `rowMeasurementChanged`'s axis and not this one.
+  bool idsMatch(List<T> data, String Function(T) rowId) {
+    if (_ids.length != data.length) return false;
+    for (int i = 0; i < data.length; i++) {
+      if (_ids[i] != rowId(data[i])) return false;
+    }
+    return true;
+  }
+
   /// The data index of the row with [rowId], or `null` if absent.
   int? indexOf(String rowId) => _idToIndex[rowId];
 
