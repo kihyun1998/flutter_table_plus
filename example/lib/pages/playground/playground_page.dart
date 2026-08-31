@@ -301,20 +301,30 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
   ) {
     setState(() {
       final employee = _data[rowIndex];
+      // A new list, not `_data[rowIndex] = ...`. The table reads `data` and
+      // `rowId` as one snapshot invalidated on the list's identity, so an
+      // in-place replacement renders the new value and keeps the cached row
+      // height -- visible the moment a row's height depends on the text.
+      Employee? updated;
       switch (columnKey) {
         case 'position':
-          _data[rowIndex] = employee.copyWith(position: newValue as String);
+          updated = employee.copyWith(position: newValue as String);
           break;
         case 'department':
-          _data[rowIndex] = employee.copyWith(department: newValue as String);
+          updated = employee.copyWith(department: newValue as String);
           break;
         case 'salary':
           final parsed = int.tryParse(newValue.toString());
-          if (parsed != null) {
-            _data[rowIndex] = employee.copyWith(salary: parsed);
-          }
+          if (parsed != null) updated = employee.copyWith(salary: parsed);
           break;
       }
+      if (updated == null) return;
+      _data = List.of(_data)..[rowIndex] = updated;
+
+      // `_updateMergedGroups` derives its groups from `department`, so editing
+      // that cell changes the grouping input. Nothing recomputed it before, and
+      // the grouping quietly described the previous departments.
+      if (columnKey == 'department') _updateMergedGroups();
     });
 
     debugPrint(
@@ -500,6 +510,14 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
   }
 
   /// Update merged groups (group by department)
+  /// Taller rows for longer position titles.
+  ///
+  /// `static` on purpose: the table holds this to decide whether its measured
+  /// heights are still valid, and a closure written inline in `build` is a new
+  /// object every time.
+  static double? _rowHeightOf(int rowIndex, Employee employee) =>
+      employee.position.length > 20 ? 70.0 : null;
+
   void _updateMergedGroups() {
     if (!_settings.mergedRowsEnabled || _data.isEmpty) {
       _mergedGroups = [];
@@ -712,12 +730,11 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
             : null,
         onCellChanged: _handleCellChanged,
         onRowSecondaryTapDown: _handleRowSecondaryTapDown,
-        calculateRowHeight: _settings.dynamicRowHeight
-            ? (rowIndex, employee) {
-                // Taller rows for longer position titles
-                return employee.position.length > 20 ? 70.0 : null;
-              }
-            : null,
+        // A `static` function rather than an inline closure, which is what
+        // `recipes/dynamic_row_height_recipe.dart` advises and this page used
+        // to ignore: an inline `(i, row) => ...` is a new object on every build
+        // and buys a walk over every row each time.
+        calculateRowHeight: _settings.dynamicRowHeight ? _rowHeightOf : null,
         isDimRow: _settings.dimInactiveRows ? (row) => !row.isActive : null,
         noDataWidget: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -786,7 +803,13 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
           ],
         ),
         hoverButtonPosition: HoverButtonPosition.right,
-        mergedGroups: _settings.mergedRowsEnabled ? _mergedGroups : [],
+        // `const []`, not `[]`. A bare `[]` is a fresh object on every build,
+        // so `!identical(mergedGroups, ...)` was always true and the table
+        // rebuilt every cache every build -- which also hid the in-place
+        // mutations this page used to make.
+        mergedGroups: _settings.mergedRowsEnabled
+            ? _mergedGroups
+            : const <MergedRowGroup<Employee>>[],
         scale: _settings.scale,
         blockModifierScroll: _settings.blockModifierScroll,
         onScaleChanged: (newScale) {

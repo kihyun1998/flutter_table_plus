@@ -140,6 +140,13 @@ class FlutterTablePlus<T> extends StatefulWidget {
   /// was the group's *first*, the group's other members stop rendering
   /// entirely, and a group missing any member still reserves that member's
   /// height.
+  ///
+  /// **Rebuilding more often than you need has a cost too**, and it is the
+  /// easier mistake to make once the rule above is known. A getter that
+  /// returns a freshly built list on every call, or a `[]` literal in a
+  /// ternary, is a new object every build — so every cache is dropped every
+  /// build. Hold the list in a field and rebuild it when the data behind it
+  /// moves.
   final List<MergedRowGroup<T>> mergedGroups;
 
   /// Function to determine if a row should be visually dimmed.
