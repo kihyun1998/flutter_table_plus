@@ -137,6 +137,14 @@ void main() {
       final onDisk = _recipeFiles().map((f) => f.path.replaceAll(r'\', '/'));
       final registered = recipeCatalog.map((r) => r.source);
 
+      expect(registered, containsAll(onDisk),
+          reason: 'a recipe file exists that the catalogue never lists, so it '
+              'is in no menu, gets no source pane, and is walked by no other '
+              'test here');
+      // And the other direction, which is what this assertion used to check on
+      // its own: the comment above says the hazard is a file nobody listed, and
+      // `expect(onDisk, containsAll(registered))` passes for exactly that case.
+      // #138 -- the intent was written and the assertion did the reverse.
       expect(onDisk, containsAll(registered),
           reason: 'the catalogue names a file the directory walk cannot see');
     });
