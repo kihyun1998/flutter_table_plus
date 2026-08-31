@@ -218,7 +218,9 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         // Sort data using the column's valueAccessor
         final column = _columns[columnKey];
         if (column != null) {
-          _data.sort((a, b) {
+          // A new list, not an in-place sort: `data` is invalidated on the
+          // list's identity.
+          _data = List.of(_data)..sort((a, b) {
             final aValue = column.valueAccessor(a);
             final bValue = column.valueAccessor(b);
 
@@ -391,7 +393,9 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
           break;
         case 'delete':
           setState(() {
-            _data.removeWhere((row) => row.id == rowId);
+            // A new list, not `removeWhere`: this changes *which rows exist*,
+            // and the caches are invalidated on the list's identity.
+            _data = _data.where((row) => row.id != rowId).toList();
             _selectedRows.remove(rowId);
             if (_settings.mergedRowsEnabled) _updateMergedGroups();
           });
@@ -771,7 +775,9 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
               tooltip: 'Delete',
               onPressed: () {
                 setState(() {
-                  _data.removeWhere((row) => row.id == rowId);
+                  // A new list, not `removeWhere`: this changes *which rows
+                  // exist*, and the caches are invalidated on the list's identity.
+                  _data = _data.where((row) => row.id != rowId).toList();
                   _selectedRows.remove(rowId);
                   if (_settings.mergedRowsEnabled) _updateMergedGroups();
                 });

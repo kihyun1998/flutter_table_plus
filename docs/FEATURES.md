@@ -56,7 +56,9 @@ FlutterTablePlus<User>(
       if (direction == SortDirection.none) {
         _users = List.of(_originalUsers);  // Reset to original order
       } else {
-        _users.sort((a, b) {
+        // A new list, not an in-place sort: `data` is invalidated on the
+        // list's identity, so `_users.sort(...)` would not be seen.
+        _users = List.of(_users)..sort((a, b) {
           final aVal = _getColumnValue(a, columnKey);
           final bVal = _getColumnValue(b, columnKey);
           final cmp = aVal.compareTo(bVal);

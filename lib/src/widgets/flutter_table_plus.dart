@@ -107,7 +107,10 @@ class FlutterTablePlus<T> extends StatefulWidget {
   /// A [rowId] that returns different ids for the same row is therefore a
   /// change to [data] and is signalled the same way: pass a new list. Keep the
   /// same list and swap this function, and the rows on screen use the new ids
-  /// while the drag callbacks keep reporting the old ones.
+  /// while the drag callbacks keep reporting the old ones — and, because
+  /// `didUpdateWidget` gates them on the same list identity, an in-flight cell
+  /// edit commits against the abandoned id space and the duplicate-id
+  /// validator never runs against the new one.
   final String Function(T) rowId;
 
   /// List of merged row groups.
@@ -384,8 +387,11 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
   CellEditSession<T>? _editSession;
 
   /// Single home for the row→index / row→group derivation, shared in spirit
-  /// with the body (each builds its own from the same snapshot). Rebuilt
-  /// whenever the data or merged groups change.
+  /// with the body (each builds its own from the same snapshot).
+  ///
+  /// The snapshot is (`data`, `rowId`, `mergedGroups`), and this is rebuilt
+  /// when either **list** changes identity — not when its contents do, and not
+  /// when `rowId` changes, which is compared nowhere. See [rowId].
   late RowLookup<T> _rowLookup;
 
   /// Cached total data height

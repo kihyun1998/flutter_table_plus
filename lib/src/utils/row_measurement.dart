@@ -43,6 +43,16 @@
 /// `data` and `mergedGroups` are deliberately absent: they change *which* rows
 /// exist, not how tall one is, and the body answers them in a different branch
 /// that also rebuilds its row lookup.
+///
+/// **`rowId` is absent for a different reason, and the two are worth keeping
+/// apart.** It is not a measurement input at all — but it is also the one
+/// caller function this package could not watch even if it wanted to. It is
+/// *required*, so every call site writes an inline closure, and the cost the
+/// comment below prices at "one cache rebuild" becomes one per build per
+/// caller. `calculateRowHeight` is watchable precisely because it is optional,
+/// so `identical(null, null)` holds for most callers. See
+/// `FlutterTablePlus.rowId`, which states the contract that replaces the
+/// guard.
 bool rowMeasurementChanged<T>({
   required double? Function(int index, T row)? oldCalculateRowHeight,
   required double? Function(int index, T row)? newCalculateRowHeight,
