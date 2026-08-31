@@ -84,12 +84,38 @@ class FlutterTablePlus<T> extends StatefulWidget {
   final Map<String, TablePlusColumn<T>> columns;
 
   /// The data to display in the table rows.
+  ///
+  /// This list and [rowId] are read together as one **snapshot**. From the pair
+  /// the table derives id -> index, id -> group, the renderable-index list and
+  /// the geometry every drag hit-test is answered from; those derivations are
+  /// cached and re-derived when this list is a *different object* -- the rule
+  /// Flutter applies to its own `SliverChildListDelegate.children`.
+  ///
+  /// So mutating this list in place, or swapping [rowId] while keeping it, is
+  /// not seen. Pass a new list.
   final List<T> data;
 
   /// Function to extract a unique row ID string from a row object.
+  ///
+  /// Called on demand, and deliberately **not** compared across rebuilds. An
+  /// inline closure is a new object on every build even when it captures
+  /// nothing, and this parameter is required -- so every caller writes one, and
+  /// comparing it would drop every cache on every build. That is the opposite
+  /// of [calculateRowHeight], which is optional and therefore usually the same
+  /// `null` from one build to the next.
+  ///
+  /// A [rowId] that returns different ids for the same row is therefore a
+  /// change to [data] and is signalled the same way: pass a new list. Keep the
+  /// same list and swap this function, and the rows on screen use the new ids
+  /// while the drag callbacks keep reporting the old ones.
   final String Function(T) rowId;
 
   /// List of merged row groups.
+  ///
+  /// Compared by identity, like [data]. A [MergedRowGroup] is an immutable
+  /// value, so changing one means a new group object -- but assigning it back
+  /// as `groups[0] = newGroup` keeps the *list* identical and is not seen.
+  /// Rebuild the list as well.
   final List<MergedRowGroup<T>> mergedGroups;
 
   /// Function to determine if a row should be visually dimmed.

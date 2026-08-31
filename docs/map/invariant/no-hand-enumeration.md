@@ -61,6 +61,7 @@ the API and false about the behaviour.
 → [Scale / zoom](../territory/scale-zoom.md) — the caller of that method, and the only path on which the defect is observable (shape 1); and one of the three inputs a row height is computed from (shape 2)
 → [Row rendering and geometry](../territory/row-render-geometry.md) — two widgets caching row heights off two hand-written conditions (shape 2)
 → [Drag selection](../territory/drag-selection.md) — where shape 2's symptom is visible: the hit-test geometry answers from the cache
+→ [Row identity and data binding](../territory/row-identity.md) — the other branch of the same two conditions, and where shape 2's second exit is recorded (#132)
 
 ## What a violation looks like
 
@@ -130,6 +131,40 @@ build over the same data.
   reached the parent's path alone. And the geometry snapshot is built **lazily on
   the first drag query**, so any test that does not drag before the change is
   green with or without the invalidation.
+- **#132 (shape 2, and the exit that is not a longer list)** — the *structure*
+  branch of the same two `didUpdateWidget` methods, one level up from the
+  measurement branch #120 and #128 worked on. `rowId` is compared nowhere in the
+  package; `mergedGroups` is compared by identity, so `groups[0] = newGroup` on
+  the same list is invisible. Measured 2026-08-31 with a drag before the change:
+  a swapped `rowId` over an unchanged list left the drag reporting `{0,1,2,3}`
+  while the rows rendered — and the selection highlight tracked — `X0..X5`. The
+  screen right, the callback wrong, which is #128's shape exactly.
+
+  **The resolution was a contract, not another list entry, and that is the
+  finding.** Watching `rowId` is unaffordable and the number says so: it is
+  *required*, so every call site writes an inline closure (all twelve in this
+  repo's example), and an inline closure is a new object on every build even
+  when it captures nothing — so the guard would fire for every caller on every
+  build. Measured cost of the lookup rebuild alone: 0.22% of a 16.7ms frame at
+  100 rows, 0.50% at 1,000, 8.06% at 10,000 — before the row-height cache it
+  would also drop, which is the cache this package ships
+  `TableRowHeightCalculator.calculateTextHeight` to make worth having.
+
+  So shape 2 has a **second exit**: name the input as the caller's obligation
+  and record why it is not watched. It is available here and was not available
+  for #120 or #128, and the difference is a property of the input rather than a
+  matter of taste — `calculateRowHeight` is *optional*, so `identical(null,
+  null)` holds for most callers and watching it is free. **Required plus
+  closure-typed is what makes an input unwatchable.** Flutter agrees by
+  omission: it states the new-list obligation four times over for lists and
+  states none anywhere for a function, because where it takes a function it
+  either compares it or caches nothing from it.
+
+  The check for the next one is a grep and the number is worth recording: of
+  the **fifteen** function-typed parameters on the public widget, exactly
+  **two** have cached results — `rowId` and `calculateRowHeight` — and the other
+  thirteen are called live at build.
+
 ## Where it will recur
 
 **Shape 1: any method that returns a modified copy of a class with more than a
