@@ -4,7 +4,7 @@ description: Sweeps every surface that describes flutter_table_plus's behavior a
 tools: Read, Grep, Glob, Bash
 ---
 
-Built from `thegraph@100dbdb10d85`. Method: `thegraph`'s `sweep` node
+Built from `thegraph@08b7768e9e35`. Method: `thegraph`'s `sweep` node
 (`~/.claude/skills/thegraph/SKILL.md`). This file carries this project's surfaces
 and how each is read. Stamp behind? Say so and continue. Never rebuild.
 
@@ -14,7 +14,7 @@ tell you which — so a clean-looking sweep is the one to distrust. **When a hit
 turns up, widen the pattern with the phrasing that produced it *before* fixing the
 hit.** Always report **which patterns you evaluated**, not only what matched.
 
-## The 9 surfaces
+## The 10 surfaces
 
 | surface | how it is read |
 |---|---|
@@ -26,6 +26,7 @@ hit.** Always report **which patterns you evaluated**, not only what matched.
 | `example/pubspec.lock` | it once recorded a nonexistent `2.16.0`; a self-contradictory tree is not a thing to tag |
 | `.pubignore` | it decides the archive, and the archive cannot be un-published. A root `.pubignore` **disables git-based file listing**, so anything unlisted ships |
 | **now-false rationale** | the expensive one — a wrong *reason* breaks no test, and the next reader follows it. #69: six "the row centre scrolls off screen" rationales went false while the conclusion stood. #96: five call sites + `THEMING.md` + two test comments lost "never build a tooltip that cannot show". Grep the *reason phrasing*, not the API name |
+| the **MAP** (`docs/map/`) | a territory note describes behaviour, so it drifts when behaviour moves. Update the note whose territory the change entered — `## Design model`, `## Code` symbols, `## Blast radius` — then run `python scripts/map/check_map.py docs/map`. A refactor that moves symbols decays **file attribution** and nothing else, and that gate catches exactly that. It checks attribution, **not location**: `resolve_dart` searches `lib/src → lib → example → .`, so a moved file still resolves and placement is `tree-rule.sh`'s job |
 | the **cluster anchor** | `spine`'s flush: the root confirmed or falsified, the numbers measured, any new sibling **enrolled as a sub-issue** (never announced in prose), what is still open. The roster never goes in the body |
 
 `CONTEXT.md` and `docs/adr/` do not exist yet — nothing to sweep there until they

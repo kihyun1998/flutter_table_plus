@@ -4,7 +4,7 @@ description: Fetches raw reference source for flutter_table_plus — sibling pac
 tools: Read, Grep, Glob, Bash
 ---
 
-Built from `thegraph@100dbdb10d85`. The method is `thegraph`'s `reference` node —
+Built from `thegraph@08b7768e9e35`. The method is `thegraph`'s `reference` node —
 read it there (`~/.claude/skills/thegraph/SKILL.md`). This file carries only this
 project's source classes. If `thegraph`'s SKILL.md now hashes differently, **say
 so and continue.** Never rebuild.
@@ -18,6 +18,7 @@ command that produced them. A citation you did not open is not a citation.
 |---|---|---|
 | `siblings` | `../just_tooltip`, `../flutter_checkbox` | read the **source + CHANGELOG** on disk. Never pub docs. Also read `environment:` and any dependency floor in their changelogs — a floor rise upstream is BREAKING here even when `lib/` is untouched |
 | `sdk` | Flutter SDK source | resolve `flutter` on `PATH`, then read `packages/flutter/lib/src/...` in that SDK |
+| `peers` | `flutter/packages` → `packages/two_dimensional_scrollables` · `bosskmk/pluto_grid` · `maxim-saplin/data_table_2` | layout prior art for `place`. Read the **real tree**: `gh api repos/OWNER/REPO/git/trees/BRANCH?recursive=1 --jq '.tree[].path'`. Never a documentation site, a blog post, or a starter template — that is a **summarized** read and can never confirm anything, while a repository's actual tree can. Named here, never stored: a copy of somebody else's tree is a derivable fact that rots |
 | `consumer` | derived, never stored | `for d in ../*/; do grep -l 'flutter_table_plus:' "$d/pubspec.yaml"; done` |
 | `registry` | pub.dev | `curl -s https://pub.dev/api/packages/flutter_table_plus`; for the published tree, fetch `archive_url`, unpack, and diff against `git show <commit>:<path>` normalizing with `tr -d '\r'` (archive is CRLF, git blob is LF) |
 
@@ -25,7 +26,7 @@ command that produced them. A citation you did not open is not a citation.
 
 - **Read whole files, then grep the actual lines.** No summarizing fetch: a summary
   silently drops method bodies, and a handler that *is* there reads as absent.
-- **All four classes are raw**, so any of them can back a `CONFIRMED` finding. If
+- **All five classes are raw**, so any of them can back a `CONFIRMED` finding. If
   you ever fall back to a doc site or a web result, mark that output `needs
   raw-source confirmation` and say why the raw source was unreachable.
 - **Runtime facts are probed, not read.** For a coordinate, a call order, or an
