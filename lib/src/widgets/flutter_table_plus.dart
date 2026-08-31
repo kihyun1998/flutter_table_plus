@@ -13,6 +13,7 @@ import '../models/theme/theme.dart' show TablePlusTheme;
 import '../utils/column_ordering.dart';
 import '../utils/column_width_resolver.dart';
 import '../utils/table_column_width_calculator.dart';
+import '../utils/row_measurement.dart';
 import '../utils/table_metrics.dart';
 import 'cell_edit_session.dart';
 import 'drag_selection_controller.dart';
@@ -462,8 +463,14 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
     }
     if (!identical(widget.data, oldWidget.data) ||
         !identical(widget.mergedGroups, oldWidget.mergedGroups) ||
-        !identical(widget.calculateRowHeight, oldWidget.calculateRowHeight) ||
-        widget.scale != oldWidget.scale) {
+        rowMeasurementChanged<T>(
+          oldCalculateRowHeight: oldWidget.calculateRowHeight,
+          newCalculateRowHeight: widget.calculateRowHeight,
+          oldScale: oldWidget.scale,
+          newScale: widget.scale,
+          oldRowHeight: oldWidget.theme.bodyTheme.rowHeight,
+          newRowHeight: widget.theme.bodyTheme.rowHeight,
+        )) {
       _rebuildCaches();
     }
     // Correct scroll positions when scale changes.

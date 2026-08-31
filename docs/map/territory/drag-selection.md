@@ -49,6 +49,8 @@ read against this implementation.
 
 ## Cross-cutting invariants
 
+→ [Never hand-maintain a list a later addition must join](../invariant/no-hand-enumeration.md) — `indexAt` answers from a cached row geometry, so an input missing from that cache's invalidation condition lands here as a drag selecting the wrong rows (#128)
+
 → [Viewport-local coordinates come from one frame](../invariant/viewport-local-frame.md) — this territory is the reason the invariant exists
 → [Widths and offsets are clamped on every path](../invariant/clamped-dimensions.md) — the auto-scroller clamps its proximity ratio
 

@@ -34,13 +34,28 @@ calculation ultimately asks.
   a list of fields, and `calculateRowHeight` was simply missing from it while
   `FlutterTablePlus` watched it (#120), which is the failure a list has and a
   question does not.
-- **The two widgets' invalidation conditions must be read together.** The
-  parent's cached total height feeds `needsVerticalScroll`; the body's cache
-  feeds the rows *and* `itemExtentBuilder`. So a field the parent watches and
-  the body does not produces a table whose scroll decision and whose rows were
-  measured by different functions — while the extent and the rows stay
-  consistent with each other, which is what makes it look like nothing is
-  wrong.
+- **The measurement inputs are one list, in one place.** `rowMeasurementChanged`
+  in `utils/` holds them — the height callback, the scale, and the body theme's
+  `rowHeight` — and both widgets call it. They used to be two hand-written
+  conditions, and the two disagreed twice: #120 had the height callback in the
+  parent's and not the body's, #128 had the theme's height in neither.
+  - **It is a reduced list, not a derivation**, and the difference is the point.
+    Dart cannot enumerate what a computation reads, and folding the inputs into
+    a value type with an `==` moves the hand-list into that operator — which is
+    the shape that dropped fields from `scaledBy`. One predicate removes the
+    failure that actually happened; it does not remove forgetting a new input.
+  - **The two callers pass different things and that matters.** The parent hands
+    it an unscaled `theme.bodyTheme.rowHeight` and multiplies by `scale` itself;
+    the body hands it one `scaledBy` has already scaled. So the scale term is
+    redundant for the body and load-bearing for the parent — a mutation deleting
+    it survives every body-side test.
+- **A stale cache here is invisible where you would look for it.** Rendering
+  reads the inputs live — `itemExtent`, `itemExtentBuilder` — so the rows are
+  always the right height. Only what is *derived* from the cache disagrees: the
+  parent's total, which decides whether a vertical scrollbar exists, and the
+  body's `RowGeometry`, which every drag hit-test is answered from. And the
+  geometry is built lazily on the first drag query, so a test that never drags
+  before the change cannot observe the difference at all.
 - **The last row's border is a named behaviour**, not an edge case:
   `LastRowBorderBehavior` makes the choice explicit rather than implicit in a
   conditional.
@@ -63,6 +78,7 @@ calculation ultimately asks.
 
 ## Cross-cutting invariants
 
+→ [Never hand-maintain a list a later addition must join](../invariant/no-hand-enumeration.md) — two widgets cached row heights off two hand-written conditions, and the lists disagreed twice (#120, #128)
 → [Observe at the screen, assert by count](../invariant/observe-at-the-screen.md) — geometry is asserted through widget tests, where counting beats naming
 
 ## Blast radius
@@ -76,24 +92,4 @@ calculation ultimately asks.
 
 ## Known holes / open
 
-- **The geometry snapshot is invalidated by four inputs and built from five.**
-  `_buildGeometry` falls back to `theme.rowHeight` for any row without a
-  per-row height, and reads it again three times in the merged-group path;
-  `didUpdateWidget` watches `data`, `mergedGroups`, `calculateRowHeight` and
-  `scale`, and not the theme. So changing `bodyTheme.rowHeight` while the data
-  list keeps its identity leaves the hit-test geometry describing the previous
-  height.
-  - Measured 2026-08-31, through the real widget: rows drawn at 40px, a drag
-    across four of them reporting the two it would have covered at 80px.
-    Rendering is unaffected — `itemExtentBuilder` and the uniform `itemExtent`
-    both read the theme live — so **only the pointer is wrong**, which is why
-    nothing looks broken.
-  - The parent has the same omission with a different symptom: its cached total
-    height feeds `needsVerticalScroll`, so the vertical scrollbar can fail to
-    appear. Measured the same day.
-  - Reachable from this repo's own example: the playground's `rowHeight` slider
-    edits the body theme while `_data` stays one object.
-  - **The shape is #50/#116 one layer down** — a hand-listed field set that a
-    later field was never added to. `CLAUDE.md` states the invariant for
-    `copyWith`/`scaledBy`; an invalidation branch is the same shape without the
-    same protection.
+**None.**

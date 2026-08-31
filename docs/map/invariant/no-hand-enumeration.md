@@ -1,11 +1,29 @@
-# Never re-assemble an object by hand-listing its fields
+# Never hand-maintain a list a later addition must join
 
 ## The fact
+
+**Two shapes, one failure.** A list of things, written by hand, that something
+added later has to be added to — and nothing fails when it is not.
+
+### Shape 1 — re-assembling an object
 
 When a method produces a modified copy of a composite object, it must be built on
 `copyWith` and name **only the fields it changes**. Reconstructing the object by
 listing every field means a field added later is dropped by whoever forgets to
 add a line — and nothing fails.
+
+### Shape 2 — enumerating what a computation depends on
+
+An invalidation condition lists the inputs a cached value is computed from. An
+input added later is not added to the condition, and the cache silently serves a
+stale answer.
+
+**There is no `copyWith` here, and saying so is part of the invariant.** Dart
+cannot enumerate the fields a computation reads, and folding the inputs into a
+value type with an `==` only moves the hand-list into that operator — which is
+Shape 1 again. What *is* achievable is reducing N lists to one: the failure that
+actually occurred both times was **two conditions that disagreed**, not a single
+condition that was incomplete.
 
 ## Why it is cross-cutting
 
@@ -39,8 +57,10 @@ the API and false about the behaviour.
 
 ## Territories it holds in
 
-→ [Theme system](../territory/theme-system.md) — ten sub-theme fields, one root, and the method where it was learned
-→ [Scale / zoom](../territory/scale-zoom.md) — the caller of that method, and the only path on which the defect is observable
+→ [Theme system](../territory/theme-system.md) — ten sub-theme fields, one root, and the method where it was learned (shape 1)
+→ [Scale / zoom](../territory/scale-zoom.md) — the caller of that method, and the only path on which the defect is observable (shape 1); and one of the three inputs a row height is computed from (shape 2)
+→ [Row rendering and geometry](../territory/row-render-geometry.md) — two widgets caching row heights off two hand-written conditions (shape 2)
+→ [Drag selection](../territory/drag-selection.md) — where shape 2's symptom is visible: the hit-test geometry answers from the cache
 
 ## What a violation looks like
 
@@ -51,6 +71,13 @@ reconstruction.
 
 Nothing throws, nothing logs, no test that uses the identity factor fails, and
 the visual symptom appears in a component that was never edited.
+
+**Shape 2 looks different and hides the same way.** A value that is correct on
+screen and wrong wherever the *cached* copy is read. Rendering usually reads the
+input live, so the rows are the right height and only the thing derived from the
+cache — a hit test, a scroll decision — disagrees. Nothing throws there either,
+and a test that pumps once can never see it: the stale path needs a **second**
+build over the same data.
 
 ## Discovery history
 
@@ -80,11 +107,36 @@ the visual symptom appears in a component that was never edited.
   consumer sets a zoom. `TablePlusHeaderTheme.scaledBy` did the same to
   `TablePlusResizeHandleTheme` and dropped nothing — all five fields happened to
   be listed — which is what "armed" looks like as opposed to "sprung".
+- **#120 / #128 (shape 2)** — `FlutterTablePlusState` and `TablePlusBodyState`
+  both cache row heights, off two hand-written conditions. #120 found
+  `calculateRowHeight` in the parent's list and not the body's: a new height
+  function over the same list changed nothing on screen. #128 found
+  `theme.rowHeight` in **neither**, one release later — measured 2026-08-31, rows
+  drawn at 40px while a drag across four of them reported the two they covered at
+  80px, and the parent's cached total leaving the vertical scrollbar undrawn.
+  Affected 2.13.0–2.16.1 for the hit-test half, the whole 2.x line for the
+  scrollbar half.
 
+  **The interval is the finding.** #50 to #116 was six releases; #120 to #128 was
+  one. The remedy is `rowMeasurementChanged` — one predicate, both callers — so
+  the two can no longer disagree. Forgetting a genuinely new input is still
+  possible and is now a one-site problem with the read sites named in the
+  doc-comment.
+
+  Two traps, both measured. The scale term is **redundant for the body and
+  load-bearing for the parent**, because the parent hands the predicate an
+  unscaled `theme.bodyTheme.rowHeight` while the body hands it one `scaledBy`
+  has already scaled — so a mutation deleting that term survived until a test
+  reached the parent's path alone. And the geometry snapshot is built **lazily on
+  the first drag query**, so any test that does not drag before the change is
+  green with or without the invalidation.
 ## Where it will recur
 
-**Any method that returns a modified copy of a class with more than a couple of
-optional fields**, and any test of such a method that uses the identity argument.
+**Shape 1: any method that returns a modified copy of a class with more than a
+couple of optional fields**, and any test of such a method that uses the identity
+argument. **Shape 2: any cache with a hand-written invalidation condition**, and
+especially any pair of caches over the same inputs — the grep there is for a
+second `didUpdateWidget` comparing some of the same fields.
 The check is mechanical, and it is a grep: **a constructor call inside such a
 method body is the tell.** Run it over the family rather than the one site you
 arrived at — at the time of writing, that grep over `lib/src/models/theme/*.dart`
