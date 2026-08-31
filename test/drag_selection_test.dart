@@ -79,6 +79,9 @@ Future<_DragHarness> _pumpDragTable(
   _DragHarness? harness,
   double? Function(int, Map<String, dynamic>)? calculateRowHeight,
   double scale = 1.0,
+  // Identity, for the group at the bottom. Defaults to the plain `id` field so
+  // every caller above is unaffected.
+  String Function(Map<String, dynamic>)? rowId,
 }) async {
   // `rowCount` is ignored entirely when `data` is supplied, so the two can
   // disagree in silence and a reader would believe the wrong one.
@@ -106,7 +109,7 @@ Future<_DragHarness> _pumpDragTable(
               key: h.tableKey,
               columns: _buildColumns(count: colCount, width: colWidth),
               data: data ?? _buildData(rowCount, colCount: colCount),
-              rowId: (r) => r['id'] as String,
+              rowId: rowId ?? (r) => r['id'] as String,
               isSelectable: true,
               enableDragSelection: true,
               mergedGroups: mergedGroups,
@@ -725,6 +728,133 @@ void main() {
       expect(h.ends, hasLength(2), reason: 'the second drag did not emit');
       expect(h.ends.last, equals(<String>{'0', '1', '2', '3'}),
           reason: 'the pointer was resolved against the previous scale');
+    });
+  });
+
+  group('Drag selection — a new snapshot refreshes what a pointer resolves to',
+      () {
+    // #132. `data` and `rowId` are one snapshot: every id-keyed derivation —
+    // `RowLookup`, the renderable-index list, and the `ids` the geometry
+    // answers `idsBetween` from — is built from the pair and dropped when the
+    // *list* is a different object. `rowId` itself is never compared, and that
+    // is a decision rather than an omission: it is required, every call site
+    // writes an inline closure, and an inline closure is a new object on every
+    // build even when it captures nothing (measured 2026-08-31) — so comparing
+    // it would drop every cache on every build for every caller. The opposite
+    // of `calculateRowHeight`, which is optional and so is usually the same
+    // `null` twice running.
+    //
+    // What these two pin is therefore the **supported** path, not the stale
+    // one. Asserting the stale answer would freeze a documented non-guarantee
+    // into a test, and a later decision to guard `rowId` would read as a
+    // regression. What must never break is that a new list *does* refresh.
+    //
+    // Both need the priming drag for the reason the group above documents: the
+    // geometry is `_rowGeometry ??= _buildGeometry()`, so without a drag before
+    // the change there is nothing cached to be stale and the test is vacuous
+    // either way. Measured — with `_rowGeometry = null` deleted from
+    // `_rebuildCaches`, both of these go red and the unprimed variants do not.
+
+    Offset at(WidgetTester tester, GlobalKey key, double y) => Offset(
+          tester.getRect(find.byKey(key)).left + 50,
+          tester.getRect(find.byType(ListView)).top + y,
+        );
+
+    Future<void> dragFromTo(
+      WidgetTester tester,
+      Offset from,
+      Offset to,
+    ) async {
+      final gesture = await tester.startGesture(from);
+      await tester.pump();
+      await gesture.moveTo(to);
+      await tester.pump();
+      await gesture.up();
+      await tester.pump();
+    }
+
+    testWidgets(
+        'a new data list carries a new rowId into the hit-test geometry',
+        (tester) async {
+      final h = await _pumpDragTable(
+        tester,
+        rowCount: 6,
+        tableHeight: 400,
+        data: _buildData(6),
+      );
+
+      await dragFromTo(
+          tester, at(tester, h.tableKey, 10), at(tester, h.tableKey, 130));
+      expect(h.ends, hasLength(1), reason: 'the priming drag did not emit');
+      expect(h.ends.last, equals(<String>{'0', '1', '2', '3'}));
+
+      // A new list *and* a new id space — the supported way to change identity.
+      await _pumpDragTable(
+        tester,
+        rowCount: 6,
+        harness: h,
+        tableHeight: 400,
+        data: _buildData(6),
+        rowId: (r) => 'X${r['id']}',
+      );
+
+      await dragFromTo(
+          tester, at(tester, h.tableKey, 10), at(tester, h.tableKey, 130));
+
+      expect(h.ends, hasLength(2), reason: 'the second drag did not emit');
+      expect(h.ends.last, equals(<String>{'X0', 'X1', 'X2', 'X3'}),
+          reason:
+              'the geometry answered from the ids of the previous snapshot');
+    });
+
+    testWidgets('a new mergedGroups list changes what a pointer lands on',
+        (tester) async {
+      final rows = _buildData(6);
+
+      final h = await _pumpDragTable(
+        tester,
+        rowCount: 6,
+        tableHeight: 400,
+        data: rows,
+        mergedGroups: const [
+          MergedRowGroup<Map<String, dynamic>>(
+            groupId: 'g0',
+            rowKeys: ['0', '1'],
+            mergeConfig: {},
+          ),
+        ],
+      );
+
+      await dragFromTo(
+          tester, at(tester, h.tableKey, 10), at(tester, h.tableKey, 100));
+      expect(h.ends, hasLength(1), reason: 'the priming drag did not emit');
+      expect(h.ends.last, equals(<String>{'g0', '2'}));
+
+      // Expanding adds a summary row, so the group grows by one row's height
+      // and the same 90px reach no longer gets past it. `rows` is deliberately
+      // the same object: the group list alone is what changed.
+      await _pumpDragTable(
+        tester,
+        rowCount: 6,
+        harness: h,
+        tableHeight: 400,
+        data: rows,
+        mergedGroups: const [
+          MergedRowGroup<Map<String, dynamic>>(
+            groupId: 'g0',
+            rowKeys: ['0', '1'],
+            mergeConfig: {},
+            isExpanded: true,
+          ),
+        ],
+      );
+
+      await dragFromTo(
+          tester, at(tester, h.tableKey, 10), at(tester, h.tableKey, 100));
+
+      expect(h.ends, hasLength(2), reason: 'the second drag did not emit');
+      expect(h.ends.last, equals(<String>{'g0'}),
+          reason: 'the pointer was resolved against the collapsed extent');
     });
   });
 }

@@ -56,6 +56,12 @@ calculation ultimately asks.
   body's `RowGeometry`, which every drag hit-test is answered from. And the
   geometry is built lazily on the first drag query, so a test that never drags
   before the change cannot observe the difference at all.
+- **The identity assumptions are stated in one place, and it is not here.**
+  What `data`, `rowId` and `mergedGroups` oblige the caller to do lives in
+  [Row identity](row-identity.md); the two `didUpdateWidget` branches here are
+  the mechanism, not the rule. #132 found the rule stated nowhere and implied
+  by four conditions — and found that the structure branch's own inputs have
+  the same shape as the measurement branch's, one level up.
 - **The last row's border is a named behaviour**, not an edge case:
   `LastRowBorderBehavior` makes the choice explicit rather than implicit in a
   conditional.
@@ -87,6 +93,7 @@ calculation ultimately asks.
 → [Merged rows](merged-rows.md) — they are the reason index→row is not identity
 → [Row height](row-height.md) — the height it lays out is computed there
 → [Row interaction](row-interaction.md) — the interaction shell wraps each row this layer builds
+→ [Row identity](row-identity.md) — the ids this layer snapshots are that territory's, and so is the rule for when they go stale
 → [Theme system](theme-system.md) — body theme decides colours, borders and the dim treatment
 → [Synced scrolling](synced-scrolling.md) — total height is the vertical extent
 
