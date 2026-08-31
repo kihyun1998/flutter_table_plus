@@ -227,6 +227,136 @@ void main() {
     expect(find.text('R2'), findsOneWidget);
   });
 
+  testWidgets('a theme rowHeight change re-decides whether the table scrolls',
+      (tester) async {
+    // The parent half of #128. `FlutterTablePlusState` caches a total data
+    // height and that total decides `needsVerticalScroll` — which gates the
+    // vertical scrollbar and feeds the last row's bottom border.
+    //
+    // It watched `data`, `mergedGroups`, `calculateRowHeight` and `scale`, and
+    // not the theme. So growing the rows past the viewport through the theme
+    // left the table believing it still fit, and **the scrollbar silently did
+    // not appear** — no exception, no layout error, nothing to notice.
+    //
+    // Asserted at the screen, by count, per this repo's rule: at 20px the six
+    // rows fit and only the horizontal scrollbar is built; at 40px they do not
+    // and a second one appears.
+    final data = [
+      for (int i = 0; i < 6; i++) {'id': '$i', 'name': 'R$i'}
+    ];
+
+    Future<void> pumpAt(double rowHeight) => tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: Center(
+                child: SizedBox(
+                  width: 400,
+                  height: 200,
+                  child: FlutterTablePlus<Map<String, dynamic>>(
+                    columns: _columns(),
+                    data: data,
+                    rowId: (r) => r['id'] as String,
+                    theme: TablePlusTheme(
+                      bodyTheme: TablePlusBodyTheme(rowHeight: rowHeight),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+
+    await pumpAt(20);
+    await tester.pumpAndSettle();
+    final fits = tester.widgetList(find.byType(Scrollbar)).length;
+
+    await pumpAt(40);
+    await tester.pumpAndSettle();
+    final overflows = tester.widgetList(find.byType(Scrollbar)).length;
+
+    expect(overflows, greaterThan(fits),
+        reason: 'the table kept the total height it measured at 20px, so it '
+            'still believed six rows fit and drew no vertical scrollbar');
+
+    // The side condition: a fresh list reaches the same answer, so the count
+    // itself is right and only the invalidation was missing.
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: SizedBox(
+              width: 400,
+              height: 200,
+              child: FlutterTablePlus<Map<String, dynamic>>(
+                columns: _columns(),
+                data: [
+                  for (int i = 0; i < 6; i++) {'id': '$i', 'name': 'R$i'}
+                ],
+                rowId: (r) => r['id'] as String,
+                theme: const TablePlusTheme(
+                  bodyTheme: TablePlusBodyTheme(rowHeight: 40),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(tester.widgetList(find.byType(Scrollbar)).length, overflows);
+  });
+
+  testWidgets('a scale change alone re-decides whether the table scrolls',
+      (tester) async {
+    // The parent's scale path, and it exists because a mutation survived
+    // without it.
+    //
+    // The shared predicate takes a row height from each caller, and the two
+    // callers hand it *different* things: the body gets `theme.rowHeight`,
+    // which the parent has already run through `scaledBy`, while the parent
+    // gets `theme.bodyTheme.rowHeight` unscaled and multiplies by `scale`
+    // itself. So a scale change moves the body's height term on its own — the
+    // scale term is redundant there — and does not move the parent's. For the
+    // parent it is the only term that can notice, and nothing exercised it.
+    final data = [
+      for (int i = 0; i < 6; i++) {'id': '$i', 'name': 'R$i'}
+    ];
+
+    Future<void> pumpAt(double scale) => tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: Center(
+                child: SizedBox(
+                  width: 400,
+                  height: 200,
+                  child: FlutterTablePlus<Map<String, dynamic>>(
+                    columns: _columns(),
+                    data: data,
+                    rowId: (r) => r['id'] as String,
+                    scale: scale,
+                    theme: const TablePlusTheme(
+                      bodyTheme: TablePlusBodyTheme(rowHeight: 40),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+
+    await pumpAt(0.5);
+    await tester.pumpAndSettle();
+    final small = tester.widgetList(find.byType(Scrollbar)).length;
+
+    await pumpAt(1.0);
+    await tester.pumpAndSettle();
+    final large = tester.widgetList(find.byType(Scrollbar)).length;
+
+    expect(large, greaterThan(small),
+        reason: 'the parent kept the total it measured at scale 0.5, so six '
+            'rows that no longer fit were still believed to');
+  });
+
   testWidgets('hovering a cell shows its tooltip', (tester) async {
     await _pump(tester, rows: 2); // columns default to TooltipBehavior.always
 

@@ -12,6 +12,7 @@ import '../models/theme/checkbox_theme.dart';
 import '../models/theme/editable_theme.dart' show TablePlusEditableTheme;
 import '../models/theme/tooltip_theme.dart' show TablePlusTooltipTheme;
 import '../utils/row_background_color.dart';
+import '../utils/row_measurement.dart';
 import '../utils/table_metrics.dart';
 import 'row_geometry.dart';
 import 'row_locator.dart';
@@ -191,10 +192,11 @@ class TablePlusBodyState<T> extends State<TablePlusBody<T>>
   /// the first drag query, and dropped by [didUpdateWidget] on a `data`,
   /// `mergedGroups`, `calculateRowHeight` or `scale` change.
   ///
-  /// That list is **not** the set of inputs [_buildGeometry] reads — see
-  /// `## Known holes` in `docs/map/territory/row-render-geometry.md`. It said
-  /// "data/mergedGroups/scale" until #128; `calculateRowHeight` had been added
-  /// to the branch by #120 and this comment was left behind.
+  /// The measurement half of that list lives in `rowMeasurementChanged`, shared
+  /// with `FlutterTablePlusState` so the two cannot drift again. This comment
+  /// said "data/mergedGroups/scale" until #128: `calculateRowHeight` had been
+  /// added to the branch by #120 and the comment was left behind, and
+  /// `theme.rowHeight` was in neither.
   RowGeometry? _rowGeometry;
 
   @override
@@ -215,8 +217,14 @@ class TablePlusBodyState<T> extends State<TablePlusBody<T>>
     if (!identical(widget.data, oldWidget.data) ||
         !identical(widget.mergedGroups, oldWidget.mergedGroups)) {
       _rebuildCaches();
-    } else if (widget.scale != oldWidget.scale ||
-        !identical(widget.calculateRowHeight, oldWidget.calculateRowHeight)) {
+    } else if (rowMeasurementChanged<T>(
+      oldCalculateRowHeight: oldWidget.calculateRowHeight,
+      newCalculateRowHeight: widget.calculateRowHeight,
+      oldScale: oldWidget.scale,
+      newScale: widget.scale,
+      oldRowHeight: oldWidget.theme.rowHeight,
+      newRowHeight: widget.theme.rowHeight,
+    )) {
       // Measurements changed and structure did not. `RowLookup` and the
       // renderable indices are answers about identity, so they survive; only
       // the heights and the geometry accumulated from them go.

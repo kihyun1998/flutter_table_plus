@@ -639,6 +639,50 @@ void main() {
               'still 80px');
     });
 
+    testWidgets('a new theme rowHeight re-resolves the pointer',
+        (tester) async {
+      // The third input, and the one that was in neither widget's list until
+      // #128. It is also the most reachable: changing row height through the
+      // theme needs no new list and no height callback at all — this repo's own
+      // playground has a slider that does it.
+      //
+      // It is the most invisible, too. With no `calculateRowHeight` the body
+      // takes the fixed-`itemExtent` path, which reads the theme live, so the
+      // rows, the extent and the scroll are all correct. Only the pointer is
+      // wrong.
+      final rows = sharedRows;
+
+      final h = await _pumpDragTable(
+        tester,
+        rowCount: 6,
+        data: rows,
+        tableHeight: 560,
+        rowHeight: 80,
+      );
+
+      await dragFromTo(
+          tester, at(tester, h.tableKey, 40), at(tester, h.tableKey, 120));
+      expect(h.ends, hasLength(1), reason: 'the priming drag did not emit');
+      expect(h.ends.last, equals(<String>{'0', '1'}),
+          reason: 'the priming drag did not resolve against 80px rows');
+
+      await _pumpDragTable(
+        tester,
+        rowCount: 6,
+        data: rows,
+        harness: h,
+        tableHeight: 560,
+        rowHeight: 40,
+      );
+
+      await dragFromTo(
+          tester, at(tester, h.tableKey, 20), at(tester, h.tableKey, 140));
+
+      expect(h.ends, hasLength(2), reason: 'the second drag did not emit');
+      expect(h.ends.last, equals(<String>{'0', '1', '2', '3'}),
+          reason: 'the pointer was resolved against the previous theme height');
+    });
+
     testWidgets('a scale change re-resolves the pointer', (tester) async {
       // The other arm of the same branch, and the one that was never covered
       // even before #120: a cached height is stored already multiplied by
