@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # sacred-diff.sh — thegraph `verify` inbound guard for flutter_table_plus.
-# Built from thegraph@08b7768e9e35.
+# Built from thegraph@7ba7bd7026c8.
 #
 # Decider: code. This overrides judgement — you do not reason your way out of a
 # hit because the diff looks small.
@@ -27,6 +27,7 @@ PATTERNS=(
   'lib/src/widgets/table_body.dart|it caches measured row heights, and shipped stale ones when calculateRowHeight changed identity (#120)'
   'lib/src/widgets/table_plus_merged_row.dart|member rows split a group height equally and ignore their own measurement (#121)'
   'lib/src/utils/table_row_height_calculator.dart|public API, exported from the barrel, that every row geometry derives from'
+  'lib/src/utils/row_measurement.dart|the ONE list both height caches consult. A forgotten input stales the RowGeometry every drag hit-test reads AND the scroll total (#120, #128); its identical guard read differently in JIT and AOT (#137)'
   'pubspec.yaml|a false floor breaks users trees while pub get succeeds here (#69, 2.16.0)'
   'CHANGELOG.md|pub.dev snapshots at publish — an edited published entry splits repo from registry (2.15.0)'
   '.pubignore|it decides the archive, and the archive cannot be un-published'

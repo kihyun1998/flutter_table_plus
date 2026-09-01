@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # gates.sh — thegraph `gate` node for flutter_table_plus.
-# Built from thegraph@08b7768e9e35.
+# Built from thegraph@7ba7bd7026c8.
 #
 # There is NO CI in this repo. These are the only gates.
 #
@@ -44,6 +44,7 @@ run "example:analyze" "example" flutter analyze
 run "example:test"    "example" flutter test
 run "map:check"       ""        python scripts/map/check_map.py docs/map
 run "tree-rule"       ""        scripts/thegraph/tree-rule.sh
+run "agent-grants"    ""        scripts/thegraph/agent-grants.sh
 # The dry-run validates the archive, but it also insists the version is an
 # increment over what is published — and between releases pubspec.yaml sits AT
 # the published version, so the gate is red for every change that is not a
@@ -97,6 +98,12 @@ cat <<'NOTE'
     tree-rule's job and the two do not overlap.
   · tree-rule deliberately does NOT check place's unclassified rows U1 and U2.
     An undecided difference is not a rule, and enforcing one would ratify drift.
+  · agent-grants asserts the DEFAULT, never the claim: it asks whether a generated
+    agent holds a write-capable tool and whether a **Runs:** line names it. It does
+    NOT look for the words "read-only" — an agent granted a shell whose description
+    read "proposes edits rather than making them" passed a check that did. It also
+    cannot see the opposite error: a brief WIDER than its grant is the caller's,
+    made at invocation time, and only the delegated node saying so surfaces it.
   · anything that opens a window (flutter run) is not an agent gate — ask the user
 NOTE
 

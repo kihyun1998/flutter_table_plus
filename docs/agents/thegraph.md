@@ -8,7 +8,7 @@ reasoning habits); this file is its **contract** for this repo.
 Per-incident evidence lives in [`lessons.md`](lessons.md); identity and
 invariants in `CLAUDE.md`.
 
-**Build stamp: `thegraph@08b7768e9e35`** (SKILL.md sha256[0:12], 2026-08-31).
+**Build stamp: `thegraph@7ba7bd7026c8`** (SKILL.md sha256[0:12], 2026-09-01).
 Every generated artifact carries it. When the stamp is behind, `thegraph` says so
 and continues — it never rebuilds on its own.
 
@@ -17,31 +17,50 @@ cache; the GitHub issue is the durable record.
 
 ---
 
-## Compile notes — the 2026-08-31 update
+## Compile notes — the 2026-09-01 update
 
-This was an **update build**: the graph was the input, diffed against the repo.
-`theflow.md` was **not** re-read — it was consumed by the 2026-08-25 first build
-and is spent. What the diff found:
+An **update build**: the graph was the input, diffed against the repo. What the
+diff found:
 
 | # | Slot | Was | Now |
 |---|---|---|---|
-| 1 | `place` | **absent from the roster** | added. The catalog gives it 1, unconditionally — every repo has a tree |
-| 2 | build stamp | `100dbdb10d85` | `08b7768e9e35` on all 8 artifacts |
-| 3 | `gate` | 5 commands | 7. `python scripts/map/check_map.py docs/map` **existed and was in neither the list nor `gates.sh`**, though `map` and `sweep` both named it; `tree-rule.sh` is new |
-| 4 | `gate` blind spots | *"publish:dry-run does NOT see uncommitted changes"* | `gates.sh` carried a claim this doc had **already corrected**. The script now matches: it *does* report modified files **inside** the archive |
-| 5 | `sweep` | header said 10, extraction plan said 9 | 10, stated once |
-| 6 | `verify` sacred paths | 8 | 12 — the row-height / geometry axis (#120, #121, #128) |
-| 7 | `reference` | 4 source classes | 5 — `peers`, confirmed by the maintainer for `place` |
+| 1 | build stamp | `08b7768e9e35` | `7ba7bd7026c8`, on all **9** generated artifacts. `.thegraph/108.md` had already recorded `81cc7c569fe5` as behind, so `thegraph` moved twice between builds |
+| 2 | **agent grants** | all four agents carried `Bash` and **no brief asked for one** | three are read-only (`Read, Grep, Glob`); `ftp-source-fetcher` keeps `Bash` under an explicit **`Runs:`** declaration. A new gate asserts it |
+| 3 | `gate` | the doc said 7 commands, `gates.sh` reported 8 labels | **9**, stated once. `cd example && analyze && test` is *two* bare commands, not one — the doc had been counting the shell line; `agent-grants.sh` is the ninth |
+| 4 | `verify` sacred paths | 12 | **13** — `lib/src/utils/row_measurement.dart`, the one list both height caches consult (#120 → #128 → #137) |
+| 5 | `verify` tree provenance | unstated — the `build_gaps` entry flushed by #131 and #132 | stated below, and **the gap closes rather than being answered**: a lens with no shell cannot mutate a tree, so there is no isolation left to arrange |
+| 6 | Schema coverage | 4 slots `pending — needs a thegraph change` | **0 unowned.** `thegraph` now places all four |
+| 7 | Deliberate divergence | 12 rows | **13** — `rowId` is deliberately *unguarded*, on a measured cost (#132) |
+| 8 | `place` | U2 said `test/` was 55 files | **57**. `--audit`: 354 paths, 234 owned by a rule, **0 unruled in scope** |
+| 9 | `reference` · `map` · `sweep` · `boundary` · `promote` · `downstream` | — | no drift. The MAP is still 23 territories + 6 invariants |
 
-**`build_gaps` read first, as the drift detector.** The tracker carried none. The
-run-state cache carried one (`.thegraph/101.md`): the spine roster was filed as
-prose parents against a build that already said *relation*. That was a
-**compliance** miss, already substituted in that run — not a wrong build value,
-so nothing here changes for it.
+**What `thegraph` itself gained** is the issue contract — *"What the issue must
+supply"*, five slots each carrying a provenance (`human` / `derived` /
+`unknown`). That is **issue scope, not build scope**, so it adds no slot here.
+Its one consequence for this file: the deliberate-divergence list below is now
+**co-authored**, and a run-scoped `human` row is passed to a lens *in the
+invocation* — never baked into a generated artifact, which is built once and
+cannot carry a value that changes per run.
 
-**`docs/agents/theflow.md` is spent** and was already reported as such at the
-first build. Nothing reads it, nothing maintains it. It is the maintainer's to
-delete; this skill writes the build and never product docs.
+**`build_gaps` read first, as the drift detector.** The run-state cache carried
+one (`.thegraph/101.md`, the spine roster filed as prose — a compliance miss,
+substituted in that run, not a wrong build value). The worked issues carried the
+one that mattered:
+
+> **#132 `build_gaps`** — *"The build's `verify` section names two lenses and
+> says nothing about where each pass's tree comes from. Substituted for this
+> run: one `git worktree` per lens … the build write has not happened, so the
+> substitution is manual every run until it does."*
+
+Its parent, **#131**, was closed here as *misrouted*: whether two mutating lenses
+may share a tree is a fact no repository can answer differently, so it is a
+catalog question and was refiled at `kihyun-skills#19`. Measured this build,
+`thegraph` still carries no tree-isolation rule — but row 2 above **dissolves the
+repo-local half without it.** Both lens briefs already said *"you return findings
+— not edits"*; only the grant disagreed. Align the grant to the brief and neither
+lens can mutate anything, so the worktree substitution stops being needed and
+`#132`'s gap is closed rather than worked around. The upstream question stays
+open on its own merits, for builds that do grant a lens a shell.
 
 ---
 
@@ -187,7 +206,7 @@ wearing a rule's clothes, and the guard script does **not** check them.
 - **U1 — `widgets/cells/` (3) vs `widgets/table_header_cell.dart`.** All four are
   `StatelessWidget` cells. The only axis that splits them is the consumer: a body
   row draws the first three, the header draws the fourth.
-- **U2 — `test/` flat at 55 files.** The peers split 2:1 —
+- **U2 — `test/` flat at 57 files.** The peers split 2:1 —
   `two_dimensional_scrollables` mirrors `lib/src`, `pluto_grid` splits by
   scenario, `data_table_2` is flat like us.
 
@@ -269,6 +288,7 @@ a clean diff.
 | `lib/src/widgets/table_body.dart` | it caches measured row heights; #120 shipped stale ones when `calculateRowHeight` changed identity |
 | `lib/src/widgets/table_plus_merged_row.dart` | #121 — member rows split a group's height equally and ignore their own measurement |
 | `lib/src/utils/table_row_height_calculator.dart` | a **public API** (exported from the barrel) that every row's geometry is derived from |
+| `lib/src/utils/row_measurement.dart` | the **one** list both height caches consult. It is a hand-maintained enumeration Dart cannot derive, so a forgotten fourth input stales the `RowGeometry` every drag hit-test reads *and* the total that decides whether a scrollbar appears — the #120/#128 failure with the two lists collapsed into one site. #137 then measured its `identical` guard wrong, and wrong **differently in JIT and AOT** |
 | `pubspec.yaml` | a false floor breaks users' trees while `pub get` still succeeds here (#69); a dep's floor rise is BREAKING for us even with `lib/` untouched (2.16.0) |
 | `CHANGELOG.md` | pub.dev snapshots at publish — a published entry edited in place splits the repo from the registry (2.15.0) |
 | `.pubignore` | it decides the archive's contents, and the archive **cannot be un-published** |
@@ -303,6 +323,26 @@ Same material, opposite job: the first hunts gaps, the second tries to **refute*
 them and to break the convergence claim. Both read everything, so a disagreement
 between them is information, not an errand.
 
+**Where each pass's tree comes from: the repo working tree, read-only, and both
+passes may run concurrently against it.** Neither lens is granted a shell, so
+neither can mutate what the other is reading — which is what makes concurrency
+safe here rather than a scheduling gamble.
+
+This is the answer to the `build_gaps` entry #131 and #132 both flushed. It cost
+a real adjudication to find: two lenses that *could* write ran in parallel, one
+applied four mutations to `lib/` while the other was reading it, and the refuter
+— the one node whose whole purpose is to be believed when it dissents — graded
+the run `UNADJUDICATED` on evidence that was an artifact of its counterpart. It
+was reasoning correctly from inside what it could see. **A `git worktree` per
+lens would also have fixed it, and would have been the wrong fix**: it arranges
+isolation around a capability no brief ever asked for. Removing the capability
+removes the need for the arrangement.
+
+**Turning a fix off to see a test redden is `proof`'s act, on the main thread.**
+It is a mutation, invariant ① keeps mutations off delegated nodes, and a lens
+that spots a test which cannot fail reports *that* — it does not go and prove it
+by editing `lib/`.
+
 ---
 
 ## Tie-breaker — per layer
@@ -324,6 +364,9 @@ What wins when prior art and this project's own evidence disagree.
 The tie-breaker says who wins an argument; this says which arguments are closed.
 `verify`'s restatement test is checked against this list. Rows 1–8 are the
 project's; **L1–L4 are `plat`'s layout rows** — one list, two contributors.
+A run-scoped `human` entry from an issue contract is a *third* contributor, and
+is passed **in the invocation**: a generated artifact is built once and cannot
+carry a row that changes per run.
 
 1. **No data management.** Sort / filter / paginate stay with the caller,
    communicated through callbacks. — `CLAUDE.md`
@@ -345,15 +388,25 @@ project's; **L1–L4 are `plat`'s layout rows** — one list, two contributors.
    went missing at the root, and five `CheckboxStyle` fields one level down. — #50, #116
 7. **Widget observation happens at the screen** — `byIcon` over `byType`. — #62
 8. **Assert counts, not names.** — #59
-9. **L1 — `lib/src` is split by layer, not by feature.** `two_dimensional_scrollables`
+9. **`rowId` is deliberately unguarded.** Identity is a `(data, rowId)` *snapshot*
+   contract the caller owns, and the package does not assert it — measured, not
+   assumed: the guard's technique cannot reach `rowId`, because `rowId` is
+   *required*, so every call site writes an inline closure and the cost becomes
+   one cache rebuild per build per caller. Comparing its **answers** rather than
+   its identity does work and costs about a tenth of what it prevents; it is not
+   switched on because doing so turns an in-place `RangeError` into a silently
+   missing row until `computeRenderableIndices` is fixed. A finding that proposes
+   the assert is `DELIBERATE`; one that proposes the by-value compare **is not** —
+   that is deferred on a named blocker, not decided against. — #132, #137
+10. **L1 — `lib/src` is split by layer, not by feature.** `two_dimensional_scrollables`
    splits by feature because it ships two widgets (`TableView`, `TreeView`). We ship
    one, so the axis does not transfer. Judged on role, this is not a difference at
    all. — plat 2026-08-31
-10. **L2 — the example lives at `example/`, not `demo/`.** pub.dev gives `example/`
+11. **L2 — the example lives at `example/`, not `demo/`.** pub.dev gives `example/`
     its own tab. `pluto_grid` uses `demo/` and loses it. — plat 2026-08-31
-11. **L3 — `example/test/` is a gate.** Of the three peers only
+12. **L3 — `example/test/` is a gate.** Of the three peers only
     `two_dimensional_scrollables` has example tests at all. — #55, plat 2026-08-31
-12. **L4 — the `utils` / `widgets` axis is widget-*awareness*.** Not
+13. **L4 — the `utils` / `widgets` axis is widget-*awareness*.** Not
     Widget-subclass-hood, not exported-ness, not statefulness — those three were
     sorted by content and none came out clean. So `overflow_cache.dart` stays in
     `utils/` with its six fields, and `drag_selection_controller.dart` stays in
@@ -385,7 +438,7 @@ up, widen the pattern with the phrasing that produced it *before* fixing the hit
 
 ---
 
-## `gate` — 7 commands, each run bare
+## `gate` — 9 commands, each run bare
 
 **There is no CI.** These are the only gates, and they run on this machine — the
 Flutter SDK is on `PATH`, so run them; do not ask. (`thegraph`'s "name the CI
@@ -394,15 +447,24 @@ drift from. If CI is ever added, this list becomes a third copy and must assert
 against it.)
 
 ```
-flutter analyze                                     # 0 issues
+flutter analyze                                      # 0 issues
 dart format --output=none --set-exit-if-changed lib test
 flutter test
-cd example && flutter analyze && flutter test        # the example is a gate
+flutter analyze          (in example/)               # the example is a gate
+flutter test             (in example/)               #   - and it is two gates, not one
 python scripts/map/check_map.py docs/map             # the MAP's own gate
 scripts/thegraph/tree-rule.sh                        # the tree rule, over the final diff
+scripts/thegraph/agent-grants.sh                     # every generated agent's tool grant
 flutter pub publish --dry-run                        # only when the version is ahead
                                                      # of the registry - see below
 ```
+
+**The count is stated once, here, and `gates.sh` must report the same number.**
+It did not: this doc said *seven* because it counted `cd example && flutter
+analyze && flutter test` as a single line, while the script — correctly — ran two
+bare commands and printed two labels. A doc that writes a gate as an `&&` chain
+is teaching the exact shape the rule below forbids, in the file that states the
+rule.
 
 **Each runs bare, never piped** — a pipeline's exit status is the last command's,
 so `test … | tail -1 && commit` always commits. A gate you cannot fail is not a
@@ -444,6 +506,15 @@ before.
 - `tree-rule.sh` deliberately does **not** check `place`'s unclassified rows U1
   and U2 — an undecided difference is not a rule, and a guard that enforced one
   would be ratifying drift. It prints them as a banner instead.
+- `agent-grants.sh` asserts the **default**, never the claim: it asks whether a
+  generated agent holds a write-capable tool and whether its brief declares a
+  command naming that tool. It does **not** look for the words *"read-only"* — an
+  agent granted a shell whose description read *"proposes edits rather than making
+  them"* passed a check that did, which is the enumeration problem in another
+  costume. It cannot see the opposite error either: a **brief wider than its
+  grant** is the caller's mistake, made at invocation time against a static file,
+  and what stands in for a check there is the delegated node's obligation to say
+  what its brief named and it could not reach.
 - Anything that opens a window (`flutter run`) is **not** an agent gate — ask the
   user to drive and say what to look for.
 
@@ -547,19 +618,45 @@ carries the build stamp above. An artifact never names *where* a method lives �
 method may move between `thegraph` and a sibling skill, and an artifact holding
 only data slots is indifferent to that move.
 
-| Artifact | Node | Carries |
-|---|---|---|
-| `.claude/agents/ftp-source-fetcher.md` | `reference` | the 5 source classes, how each is reached, `summarized: none` |
-| `.claude/agents/ftp-gap-lens.md` | `verify` #1 | corpora paths · the tie-breaker table · the 12-item divergence list |
-| `.claude/agents/ftp-refute-lens.md` | `verify` #2 | the same, with the refuting stance in its brief |
-| `.claude/agents/ftp-surface-sweeper.md` | `sweep` | the 10 surfaces and how each is read |
-| `scripts/thegraph/sacred-diff.sh` | `verify` guard | the 12 sacred paths matched against the diff, **printing the patterns it evaluated** |
-| `scripts/thegraph/tree-rule.sh` | `place`, and `gate` on the final diff | the tree rule as a path list matched against the changed paths; the `utils/` Widget-subclass check; U1/U2 printed as **not checked** |
-| `scripts/thegraph/gates.sh` | `gate` | the 7 commands, each invoked **bare** |
-| `scripts/thegraph/cluster.sh` | `search` | the `gh` query by artifact, and the (currently empty) list of areas carrying a record |
+| Artifact | Node | Tools | Carries |
+|---|---|---|---|
+| `.claude/agents/ftp-source-fetcher.md` | `reference` | `Read, Grep, Glob, Bash` | the 5 source classes and how each is reached, `summarized: none` |
+| `.claude/agents/ftp-gap-lens.md` | `verify` #1 | `Read, Grep, Glob` | corpora paths · the tie-breaker table · the 13-row divergence list · the frontier |
+| `.claude/agents/ftp-refute-lens.md` | `verify` #2 | `Read, Grep, Glob` | the same, with the refuting stance in its brief |
+| `.claude/agents/ftp-surface-sweeper.md` | `sweep` | `Read, Grep, Glob` | the 10 surfaces and how each is read |
+| `scripts/thegraph/sacred-diff.sh` | `verify` guard | — | the 13 sacred paths matched against the diff, **printing the patterns it evaluated** |
+| `scripts/thegraph/tree-rule.sh` | `place`, and `gate` on the final diff | — | the tree rule as a path list matched against the changed paths; the `utils/` Widget-subclass check; U1/U2 printed as **not checked** |
+| `scripts/thegraph/gates.sh` | `gate` | — | the 9 commands, each invoked **bare** |
+| `scripts/thegraph/agent-grants.sh` | `gate` | — | every generated agent's grant, asserted against the read-only default |
+| `scripts/thegraph/cluster.sh` | `search` | — | the `gh` query by artifact, and the (currently empty) list of areas carrying a record |
+
+**A grant is derived from the brief, never defaulted, and read-only is the
+default rather than a claim to be matched.** Three of the four agents read and
+nothing else, so they carry no tool that can write. `ftp-source-fetcher` is the
+one exception, and it declares what it runs in the form invariant (1) fixes —
+naming each tool, because a declaration that names none licenses nothing:
+
+> **Runs:** `Bash`, for four things and no others — `gh api .../git/trees/...`
+> (a peer's real tree), `curl https://pub.dev/api/...` (registry state),
+> `tar -xzf` (the published archive, which `Read` cannot decompress), and
+> `git show <commit>:<path>` piped through `tr -d` (the CRLF-vs-LF diff).
+
+**A brief may only name what its grant can reach.** The previous build's fetcher
+brief told the agent to *"write a throwaway probe, print the number, delete the
+probe"* — a write, from a node holding no write tool, dischargeable only through
+a shell nobody had declared. **Probing moves to the main thread**, which is where
+invariant (1) already puts work that is not reading, and the measured number is
+passed in the invocation. That is the same direction the invariant records for
+the archive-unpacking case, arrived at here from the opposite end.
 
 **Script language: bash** (Git Bash, on `PATH`), `set -euo pipefail`. The MAP gate
 is python and stays python — it is not a generated artifact.
+
+**The grant check is generated *with* the agents, deliberately.** A rule this
+file states and nothing reads is the same defect as a read-only claim nothing
+enforces, one level up. `agent-grants.sh` joins the `gate` command list like any
+other gate, and that is what makes the rule above a check rather than a
+paragraph.
 
 **Never extracted** — invariant ①: `enumerate`, `boundary`, `place`, `implement`,
 `proof`, `batch`, `stop`, `decide`, `promote`, `downstream`. They adjudicate, so
@@ -567,27 +664,42 @@ they run on the main thread.
 
 ---
 
-## Schema coverage — 4 slots thegraph has not placed
+## Schema coverage — every slot placed
 
-Walking *"What the build must supply"* against `thegraph`'s own
-invariant / build / issue split, four entries land on **neither side**. Each is
-answered above — the schema asked, so the build answers — but `thegraph` never
-says *who* answers it. This is the same shape as the seams gap `thegraph` itself
-records: a value stays answerable in the schema while reading as unowned in the
-split.
+The coverage check runs **once per build**: walk *"What the build must supply"*
+and confirm each entry sits on one side of `thegraph`'s invariant / build / issue
+split. A slot the schema asks for and the split places on neither side is
+`unowned` — answerable, answered correctly by every build that ever ran, and
+named by nobody. Being answerable is exactly what lets it pass unnoticed.
 
-| Slot | Status | Why it reads unowned |
+The last build reported four. **All four are now placed, and the result this
+build is zero.**
+
+| Slot | Was | Now placed by |
 |---|---|---|
-| `proof` method per layer + tautological traps | filled · **pending — needs a thegraph change** | the build side names *source / surface / command / path* lists, and a proof **method** is none of those. `redden` owns the test-trust method, so this is a live routing question rather than a wording one. Strongest of the four |
-| areas already carrying a decision record | filled · **pending — needs a thegraph change** | a numbered roster; not one of the four list types |
-| tracker capability | filled · **pending — needs a thegraph change** | a fact about the environment |
-| war-story index | filled · **pending — needs a thegraph change** | a precedent list |
+| `proof` method per layer + tautological traps | `pending` | *"along with its **method**, its **traps**"* on the build side |
+| areas already carrying a decision record | `pending` | *"everything it reads and everything it checks against"* — `search` checks a candidate against this roster |
+| tracker capability | `pending` | named outright: *"the tracker's parent/child capability"* |
+| war-story index | `pending` | named outright: *"the war-story index"* |
 
-**The change is to *place* these, never to add them.** They already exist in the
-schema; what is missing is the sentence saying which side owns them. This table is
-the finding — not a per-slot owner column, because which side owns a slot is
+Two of those `thegraph` records having found the same way this build did — by a
+coverage check, with no extraction to force them — and it says the thing worth
+carrying forward: **placing a slot changes no build.** The four rows above were
+already filled and already correct. What was missing was the sentence saying who
+answers them, and a missing sentence is the one kind of gap that leaves the work
+looking finished.
+
+**A passing check leaves no trace, and that is deliberate.** There is no per-slot
+owner column anywhere in this file. Which side of the split owns a slot is
 `thegraph`'s fact rather than this project's data, and a column of them would be
-stale the day `thegraph` re-places one.
+stale the day `thegraph` re-places one — the staleness the thin-artifact rule
+exists to buy immunity from. This table survives only because it records a
+transition; it goes when the next build has nothing to say here.
+
+**Not a schema gap, and tracked elsewhere:** whether two lenses that *can* write
+may share a working tree. It is a catalog question (`kihyun-skills#19`), not a
+slot, so it gets no `pending` marker here — and this build removed the exposure
+rather than waiting on it. See `verify`'s second-lens section.
 
 ---
 
@@ -595,5 +707,19 @@ stale the day `thegraph` re-places one.
 
 The evidence that keeps every rule above from reading as an abstraction — #22,
 #33, #38, #50–#52, #55, #58–#63, #65, #69, #88→#96, #114, #116, #119–#121, #128,
-the 2.15.0 publish/tag incident and the 2.16.0 floor-rise incident — lives in
-[`lessons.md`](lessons.md), indexed by step. **Read it before starting.**
+#131–#132, #135–#138, the 2.15.0 publish/tag incident and the 2.16.0 floor-rise
+incident — lives in [`lessons.md`](lessons.md), indexed by step. **Read it before
+starting.**
+
+The four newest are the ones this build turned on:
+
+- **#131 → #132** — two lens agents holding a shell no brief asked for, mutating
+  one shared tree, and the refuter grading a run `UNADJUDICATED` on evidence that
+  was its counterpart's artifact. The grant, not the claim, is the license.
+- **#135** — `data` and `mergedGroups` disagreeing silently, with one path
+  crashing rather than answering stale.
+- **#137** — a guard justified by a hazard nobody had measured, and `identical`
+  answering **differently in JIT and AOT**. A wrong rationale breaks no test.
+- **#138** — `example/README.md` still the `flutter create` template, on a
+  package whose example is now a recipe browser: #55's shape, on a new surface,
+  three years of surfaces later.

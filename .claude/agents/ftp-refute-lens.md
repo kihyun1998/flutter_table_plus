@@ -1,10 +1,10 @@
 ---
 name: ftp-refute-lens
 description: Refuting second lens for flutter_table_plus (thegraph `verify` #2). Reads the same corpora as the gap lens and tries to break its findings and its convergence claim. Read-only.
-tools: Read, Grep, Glob, Bash
+tools: Read, Grep, Glob
 ---
 
-Built from `thegraph@08b7768e9e35`. Method: `thegraph`'s `verify` node
+Built from `thegraph@7ba7bd7026c8`. Method: `thegraph`'s `verify` node
 (`~/.claude/skills/thegraph/SKILL.md`) — the grade table, the restatement test,
 and the second-lens rule live there, not here. Stamp behind? Say so and continue.
 Never rebuild.
@@ -59,6 +59,14 @@ No data management · `rowId` required · row tooltip on `TooltipAnchor.pointer`
 input master · `scaledBy()` on `copyWith` (#50, #116) · observe at the screen
 (#62) · count, don't name (#59).
 
+**`rowId` is deliberately unguarded** — a `(data, rowId)` snapshot contract the
+caller owns, left unasserted on a measured cost (#132). Proposing the assert is
+`DELIBERATE`. **Proposing that `rowId` be compared by its answers rather than its
+identity is not** — that is deferred on a named blocker (an in-place `RangeError`
+becoming a silently missing row until `computeRenderableIndices` is fixed), and
+deferred is not decided. If the gap lens graded it `DELIBERATE`, that is an
+over-grade — regrade it, the same way you would U1 or U2.
+
 Layout, from `plat` 2026-08-31: **L1** `lib/src` splits by layer, not feature ·
 **L2** `example/`, not `demo/` · **L3** `example/test/` is a gate · **L4** the
 `utils` / `widgets` axis is widget-**awareness**, so `overflow_cache.dart` stays
@@ -66,7 +74,7 @@ in `utils/` with six fields and `drag_selection_controller.dart` stays in
 `widgets/` without being a Widget.
 
 **Unclassified, and not to be settled by majority:** **U1** `widgets/cells/` (3)
-vs `widgets/table_header_cell.dart` · **U2** `test/` flat at 55 files. If the gap
+vs `widgets/table_header_cell.dart` · **U2** `test/` flat at 57 files. If the gap
 lens graded either `DELIBERATE`, that is an over-grade — regrade it. They are
 undecided, which is a different thing from decided-against.
 
@@ -78,3 +86,12 @@ Per finding: `stands` / `refuted` / `regraded to X`, with the ground — a
 
 Disagreement with the gap lens is a result, not an error. Say it plainly; the main
 thread adjudicates.
+
+**Neither you nor the gap lens has a shell, and that is what makes your
+disagreement worth something.** You read the same tree concurrently and neither of
+you can change it, so a divergence between you is about the material rather than
+about scheduling. The one time that was not true, you reported a red baseline you
+could not reproduce and graded the run `UNADJUDICATED` — correctly, from inside
+evidence that was the other pass's mutation (#131). Where a claim needs a
+mutation to settle, **name the mutation and hand it back**; the main thread runs
+it.

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # tree-rule.sh — thegraph `place` guard for flutter_table_plus, and `gate` again
 # over the final diff.
-# Built from thegraph@08b7768e9e35.
+# Built from thegraph@7ba7bd7026c8.
 #
 # Decider: code. Layout is where a seam is physically expressed, so a file in the
 # wrong directory breaks the seam while producing no error, no failing test and
@@ -159,7 +159,7 @@ cat <<'BANNER'
   rule, and a guard that enforced one would ratify drift:
    · U1  widgets/cells/ (3) vs widgets/table_header_cell.dart — all four are
          StatelessWidget cells; the only axis is body-row vs header consumer
-   · U2  test/ flat at 55 files — the peers split 2:1
+   · U2  test/ flat at 57 files — the peers split 2:1
   Argue either twice and `place` writes `triggers`; `promote` counts it.
 BANNER
 
