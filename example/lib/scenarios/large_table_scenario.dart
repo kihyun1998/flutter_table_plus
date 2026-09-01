@@ -224,10 +224,10 @@ class LargeTableStage extends StatelessWidget {
 
 /// The knob half — the row count, and the existing monitor reporting on it.
 ///
-/// The monitor is [PerformanceMonitor] unchanged. It reports Total Rows, Data
-/// Generation and Last Sort; its fourth field, `lastRenderTimeMs`, is declared
-/// and rendered under a null guard and computed by nothing in this app, so it
-/// has never appeared and does not appear here either.
+/// The monitor is [PerformanceMonitor], reporting Total Rows, Data Generation
+/// and Last Sort. It had a fourth field, `lastRenderTimeMs`, which was declared
+/// and rendered and assigned by nothing — reusing it here is what made
+/// that visible, and it is gone.
 class LargeTableKnobs extends StatelessWidget {
   const LargeTableKnobs({super.key, required this.demo});
 

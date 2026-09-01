@@ -237,6 +237,30 @@ void main() {
           reason: 'the wall survived a destination that refuses it');
       expect(find.byTooltip(ViewportBar.wallLabel), findsNothing);
     });
+
+    testWidgets('and lands on the viewport it was in, not on a constant',
+        (tester) async {
+      // The asymmetry this closes: leaving the wall by picking a segment *is*
+      // the reader's choice, so the voluntary path needs nothing. The forced
+      // one had no choice to honour and used `desktop` — a constant
+      // standing in for a decision, on the only path where the reader did not
+      // ask to leave.
+      _wide(tester);
+      await _pumpShell(tester);
+
+      await tester.tap(find.byTooltip(ViewportSpec.mobile.label));
+      await tester.pumpAndSettle();
+      expect(_stageSpec(tester), ViewportSpec.mobile);
+
+      await tester.tap(find.byTooltip(ViewportBar.wallLabel));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(_largeScenario));
+      await tester.pumpAndSettle();
+
+      expect(_stageSpec(tester), ViewportSpec.mobile,
+          reason: 'the forced exit dropped the reader on a viewport they had '
+              'not chosen');
+    });
   });
 
   group('the menu draws a category with nothing in it', () {

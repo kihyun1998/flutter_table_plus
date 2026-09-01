@@ -1,5 +1,5 @@
 name: example
-description: "A new Flutter project."
+description: "The flutter_table_plus example: a recipe browser, a viewport preview, two scenarios and a playground."
 publish_to: 'none' 
 version: 1.0.0+1
 

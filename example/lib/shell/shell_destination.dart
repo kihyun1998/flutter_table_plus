@@ -82,6 +82,16 @@ class StageDestination extends ShellDestination {
   /// Code tab there would have to pick one of them and call it the source. So
   /// the shell draws the control only where this is non-null — absent rather
   /// than present-and-lying.
+  ///
+  /// **There is a second reason, and it is the one the scenarios turn on.**
+  /// Each of them *is* one self-contained file, so the criterion above would
+  /// let them show it — and they still pass null. The Code pane is not a
+  /// general source viewer; it is the affordance of the pasteable claim, which
+  /// is why the file it shows is read from the bundle so what runs and what is
+  /// displayed cannot disagree. `test/recipe_seam_test.dart` holds
+  /// `lib/recipes/` to an import allow-list and deliberately excludes
+  /// `lib/scenarios/`, so offering the pane over a file that rule excludes
+  /// would change what the pane means (#109).
   final String? source;
 }
 
