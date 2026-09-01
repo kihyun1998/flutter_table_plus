@@ -8,7 +8,7 @@ reasoning habits); this file is its **contract** for this repo.
 Per-incident evidence lives in [`lessons.md`](lessons.md); identity and
 invariants in `CLAUDE.md`.
 
-**Build stamp: `thegraph@7ba7bd7026c8`** (SKILL.md sha256[0:12], 2026-09-01).
+**Build stamp: `thegraph@b188918a1bba`** (SKILL.md sha256[0:12], 2026-09-02).
 Every generated artifact carries it. When the stamp is behind, `thegraph` says so
 and continues — it never rebuilds on its own.
 
@@ -17,50 +17,54 @@ cache; the GitHub issue is the durable record.
 
 ---
 
-## Compile notes — the 2026-09-01 update
+## Compile notes — the 2026-09-02 update
 
-An **update build**: the graph was the input, diffed against the repo. What the
-diff found:
+An **update build**: the graph was the input, diffed against the repo. The
+bindings were **not** read — they were spent at the first build, and re-reading
+them re-applies an input in its original state, drift included.
 
 | # | Slot | Was | Now |
 |---|---|---|---|
-| 1 | build stamp | `08b7768e9e35` | `7ba7bd7026c8`, on all **9** generated artifacts. `.thegraph/108.md` had already recorded `81cc7c569fe5` as behind, so `thegraph` moved twice between builds |
-| 2 | **agent grants** | all four agents carried `Bash` and **no brief asked for one** | three are read-only (`Read, Grep, Glob`); `ftp-source-fetcher` keeps `Bash` under an explicit **`Runs:`** declaration. A new gate asserts it |
-| 3 | `gate` | the doc said 7 commands, `gates.sh` reported 8 labels | **9**, stated once. `cd example && analyze && test` is *two* bare commands, not one — the doc had been counting the shell line; `agent-grants.sh` is the ninth |
-| 4 | `verify` sacred paths | 12 | **13** — `lib/src/utils/row_measurement.dart`, the one list both height caches consult (#120 → #128 → #137) |
-| 5 | `verify` tree provenance | unstated — the `build_gaps` entry flushed by #131 and #132 | stated below, and **the gap closes rather than being answered**: a lens with no shell cannot mutate a tree, so there is no isolation left to arrange |
-| 6 | Schema coverage | 4 slots `pending — needs a thegraph change` | **0 unowned.** `thegraph` now places all four |
-| 7 | Deliberate divergence | 12 rows | **13** — `rowId` is deliberately *unguarded*, on a measured cost (#132) |
-| 8 | `place` | U2 said `test/` was 55 files | **57**. `--audit`: 354 paths, 234 owned by a rule, **0 unruled in scope** |
-| 9 | `reference` · `map` · `sweep` · `boundary` · `promote` · `downstream` | — | no drift. The MAP is still 23 territories + 6 invariants |
+| 1 | build stamp | `7ba7bd7026c8` | `b188918a1bba`, on all **9** generated artifacts. `.thegraph/109.md` had recorded `8e9d71e027bb` as behind mid-run, and the hash moved again **during this build** (`5833b2f05149` → `b188918a1bba`) — the third consecutive build to find the stamp behind, and the first to watch it move while running |
+| 2 | `gate`, in the **roster** | `7 commands, extracted as a script` | the count is **gone from the roster**; `## gate` states it and nothing else does. The previous build corrected the section from 7 to 9 and left this row at 7, so the doc contradicted itself for a whole build. A count restated in two places drifts in exactly one of them, and the section that owns it already said *"stated once, here"* |
+| 3 | `sweep` · `map`, in the roster | `10 surfaces` · `23 territories + 6 invariants` | the same treatment, applied **before** they drift the same way rather than after. The roster's own fact is the **instance count**; a section's count was never the roster's to hold |
+| 4 | war-story index | a hand-copied roster, `#22 … #138` | a derive command over `lessons.md`, and the reason. It claimed `#114 … #138` while `lessons.md` stopped at `#96` — and that claim was copied onward once, into a draft of the very commit that removed it, before anyone checked it |
+| 5 | `verify` · `place` · `reference` · `boundary` · `promote` · `downstream` · `search` | — | no drift, measured: 13 sacred paths all present; `test/` still 57 files flat; MAP still 23 + 6, its gate clean; `tree-rule.sh` and `agent-grants.sh` both exit 0 |
+| 6 | agent grants | — | no drift. Three lenses `Read, Grep, Glob`; `ftp-source-fetcher` still declares its `Bash` on a `Runs:` line |
+| 7 | Schema coverage | 0 unowned | **0 unowned**, re-walked against the current `BUILD_CONTRACT` — which now asks *"is it something a node reads or checks against, and is it not a bound?"* instead of *"is it one of the kinds listed?"*. The broader question finds nothing this build does not already answer |
 
-**What `thegraph` itself gained** is the issue contract — *"What the issue must
-supply"*, five slots each carrying a provenance (`human` / `derived` /
-`unknown`). That is **issue scope, not build scope**, so it adds no slot here.
-Its one consequence for this file: the deliberate-divergence list below is now
-**co-authored**, and a run-scoped `human` row is passed to a lens *in the
-invocation* — never baked into a generated artifact, which is built once and
-cannot carry a value that changes per run.
+**`build_gaps`: none outstanding**, read first as the drift detector. `.thegraph/109.md`
+flushed `build_gaps: none` and `catalog_gaps: none`. The cache's two older entries
+are both closed: `101`'s spine roster was a compliance miss substituted in that
+run, not a wrong build value; `108`'s BG-1 — four agents granted `Bash` with no
+brief asking for one — was resolved by the previous build and re-verified here.
 
-**`build_gaps` read first, as the drift detector.** The run-state cache carried
-one (`.thegraph/101.md`, the spine roster filed as prose — a compliance miss,
-substituted in that run, not a wrong build value). The worked issues carried the
-one that mattered:
+**`catalog_gaps`: one, and it is not this repository's to fix.** The stamp is
+`SKILL.md`'s sha256, so it moves for **any** byte in that file — including
+frontmatter that carries no method at all. It moved once during this build, and
+the whole change was `disable-model-invocation: false → true`: a harness flag.
+The discriminator routes it in one step — a re-grill of *this* repo would not
+stop it recurring, and it would recur in every repo that compiles this graph — so
+it is a catalog question, filed against the catalog's own tracker the way #131
+was, never `build_gaps`. Recorded here because a stamp that moves without the
+method moving trains a reader to ignore the one warning `thegraph` gives at
+startup, which is #55's lesson wearing a different hat.
 
-> **#132 `build_gaps`** — *"The build's `verify` section names two lenses and
-> says nothing about where each pass's tree comes from. Substituted for this
-> run: one `git worktree` per lens … the build write has not happened, so the
-> substitution is manual every run until it does."*
+**What this build could not measure, said plainly.** The stamp moved twice and no
+copy of the old `SKILL.md` survives, so *"what changed in `thegraph`"* is not
+answerable by diff. What **is** answerable, and was run instead, is the coverage
+check in row 7: every slot in *"What the build must supply"* is answered here, and
+every one sits on a named side of the invariant/build split. That is the check the
+stamp exists to prompt. It is not the same as a diff, and this sentence is here so
+a later reader does not mistake one for the other.
 
-Its parent, **#131**, was closed here as *misrouted*: whether two mutating lenses
-may share a tree is a fact no repository can answer differently, so it is a
-catalog question and was refiled at `kihyun-skills#19`. Measured this build,
-`thegraph` still carries no tree-isolation rule — but row 2 above **dissolves the
-repo-local half without it.** Both lens briefs already said *"you return findings
-— not edits"*; only the grant disagreed. Align the grant to the brief and neither
-lens can mutate anything, so the worktree substitution stops being needed and
-`#132`'s gap is closed rather than worked around. The upstream question stays
-open on its own merits, for builds that do grant a lens a shell.
+**`theflow` retired between builds, and it changes nothing in this file.** An
+update never reads the bindings. One correction is owed elsewhere and is the
+maintainer's, not this build's: `CLAUDE.md` now says `docs/agents/theflow.md` is
+`/grill-the-graph`'s **compile input**, which is true only of a *first* build. A
+graph exists, so every future run is an update and reads the graph; the bindings
+are spent. This build writes the build and nothing else, so it does not edit
+`CLAUDE.md`.
 
 ---
 
@@ -70,7 +74,7 @@ open on its own merits, for builds that do grant a lens a shell.
 |---|---|---|
 | `classify` | 1 | catalog |
 | `spine` | 1 | GitHub sub-issues are live here (`gh api repos/{owner}/{repo}/issues/N/sub_issues` returns `[]`, not 404) — the roster is a **relation**, never prose |
-| `map` | 1 | the MAP — [`docs/map/`](../map/README.md), 23 territories + 6 cross-cutting invariants |
+| `map` | 1 | the MAP — [`docs/map/`](../map/README.md). Its size is stated in `## map`, not here |
 | `reference` | 5 | the routing table's rows naming an external source (below) |
 | `enumerate` | 1 | catalog · never delegated |
 | `boundary` | 1 | catalog · never delegated. The seam is the published package plus the `../just_tooltip` / `../flutter_checkbox` membrane |
@@ -78,8 +82,8 @@ open on its own merits, for builds that do grant a lens a shell.
 | `implement` | 3 | one per layer |
 | `proof` | 3 | one per layer |
 | `verify` | 2 | 1 gap-hunter + 1 refuter, bought by a non-empty sacred-path list |
-| `sweep` | 1 | fanning out over 10 surfaces |
-| `gate` | 1 | 7 commands, extracted as a script |
+| `sweep` | 1 | fanning out over the surface list below |
+| `gate` | 1 | the only gates — there is no CI. The command list is below, and states its own count |
 | `search` | once per candidate | catalog |
 | `batch` | 1+ | catalog · human · never bypassed |
 | `stop` | edge-triggered | catalog · human |

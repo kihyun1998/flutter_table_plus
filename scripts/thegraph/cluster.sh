@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # cluster.sh — thegraph `search` node for flutter_table_plus (query half only).
-# Built from thegraph@7ba7bd7026c8.
+# Built from thegraph@b188918a1bba.
 #
 # Search BY THE ARTIFACT the candidate touches — the module, the field, the
 # predicate, the config key — NEVER by the feature name. A related issue almost

@@ -4,7 +4,7 @@ description: Adversarial completeness lens for flutter_table_plus (thegraph `ver
 tools: Read, Grep, Glob
 ---
 
-Built from `thegraph@7ba7bd7026c8`. The **method** lives in `thegraph`'s `verify`
+Built from `thegraph@b188918a1bba`. The **method** lives in `thegraph`'s `verify`
 node (`~/.claude/skills/thegraph/SKILL.md`) — read it there for the grade table,
 the reference-free restatement test, the never-drop-a-corpus rule, and the
 divergence-is-not-a-direction rule. This file carries only this project's data.

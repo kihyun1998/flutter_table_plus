@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # sacred-diff.sh — thegraph `verify` inbound guard for flutter_table_plus.
-# Built from thegraph@7ba7bd7026c8.
+# Built from thegraph@b188918a1bba.
 #
 # Decider: code. This overrides judgement — you do not reason your way out of a
 # hit because the diff looks small.
