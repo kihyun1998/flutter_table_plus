@@ -42,6 +42,7 @@ class StageDestination extends ShellDestination {
     required this.stage,
     required this.knobs,
     this.source,
+    this.allowsWall = true,
   });
 
   @override
@@ -52,6 +53,27 @@ class StageDestination extends ShellDestination {
 
   /// That destination's own controls — the ones it owns, and no others.
   final WidgetBuilder knobs;
+
+  /// Whether the Device Wall may draw this destination.
+  ///
+  /// **The policy lives here rather than on the page**, which is what
+  /// `ShellPage`'s own doc-comment asks for: the shell knows that a destination
+  /// supplies a stage and some knobs, and nothing else about it. A page-level
+  /// test against a particular id would be the shell learning what a scenario
+  /// is.
+  ///
+  /// True is right for anything that is one table: the wall draws three of them
+  /// over one state, so an interaction in the narrow frame paints its result in
+  /// the other two. What it is wrong for is a destination whose point is a
+  /// measurement — three tables over the same hundred thousand rows makes a
+  /// frame rate a measurement of the wall (#109).
+  ///
+  /// Setting it false is not enough on its own: the wall is a mode the shell is
+  /// already *in*, so `ShellPage` also has to leave that mode when a
+  /// destination that refuses it is opened. Nothing reports the invalid state
+  /// otherwise — `SegmentedButton` never asserts that its selection is one of
+  /// its segments.
+  final bool allowsWall;
 
   /// The asset key of the file this destination *is*, when it is one file.
   ///

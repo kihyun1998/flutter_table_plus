@@ -9,9 +9,16 @@ import 'shell_destination.dart';
 ///
 /// A category with nothing in it is still drawn, with a line saying so. That is
 /// a real empty state rather than a placeholder: the categories are the shape of
-/// what this example intends to hold, and a reader who sees `Scenarios` empty
-/// learns something true. Hiding it until it fills would make the menu appear to
-/// grow new sections out of nowhere.
+/// what this example intends to hold, and hiding one until it fills would make
+/// the menu appear to grow new sections out of nowhere.
+///
+/// **Every category has entries as of #109**, so the branch below is no longer
+/// reachable from `ShellPage`. This comment used to name `Scenarios` as the
+/// live example of an empty one — which is now its counter-example, the
+/// shape where a rationale goes false and no test notices. The branch is kept,
+/// because the next category added is added empty, which is exactly when it is
+/// needed and exactly when nobody would think to write it; it is pinned by a
+/// test that pumps this widget directly rather than through the shell.
 class ShellMenu extends StatelessWidget {
   const ShellMenu({
     super.key,

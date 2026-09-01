@@ -8,6 +8,8 @@ import '../preview/device_wall.dart';
 import '../preview/preview_frame.dart';
 import '../preview/preview_stage.dart';
 import '../preview/viewport_spec.dart';
+import '../scenarios/hr_dashboard_scenario.dart';
+import '../scenarios/large_table_scenario.dart';
 import '../theme/theme_mode_button.dart';
 import 'destinations/employee_demo.dart';
 import 'destinations/recipe_destination.dart';
@@ -47,6 +49,9 @@ class _ShellPageState extends State<ShellPage> {
     for (final recipe in recipeCatalog) recipe.featureId: RecipeDemo(recipe),
   };
 
+  final _hrDashboard = HrDashboardDemo();
+  final _largeTable = LargeTableDemo();
+
   late final List<ShellDestination> _destinations = [
     StageDestination(
       id: 'employees',
@@ -56,6 +61,23 @@ class _ShellPageState extends State<ShellPage> {
       knobs: (context) => EmployeeDemoKnobs(demo: _employeeDemo),
     ),
     ...recipeDestinations(_recipeDemos),
+    StageDestination(
+      id: 'scenario/hr-dashboard',
+      label: 'HR dashboard',
+      category: ShellCategory.scenarios,
+      stage: (context) => HrDashboardStage(demo: _hrDashboard),
+      knobs: (context) => HrDashboardKnobs(demo: _hrDashboard),
+    ),
+    StageDestination(
+      id: 'scenario/large-table',
+      label: 'A hundred thousand rows',
+      category: ShellCategory.scenarios,
+      stage: (context) => LargeTableStage(demo: _largeTable),
+      knobs: (context) => LargeTableKnobs(demo: _largeTable),
+      // The one destination the wall must not draw: three tables over the same
+      // hundred thousand rows makes a frame rate a measurement of the wall.
+      allowsWall: false,
+    ),
     RouteDestination(
       id: 'playground',
       label: 'Every setting',
@@ -92,6 +114,8 @@ class _ShellPageState extends State<ShellPage> {
     for (final demo in _recipeDemos.values) {
       demo.dispose();
     }
+    _hrDashboard.dispose();
+    _largeTable.dispose();
     super.dispose();
   }
 
@@ -103,8 +127,17 @@ class _ShellPageState extends State<ShellPage> {
     switch (destination) {
       case RouteDestination(:final open):
         Navigator.of(context).push(MaterialPageRoute<void>(builder: open));
-      case StageDestination(:final id):
-        setState(() => _selectedId = id);
+      case StageDestination(:final id, :final allowsWall):
+        setState(() {
+          _selectedId = id;
+          // Leaving the wall is half of the exclusion, and it is the half
+          // nothing reports. `_viewportId` is the shell's state and the open
+          // destination is a different one, so without this the wall stays up
+          // over a destination that refuses it while the control that says so
+          // has already gone — `SegmentedButton` draws a selection matching no
+          // segment as no highlight at all, and asserts nothing.
+          if (!allowsWall && _showingWall) _viewportId = ViewportSpec.desktop.id;
+        });
     }
   }
 
@@ -244,19 +277,24 @@ class _ShellPageState extends State<ShellPage> {
                 ],
                 ViewportBar(
                   compact: true,
-                  // Unconditional, and only correct while every destination is
-                  // a single table. The very-large-row-count scenario (#109) is
-                  // mutually exclusive with the wall: that scenario is a
-                  // single-table performance claim and the wall draws three
-                  // tables over the same data, so a frame rate measured there
-                  // is measuring the wall. When it lands this becomes
-                  // `showsWall: _open.allowsWall` or equivalent.
+                  // The destination's call, not the page's — see
+                  // `StageDestination.allowsWall`. This was unconditional from
+                  // #108 until #109, and correct only while every destination
+                  // was a single table.
                   //
-                  // The exclusion is already reachable without #109 —
-                  // `EmployeeDemo` offers 20 000 rows and its knobs sit outside
-                  // the wall's `IgnorePointer` — which is recorded in
-                  // `docs/map/territory/example-app.md` under Known holes.
-                  showsWall: true,
+                  // **Hiding the segment is half of it.** The other half is in
+                  // `_select`, which leaves the wall when a destination that
+                  // refuses it is opened; hiding a segment out from under the
+                  // current selection is silent.
+                  //
+                  // Row count is a separate axis and is deliberately not
+                  // guarded: `EmployeeDemo` offers 20 000 rows from a knob pane
+                  // that sits outside the wall, so the expensive shape is
+                  // reachable there too. The tables build their rows lazily, so
+                  // the cost is three times what is on screen rather than three
+                  // times the data — measured while working #108 and judged not
+                  // worth binding the knob pane to the shell's viewport state.
+                  showsWall: _open.allowsWall,
                   selectedId: _viewportId,
                   onChanged: (id) => setState(() => _viewportId = id),
                 ),

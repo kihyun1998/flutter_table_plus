@@ -73,6 +73,19 @@ row ids — which is the question every callback in this area answers implicitly
     correct by a test named *"preserves the out-of-order-rowKeys quirk"*.
   - The rule is one sentence and every site holds it: **a group is anchored,
     measured and drawn on the members that are actually there.**
+- **Sorting is the case where those two lists diverge fastest, and the divergence
+  is silent.** The table reports a sort and renders what comes back; it does not
+  reconcile the new row order with `mergedGroups`, and there is nothing it could
+  reconcile them *against* — the caller owns both. So a **global** sort across a
+  grouped table interleaves the groups' members, and each group is then anchored
+  at wherever its earliest surviving member landed: drawn stacked, correctly by
+  the rule above, and wrong on screen. Nothing throws and nothing warns.
+  A caller who merges and sorts sorts **within** each group and rebuilds the
+  group list from the same pass;
+  `example/lib/scenarios/hr_dashboard_scenario.dart` is a worked version, and
+  the failure it rules out is the ordinary one — sorting the rows and leaving
+  the group list alone, which keeps every id in the right group and moves only
+  where it is drawn (#109).
 
 ## Code
 
@@ -97,6 +110,7 @@ row ids — which is the question every callback in this area answers implicitly
 → [Cell editing](cell-editing.md) — merged cells commit through their own callback
 → [Row identity](row-identity.md) — a group id and a row id occupy the same string space in callbacks
 → [Tooltips](tooltips.md) — the merged row renders its own cells, so tooltip wiring exists twice
+→ [Sorting](sorting.md) — a sort reorders `data` and nothing reorders `mergedGroups` with it
 
 ## Known holes / open
 

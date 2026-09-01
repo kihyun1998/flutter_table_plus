@@ -48,6 +48,7 @@ one being chosen.
 → [Row identity](row-identity.md) — re-sorting is exactly the case identity-by-id exists to survive; a selection must not move when the order does
 → [Theme system](theme-system.md) — icon and header text styling
 → [Tooltips](tooltips.md) — the header cell renders both the sort affordance and the header tooltip
+→ [Merged rows](merged-rows.md) — the caller's re-sort has to keep each group's members contiguous, or the groups draw stacked
 
 ## Known holes / open
 

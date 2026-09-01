@@ -2,7 +2,8 @@
 
 The example app for [`flutter_table_plus`](https://pub.dev/packages/flutter_table_plus). It is not a
 starting point for a Flutter application; it is a set of **recipes** — one per feature, each a single
-file you can read end to end and paste into your own app.
+file you can read end to end and paste into your own app — plus a small number of **scenarios**,
+which are the opposite bargain.
 
 ```sh
 cd example
@@ -42,12 +43,28 @@ window. The frame owns its own `Overlay`, because a real viewport does: `Draggab
 `just_tooltip` both resolve `Overlay.of(context)` to the nearest one, and without it a header cell
 dragged out of a preview drawn at 0.46× rendered at 1:1, floating over the whole window. There is a
 fourth choice that draws all three sizes at once, side by side, for when the question is what changed
-*between* two widths. All three are live and share one state, so selecting or sorting in the phone
+*between* two widths — offered everywhere except the one scenario whose point is a measurement. All three are live and share one state, so selecting or sorting in the phone
 frame — which renders at its full size, since a frame is never scaled up — shows the result at tablet
 and desktop width in the same moment.
 
 **The source pane shows the file itself**, read from the asset bundle — not a copy of the code in a
 string. A snippet cannot drift from what you just watched run if it *is* what you just watched run.
+
+## What a scenario is, and why it is not a recipe
+
+Under [`lib/scenarios/`](lib/scenarios). A recipe shows one feature with nothing else switched on,
+which is what makes it readable and what makes it unlike any real screen. A scenario turns several on
+at once and answers the other question: *what does this look like when you assemble it.*
+
+The two are deliberately different zones, and `test/recipe_seam_test.dart` asserts the difference
+rather than trusting the directory names. A recipe is held to an import allow-list, because it is a
+thing you copy. A scenario is not, because it is a thing you look at — the large-row-count one reuses
+the playground's own performance monitor, which is exactly the import a recipe may not have.
+
+One of them refuses the side-by-side mode. Three tables over the same hundred thousand rows would
+make a frame rate a measurement of the wall, so opening that scenario leaves the mode and takes the
+segment away. Which destinations may be drawn there is the destination's own call — see
+[`lib/shell/shell_destination.dart`](lib/shell/shell_destination.dart).
 
 ## Also here
 

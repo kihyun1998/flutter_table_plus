@@ -3,6 +3,7 @@ import 'package:example/pages/playground/playground_page.dart';
 import 'package:example/preview/preview_stage.dart';
 import 'package:example/preview/viewport_spec.dart';
 import 'package:example/shell/destinations/employee_demo.dart';
+import 'package:example/shell/shell_destination.dart';
 import 'package:example/shell/shell_menu.dart';
 import 'package:example/shell/shell_page.dart';
 import 'package:example/theme/example_theme.dart';
@@ -44,6 +45,9 @@ Future<void> _pumpShell(
   ));
   await tester.pumpAndSettle();
 }
+
+/// The menu label of the scenario that refuses the Device Wall.
+const _largeScenario = 'A hundred thousand rows';
 
 /// The spec the single stage is showing.
 ///
@@ -186,6 +190,90 @@ void main() {
       expect(_stageSpec(tester), ViewportSpec.mobile);
       expect(find.text('1:1'), findsOneWidget,
           reason: 'the wall reset the fit control on the way through');
+    });
+
+    testWidgets('and does not offer it on a destination that refuses it',
+        (tester) async {
+      // The wall draws three tables over one state. The large-row-count
+      // scenario is a single-table performance claim, so a frame rate measured
+      // with the wall open is measuring the wall. #109.
+      _wide(tester);
+      await _pumpShell(tester);
+
+      expect(find.byTooltip(ViewportBar.wallLabel), findsOneWidget);
+
+      await tester.tap(find.text(_largeScenario));
+      await tester.pumpAndSettle();
+
+      expect(find.byTooltip(ViewportBar.wallLabel), findsNothing,
+          reason: 'the wall is offered on a destination that refuses it');
+    });
+
+    testWidgets('and comes out of it when the destination chosen refuses it',
+        (tester) async {
+      // The one the exclusion actually turns on, and the one nothing reports.
+      // `_viewportId` and the open destination are independent state: entering
+      // the wall and then choosing a destination that refuses it leaves the
+      // wall drawn with no segment to show it. Measured in the SDK source —
+      // `SegmentedButton` asserts `segments.length > 0`,
+      // `selected.length > 0 || emptySelectionAllowed` and
+      // `selected.length < 2 || multiSelectionEnabled`, and **nothing** that
+      // `selected` is a subset of `segments`; the highlight is decided
+      // per-segment by `selected.contains(segment.value)`. So the invalid
+      // state throws nothing, warns nothing, and simply draws a bar with
+      // nothing selected over a wall that should not be there.
+      _wide(tester);
+      await _pumpShell(tester);
+
+      await tester.tap(find.byTooltip(ViewportBar.wallLabel));
+      await tester.pumpAndSettle();
+      expect(find.byType(PreviewStage), findsNWidgets(3),
+          reason: 'the wall did not open, so this proves nothing');
+
+      await tester.tap(find.text(_largeScenario));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(PreviewStage), findsOneWidget,
+          reason: 'the wall survived a destination that refuses it');
+      expect(find.byTooltip(ViewportBar.wallLabel), findsNothing);
+    });
+  });
+
+  group('the menu draws a category with nothing in it', () {
+    testWidgets('and says so, which the shell can no longer show it doing',
+        (tester) async {
+      // Pumped directly rather than through `ShellPage`, and that is the whole
+      // point of this test. Every `ShellCategory` has entries as of #109, so
+      // the empty-state branch is unreachable from the app and a shell test
+      // cannot reach it either. It is kept because the next category added is
+      // added empty — exactly when it is needed, and exactly when nobody
+      // would think to write it.
+      _wide(tester);
+
+      await tester.pumpWidget(MaterialApp(
+        theme: exampleTheme(Brightness.light),
+        home: Scaffold(
+          body: ShellMenu(
+            destinations: [
+              StageDestination(
+                id: 'only',
+                label: 'The only one',
+                category: ShellCategory.recipes,
+                stage: (context) => const SizedBox.shrink(),
+                knobs: (context) => const SizedBox.shrink(),
+              ),
+            ],
+            selectedId: 'only',
+            onSelected: (_) {},
+          ),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      // Two of the three categories have nothing in them, and each draws its
+      // own line rather than one shared placeholder. Counted, not named.
+      expect(find.text('nothing here yet'), findsNWidgets(2));
+      expect(find.text('The only one'), findsOneWidget);
     });
   });
 
