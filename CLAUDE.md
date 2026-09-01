@@ -1,13 +1,16 @@
 # CLAUDE.md
 
-## Working discipline — theflow
+## Working discipline — thegraph
 
-Substantive changes (bug fix / feature / behavior change) follow the **`theflow`**
-skill — run `/theflow` at the start. This repo's bindings (module map, reference
-routing, boundary rule, proof methods, surfaces, gate matrix) live in
-**`docs/agents/theflow.md`**; the per-incident evidence (#33, #50–#52, #55,
-#58–#65, #69, #88→#96 …) in **`docs/agents/lessons.md`**. Read both before
-starting; add new war-stories to lessons.
+Substantive changes (bug fix / feature / behavior change) follow the **`thegraph`**
+skill — run `/thegraph` at the start. It runs against this repo's own compiled
+node graph, **`docs/agents/thegraph.md`**: which nodes exist, each one's guard and
+decider, and this package's bindings (module map, reference routing, boundary
+rule, proof methods, surfaces, tree rule, gate list). The per-incident evidence
+lives in **`docs/agents/lessons.md`**. Read both before starting; add new
+war-stories to lessons. **Neither file keeps a roster of issue numbers** — a
+hand-copied one drifts the moment lessons grows; grep `lessons.md` for the
+current set.
 
 **Before drawing a boundary, read the MAP — [`docs/map/README.md`](docs/map/README.md).**
 23 territories and 6 cross-cutting invariants, indexed by *what the system does*
@@ -16,11 +19,13 @@ enters and treat its `## Blast radius` as a checklist. On the way out, ask
 whether the fact you just found is true outside that territory — if it is, an
 invariant note is part of the change.
 
-The successor skill **`thegraph`** also has a compiled build here —
-**`docs/agents/thegraph.md`** — so `/thegraph` runs against this repo's own node
-graph (which nodes exist, each one's guard and decider) instead of a fixed step
-list. It reads the same bindings and the same lessons. **The two coexist**: use
-either, and add war-stories to `lessons.md` regardless of which one you ran.
+**`theflow` is retired** — the skill is gone, and its fixed step list with it.
+`docs/agents/thegraph.md` is the *single* source for bindings and gates.
+`docs/agents/theflow.md` stays for one reason: it is the **compile input** for
+`/grill-the-graph`, which builds `thegraph.md` out of those bindings. It is not a
+route to follow — its Step 7 gate matrix is **stale** (5 lines / 6 bare commands,
+missing the MAP gate and the agent-grants gate; the real list is **9**, stated
+once in `thegraph.md`). Never run gates from it.
 
 ## Package philosophy
 
@@ -64,7 +69,8 @@ merged rows. It does **not** manage or mutate your data.
 Claude Code and the user share the same Windows machine; the Flutter SDK is on
 `PATH`, so run `flutter test` / `analyze` / `dart format` directly. Ask the user
 only for anything that opens a window (`flutter run`). **There is no CI** — the
-gates in `docs/agents/theflow.md` (Step 7) are the only gates and run here.
+9 gates in `docs/agents/thegraph.md` (`## gate`) are the only gates and run
+here, each invoked **bare** (`scripts/thegraph/gates.sh`).
 
 ## Agent skills
 

@@ -89,8 +89,8 @@ These numbers exist in no note file, and they re-ordered the map:
   still points at real code.
 - **Plain markdown relative links**, never wikilinks: Obsidian resolves both,
   GitHub only the first.
-- **English throughout**, matching `theflow.md` / `thegraph.md`, because this is
-  read at the start of every task alongside them.
+- **English throughout**, matching `thegraph.md`, because this is read at the
+  start of every task alongside it.
 - **Section names are exact strings.** The queries below grep them; a note that
   spells one differently drops silently out of every count.
 

@@ -705,13 +705,22 @@ rather than waiting on it. See `verify`'s second-lens section.
 
 ## War-story index
 
-The evidence that keeps every rule above from reading as an abstraction — #22,
-#33, #38, #50–#52, #55, #58–#63, #65, #69, #88→#96, #114, #116, #119–#121, #128,
-#131–#132, #135–#138, the 2.15.0 publish/tag incident and the 2.16.0 floor-rise
-incident — lives in [`lessons.md`](lessons.md), indexed by step. **Read it before
-starting.**
+The evidence that keeps every rule above from reading as an abstraction lives in
+[`lessons.md`](lessons.md). **Read it before starting.**
 
-The four newest are the ones this build turned on:
+**No roster of issue numbers is kept here.** A hand-copied one drifts the moment
+lessons grows, and then argues with the file it points at — this list claimed
+#114 … #138 while `lessons.md` had stopped at #96, and a reader copied the claim
+onward before checking it. Derive it instead:
+
+```
+grep -o '#[0-9]\+' docs/agents/lessons.md | sort -u -V
+```
+
+An inline `(#33, #88→#96)` hung on a specific rule above is *evidence*, not a
+roster: it names why that rule exists and does not go stale when lessons grows.
+
+The war-stories this build turned on:
 
 - **#131 → #132** — two lens agents holding a shell no brief asked for, mutating
   one shared tree, and the refuter grading a run `UNADJUDICATED` on evidence that

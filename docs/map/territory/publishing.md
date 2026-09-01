@@ -16,8 +16,7 @@ publish.
 **None.**
 
 Both incidents are recorded in `docs/agents/lessons.md` as war stories, and the
-operational rules live in `docs/agents/theflow.md` and `docs/agents/thegraph.md`
-as gates. Neither is a decision record: nothing states the release policy — when
+operational rules live in `docs/agents/thegraph.md` as gates. Neither is a decision record: nothing states the release policy — when
 a dependency bump is breaking, what the tagging rule is, what may be edited after
 a publish — as a rule that resolves the *next* case rather than the last one.
 
