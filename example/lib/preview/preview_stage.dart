@@ -163,8 +163,21 @@ class ViewportBar extends StatelessWidget {
 
   /// Whether the wall is offered as a fourth mode.
   ///
-  /// A page that hosts only one frame has nowhere to put it, so it is opt-in
-  /// rather than assumed.
+  /// **Two unrelated reasons to say no**, which is why this is a flag rather
+  /// than something the host could infer. `ViewportLabPage` hosts one frame and
+  /// has nowhere to put it. The shell has somewhere and still refuses for one
+  /// destination — see `StageDestination.allowsWall` — because a wall over a
+  /// hundred thousand rows measures the wall. The first reason was the only one
+  /// written here until #109, and a reader who trusted it would conclude the
+  /// shell should always pass `true`.
+  ///
+  /// **Dropping the segment does not clear the selection.** `SegmentedButton`
+  /// asserts `segments.length > 0`, `selected.length > 0 ||
+  /// emptySelectionAllowed` and `selected.length < 2 || multiSelectionEnabled`,
+  /// and **nothing** that [selectedId] is one of the segments; it decides the
+  /// highlight per segment with `selected.contains(segment.value)`. So flipping
+  /// this to false while [selectedId] is [wallId] draws a bar with nothing
+  /// selected, silently. **The caller owns leaving the mode.**
   final bool showsWall;
 
   @override

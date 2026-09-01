@@ -50,6 +50,13 @@ const _allowedImports = [
   'package:example/theme/',
 ];
 
+/// The scenarios — the directory the pasteable rule deliberately does not walk.
+List<File> _scenarioFiles() => Directory('lib/scenarios')
+    .listSync()
+    .whereType<File>()
+    .where((f) => f.path.endsWith('.dart'))
+    .toList();
+
 List<File> _recipeFiles() => Directory('lib/recipes')
     .listSync()
     .whereType<File>()
@@ -147,6 +154,51 @@ void main() {
       // #138 -- the intent was written and the assertion did the reverse.
       expect(onDisk, containsAll(registered),
           reason: 'the catalogue names a file the directory walk cannot see');
+    });
+
+    test('and lib/scenarios is deliberately outside it', () {
+      // #109. A recipe is a thing you copy; a scenario is a thing you look at,
+      // and it is allowed to be composed out of whatever the app already has.
+      //
+      // **Written as an assertion because location alone is an accident.** The
+      // walk above takes `lib/recipes`, so a new directory is excluded by
+      // saying nothing — and a silent exclusion reads identically to one nobody
+      // thought about, which is the shape this file exists to refuse.
+      final scenarios = _scenarioFiles();
+      // A *missing* directory throws `FileSystemException` from `listSync`
+      // rather than arriving here empty, so this message is for the present-
+      // but-emptied case and cannot be printed for the other one.
+      expect(scenarios, isNotEmpty,
+          reason: 'the exclusion is about nothing — lib/scenarios exists '
+              'and holds no .dart file');
+
+      // **What this catches, and what it does not.** It fires when the walk
+      // above widens — measured: pointing `_recipeFiles()` at both directories
+      // reddens this and the two tests before it. It does **not** fire for a
+      // scenario file placed *inside* `lib/recipes/`, which arrives as
+      // `lib/recipes/...` and carries no `/scenarios/` segment; that hazard is
+      // covered by the first test in this group, which fails on the
+      // `pages/playground/` import.
+      expect(
+        _recipeFiles().map((f) => f.path.replaceAll(r'\', '/')),
+        everyElement(isNot(contains('/scenarios/'))),
+        reason: 'the recipe walk widened and swallowed the scenarios, so they '
+            'are being held to the pasteable rule after all',
+      );
+
+      // And the exclusion carries weight rather than merely existing: at least
+      // one scenario really does import something a recipe may not. If this
+      // ever goes empty the scenarios have quietly become recipes, and the
+      // right move is to ask why they are not in the pasteable zone — not to
+      // delete this line.
+      final composed = [
+        for (final file in scenarios)
+          for (final import in _importsOf(file))
+            if (!_allowedImports.any(import.startsWith)) '${file.path}: $import',
+      ];
+      expect(composed, isNotEmpty,
+          reason: 'every scenario would pass the allow-list, so nothing rests '
+              'on excluding them');
     });
   });
 

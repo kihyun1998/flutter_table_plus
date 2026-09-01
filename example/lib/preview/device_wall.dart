@@ -51,10 +51,14 @@ import 'viewport_spec.dart';
 /// presses landed inside a wall table. Live in both routes is one rule; live in
 /// one and dead in the other was two.
 ///
-/// **Mutually exclusive with the very-large-row-count scenario.** That scenario
-/// is a single-table performance claim; this draws three tables over the same
-/// data at once, so a frame rate measured here would be measuring the wall.
-/// Whichever of the two is on screen, the other is not.
+/// **Mutually exclusive with the very-large-row-count scenario, and that is now
+/// a property rather than a convention.** That scenario is a single-table
+/// performance claim; this draws three tables over the same data at once, so a
+/// frame rate measured here would be measuring the wall. The rule lives on
+/// `StageDestination.allowsWall` — the destination's call, not this
+/// widget's — and `ShellPage._select` leaves the wall when a
+/// destination that refuses it is opened, because hiding the segment alone is
+/// silent (#109).
 class DeviceWall extends StatelessWidget {
   const DeviceWall({
     super.key,

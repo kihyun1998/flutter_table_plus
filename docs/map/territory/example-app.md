@@ -4,8 +4,9 @@
 
 `example/` — a Flutter application with its own manifest, its own analyzer run
 and its own test suite, containing a shell menu whose entries are recipes (one
-feature per self-contained file, shown beside its own source), a viewport
-preview stage, a feature list with per-feature detail panes, a playground with
+feature per self-contained file, shown beside its own source) and scenarios
+(several features assembled, held to no import rule), a viewport preview stage,
+a feature list with per-feature detail panes, a playground with
 named presets, and a settings registry that drives every table option from the
 UI.
 
@@ -37,6 +38,15 @@ notes.
   file, importing only Flutter, this package, and the example's shared demo data
   and palette. The rule is a property of the *directory*, checked by reading the
   imports, so "copy-pasteable" is a thing that can fail rather than a claim.
+- **`lib/scenarios/` is the zone that is deliberately *not* pasteable.** A recipe
+  is one feature with nothing else switched on, which is what makes it readable
+  and what makes it unlike any real screen; a scenario assembles several and may
+  reach into whatever the app already has. The distinction is **asserted rather
+  than left to the directory names** — the same test that holds recipes to the
+  allow-list checks that the scenario files are outside the walk *and* that at
+  least one of them really does import something a recipe may not. If that ever
+  goes empty the scenarios have quietly become recipes, and the question to ask
+  is why they are not in the pasteable zone.
 - **A recipe is knob-driven without knowing about knobs.** The shell holds the
   settings object and translates it into the recipe's plain parameters, so the
   same file serves the demo and the reader. The catalogue names the feature; the
@@ -94,6 +104,25 @@ notes.
   Every column is always fit: a wall column is whatever a third of the region
   happens to be, so 1:1 there is three clipped slices at three arbitrary widths,
   which is why the Fit / 1:1 control is not drawn in that mode.
+- **Whether the wall may draw a destination is the destination's call, and
+  refusing it is two halves.** `StageDestination.allowsWall` decides, so the
+  shell never learns what a scenario is — a page-level test against an id would
+  be exactly that. The very-large-row-count scenario is the one that says no:
+  three tables over the same hundred thousand rows makes a frame rate a
+  measurement of the wall. Hiding the segment is only half of it, because the
+  wall is a mode `ShellPage` is already *in*, so `_select` leaves it when a
+  destination that refuses it is opened. **Nothing would have reported the other
+  outcome.** Measured 2026-09-01 in the SDK: `SegmentedButton` asserts
+  `segments.length > 0`, `selected.length > 0 || emptySelectionAllowed` and
+  `selected.length < 2 || multiSelectionEnabled`, and **nothing** that `selected`
+  is a subset of `segments`; the highlight is decided per segment by
+  `selected.contains(segment.value)`. So a selection matching no segment draws
+  as no highlight at all, over a wall that should not be there (#109).
+  Row count is a **separate axis and is deliberately unguarded**: `EmployeeDemo`
+  offers 20 000 rows from a knob pane that sits outside the wall, so the
+  expensive shape is reachable without a scenario. The tables build their rows
+  lazily, so the cost is three times what is on screen rather than three times
+  the data.
 - **The bundled font is a subset, and the subset is a claim.** Four Pretendard
   weights ship with the app, cut from the full faces to a Latin charset written
   down as Unicode ranges in `scripts/fonts/subset_pretendard.py`. Two properties
@@ -123,7 +152,10 @@ notes.
 `lib/pages/playground/widgets/feature_detail_pane.dart`
 `lib/pages/tooltip_anchor/tooltip_anchor_page.dart`
 `lib/shell/shell_page.dart`
+`lib/shell/shell_destination.dart` — `StageDestination`, `allowsWall`
 `lib/shell/recipe_catalog.dart`
+`lib/scenarios/hr_dashboard_scenario.dart` — `HrDashboardDemo`
+`lib/scenarios/large_table_scenario.dart` — `LargeTableDemo`
 `lib/shell/destinations/recipe_destination.dart`
 `lib/recipes/` — one file per feature. Listed as a directory on purpose: the
 pasteability rule is a property of the *directory* and
@@ -156,12 +188,10 @@ drifting
 
 ## Known holes / open
 
-- **The Device Wall and the very-large-row-count scenario (#109) are mutually
-  exclusive, and the exclusion is written down in three places and enforced in
-  none.** The wall draws three tables over the same data at once; that scenario
-  is a single-table performance claim, so a frame rate measured on the wall is
-  measuring the wall. `shell_page.dart` passes `showsWall: true` unconditionally,
-  which is correct only while every destination is a single table — whoever
-  builds #109 will be in `shell/` and in a new scenario file, and has no reason
-  to open `device_wall.dart`. The comment at the call site is the thing most
-  likely to be read; this line is the thing most likely to be *found*.
+- **Every `ShellCategory` now has entries, so `ShellMenu`'s empty-category
+  branch is unreachable from the app.** It is kept on purpose — the next
+  category added is added empty, which is exactly when it is needed and exactly
+  when nobody would think to write it — and it is pinned by a test that pumps
+  `ShellMenu` directly rather than through the shell. Recorded here because
+  "unreachable from the app" is what gets a branch deleted as dead code the day
+  before someone needs it.
