@@ -5,14 +5,12 @@ class PerformanceMetrics {
   final int rowCount;
   final int? dataGenerationTimeMs;
   final int? lastSortTimeMs;
-  final int? lastRenderTimeMs;
   final DateTime lastUpdate;
 
   const PerformanceMetrics({
     required this.rowCount,
     this.dataGenerationTimeMs,
     this.lastSortTimeMs,
-    this.lastRenderTimeMs,
     required this.lastUpdate,
   });
 
@@ -20,14 +18,12 @@ class PerformanceMetrics {
     int? rowCount,
     int? dataGenerationTimeMs,
     int? lastSortTimeMs,
-    int? lastRenderTimeMs,
     DateTime? lastUpdate,
   }) {
     return PerformanceMetrics(
       rowCount: rowCount ?? this.rowCount,
       dataGenerationTimeMs: dataGenerationTimeMs ?? this.dataGenerationTimeMs,
       lastSortTimeMs: lastSortTimeMs ?? this.lastSortTimeMs,
-      lastRenderTimeMs: lastRenderTimeMs ?? this.lastRenderTimeMs,
       lastUpdate: lastUpdate ?? this.lastUpdate,
     );
   }
@@ -39,7 +35,15 @@ class PerformanceMetrics {
 /// - Current row count
 /// - Data generation time
 /// - Sort operation time
-/// - Render time
+///
+/// It carried a fourth, `lastRenderTimeMs`: declared, threaded through
+/// `copyWith`, and rendered under a null guard by this widget — and
+/// assigned by nothing, anywhere, so it had never once appeared on screen.
+/// Removed rather than documented, for the reason 2.17.0 gave for
+/// `onMergedRowExpandToggle`: a value that is never written cannot have been
+/// load-bearing, and plumbing that goes nowhere reads exactly like plumbing
+/// that works. Measuring a real frame time means `SchedulerBinding
+/// .addTimingsCallback`, which is a feature and not this field (#109).
 class PerformanceMonitor extends StatelessWidget {
   final PerformanceMetrics metrics;
 
@@ -115,17 +119,6 @@ class PerformanceMonitor extends StatelessWidget {
               color: Colors.orange,
             ),
           if (metrics.lastSortTimeMs != null) const SizedBox(height: 12),
-
-          // Render time
-          if (metrics.lastRenderTimeMs != null)
-            _buildMetricRow(
-              context: context,
-              icon: Icons.brush,
-              label: 'Last Render',
-              value: _formatTime(metrics.lastRenderTimeMs!),
-              color: Colors.purple,
-            ),
-          if (metrics.lastRenderTimeMs != null) const SizedBox(height: 12),
 
           // Last update time
           const Divider(),

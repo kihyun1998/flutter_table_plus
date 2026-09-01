@@ -91,8 +91,17 @@ class _ShellPageState extends State<ShellPage> {
 
   /// A [ViewportSpec.id], or [ViewportBar.wallId] for the Device Wall.
   String _viewportId = ViewportSpec.desktop.id;
+  String _lastViewportId = ViewportSpec.desktop.id;
 
   bool get _showingWall => _viewportId == ViewportBar.wallId;
+
+  /// The last single-viewport mode chosen.
+  ///
+  /// So a wall exit the reader did not ask for has somewhere to return to. The
+  /// voluntary path needs nothing like this — leaving the wall by
+  /// picking a segment *is* the choice — but the forced one used to land
+  /// on `desktop` whatever the reader had been looking at, which is a constant
+  /// standing in for a decision.
 
   /// Shrink the whole viewport into view, rather than showing a 1:1 slice of it.
   ///
@@ -136,7 +145,7 @@ class _ShellPageState extends State<ShellPage> {
           // over a destination that refuses it while the control that says so
           // has already gone — `SegmentedButton` draws a selection matching no
           // segment as no highlight at all, and asserts nothing.
-          if (!allowsWall && _showingWall) _viewportId = ViewportSpec.desktop.id;
+          if (!allowsWall && _showingWall) _viewportId = _lastViewportId;
         });
     }
   }
@@ -296,7 +305,10 @@ class _ShellPageState extends State<ShellPage> {
                   // worth binding the knob pane to the shell's viewport state.
                   showsWall: _open.allowsWall,
                   selectedId: _viewportId,
-                  onChanged: (id) => setState(() => _viewportId = id),
+                  onChanged: (id) => setState(() {
+                    _viewportId = id;
+                    if (id != ViewportBar.wallId) _lastViewportId = id;
+                  }),
                 ),
               ],
             ],
