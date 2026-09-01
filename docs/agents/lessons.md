@@ -55,6 +55,14 @@
   선례와 동일). #69 와 다른 점: 거기선 *우리* `^0.4.0` 제약이 이미 높은 버전을 조용히 해석했고,
   여기선 *upstream 이 자기 거짓 floor 를 고쳐서* 우리를 끌어올렸다. **트립와이어**: "버전만
   올려줘" 요청이 와도 dep CHANGELOG 의 `environment:` / floor 변경을 먼저 읽어라.
+- **웹 성능 (2026-08, 원인이 repo 바깥·`pubspec` 바깥일 수도 있다)**: 셀/행당 선할당은
+  실재했다 — `just_tooltip` 은 `initState` 에서 `AnimationController`+`Ticker`+`TickerMode`
+  리스너를(`just_tooltip.dart:337-347`), `flutter_checkbox` 는 `AnimationController` **2 개**를
+  (`checkbox_animation.dart:24-38`) 보여주지도 않을 위젯에 미리 짓는다. 그런데 `--wasm` 이
+  그 비용의 대부분을 흡수했다: WasmGC 에서 `minimal`(1.29ms)과 `default`(1.34ms) 차이가
+  사실상 사라진다. **JS 할당 비용이었지 구조 비용이 아니었다.** 두 upstream 의 지연 초기화는
+  여전히 옳지만(둘 다 우리 패키지다) 우선순위는 내려갔다 — **upstream 을 고치기 전에 그
+  비용이 어느 층에서 나는지부터 재라.**
 
 ## Step 3 — 설계 판단 코드 전에 / TDD RED→GREEN
 
@@ -96,6 +104,26 @@
   나열해 재구성하다 `rowTooltipTheme` 를 잃었다. 리뷰가 지적해 `copyWith` 위에 다시 썼다 —
   스케일하는 여섯 필드만 부르니 나머지는 열거되지 않아 떨어뜨릴 수 없다. `scaledBy(1.0)` 이
   수신자를 그대로 돌려줘 버그가 안 보였다.
+- **웹 성능 (2026-08, 개수는 시간이 아니다)**: "웹 스크롤이 버벅인다" 를 코드로 읽어
+  1 순위를 **툴팁**으로 지목했다. 근거는 참이었다 — bare 테이블에서 셀 70 개 : `JustTooltip`
+  70 개(1:1). `table_column.dart:108-109` 의 `textOverflow.ellipsis` × `TooltipBehavior.always`
+  기본값이 겹쳐 `TooltipResolver.shouldShow` 가 비지 않은 모든 텍스트 셀에서 참이 된다.
+  그런데 headless Chrome 실측에서 툴팁 몫은 6 컬럼 `default` 5.45ms 중 **+0.25ms** 였다.
+  실제 1 순위는 `isSelectable`(+1.63ms), 그마저도 답이 아니었다 — **빌드 모드**(debug 가
+  release 의 2.1~2.5 배)와 **`--wasm`**(canvaskit 대비 2.6~3.1 배)이 답이었고 둘 다 패키지
+  바깥이다. **구조 읽기는 후보를 만들고, 측정이 순위를 정한다. 위젯 개수는 참인 사실이면서
+  틀린 순위를 예측한다.**
+- **`buildDuration` / `rasterDuration` 을 나누기 전엔 "웹이 느리다" 는 진단 불가능한 문장**:
+  전 구성에서 raster ≤ 2.5ms, build 는 그 3~7 배 → UI 스레드 확정. 그래서 검색으로 나온
+  렌더러 통설이 전부 빗나갔다 — `saveLayer` 는 이 리포에 해당 없고(`Material` 이
+  `material.dart:511` 의 사각형 fast path 를 타고 `clipBehavior` 기본값이 `Clip.none`),
+  MouseRegion 렉(flutter#41194)은 **이미 닫힌 구 HTML 렌더러 이슈**였다. **통설은 어느 층의
+  이야기인지 확인하고 인용하라.**
+- **표본이 모자라면 없는 절벽이 보인다**: 같은 `cols=24 minimal` 이 2 회 측정에서 14.15ms,
+  400 프레임×5 회 최솟값에서 7.09ms 였다. 앞 수치로 *"24 컬럼에서 절벽"* 을 확정 발언했다가
+  철회했다. 같은 실행에 `cols=3`(4.81) > `cols=12`(3.88) 이 섞여 있었다 — **단조성이 깨지면
+  결론이 아니라 측정을 의심한다.** 실측은 `flutter test` 위젯 벤치(요인 분리에 유리)와
+  Playwright + headless Chrome(웹 절대치·`FrameTiming`)을 **둘 다** 썼다. 대체재가 아니다.
 
 ## Step 6 — 정합성 스윕 (틀린 근거 > 틀린 결론)
 
