@@ -58,13 +58,14 @@ every one sits on a named side of the invariant/build split. That is the check t
 stamp exists to prompt. It is not the same as a diff, and this sentence is here so
 a later reader does not mistake one for the other.
 
-**`theflow` retired between builds, and it changes nothing in this file.** An
-update never reads the bindings. One correction is owed elsewhere and is the
-maintainer's, not this build's: `CLAUDE.md` now says `docs/agents/theflow.md` is
-`/grill-the-graph`'s **compile input**, which is true only of a *first* build. A
-graph exists, so every future run is an update and reads the graph; the bindings
-are spent. This build writes the build and nothing else, so it does not edit
-`CLAUDE.md`.
+**`theflow` retired between builds, and it changed nothing in this file.** An
+update never reads the bindings, so their absence costs this build nothing.
+`docs/agents/theflow.md` was **deleted** by the maintainer after this build, once
+each of its sections was confirmed to live somewhere that is still read — the
+bindings here, the tooltip boundary in the MAP's `tooltips` territory, the
+incidents in `lessons.md`. The last thing it still held alone was its Step 7 gate
+matrix, and that was **wrong** (6 bare commands against 9): the risk it carried
+was being believed, not being lost.
 
 ---
 

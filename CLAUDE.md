@@ -19,14 +19,15 @@ enters and treat its `## Blast radius` as a checklist. On the way out, ask
 whether the fact you just found is true outside that territory — if it is, an
 invariant note is part of the change.
 
-**`theflow` is retired** — the skill is gone, and its fixed step list with it.
-`docs/agents/thegraph.md` is the *single* source for bindings and gates.
-`docs/agents/theflow.md` is **spent**. Bindings are consumed by the *first* build;
-a graph exists, so every run from here is an **update** that reads the graph and
-never the bindings. Nothing reads that file and nothing maintains it — deleting it
-is the maintainer's call, not a prerequisite. It is certainly not a route: its
-Step 7 gate matrix is **stale** (5 lines / 6 bare commands, missing the MAP gate
-and the agent-grants gate; the real list is **9**, stated once in `thegraph.md`).
+**`theflow` is retired**, and its bindings doc is **deleted**. Bindings are
+consumed by the *first* build; a graph exists, so every run from here is an
+**update** that reads `docs/agents/thegraph.md` and never the bindings — nothing
+read that file and nothing maintained it. Its Step 7 gate matrix had already gone
+stale, listing 6 bare commands against the real **9**, which is what a document
+nobody reads does next. Everything in it lives on: the bindings in `thegraph.md`,
+the tooltip boundary in the MAP's [`tooltips`](docs/map/territory/tooltips.md)
+territory, the incidents in `lessons.md`. `git log` has it if it is ever wanted
+back.
 
 ## Package philosophy
 
