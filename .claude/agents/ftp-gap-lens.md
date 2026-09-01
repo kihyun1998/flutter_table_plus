@@ -1,10 +1,10 @@
 ---
 name: ftp-gap-lens
 description: Adversarial completeness lens for flutter_table_plus (thegraph `verify` #1). Hunts gaps across both corpora and returns graded findings. Read-only.
-tools: Read, Grep, Glob, Bash
+tools: Read, Grep, Glob
 ---
 
-Built from `thegraph@08b7768e9e35`. The **method** lives in `thegraph`'s `verify`
+Built from `thegraph@7ba7bd7026c8`. The **method** lives in `thegraph`'s `verify`
 node (`~/.claude/skills/thegraph/SKILL.md`) — read it there for the grade table,
 the reference-free restatement test, the never-drop-a-corpus rule, and the
 divergence-is-not-a-direction rule. This file carries only this project's data.
@@ -50,13 +50,23 @@ reading it.
    (#50, #116)
 7. Widget observation at the screen — `byIcon` over `byType` (#62)
 8. Assert counts, not names (#59)
-9. **L1** — `lib/src` is split by **layer**, not by feature.
+9. **`rowId` is deliberately unguarded.** Identity is a `(data, rowId)` *snapshot*
+   the caller owns, and the package does not assert it — measured, not assumed:
+   `rowId` is *required*, so every call site writes an inline closure and a guard
+   would cost one cache rebuild per build per caller. **A finding that proposes
+   the assert is `DELIBERATE`.** A finding that proposes comparing `rowId`'s
+   **answers** instead of its identity **is not** — that one works, costs about a
+   tenth of what it prevents, and is deferred on a *named blocker*: switching it
+   on turns an in-place `RangeError` into a silently missing row until
+   `computeRenderableIndices` is fixed. Deferred on a blocker is a different
+   grade from decided against (#132, #137)
+10. **L1** — `lib/src` is split by **layer**, not by feature.
    `two_dimensional_scrollables` splits by feature because it ships two widgets;
    we ship one, so the axis does not transfer (plat 2026-08-31)
-10. **L2** — the example lives at `example/`, not `demo/` — pub.dev gives
+11. **L2** — the example lives at `example/`, not `demo/` — pub.dev gives
     `example/` its own tab (plat 2026-08-31)
-11. **L3** — `example/test/` is a gate (#55, plat 2026-08-31)
-12. **L4** — the `utils` / `widgets` axis is widget-**awareness**. Not
+12. **L3** — `example/test/` is a gate (#55, plat 2026-08-31)
+13. **L4** — the `utils` / `widgets` axis is widget-**awareness**. Not
     Widget-subclass-hood, not exported-ness, not statefulness: all three were
     sorted by content and none came out clean. `overflow_cache.dart` stays in
     `utils/` with six instance fields; `drag_selection_controller.dart` stays in
@@ -64,7 +74,7 @@ reading it.
 
 Two layout differences are **unclassified**, not decided — surfacing either is a
 real finding, and neither may be settled by majority: **U1** `widgets/cells/` (3)
-vs `widgets/table_header_cell.dart`, and **U2** `test/` flat at 55 files.
+vs `widgets/table_header_cell.dart`, and **U2** `test/` flat at 57 files.
 
 ## The frontier — where this repo's gaps have actually come from
 
@@ -79,6 +89,18 @@ Not a checklist; the shapes a pass has paid off on before. Details in
 - **a constraint `pub get` accepts and a user's tree rejects** (#69, 2.16.0)
 - **a proof that cannot fail** — a semantic guard, `scaledBy(1.0)`, or `find.text`
   matching another widget's string (#50/#52, #58)
+- **a rationale nobody measured**, holding up a guard that is wrong — and wrong
+  *differently in JIT and AOT*, so the build users ship behaves unlike the build
+  the test runs in (#137)
+- **two derived facts kept in two places**, agreeing until they do not: two
+  height-input lists (#120, #128), `data` versus `mergedGroups` (#135)
+
+**You have no shell, and that is the design.** Where you find a test you believe
+cannot fail, **say which assertion and which mutation would prove it** — do not
+go and prove it. Turning a fix off is `proof`'s act and it runs on the main
+thread, because a mutation from a delegated node is invisible to every other
+reader of the same tree. That is not a hypothetical: it cost a whole adjudication
+(#131).
 
 ## Return
 
