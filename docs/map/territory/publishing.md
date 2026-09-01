@@ -37,9 +37,18 @@ a publish — as a rule that resolves the *next* case rather than the last one.
   `archive_url`, unpack, compare against `git show <commit>:<path>` normalising
   CRLF. If *all* candidates fail — or all pass — suspect the checker.
 - **The archive's contents are decided by `.pubignore`**, and a root `.pubignore`
-  **disables git-based file listing**, so anything unlisted ships. That also means
-  `pub publish --dry-run` never warns about uncommitted changes: a green dry-run
-  is not evidence of a clean tree.
+  **disables git-based file listing**, so anything unlisted ships. The dry-run's
+  git warning does not close that gap, and it is easy to over-trust in **both**
+  directions. Measured 2026-09-01 on a working tree: it named all four
+  *tracked and modified* files that were inside the archive, and said nothing at
+  all about **two untracked files it packed** — both of them listed, by name, a
+  hundred lines earlier in its own output. It is equally silent about a modified
+  file `.pubignore` excludes, because that one is not in the archive to begin
+  with. So: a green dry-run is not evidence of a clean tree, and a dry-run
+  *with* warnings has still not told you what is being shipped. **Read the file
+  listing.** An earlier version of this line said the dry-run never warns about
+  uncommitted changes at all; that was measured false here, and the sharper
+  claim is the one that catches something.
 
 ## Code
 

@@ -121,17 +121,38 @@ class _ContainedOverlayState extends State<_ContainedOverlay> {
   Widget build(BuildContext context) => Overlay(initialEntries: [_entry]);
 }
 
-/// Chooses which [ViewportSpec] the stage is showing.
+/// Chooses what the stage is showing — one named viewport, or all of them.
+///
+/// **The selection is an id rather than a [ViewportSpec], because one of the
+/// modes is not a viewport.** The wall has no size of its own and no chrome
+/// policy, so a fourth `ViewportSpec` would have to invent both. The id is what
+/// this control has always dealt in internally, and [ViewportSpec.values] stays
+/// the only roster of viewports there is — a second list of the same three,
+/// kept in step by hand, is the shape `docs/map/invariant/no-hand-enumeration.md`
+/// is about.
 class ViewportBar extends StatelessWidget {
   const ViewportBar({
     super.key,
-    required this.selected,
+    required this.selectedId,
     required this.onChanged,
     this.compact = false,
+    this.showsWall = false,
   });
 
-  final ViewportSpec selected;
-  final ValueChanged<ViewportSpec> onChanged;
+  /// The mode that draws every viewport at once instead of one.
+  ///
+  /// Lives here rather than on `DeviceWall` so that this file does not have to
+  /// import it: the wall builds on the frame, which builds on this stage, and
+  /// pulling the id from the far end of that chain would close the loop for a
+  /// string.
+  static const wallId = 'all';
+
+  static const wallLabel = 'All · side by side';
+
+  /// Either a [ViewportSpec.id] or [wallId].
+  final String selectedId;
+
+  final ValueChanged<String> onChanged;
 
   /// Icons only, with the label moved to the tooltip.
   ///
@@ -139,6 +160,12 @@ class ViewportBar extends StatelessWidget {
   /// is shared with the Preview / Code control on its left, so this one has to
   /// earn its width.
   final bool compact;
+
+  /// Whether the wall is offered as a fourth mode.
+  ///
+  /// A page that hosts only one frame has nowhere to put it, so it is opt-in
+  /// rather than assumed.
+  final bool showsWall;
 
   @override
   Widget build(BuildContext context) {
@@ -151,10 +178,17 @@ class ViewportBar extends StatelessWidget {
             label: compact ? null : Text(v.label),
             tooltip: v.label,
           ),
+        if (showsWall)
+          ButtonSegment<String>(
+            value: wallId,
+            icon: const Icon(Icons.dashboard_outlined),
+            label: compact ? null : Text(wallLabel),
+            tooltip: wallLabel,
+          ),
       ],
-      selected: {selected.id},
+      selected: {selectedId},
       showSelectedIcon: false,
-      onSelectionChanged: (ids) => onChanged(ViewportSpec.byId(ids.first)),
+      onSelectionChanged: (ids) => onChanged(ids.first),
     );
   }
 

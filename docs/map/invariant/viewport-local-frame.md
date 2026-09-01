@@ -29,6 +29,7 @@ missing call and "fix" into a wrong one.
 → [Drag selection](../territory/drag-selection.md) — the reason the invariant exists; the `Listener`'s placement is the mechanism
 → [Synced scrolling](../territory/synced-scrolling.md) — the frame only holds because the header is not an input surface
 → [Column resizing](../territory/column-resize.md) — the site that satisfies it the *other* way, by conversion and by argument
+→ [Example app](../territory/example-app.md) — where a host transform was believed to break the frame, and where the measurement that says otherwise lives
 
 ## What a violation looks like
 
@@ -56,3 +57,21 @@ the odd one out lives in a different territory from the other three.
 a context menu, a drag-to-reorder rows, a marquee over cells, a
 touch-and-hold. The test to run first: *where does this coordinate come from, and
 is the widget that produced it inside or outside the horizontal `Scrollable`?*
+
+**And the inverse question, which has already been answered wrong once.** A host
+that puts a `Transform` or a `FittedBox` *above* the table does **not** move this
+frame: `Transform` applies the inverse during hit testing, so
+`event.localPosition` reaches the gesture code already in the child's own
+untransformed space, and a drag inside a frame drawn at roughly half size selects
+exactly the rows it crosses. #101 recorded the opposite — that a scaled host put
+the frame in question — and made it the reason a viewport preview must never
+scale. The evidence was a test whose own arithmetic mixed scaled screen
+coordinates with unscaled logical ones; `getRect` is screen space, `getSize` is
+layout space, and inside a `FittedBox` the child still lays out at full size. The
+example's fit mode is interactive because the correction holds.
+
+The reason this is here rather than in one file's comment: at the time of
+writing, the correction is stated in **six** example sources and in no note, so
+each new site has had to re-derive it. **Pick one space and stay in it, and
+measure rather than reason** — the wrong answer here survived review by sounding
+careful.

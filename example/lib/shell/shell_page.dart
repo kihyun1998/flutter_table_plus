@@ -4,6 +4,7 @@ library;
 import 'package:flutter/material.dart';
 
 import '../pages/playground/playground_page.dart';
+import '../preview/device_wall.dart';
 import '../preview/preview_frame.dart';
 import '../preview/preview_stage.dart';
 import '../preview/viewport_spec.dart';
@@ -65,7 +66,11 @@ class _ShellPageState extends State<ShellPage> {
 
   late String _selectedId =
       _destinations.whereType<StageDestination>().first.id;
-  ViewportSpec _viewport = ViewportSpec.desktop;
+
+  /// A [ViewportSpec.id], or [ViewportBar.wallId] for the Device Wall.
+  String _viewportId = ViewportSpec.desktop.id;
+
+  bool get _showingWall => _viewportId == ViewportBar.wallId;
 
   /// Shrink the whole viewport into view, rather than showing a 1:1 slice of it.
   ///
@@ -216,24 +221,44 @@ class _ShellPageState extends State<ShellPage> {
               // on screen over a block of code would say the code was being
               // rendered at 390px, which is not a thing that happens.
               if (!showingCode) ...[
-                Tooltip(
-                  message: _fit
-                      ? 'Shrink the whole viewport into view'
-                      : 'Show real pixels and scroll',
-                  child: TextButton.icon(
-                    onPressed: () => setState(() => _fit = !_fit),
-                    icon: Icon(
-                      _fit ? Icons.fit_screen_outlined : Icons.crop_free,
-                      size: 18,
+                // The wall has no fit control for the same kind of reason. A
+                // wall column is whatever a third of this region happens to
+                // be, so 1:1 there would be three clipped slices at three
+                // arbitrary widths — a control that can only make the view
+                // worse is one the toolbar should not be offering.
+                if (!_showingWall) ...[
+                  Tooltip(
+                    message: _fit
+                        ? 'Shrink the whole viewport into view'
+                        : 'Show real pixels and scroll',
+                    child: TextButton.icon(
+                      onPressed: () => setState(() => _fit = !_fit),
+                      icon: Icon(
+                        _fit ? Icons.fit_screen_outlined : Icons.crop_free,
+                        size: 18,
+                      ),
+                      label: Text(_fit ? 'Fit' : '1:1'),
                     ),
-                    label: Text(_fit ? 'Fit' : '1:1'),
                   ),
-                ),
-                const SizedBox(width: 8),
+                  const SizedBox(width: 8),
+                ],
                 ViewportBar(
                   compact: true,
-                  selected: _viewport,
-                  onChanged: (v) => setState(() => _viewport = v),
+                  // Unconditional, and only correct while every destination is
+                  // a single table. The very-large-row-count scenario (#109) is
+                  // mutually exclusive with the wall: that scenario is a
+                  // single-table performance claim and the wall draws three
+                  // tables over the same data, so a frame rate measured there
+                  // is measuring the wall. When it lands this becomes
+                  // `showsWall: _open.allowsWall` or equivalent.
+                  //
+                  // The exclusion is already reachable without #109 —
+                  // `EmployeeDemo` offers 20 000 rows and its knobs sit outside
+                  // the wall's `IgnorePointer` — which is recorded in
+                  // `docs/map/territory/example-app.md` under Known holes.
+                  showsWall: true,
+                  selectedId: _viewportId,
+                  onChanged: (id) => setState(() => _viewportId = id),
                 ),
               ],
             ],
@@ -248,11 +273,18 @@ class _ShellPageState extends State<ShellPage> {
               ? SourcePane(assetPath: source)
               : ColoredBox(
                   color: scheme.surfaceContainerHighest,
-                  child: PreviewFrame(
-                    spec: _viewport,
-                    fit: _fit,
-                    child: _open.stage(context),
-                  ),
+                  child: _showingWall
+                      // The builder, not `_open.stage(context)`. Three frames
+                      // over one built widget would hand the same subtree to
+                      // three places in the tree; the wall wants three
+                      // layouts over one set of knobs, which is the destination
+                      // built three times.
+                      ? DeviceWall(stage: _open.stage)
+                      : PreviewFrame(
+                          spec: ViewportSpec.byId(_viewportId),
+                          fit: _fit,
+                          child: _open.stage(context),
+                        ),
                 ),
         ),
       ],

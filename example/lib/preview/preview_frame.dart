@@ -96,11 +96,35 @@ class PreviewFrame extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       body,
+                      // Bounded to the body's own width, and that is the whole
+                      // point of the `SizedBox`. This `Column` sits inside a
+                      // horizontal `SingleChildScrollView`, which hands it
+                      // unbounded width, and the `ConstrainedBox` above sets
+                      // only a *minimum* — so an unbounded label widens the
+                      // column past the body, and the frame becomes scrollable
+                      // sideways to finish reading its own caption. The width
+                      // that matters is the body's; the label is a caption on
+                      // it, never the thing that sizes it.
+                      //
+                      // Found in the Device Wall, where the columns are
+                      // narrowest: measured 2026-09-01, an 1800px window leaves
+                      // each column 400px and a 1200px window leaves it 200px,
+                      // against a label that measures 211.5px under the test
+                      // font. It was first written up as "the wall refuses
+                      // pointers so that scroll is unreachable" — that reason
+                      // died when the wall shipped live, and the fix did not,
+                      // because a caption that has to be scrolled to is wrong
+                      // whether or not the scroll works. The clipped end is the
+                      // scale factor, which is the one thing on a shrunken
+                      // frame a reader cannot infer from the picture.
                       SizedBox(
+                        width: spec.width * scale,
                         height: _labelHeight,
                         child: Center(
                           child: Text(
                             _label(scale),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               fontSize: 11.5,
                               color: scheme.onSurfaceVariant,

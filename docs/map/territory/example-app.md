@@ -69,6 +69,31 @@ notes.
   Measured 2026-08-26 — 91.7px against 200px. The frame therefore contains its
   own overlay, which is a statement about what a viewport *is* rather than a
   workaround for the scaling.
+- **The Device Wall is live, and the criterion that said otherwise was
+  withdrawn on measurement.** Drawing every viewport at once answers what the
+  single-viewport modes cannot — *what changed between two widths* — and #108
+  originally asked for it to take no pointer input. Both reasons behind that
+  failed. The technical one (a scaled frame endangers the drag coordinate frame)
+  is corrected in
+  [the coordinate-frame invariant](../invariant/viewport-local-frame.md). The
+  design one (three frames are too small to operate) is true of **one** of them:
+  the three do not share a scale, because each viewport is fit into an equal
+  column and the frame never scales up. Measured 2026-09-01 in the shell at
+  1800px — desktop 0.28× (an 11px row), tablet 0.48× (19px), **mobile 1.0×, at
+  its full 40px**. The narrowest viewport is both the one a reader most wants to
+  poke at and the one drawn at real size.
+  What being live buys is the only thing here the single-viewport modes cannot
+  do: the frames share one state, so an interaction in the mobile frame paints
+  its result in the other two at the same time. The cost is that the desktop
+  frame's rows are ~11px and imprecise to hit — precision lives in the
+  single-viewport modes. An `IgnorePointer` would also have been half a decision:
+  it vetoes hit testing only, and focus traversal plus `Actions` bypass it, so
+  rows stayed keyboard-activatable regardless — 20 of 40 Tab presses landed
+  inside a wall table. Live in both routes is one rule; live in one and dead in
+  the other was two.
+  Every column is always fit: a wall column is whatever a third of the region
+  happens to be, so 1:1 there is three clipped slices at three arbitrary widths,
+  which is why the Fit / 1:1 control is not drawn in that mode.
 - **The bundled font is a subset, and the subset is a claim.** Four Pretendard
   weights ship with the app, cut from the full faces to a Latin charset written
   down as Unicode ranges in `scripts/fonts/subset_pretendard.py`. Two properties
@@ -111,6 +136,7 @@ drifting
 `../scripts/fonts/subset_pretendard.py` — the font charset, as ranges
 `lib/preview/preview_stage.dart`
 `lib/preview/preview_frame.dart`
+`lib/preview/device_wall.dart`
 
 ## Reference behaviour
 
@@ -120,6 +146,7 @@ drifting
 
 → [The widget-test font is a square per glyph](../invariant/test-font-square.md) — the demo's own suite is where this was measured: a 19-character label measures 304px in a test against roughly 190 on screen
 → [Observe at the screen, assert by count](../invariant/observe-at-the-screen.md) — the demo's tests count controls rather than naming them, which is what let its widgets be reorganised without rewriting the suite
+→ [Viewport-local coordinates come from one frame](../invariant/viewport-local-frame.md) — the preview scales the table, and the belief that scaling broke the frame is the one thing here that was asserted, measured, and withdrawn
 
 ## Blast radius
 
@@ -129,4 +156,12 @@ drifting
 
 ## Known holes / open
 
-**None.**
+- **The Device Wall and the very-large-row-count scenario (#109) are mutually
+  exclusive, and the exclusion is written down in three places and enforced in
+  none.** The wall draws three tables over the same data at once; that scenario
+  is a single-table performance claim, so a frame rate measured on the wall is
+  measuring the wall. `shell_page.dart` passes `showsWall: true` unconditionally,
+  which is correct only while every destination is a single table — whoever
+  builds #109 will be in `shell/` and in a new scenario file, and has no reason
+  to open `device_wall.dart`. The comment at the call site is the thing most
+  likely to be read; this line is the thing most likely to be *found*.

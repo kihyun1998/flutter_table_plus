@@ -40,7 +40,11 @@ size *and told that size is the whole screen*, so column widths — and any `Med
 branch your own code would take — resolve as they would on that device rather than in the desktop
 window. The frame owns its own `Overlay`, because a real viewport does: `Draggable` feedback and
 `just_tooltip` both resolve `Overlay.of(context)` to the nearest one, and without it a header cell
-dragged out of a preview drawn at 0.46× rendered at 1:1, floating over the whole window.
+dragged out of a preview drawn at 0.46× rendered at 1:1, floating over the whole window. There is a
+fourth choice that draws all three sizes at once, side by side, for when the question is what changed
+*between* two widths. All three are live and share one state, so selecting or sorting in the phone
+frame — which renders at its full size, since a frame is never scaled up — shows the result at tablet
+and desktop width in the same moment.
 
 **The source pane shows the file itself**, read from the asset bundle — not a copy of the code in a
 string. A snippet cannot drift from what you just watched run if it *is* what you just watched run.

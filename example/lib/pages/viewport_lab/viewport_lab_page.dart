@@ -109,8 +109,11 @@ class _ViewportLabPageState extends State<ViewportLabPage> {
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 ViewportBar(
-                  selected: _viewport,
-                  onChanged: (v) => setState(() => _viewport = v),
+                  // The lab hosts one frame and asks one question, so it does
+                  // not offer the wall.
+                  selectedId: _viewport.id,
+                  onChanged: (id) =>
+                      setState(() => _viewport = ViewportSpec.byId(id)),
                 ),
                 Text(
                   _selected.isEmpty
