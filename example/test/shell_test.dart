@@ -45,6 +45,11 @@ Future<void> _pumpShell(
   await tester.pumpAndSettle();
 }
 
+/// The spec the single stage is showing.
+///
+/// **Outside wall mode only.** The Device Wall draws three `PreviewStage`s, and
+/// `tester.widget` throws on more than one match — so a wall-mode test observes
+/// by the frame labels instead (see "carries the wall as a fourth mode").
 ViewportSpec _stageSpec(WidgetTester tester) =>
     tester.widget<PreviewStage>(find.byType(PreviewStage)).spec;
 
@@ -128,6 +133,60 @@ void main() {
               'meant to reach the stage and nothing else');
       expect(tester.getSize(find.byType(EmployeeDemoKnobs)), knobsBefore);
     });
+
+    testWidgets('and carries the wall as a fourth mode', (tester) async {
+      _wide(tester);
+      await _pumpShell(tester);
+
+      // One frame to begin with: the wall is a mode you choose, not the
+      // default.
+      expect(find.textContaining('834 × 1112'), findsNothing);
+
+      await tester.tap(find.byTooltip(ViewportBar.wallLabel));
+      await tester.pumpAndSettle();
+
+      for (final spec in ViewportSpec.values) {
+        expect(
+          find.textContaining('${spec.width.toInt()} × ${spec.height.toInt()}'),
+          findsOneWidget,
+          reason: '${spec.id} is missing from the wall',
+        );
+      }
+
+      // The fit control goes with it. A wall column is whatever a third of the
+      // stage region happens to be, so there is no real-pixel view to switch
+      // to — and a control that can only make the view worse should not be on
+      // screen.
+      expect(find.text('Fit'), findsNothing);
+      expect(find.text('1:1'), findsNothing);
+    });
+
+    testWidgets('and comes back out of it', (tester) async {
+      // Additive in the direction that matters: choosing the wall is not a
+      // one-way door, and the frame it returns to is the one it left.
+      _wide(tester);
+      await _pumpShell(tester);
+
+      await tester.tap(find.byTooltip(ViewportSpec.mobile.label));
+      await tester.pumpAndSettle();
+
+      // Leave the fit control somewhere other than its default first. Without
+      // this the assertion below cannot tell "preserved across the wall" from
+      // "reset to the default", and setting `_fit = true` on every viewport
+      // change would keep it green.
+      await tester.tap(find.text('Fit'));
+      await tester.pumpAndSettle();
+      expect(find.text('1:1'), findsOneWidget);
+
+      await tester.tap(find.byTooltip(ViewportBar.wallLabel));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip(ViewportSpec.mobile.label));
+      await tester.pumpAndSettle();
+
+      expect(_stageSpec(tester), ViewportSpec.mobile);
+      expect(find.text('1:1'), findsOneWidget,
+          reason: 'the wall reset the fit control on the way through');
+    });
   });
 
   group('the playground is pointed at, not absorbed', () {
@@ -196,6 +255,33 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(PreviewStage), findsOneWidget);
+    });
+
+    testWidgets('and the wall is usable there, which is the surprising half',
+        (tester) async {
+      // The intuition is that three frames side by side must be worst in the
+      // layout that folds *because* three regions do not fit side by side. It
+      // is the other way round, measured 2026-09-01: folded at 700px each wall
+      // column is 217px, while the wide layout at 1200px gives 200px — because
+      // folding hands the stage the whole width instead of sharing it with the
+      // menu and the 320px knob pane. So the wide layout is the narrow case.
+      _narrow(tester);
+      await _pumpShell(tester);
+
+      await tester.tap(find.text('Preview'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip(ViewportBar.wallLabel));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+
+      for (final spec in ViewportSpec.values) {
+        expect(
+          find.textContaining('${spec.width.toInt()} × ${spec.height.toInt()}'),
+          findsOneWidget,
+          reason: '${spec.id} did not survive the folded layout',
+        );
+      }
     });
   });
 

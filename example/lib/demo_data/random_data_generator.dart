@@ -5,7 +5,31 @@ import 'employee.dart';
 /// Utility class for generating random employee data for testing
 /// Supports generating 10 to 100,000+ records efficiently
 class RandomDataGenerator {
-  static final Random _random = Random();
+  /// Seeded per call, from [generateEmployees]'s `startId`.
+  ///
+  /// **The same arguments give the same people, every time and in every
+  /// process.** It used to be one unseeded `Random` shared by every call, and
+  /// the Device Wall is what made that a defect rather than a detail: the wall
+  /// builds its stage once per frame, so a recipe that generates its rows in
+  /// `State` — seven of the eleven do — handed each of the three columns a
+  /// different twenty people. Every column then differed by data *and* by
+  /// width, and a view whose whole purpose is showing what changed between two
+  /// widths could show nothing.
+  ///
+  /// Fixed here rather than in the wall or in the seven recipes, because this
+  /// is the only layer that can be right: the wall is handed an opaque builder
+  /// and cannot reach into a recipe's state, and fixing seven recipes fixes
+  /// seven recipes. What the wall actually needs is that **building a
+  /// destination twice yields the same thing**, and that is a property of where
+  /// the data is made.
+  ///
+  /// Two consequences worth knowing. A bug report can now name a row: two
+  /// people at the same preset see the same table, which is the property the
+  /// playground's named presets already assume. And `startId` is the knob that
+  /// varies the data on purpose — the default keeps a prefix stable, so raising
+  /// the row count from 24 to 200 leaves the first 24 people where they were
+  /// instead of reshuffling the table under the reader.
+  static Random _randomFor(int startId) => Random(startId);
 
   // Sample data pools for realistic random generation
   static const List<String> _firstNames = [
@@ -420,32 +444,33 @@ class RandomDataGenerator {
   /// - [startId]: Starting ID number (default: 1)
   static List<Employee> generateEmployees(int count, {int startId = 1}) {
     final stopwatch = Stopwatch()..start();
+    final random = _randomFor(startId);
 
     final List<Employee> employees = [];
 
     for (int i = 0; i < count; i++) {
       final id = startId + i;
-      final firstName = _firstNames[_random.nextInt(_firstNames.length)];
-      final lastName = _lastNames[_random.nextInt(_lastNames.length)];
-      final department = _departments[_random.nextInt(_departments.length)];
-      final position = _positions[_random.nextInt(_positions.length)];
-      final avatar = _avatars[_random.nextInt(_avatars.length)];
+      final firstName = _firstNames[random.nextInt(_firstNames.length)];
+      final lastName = _lastNames[random.nextInt(_lastNames.length)];
+      final department = _departments[random.nextInt(_departments.length)];
+      final position = _positions[random.nextInt(_positions.length)];
+      final avatar = _avatars[random.nextInt(_avatars.length)];
 
       // Generate salary based on position level
       final baseSalary = position.contains('Senior') ||
               position.contains('Manager') ||
               position.contains('Director')
-          ? 80000 + _random.nextInt(120000) // 80k - 200k
+          ? 80000 + random.nextInt(120000) // 80k - 200k
           : position.contains('Junior')
-              ? 45000 + _random.nextInt(35000) // 45k - 80k
-              : 55000 + _random.nextInt(60000); // 55k - 115k
+              ? 45000 + random.nextInt(35000) // 45k - 80k
+              : 55000 + random.nextInt(60000); // 55k - 115k
 
       // Generate performance score (0.5 - 1.0)
-      final performance = 0.5 + (_random.nextDouble() * 0.5);
+      final performance = 0.5 + (random.nextDouble() * 0.5);
 
       // Generate random join date (last 5 years)
       final now = DateTime.now();
-      final daysAgo = _random.nextInt(365 * 5);
+      final daysAgo = random.nextInt(365 * 5);
       final joinDate = now.subtract(Duration(days: daysAgo));
 
       employees.add(Employee(
@@ -459,8 +484,8 @@ class RandomDataGenerator {
         joinDate: joinDate,
         email:
             '${firstName.toLowerCase()}.${lastName.toLowerCase()}@company.com',
-        phone: '+1-555-${_random.nextInt(9000) + 1000}',
-        isActive: _random.nextDouble() > 0.2, // ~80% active
+        phone: '+1-555-${random.nextInt(9000) + 1000}',
+        isActive: random.nextDouble() > 0.2, // ~80% active
       ));
     }
 
