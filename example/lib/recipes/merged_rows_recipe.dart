@@ -44,9 +44,14 @@ import '../theme/table_palette.dart';
 /// - **Its height is the sum of its members' heights**, not one row's — so a
 ///   merged group sitting over rows with per-row heights is as tall as those
 ///   rows were — plus one `bodyTheme.rowHeight` while it is expanded, for the
-///   summary row. What the *members* then get is the group's total divided
-///   between them, so combining this with per-row heights is a corner neither
-///   this recipe nor the package's suite exercises.
+///   summary row. And each *member* is drawn at its own measured height inside
+///   that total — a 48/96/48 group is 192 tall and its members are 48, 96 and 48,
+///   not three 64s. Until 2.17.0 they were three 64s (#121).
+/// - **This recipe cannot show you that**, because it passes no
+///   `calculateRowHeight` — every row here is `bodyTheme.rowHeight`, and an equal
+///   split and a per-member one are the same picture. The proof is
+///   `test/merged_row_member_heights_test.dart`, which renders the same rows
+///   twice, once grouped and once not, and compares them.
 ///
 /// **Expansion is your state, and so is the affordance.** [MergedRowGroup
 /// .isExpanded] adds a summary row beneath the group — it does *not* hide the
