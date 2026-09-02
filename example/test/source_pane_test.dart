@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:example/pages/playground/models/settings_spec.dart';
 import 'package:example/preview/preview_frame.dart';
 import 'package:example/shell/recipe_catalog.dart';
@@ -37,6 +39,17 @@ class _BrokenBundle extends CachingAssetBundle {
   @override
   Future<ByteData> load(String key) async =>
       throw FlutterError('Unable to load asset: "$key".');
+}
+
+/// A bundle that never answers, for observing the state between "asked" and
+/// "arrived".
+///
+/// Every other test here calls `pumpAndSettle` and pumps straight past that
+/// state, which is fine until something on screen depends on the data. It never
+/// completes and never schedules a frame, so `pump()` returns normally.
+class _PendingBundle extends CachingAssetBundle {
+  @override
+  Future<ByteData> load(String key) => Completer<ByteData>().future;
 }
 
 /// A bundle serving one string, for asserting on content that is not the real
@@ -368,6 +381,151 @@ void main() {
       // why nobody noticed the family was never set.
       expect(SourcePane.monoFallback, isNot(contains(SourcePane.monoFamily)));
       expect(SourcePane.monoFallback.last, 'monospace');
+    });
+
+    testWidgets('and no token span reintroduces a family of its own',
+        (tester) async {
+      // The two tests above read `EditableText.style`, which is the WRAPPER:
+      // `SelectableText` hands its span tree to the controller as
+      // `TextSpan(style: style, children: [yours])`. Once the pane went
+      // `.rich`, the thing worth guarding moved a level deeper than they can
+      // see — give one token class `fontFamily: exampleChromeFont` and every
+      // string literal renders proportional while they both stay green. That
+      // is #123 becoming invisible rather than being fixed, so this is an
+      // addition and not a replacement.
+      await _pumpPane(
+        tester,
+        path: 'lib/recipes/selection_recipe.dart',
+        bundle: _FakeBundle("// a comment\nclass Sentinel {\n  var n = 1;\n}\n"),
+      );
+
+      final selectable =
+          tester.widget<SelectableText>(find.byType(SelectableText));
+      final families = <String>[];
+      final foreign = <InlineSpan>[];
+      selectable.textSpan!.visitChildren((span) {
+        if (span is! TextSpan) {
+          foreign.add(span);
+          return true;
+        }
+        final family = span.style?.fontFamily;
+        if (family != null) families.add(family);
+        return true;
+      });
+
+      expect(families, isEmpty,
+          reason: 'a token span named a font family, so the mono face set on '
+              'the widget is no longer what draws it');
+      // `SelectableText` documents that `textSpan.children` must hold only
+      // `TextSpan`s, and does not assert it. A `WidgetSpan` would render fine
+      // and write `\u{FFFC}` into the copied text once per occurrence — which
+      // is the mechanism that would have broken the paste had line numbers
+      // gone inline, and the one thing standing in its way is that nobody
+      // writes a placeholder in a tokenizer.
+      expect(foreign, isEmpty,
+          reason: 'a non-TextSpan child injects an object-replacement '
+              'character into what the clipboard receives');
+    });
+  });
+
+  group('the highlighter cannot change what you paste', () {
+    // `dart_highlighter_test.dart` proves the tokenizer partitions its input.
+    // That is a claim about a return value, and between it and the clipboard
+    // sit the span tree, the controller, and `Clipboard.setData`. This group is
+    // the rest of the path — the property is *select, copy, paste, get the
+    // file*, and observing the tokenizer instead is the surface ablation the
+    // example's own `observe-at-the-screen` invariant exists to refuse.
+
+    /// Everything awkward the corpus contains, in one string: an apostrophe in
+    /// a comment, a nested string inside an interpolation, and CRLF.
+    const tricky = "// somebody's file\r\n"
+        "class Sentinel {\r\n"
+        "  final s = '\${a ?? ''}';\r\n"
+        "}\r\n";
+
+    testWidgets('the rendered tree flattens back to exactly the bytes',
+        (tester) async {
+      await _pumpPane(tester, path: 'x.dart', bundle: _FakeBundle(tricky));
+
+      final selectable =
+          tester.widget<SelectableText>(find.byType(SelectableText));
+
+      // `includeSemanticsLabels: false` is not a preference — it is the exact
+      // call `_TextSpanEditingController` makes when it builds the text the
+      // clipboard reads. Asserting with the default `true` would check a
+      // different string than the one a user pastes, because a `semanticsLabel`
+      // is written *instead of* the text. `includePlaceholders` is left at its
+      // default for the same reason, which is what makes a stray `WidgetSpan`
+      // fail here rather than smuggle a `￼` into every line.
+      expect(
+        selectable.textSpan!.toPlainText(includeSemanticsLabels: false),
+        tricky,
+        reason: 'what the pane renders is no longer the file it was handed',
+      );
+    });
+
+    testWidgets('and the copy control puts that same file on the clipboard',
+        (tester) async {
+      String? copied;
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        (call) async {
+          if (call.method == 'Clipboard.setData') {
+            copied = (call.arguments as Map)['text'] as String;
+          }
+          return null;
+        },
+      );
+      addTearDown(() => tester.binding.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, null));
+
+      await _pumpPane(tester, path: 'x.dart', bundle: _FakeBundle(tricky));
+
+      await tester.tap(find.byIcon(Icons.copy_all_outlined));
+      await tester.pumpAndSettle();
+
+      expect(copied, tricky,
+          reason: 'the control copied something other than the bytes shown');
+      // Observed at the screen, per the invariant: the icon is what a reader
+      // sees change, not a private flag.
+      expect(find.byIcon(Icons.check), findsOneWidget);
+    });
+  });
+
+  group('the copy control is never live over nothing', () {
+    testWidgets('dead while the bytes are still coming', (tester) async {
+      tester.view.physicalSize = const Size(900, 700);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(MaterialApp(
+        theme: exampleTheme(Brightness.light),
+        home: Scaffold(
+          body: SourcePane(assetPath: 'x.dart', bundle: _PendingBundle()),
+        ),
+      ));
+      // One frame, deliberately not settled: this is the state every other test
+      // in this file pumps straight past.
+      await tester.pump();
+
+      expect(tester.widget<IconButton>(find.byType(IconButton)).onPressed,
+          isNull);
+    });
+
+    testWidgets('and dead when the file could not be read', (tester) async {
+      // The path bar draws in all three states so the pane is never blank —
+      // which is exactly what would put a live copy button over "Could not
+      // read", copying nothing, silently. That is the failure `_Failure`
+      // exists to refuse, arriving through the control added to complete it.
+      await _pumpPane(
+        tester,
+        path: 'lib/recipes/missing.dart',
+        bundle: _BrokenBundle(),
+      );
+
+      expect(find.textContaining('Could not read'), findsOneWidget);
+      expect(tester.widget<IconButton>(find.byType(IconButton)).onPressed,
+          isNull);
     });
   });
 }

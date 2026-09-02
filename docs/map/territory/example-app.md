@@ -60,6 +60,34 @@ notes.
   relative import is unresolvable; and the Code view replaces the stage
   **region** rather than the stage's child, because source has no viewport and
   scaling it into one answers a question nobody asked.
+
+  **A third consequence, and the one that decided #113: anything standing
+  between the bundle's bytes and the clipboard has to be provably transparent.**
+  The pane is highlighted and has a copy button, and the tokenizer that draws it
+  returns a **partition** — concatenating the token texts reproduces the source
+  exactly. That is structural rather than asserted: tokens are cut from recorded
+  end offsets, so the two shapes a hand-written scanner reaches for naturally
+  are unreachable — splitting on `\n` and re-joining, and lower-casing a word to
+  match a keyword. It is **hue-free** because the chrome is, and comments are
+  the one thing *not* dimmed: they are 29% of the corpus and they are the
+  teaching, so slant separates them at full contrast and punctuation recedes.
+  **Line numbers were refused** on the pane's own ground — it is the affordance
+  of the pasteable claim, not a source viewer. Their natural implementation is
+  also the broken one: an inline gutter of placeholder spans writes `\u{FFFC}`
+  into every copied line, because `SelectableText` leaves `includePlaceholders`
+  at its default and only *documents* that children must be `TextSpan`s. That is
+  the mechanism the refusal avoided, not the reason for it.
+- **Two guards here exist because the obvious ones look sufficient and are
+  not, and both are the same shape.** The pane's monospace test reads
+  `EditableText.style`, which is the *wrapper* `SelectableText` puts around a
+  given span tree — so once the pane went `.rich`, a leaf naming a family would
+  render proportional while that test stayed green; a leaf-level assertion was
+  added rather than the old one rewritten. And the achromatic-chrome test
+  hand-lists four `ColorScheme` roles while the highlighter draws from two
+  others, so those two are now named there. **A check that reads a value's
+  source rather than its destination passes anything that acquired the value
+  another way** — which is what let #110 close as "the demo goes neutral" while
+  four blues survived in sub-themes no demo had rendered yet.
 - **A recipe may carry demo scaffolding, and says so in the file.** Some
   recipes draw a strip above the table, marked in its own doc-comment with
   *"This is the demo explaining itself; delete it when you paste."* — **grep
@@ -176,6 +204,7 @@ drifting
 `lib/theme/table_palette.dart`
 `lib/theme/example_theme.dart`
 `lib/shell/source_pane.dart`
+`lib/shell/dart_highlighter.dart` — `DartTokenKind`, `DartToken`, `tokenizeDart`
 `../scripts/fonts/subset_pretendard.py` — the font charset, as ranges
 `lib/preview/preview_stage.dart`
 `lib/preview/preview_frame.dart`

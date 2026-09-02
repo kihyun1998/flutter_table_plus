@@ -1,6 +1,9 @@
 /// A recipe's own source, read back out of the bundle it shipped in.
 library;
 
+import 'dart:async';
+
+import 'package:example/shell/dart_highlighter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -102,50 +105,105 @@ class _SourcePaneState extends State<SourcePane> {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _PathBar(path: widget.assetPath),
-        Expanded(
-          child: FutureBuilder<String>(
-            future: _source,
-            builder: (context, snapshot) {
-              if (snapshot.hasError) {
-                return _Failure(
-                  path: widget.assetPath,
-                  error: snapshot.error!,
-                );
-              }
-              if (!snapshot.hasData) {
-                // Deliberately not a spinner. The asset is in this app's own
-                // bundle, so the wait is a frame or two and an indicator would
-                // only flash — and an indeterminate one animates forever, which
-                // means `pumpAndSettle` never settles and every widget test
-                // that reaches this pane times out instead of failing on
-                // something informative. The path bar above is already on
-                // screen, so the pane is not blank.
-                return const SizedBox.shrink();
-              }
-              return _Code(source: snapshot.data!, scheme: scheme);
-            },
-          ),
-        ),
-      ],
+    // The `FutureBuilder` wraps the whole pane rather than just the body, and
+    // that is the copy control's doing. The path bar still draws in all three
+    // states — which is what keeps the pane from being blank while the asset
+    // loads — but it now also *sees* the snapshot.
+    //
+    // Hosting the control in a bar drawn outside the boundary was the obvious
+    // arrangement and is the broken one: the same property that makes the bar
+    // a good "not blank" affordance makes it a bad host for anything needing
+    // the data. A copy button there is live over `_Failure`'s "Could not read",
+    // copying nothing, silently — which is the failure `_Failure` exists to
+    // refuse, arriving through the control added to complete the pane.
+    return FutureBuilder<String>(
+      future: _source,
+      builder: (context, snapshot) => Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _PathBar(path: widget.assetPath, source: snapshot.data),
+          Expanded(child: _body(snapshot, scheme)),
+        ],
+      ),
     );
+  }
+
+  Widget _body(AsyncSnapshot<String> snapshot, ColorScheme scheme) {
+    if (snapshot.hasError) {
+      return _Failure(path: widget.assetPath, error: snapshot.error!);
+    }
+    if (!snapshot.hasData) {
+      // Deliberately not a spinner. The asset is in this app's own bundle, so
+      // the wait is a frame or two and an indicator would only flash — and an
+      // indeterminate one animates forever, which means `pumpAndSettle` never
+      // settles and every widget test that reaches this pane times out instead
+      // of failing on something informative. The path bar above is already on
+      // screen, so the pane is not blank.
+      return const SizedBox.shrink();
+    }
+    return _Code(source: snapshot.data!, scheme: scheme);
   }
 }
 
-class _PathBar extends StatelessWidget {
-  const _PathBar({required this.path});
+/// The file's name, and the control that hands you the file.
+///
+/// **The copy button is not a convenience here.** `shell_destination.dart` says
+/// what this pane is: *"not a general source viewer; it is the affordance of
+/// the pasteable claim."* A control that performs the paste is that affordance
+/// completing itself. (An earlier ticket downgraded it to discoverability and a
+/// later one tried to rescue it as a touch-platform capability; both were
+/// wrong on the same measurement — `SelectableText` defaults its
+/// `contextMenuBuilder` to `AdaptiveTextSelectionToolbar`, so long-press →
+/// Select all → Copy already works on Android. The button is worth having for
+/// what the pane *is*, not for what the platform lacks.)
+class _PathBar extends StatefulWidget {
+  const _PathBar({required this.path, required this.source});
 
   final String path;
+
+  /// The loaded bytes, or `null` while loading and on failure.
+  ///
+  /// Null is what disables the button rather than hiding it: a control that
+  /// vanishes and returns is harder to read than one that is visibly not ready,
+  /// and the two states it is null in are exactly the two where copying would
+  /// silently yield nothing.
+  final String? source;
+
+  @override
+  State<_PathBar> createState() => _PathBarState();
+}
+
+class _PathBarState extends State<_PathBar> {
+  Timer? _confirmation;
+  bool _copied = false;
+
+  @override
+  void dispose() {
+    // A pending timer outliving the tree fails the test that pumped it, which
+    // is the correct behaviour and the reason this is not optional.
+    _confirmation?.cancel();
+    super.dispose();
+  }
+
+  void _copy() {
+    Clipboard.setData(ClipboardData(text: widget.source!));
+    setState(() => _copied = true);
+    _confirmation?.cancel();
+    // Finite on purpose. The pane refuses an indeterminate indicator elsewhere
+    // for a harness reason — `pumpAndSettle` never settles on one — and the
+    // same rule applies to feedback.
+    _confirmation = Timer(const Duration(milliseconds: 1400), () {
+      if (mounted) setState(() => _copied = false);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final ready = widget.source != null;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      padding: const EdgeInsets.only(left: 14, right: 6, top: 2, bottom: 2),
       decoration: BoxDecoration(
         color: scheme.surfaceContainerHighest,
         border: Border(bottom: BorderSide(color: Theme.of(context).dividerColor)),
@@ -156,7 +214,7 @@ class _PathBar extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              path,
+              widget.path,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: 12,
@@ -164,6 +222,20 @@ class _PathBar extends StatelessWidget {
                 fontFamilyFallback: SourcePane.monoFallback,
                 color: scheme.onSurfaceVariant,
               ),
+            ),
+          ),
+          IconButton(
+            // A Material tooltip, deliberately: `just_tooltip` arbitrates the
+            // *table's* tooltips and this is app chrome with no `JustTooltip`
+            // ancestor to nest inside. Reaching for the package's tooltip here
+            // would import an arbitration question that does not exist.
+            tooltip: _copied ? 'Copied' : 'Copy the file',
+            iconSize: 17,
+            visualDensity: VisualDensity.compact,
+            onPressed: ready ? _copy : null,
+            icon: Icon(
+              _copied ? Icons.check : Icons.copy_all_outlined,
+              color: _copied ? scheme.onSurface : scheme.onSurfaceVariant,
             ),
           ),
         ],
@@ -233,10 +305,78 @@ class _CodeState extends State<_Code> {
   /// controller also gives the [Scrollbar] something unambiguous to track.
   final _controller = ScrollController();
 
+  /// Cached, and not an optimisation reflex — it is what the SDK's own
+  /// behaviour asks for.
+  ///
+  /// [SelectableText.didUpdateWidget] disposes and rebuilds its controller
+  /// whenever `textSpan != oldWidget.textSpan`, and [TextSpan] equality is a
+  /// deep walk over children. Tokenizing inside `build` would therefore pay for
+  /// re-scanning ~13KB *and* for a node-by-node comparison of a few thousand
+  /// spans on every rebuild of the shell around it. Tokens are the expensive,
+  /// stable half; the styles are the cheap half that has to follow the theme.
+  late List<DartToken> _tokens;
+
+  @override
+  void initState() {
+    super.initState();
+    _tokens = tokenizeDart(widget.source);
+  }
+
+  @override
+  void didUpdateWidget(_Code oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Only the source. A brightness change re-styles the same tokens.
+    if (oldWidget.source != widget.source) {
+      _tokens = tokenizeDart(widget.source);
+    }
+  }
+
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  /// What a kind looks like — the policy half of the seam, injected here so the
+  /// tokenizer never learns what a `ColorScheme` is.
+  ///
+  /// **Hue-free, and that is a constraint rather than a taste.**
+  /// `example_theme.dart` states it outright: *"The chrome carries no hue at
+  /// all… A chrome with an accent of its own would put two colours on screen
+  /// and lose that"*, and the scheme is `DynamicSchemeVariant.monochrome`
+  /// seeded from black, so there is no hue here to take even if one were
+  /// wanted.
+  ///
+  /// `table_palette.dart` reaches the same conclusion from the other side and
+  /// is worth not confusing with this one: it says the **table's** colours
+  /// cannot be *derived* from the app's `ColorScheme`, which is the measurement
+  /// behind #112. Chrome can and does derive from it — that is the difference
+  /// between a demo's frame and the thing the demo is showing.
+  ///
+  /// **Comments are not dimmed, which inverts the usual mapping.** A
+  /// conventional highlighter fades comments and lights up keywords, because in
+  /// most code the comments are asides. Measured 2026-09-02 over the eleven
+  /// recipes, they are 762 of 2603 lines — 29%, and they are the teaching — so
+  /// slant separates them while leaving them at full contrast, and what recedes
+  /// instead is the punctuation.
+  ///
+  /// **No leaf sets `fontFamily`.** The mono face is set once on the
+  /// [SelectableText] and inherited; a leaf that named a family would render
+  /// proportional while the pane's own #123 guard — which reads
+  /// `EditableText.style`, the *wrapper* — stayed green.
+  TextStyle? _styleFor(DartTokenKind kind) {
+    final scheme = widget.scheme;
+    return switch (kind) {
+      // Inherits the root style. One less object per token, and the root is
+      // already the colour plain code should be.
+      DartTokenKind.plain => null,
+      DartTokenKind.comment => const TextStyle(fontStyle: FontStyle.italic),
+      DartTokenKind.keyword => const TextStyle(fontWeight: FontWeight.w600),
+      DartTokenKind.string ||
+      DartTokenKind.number =>
+        TextStyle(color: scheme.onSurfaceVariant),
+      DartTokenKind.punctuation => TextStyle(color: scheme.outline),
+    };
   }
 
   @override
@@ -251,8 +391,17 @@ class _CodeState extends State<_Code> {
           scrollDirection: Axis.horizontal,
           child: Padding(
             padding: const EdgeInsets.all(16),
-            child: SelectableText(
-              widget.source,
+            child: SelectableText.rich(
+              // The root span carries no style of its own: `SelectableText`
+              // wraps whatever it is given as `TextSpan(style: style, children:
+              // [yours])`, so the face below is what every token inherits and
+              // what `EditableText.style` reports.
+              TextSpan(
+                children: [
+                  for (final token in _tokens)
+                    TextSpan(text: token.text, style: _styleFor(token.kind)),
+                ],
+              ),
               style: TextStyle(
                 fontSize: 12.5,
                 height: 1.45,
