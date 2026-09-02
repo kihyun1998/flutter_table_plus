@@ -97,7 +97,7 @@ These numbers exist in no note file, and they re-ordered the map:
 ## Coverage, and what an absent note means
 
 **Coverage is complete** for `lib/`, `example/`, and the release surface — 23
-territories, 6 invariants. This is not a pilot.
+territories, 7 invariants. This is not a pilot.
 
 So **an absent note is not a backlog item; it means the area is not part of the
 system.** A note becomes owed when either of these happens:
@@ -190,4 +190,5 @@ worth watching.
 [do not work around an upstream contract here](invariant/upstream-contract.md) ·
 [never re-assemble by hand-listing fields](invariant/no-hand-enumeration.md) ·
 [viewport-local coordinates come from one frame](invariant/viewport-local-frame.md) ·
-[observe at the screen, assert by count](invariant/observe-at-the-screen.md)
+[observe at the screen, assert by count](invariant/observe-at-the-screen.md) ·
+[a guard reads the destination, never the source](invariant/guard-the-destination.md)

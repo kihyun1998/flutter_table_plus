@@ -71,9 +71,22 @@ void main() {
       // that the claim "the real corpus covers this" is checked rather than
       // believed. When it fails, `_awkward` below is doing the work alone,
       // which is exactly what a reader needs to be told.
+      //
+      // It is a real objection that this can redden on a correct tree: a Linux
+      // clone, or `core.autocrlf=false`, legitimately produces eleven LF files
+      // and nothing is wrong. It is kept because there is no CI — these gates
+      // run on one machine — and because the alternative is losing the only
+      // signal that says when the corpus stopped contributing. The failure
+      // message therefore has to say which of the two it is, or it teaches
+      // someone to ignore a gate, which is #55's lesson.
       expect(withCrlf, greaterThan(0),
-          reason: 'no bundled recipe carries CRLF on this checkout, so the '
-              'loop above cannot observe a carriage return being dropped');
+          reason: 'No bundled recipe carries CRLF on THIS CHECKOUT. That is '
+              'probably not a defect — .gitattributes is `* text=auto`, so a '
+              'Linux clone makes all eleven LF. What it means is that the loop '
+              'above is no longer able to observe a carriage return being '
+              'dropped, and `_awkward` below is now the only witness. Delete '
+              'this assertion if that trade is acceptable; do not "fix" the '
+              'tree to satisfy it.');
     });
 
     test('and over line endings the real corpus may not have today', () {

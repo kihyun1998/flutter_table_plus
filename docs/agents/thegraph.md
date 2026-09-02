@@ -99,7 +99,7 @@ was being believed, not being lost.
 ## `map` — the MAP
 
 **Read [`docs/map/README.md`](../map/README.md) before drawing the boundary.**
-23 territories and 6 cross-cutting invariants, indexed by *what the system does*
+23 territories and 7 cross-cutting invariants, indexed by *what the system does*
 rather than by the event that produced them.
 
 This node used to carry a hand-written module table. It does not any more, on

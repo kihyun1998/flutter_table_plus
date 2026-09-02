@@ -114,6 +114,12 @@ void main() {
         expect(grey(s.onSurfaceVariant), isTrue,
             reason: 'string and number tokens carry a hue');
         expect(grey(s.outline), isTrue, reason: 'punctuation carries a hue');
+        // Not a token colour — this is the ground the Code pane's path bar and
+        // the shell's own bars are painted on. Added for the same reason as the
+        // two above: a chrome ground carrying a hue is exactly as visible as a
+        // token carrying one, and it was outside the list.
+        expect(grey(s.surfaceContainerHighest), isTrue,
+            reason: 'the bar grounds carry a hue');
 
         // Semantic colour is not decoration. A failure that reads as a shade of
         // grey is a failure nobody notices.
