@@ -118,21 +118,43 @@ class _SourcePaneState extends State<SourcePane> {
     // refuse, arriving through the control added to complete the pane.
     return FutureBuilder<String>(
       future: _source,
-      builder: (context, snapshot) => Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _PathBar(path: widget.assetPath, source: snapshot.data),
-          Expanded(child: _body(snapshot, scheme)),
-        ],
-      ),
+      builder: (context, snapshot) {
+        // **`ConnectionState.done`, never `hasData`.** `AsyncSnapshot.inState`
+        // carries `data`, `error` and `stackTrace` across a re-subscribe —
+        // documented in `async.dart` as persisting *"even if the new state is
+        // `ConnectionState.none`"* — and `FutureBuilder.didUpdateWidget` does
+        // exactly that when the future is replaced. So for at least one frame
+        // after the path changes, the snapshot reports `waiting` while still
+        // holding the PREVIOUS recipe's bytes.
+        //
+        // Reading `hasData` there puts file A's source on screen under file B's
+        // path, which is the one failure this pane exists to make impossible,
+        // and hands file A's bytes to a copy button labelled B. The path bar
+        // is evidence; a control beside it must not contradict it.
+        final settled = snapshot.connectionState == ConnectionState.done;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _PathBar(
+              path: widget.assetPath,
+              source: settled ? snapshot.data : null,
+            ),
+            Expanded(child: _body(snapshot, settled, scheme)),
+          ],
+        );
+      },
     );
   }
 
-  Widget _body(AsyncSnapshot<String> snapshot, ColorScheme scheme) {
-    if (snapshot.hasError) {
+  Widget _body(
+    AsyncSnapshot<String> snapshot,
+    bool settled,
+    ColorScheme scheme,
+  ) {
+    if (settled && snapshot.hasError) {
       return _Failure(path: widget.assetPath, error: snapshot.error!);
     }
-    if (!snapshot.hasData) {
+    if (!settled || !snapshot.hasData) {
       // Deliberately not a spinner. The asset is in this app's own bundle, so
       // the wait is a frame or two and an indicator would only flash — and an
       // indeterminate one animates forever, which means `pumpAndSettle` never
@@ -176,6 +198,23 @@ class _PathBar extends StatefulWidget {
 class _PathBarState extends State<_PathBar> {
   Timer? _confirmation;
   bool _copied = false;
+
+  @override
+  void didUpdateWidget(_PathBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // **The confirmation belongs to the file it was shown for.** `SourcePane`
+    // sits in a keyless conditional slot in the shell, and opening another
+    // recipe does not close the Code view — so the element is reused and this
+    // State survives the path change. Without this, copying recipe A and
+    // picking recipe B within 1400ms leaves a green "Copied ✓" sitting beside
+    // B's path, for a file that was never copied. The pane's own doc-comment
+    // calls the path bar *evidence*; this is the bar asserting something false
+    // about the file it names, which is worse than offering no confirmation.
+    if (oldWidget.path != widget.path) {
+      _confirmation?.cancel();
+      _copied = false;
+    }
+  }
 
   @override
   void dispose() {
@@ -305,15 +344,20 @@ class _CodeState extends State<_Code> {
   /// controller also gives the [Scrollbar] something unambiguous to track.
   final _controller = ScrollController();
 
-  /// Cached, and not an optimisation reflex — it is what the SDK's own
-  /// behaviour asks for.
+  /// Cached because tokens are the expensive, stable half; the styles are the
+  /// cheap half that has to follow the theme.
   ///
-  /// [SelectableText.didUpdateWidget] disposes and rebuilds its controller
-  /// whenever `textSpan != oldWidget.textSpan`, and [TextSpan] equality is a
-  /// deep walk over children. Tokenizing inside `build` would therefore pay for
-  /// re-scanning ~13KB *and* for a node-by-node comparison of a few thousand
-  /// spans on every rebuild of the shell around it. Tokens are the expensive,
-  /// stable half; the styles are the cheap half that has to follow the theme.
+  /// **It removes the re-scan and nothing else, and an earlier version of this
+  /// comment claimed more.** `SelectableText.didUpdateWidget` rebuilds its
+  /// controller whenever `textSpan != oldWidget.textSpan`, and `TextSpan`
+  /// equality short-circuits only on `identical` — while [build] allocates a
+  /// fresh span per token every time. So the deep comparison happens whether or
+  /// not the tokens were cached, and caching them cannot be justified by it.
+  /// Avoiding *that* would mean caching the built tree, which would then have
+  /// to be invalidated on every theme change.
+  ///
+  /// It is not worth doing: measured 2026-09-02, the largest recipe produces
+  /// **1436** spans, and only one recipe is on screen at a time.
   late List<DartToken> _tokens;
 
   @override

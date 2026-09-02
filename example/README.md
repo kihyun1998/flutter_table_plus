@@ -49,10 +49,12 @@ and desktop width in the same moment.
 
 **The source pane shows the file itself**, read from the asset bundle — not a copy of the code in a
 string. A snippet cannot drift from what you just watched run if it *is* what you just watched run.
-It is syntax-highlighted and there is a copy button, and neither is allowed to touch the bytes: the
-tokenizer returns a *partition*, so concatenating what is drawn reproduces the file exactly, and the
-test follows that all the way to the clipboard rather than stopping at the tokenizer. There are no
-line numbers — this is not a source viewer, it is the paste.
+It is syntax-highlighted and there is a copy button, and there are two ways to get the file out —
+proved separately, because they are different paths. The **button** copies the bundle's bytes
+directly and never passes through the highlighter at all. **Selecting and copying** does pass
+through it, so the tokenizer returns a *partition*: concatenating what is drawn reproduces the file
+exactly, and the test flattens the rendered spans with the same call the clipboard makes. There are
+no line numbers — this is not a source viewer, it is the paste.
 
 ## What a scenario is, and why it is not a recipe
 

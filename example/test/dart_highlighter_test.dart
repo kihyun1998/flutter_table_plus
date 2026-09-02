@@ -99,10 +99,16 @@ void main() {
     });
   });
 
-  group('ordering — comments are consumed before quotes', () {
-    // 54 comment lines across 10 of the 11 recipes contain a lone apostrophe.
-    // Reverse this ordering and every one of them opens a string. It is the
-    // single highest-count hazard in the corpus and the cheapest to get wrong.
+  group('a comment is consumed whole', () {
+    // 54 comment lines across 10 of the 11 recipes contain a lone apostrophe,
+    // the highest-count hazard in the corpus.
+    //
+    // What guards it is that the whole comment is consumed in one step, so no
+    // character inside one is ever dispatched on — NOT the order of the
+    // branches, which is what an earlier version of this comment claimed. A
+    // character is either `/` or `'` and never both, so those arms are mutually
+    // exclusive and swapping them is a no-op; that was measured, and the
+    // mutation that actually reddens these two is crippling `_lineCommentEnd`.
     test("an apostrophe in a comment does not open a string", () {
       const source = "// somebody's name\nfinal x = 1;\n";
       final tokens = tokenizeDart(source);
@@ -235,6 +241,26 @@ void main() {
             t.kind == DartTokenKind.keyword && t.text.contains('final')),
         isTrue,
         reason: 'the second line was swallowed by the unterminated string',
+      );
+    });
+
+    test('and an unterminated interpolation stops there too', () {
+      // The bound above was stated unconditionally and had a hole: `${` handed
+      // scanning to the interpolation scanner, which had no newline bound of
+      // its own and returned end-of-file. Two characters were enough to escape
+      // the guarantee — and the test above could not see it, because `'oops`
+      // contains no `$`.
+      const source = "final a = '\${oops\nfinal b = 2;\n";
+      final tokens = tokenizeDart(source);
+
+      expectPartitions(tokens, source);
+      final strings =
+          tokens.where((t) => t.kind == DartTokenKind.string).toList();
+      expect(strings.single.text, "'\${oops");
+      expect(
+        tokens.where((t) => t.kind == DartTokenKind.keyword).length,
+        2,
+        reason: 'the rest of the file was coloured as one string',
       );
     });
   });

@@ -27,17 +27,25 @@
 /// `* text=auto`), and lower-casing a word to match a keyword and emitting the
 /// lower-cased form.
 ///
-/// ## Ordering is the whole correctness argument
+/// ## A comment is consumed whole, and that is the correctness argument
 ///
-/// Comments are consumed **before** quotes. Measured 2026-09-02 over the 11
-/// recipes: 54 comment lines contain a lone apostrophe (`somebody's`,
-/// `API's`) — a number that goes stale on any comment edit, dated so it reads
-/// as the measurement it is rather than as a current fact. Consider a
-/// quote first and every one of them opens a string that runs to end of line —
-/// and, if the scanner carried string state across lines, to the next
-/// apostrophe several paragraphs down. That is 54 sites against the 3 that the
-/// interpolation handling below exists for, and it is the one that would make
-/// the pane look broken at a glance.
+/// Measured 2026-09-02 over the 11 recipes: 54 comment lines contain a lone
+/// apostrophe (`somebody's`, `API's`) — a number that goes stale on any comment
+/// edit, dated so it reads as the measurement it is rather than as a current
+/// fact. A scanner that examined characters one at a time would open a string
+/// on every one of them, running to end of line, and — if it carried string
+/// state across lines — to the next apostrophe several paragraphs down. That is
+/// 54 sites against the 3 that the interpolation handling exists for, and it is
+/// the one that would make the pane look broken at a glance.
+///
+/// What prevents it is that [_lineCommentEnd] and [_blockCommentEnd] consume
+/// the **entire** comment in one step, so no character inside one is ever
+/// dispatched on. **It is not the order of the branches**, and an earlier
+/// version of this comment said it was: a character is either `/` or `'` and
+/// never both, so the two arms are mutually exclusive and their order in the
+/// chain is a no-op. That was measured — reversing them changed nothing, and
+/// the mutation had to cripple [_lineCommentEnd] instead before the guarding
+/// test would redden. `docs/agents/lessons.md` records it.
 ///
 /// ## What the real corpus actually contains
 ///
@@ -250,7 +258,12 @@ int _stringEnd(String source, int i, {required bool raw}) {
     }
     if (!raw && c == _dollar && j + 1 < source.length &&
         source.codeUnitAt(j + 1) == _openBrace) {
-      j = _interpolationEnd(source, j + 2);
+      // The newline bound has to be handed down, or `${` is a hole in it: an
+      // unclosed interpolation would run to end of file and colour the rest of
+      // the recipe as a string, which is precisely what the bound below exists
+      // to stop. A triple-quoted literal genuinely may span lines, so only it
+      // is exempt.
+      j = _interpolationEnd(source, j + 2, stopAtNewline: !triple);
       continue;
     }
     if (c == quote) {
@@ -273,7 +286,7 @@ int _stringEnd(String source, int i, {required bool raw}) {
 /// counter alone gets `'${selected.join(', ')}'` wrong, because the `'` inside
 /// would end the outer literal. Handing nested quotes back to the string
 /// scanner is what makes the three real sites in this repo come out whole.
-int _interpolationEnd(String source, int j) {
+int _interpolationEnd(String source, int j, {required bool stopAtNewline}) {
   var depth = 1;
   while (j < source.length) {
     final c = source.codeUnitAt(j);
@@ -281,6 +294,11 @@ int _interpolationEnd(String source, int j) {
       j = _stringEnd(source, j, raw: false);
       continue;
     }
+    // Inherited from the enclosing literal. Without it, `'${oops` would return
+    // `source.length` and the newline bound in [_stringEnd] would never be
+    // reached — an unbounded run through a branch whose entire purpose is to
+    // bound one.
+    if (stopAtNewline && c == _newline) return j;
     if (c == _openBrace) {
       depth++;
     } else if (c == _closeBrace) {
