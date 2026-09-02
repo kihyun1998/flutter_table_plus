@@ -66,12 +66,15 @@ make a frame rate a measurement of the wall, so opening that scenario leaves the
 segment away. Which destinations may be drawn there is the destination's own call — see
 [`lib/shell/shell_destination.dart`](lib/shell/shell_destination.dart).
 
-## Also here
+## Pages
 
-- **The playground** — every knob at once, on one table. It predates the recipes and still works;
-  the recipes are a new surface beside it, not a replacement.
-- **The viewport lab** and the **tooltip anchor** page, for the two behaviours that are easiest to
-  get wrong by reasoning about them instead of looking.
+The menu's third category, and the one named after a shape rather than a subject: each entry is a
+full page with its own `Scaffold`, so the shell points at it instead of drawing it in the stage.
+
+- **Every setting** — the playground: every knob at once, on one table. It predates the recipes and
+  still works; the recipes are a new surface beside it, not a replacement.
+- **Tooltip anchors** — where a tooltip sits, beside the cell or beside the cursor. The tooltips
+  recipe covers the feature; this compares two configurations, which one recipe cannot.
 
 ## `test/` is a gate, not an afterthought
 

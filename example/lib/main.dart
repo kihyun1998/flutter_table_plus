@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'pages/home_page.dart';
+import 'shell/shell_page.dart';
 import 'theme/example_theme.dart';
 
 void main() {
@@ -38,7 +38,7 @@ class _MyAppState extends State<MyApp> {
           theme: exampleTheme(Brightness.light),
           darkTheme: exampleTheme(Brightness.dark),
           themeMode: _themeController.mode,
-          home: const HomePage(),
+          home: const ShellPage(),
         ),
       ),
     );

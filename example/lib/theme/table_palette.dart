@@ -199,10 +199,10 @@ class TablePalette {
 /// A neutral table theme for a demo that has no settings panel behind it.
 ///
 /// The playground assembles its own theme, because sixty-odd settings feed into
-/// it. Everything else in this example — the viewport lab, the recipes — wants
-/// the same colours without the machinery, and reaching into the playground for
-/// them is precisely the dependency a recipe is forbidden to have. So the
-/// palette lives here, and both sides read it.
+/// it. Everything else in this example — the recipes, the scenarios, the shell's
+/// own demos — wants the same colours without the machinery, and reaching into
+/// the playground for them is precisely the dependency a recipe is forbidden to
+/// have. So the palette lives here, and both sides read it.
 ///
 /// **Three sub-themes are still at package defaults**, and they are named
 /// rather than counted: `hoverButtonTheme`, `rowTooltipTheme` and

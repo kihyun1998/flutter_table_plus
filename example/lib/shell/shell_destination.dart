@@ -4,10 +4,22 @@ library;
 import 'package:flutter/widgets.dart';
 
 /// The groups the menu shows, in the order it shows them.
+///
+/// **Two of these name content and the third names a hosting kind, and that is
+/// deliberate.** A recipe is one pasteable feature and a scenario is several
+/// assembled; [pages] is the remainder, and what its members share is not a
+/// subject but a shape — each is a full page with its own `Scaffold`, so the
+/// shell points at it instead of drawing it. Inventing a content theme to cover
+/// "every setting at once" and "where a tooltip sits" would be naming a set
+/// after something it does not have.
+///
+/// It was `playground('Playground')` until #147, when a second member arrived
+/// and made the old name visibly a description of one element rather than of
+/// the set.
 enum ShellCategory {
   recipes('Recipes'),
   scenarios('Scenarios'),
-  playground('Playground');
+  pages('Pages');
 
   const ShellCategory(this.title);
 

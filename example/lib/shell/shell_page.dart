@@ -4,6 +4,7 @@ library;
 import 'package:flutter/material.dart';
 
 import '../pages/playground/playground_page.dart';
+import '../pages/tooltip_anchor/tooltip_anchor_page.dart';
 import '../preview/device_wall.dart';
 import '../preview/preview_frame.dart';
 import '../preview/preview_stage.dart';
@@ -81,8 +82,19 @@ class _ShellPageState extends State<ShellPage> {
     RouteDestination(
       id: 'playground',
       label: 'Every setting',
-      category: ShellCategory.playground,
+      category: ShellCategory.pages,
       open: (context) => const PlaygroundPage(),
+    ),
+    RouteDestination(
+      id: 'tooltip-anchors',
+      label: 'Tooltip anchors',
+      category: ShellCategory.pages,
+      // Pointed at rather than absorbed, for the same reason the playground is:
+      // it is a full page with its own `Scaffold` and `AppBar`. It survives the
+      // retirement of the old home list because it answers a question the
+      // tooltips recipe structurally cannot — a recipe shows one configuration,
+      // and this compares two (#147).
+      open: (context) => const TooltipAnchorPage(),
     ),
   ];
 

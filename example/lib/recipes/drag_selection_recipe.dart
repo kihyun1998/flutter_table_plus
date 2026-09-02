@@ -21,7 +21,9 @@ import '../theme/table_palette.dart';
 ///
 /// That last term is not a convenience. It is part of the activation
 /// condition, and omitting it is how the example's own viewport lab shipped
-/// with drag selection inert through an entire green test suite. Three of the
+/// with drag selection inert through an entire green test suite. That page was
+/// retired at #147 and the incident is the reason this list is written out.
+/// Three of the
 /// four are invisible on screen, which is why this recipe draws them: see
 /// [_WiringStrip], the one part of this file that is demo scaffolding rather
 /// than table code.

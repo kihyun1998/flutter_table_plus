@@ -3,12 +3,12 @@
 ## What it is
 
 `example/` — a Flutter application with its own manifest, its own analyzer run
-and its own test suite, containing a shell menu whose entries are recipes (one
-feature per self-contained file, shown beside its own source) and scenarios
-(several features assembled, held to no import rule), a viewport preview stage,
-a feature list with per-feature detail panes, a playground with
-named presets, and a settings registry that drives every table option from the
-UI.
+and its own test suite. **It opens on the shell**, whose menu holds recipes (one
+feature per self-contained file, shown beside its own source), scenarios
+(several features assembled, held to no import rule), and pages (a full page
+with its own `Scaffold`, opened on its own route). Also here: a viewport preview
+stage, a feature list with per-feature detail panes, a playground with named
+presets, and a settings registry that drives every table option from the UI.
 
 It is the single largest area by issue count in this repository, and it is a
 **gate**, not a demo folder.
@@ -136,6 +136,16 @@ notes.
   the Code pane did from #104 to #123 while looking monospace-configured.
   Charset changes are checked by reading the shipped `cmap`, never by reading
   the script that produced it.
+- **Two menu categories name content and the third names a hosting kind.**
+  Recipes are pasteable single features and scenarios are assemblies; `pages` is
+  the remainder, and what its two members share is a shape rather than a
+  subject — each is a full page with its own `Scaffold`, so the shell points at
+  it instead of drawing it. The category was `playground('Playground')` while it
+  had one member, which is a set named after its only element; the second member
+  is what made that visible, and renaming cost nothing because no test asserts a
+  category header (#147). Inventing a content theme to cover "every setting at
+  once" and "where a tooltip sits" would have been naming a set after something
+  it does not have.
 - **A knob pane only draws its own feature's controls**, so an interaction
   between two features is not reachable from either one's knobs. Where the
   interaction is the point — resized widths against zoom, a row card against a
@@ -152,7 +162,8 @@ notes.
 `lib/pages/playground/widgets/feature_detail_pane.dart`
 `lib/pages/tooltip_anchor/tooltip_anchor_page.dart`
 `lib/shell/shell_page.dart`
-`lib/shell/shell_destination.dart` — `StageDestination`, `allowsWall`
+`lib/shell/shell_destination.dart` — `ShellCategory`, `StageDestination`, `allowsWall`, `RouteDestination`
+`lib/main.dart` — `MyApp`, the entry point that names what the app opens on
 `lib/shell/recipe_catalog.dart`
 `lib/scenarios/hr_dashboard_scenario.dart` — `HrDashboardDemo`
 `lib/scenarios/large_table_scenario.dart` — `LargeTableDemo`
@@ -188,6 +199,13 @@ drifting
 
 ## Known holes / open
 
+- **`ViewportBar.showsWall` defaults to `false` and no caller uses the
+  default.** `ShellPage` is the only host and always passes `_open.allowsWall`
+  explicitly; the host that relied on the default drew one frame and was
+  retired at #147. Kept for the reason below it is kept: the next host that
+  draws a single frame is written by someone who would not think to pass the
+  parameter, and `false` is the answer they want. Recorded because an unused
+  default reads as dead code to whoever finds it next.
 - **Every `ShellCategory` now has entries, so `ShellMenu`'s empty-category
   branch is unreachable from the app.** It is kept on purpose — the next
   category added is added empty, which is exactly when it is needed and exactly

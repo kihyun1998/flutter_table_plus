@@ -272,10 +272,10 @@ void main() {
   });
 
   group('demoTableTheme', () {
-    // The palette the playground uses, lifted out of it so the lab and the
-    // recipes can read it without importing the playground — the dependency a
-    // recipe is forbidden to have. These pin that lifting it did not quietly
-    // change what it holds.
+    // The palette the playground uses, lifted out of it so the recipes and the
+    // shell's own demos can read it without importing the playground — the
+    // dependency a recipe is forbidden to have. These pin that lifting it did
+    // not quietly change what it holds.
 
     bool grey(Color c) {
       final v = c.toARGB32();

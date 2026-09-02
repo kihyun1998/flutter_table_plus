@@ -163,13 +163,20 @@ class ViewportBar extends StatelessWidget {
 
   /// Whether the wall is offered as a fourth mode.
   ///
-  /// **Two unrelated reasons to say no**, which is why this is a flag rather
-  /// than something the host could infer. `ViewportLabPage` hosts one frame and
-  /// has nowhere to put it. The shell has somewhere and still refuses for one
-  /// destination — see `StageDestination.allowsWall` — because a wall over a
-  /// hundred thousand rows measures the wall. The first reason was the only one
-  /// written here until #109, and a reader who trusted it would conclude the
-  /// shell should always pass `true`.
+  /// **A flag rather than something the host could infer**, because the reason
+  /// to refuse is not a property of this bar. The shell has somewhere to put a
+  /// wall and still refuses it for one destination — see
+  /// `StageDestination.allowsWall` — because a wall over a hundred thousand
+  /// rows measures the wall.
+  ///
+  /// **A second reason was written here and its example is gone.**
+  /// `ViewportLabPage` hosted one frame and had nowhere to put a wall; #147
+  /// deleted the page, and `ShellPage` is now the only host — it always passes
+  /// `_open.allowsWall` explicitly. So what that reason justified is the
+  /// **default below, not the flag**, and the default has no caller today. It
+  /// is kept for the reason `ShellMenu`'s empty-category branch is kept: the
+  /// next host that draws one frame is written by someone who would not think
+  /// to pass this parameter, and `false` is the answer they want.
   ///
   /// **Dropping the segment does not clear the selection.** `SegmentedButton`
   /// asserts `segments.length > 0`, `selected.length > 0 ||

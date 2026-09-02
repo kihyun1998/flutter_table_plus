@@ -4,6 +4,7 @@ import 'package:example/preview/preview_stage.dart';
 import 'package:example/preview/viewport_spec.dart';
 import 'package:example/shell/destinations/employee_demo.dart';
 import 'package:example/shell/shell_destination.dart';
+import 'package:example/pages/tooltip_anchor/tooltip_anchor_page.dart';
 import 'package:example/shell/shell_menu.dart';
 import 'package:example/shell/shell_page.dart';
 import 'package:example/theme/example_theme.dart';
@@ -301,7 +302,47 @@ void main() {
     });
   });
 
-  group('the playground is pointed at, not absorbed', () {
+  group('pages are pointed at, not absorbed', () {
+    testWidgets('and the menu lists both of them', (tester) async {
+      // The roster check, moved here from `widget_test.dart` at #147. It used
+      // to read "the home offers the tooltip anchor demo" against a list of
+      // four tiles; the list is gone and the menu is where a destination is
+      // now offered or not. Counted rather than named, so a reordering of the
+      // category stays green and a dropped destination does not.
+      _wide(tester);
+      await _pumpShell(tester);
+
+      expect(find.text('Every setting'), findsOneWidget);
+      expect(find.text('Tooltip anchors'), findsOneWidget);
+    });
+
+    testWidgets('the tooltip anchor page is not built until it is chosen',
+        (tester) async {
+      // Narrow in the same way the playground's counterpart is, and measured:
+      // turning this destination into a `StageDestination` leaves this test
+      // green and reddens only the one below, because the embed is caught by
+      // `ShellMenu` still being on screen and by nothing else. `widget_test`'s
+      // entry-point smoke test cannot tell the two apart either — the table
+      // renders in the stage just as happily.
+      _wide(tester);
+      await _pumpShell(tester);
+
+      expect(find.byType(TooltipAnchorPage), findsNothing);
+    });
+
+    testWidgets('and choosing it opens it on its own route', (tester) async {
+      _wide(tester);
+      await _pumpShell(tester);
+
+      await tester.tap(find.text('Tooltip anchors'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(TooltipAnchorPage), findsOneWidget);
+      // Its own page, with its own app bar — not a pane inside the shell.
+      expect(find.byType(ShellMenu), findsNothing,
+          reason: 'the shell is still on screen, so this was an embed');
+    });
+
     testWidgets('it is not built until it is chosen', (tester) async {
       // Narrower than it looks, and said plainly: this pins that opening the
       // shell does not build the playground, which would run its data
