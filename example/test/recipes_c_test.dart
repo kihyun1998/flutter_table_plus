@@ -507,8 +507,15 @@ void main() {
         (tester) async {
       // The claim the recipe's comment makes, turned into something that can
       // fail. An inline `(i, row) => ...` is a new object every build, and the
-      // table re-walks every row to re-total its height whenever this identity
+      // table re-walks every row to re-total its height whenever the callback
       // changes — silently, and proportionally to the row count.
+      //
+      // The table's own comparison is `==`, not `identical` (#137: a `State`
+      // tear-off is `identical`-false and `==`-true, and `identical` answers
+      // differently in JIT and AOT). `identical` is asserted here on purpose
+      // anyway: this recipe uses a `static` function, so the same object every
+      // build is the stronger claim and the one that would break first if
+      // somebody moved it inline.
       await _pump(tester, const DynamicRowHeightRecipe());
       final first = _table(tester).calculateRowHeight;
 

@@ -114,6 +114,7 @@ row ids — which is the question every callback in this area answers implicitly
 ## Cross-cutting invariants
 
 → [Never hand-maintain a list a later addition must join](../invariant/no-hand-enumeration.md) — four derivations of one fact, two of them wrong, and no mechanism that made them agree (#135)
+→ [A decorated box hands its child less than it declares](../invariant/decoration-eats-the-child.md) — the group box carries the row divider, and its members are laid out inside `height − border` (#121)
 
 ## Blast radius
 

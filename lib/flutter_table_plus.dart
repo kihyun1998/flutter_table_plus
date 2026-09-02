@@ -1,7 +1,9 @@
 /// A highly customizable and efficient table widget for Flutter.
 ///
 /// This library provides a feature-rich table implementation with synchronized
-/// scrolling, theming support, and flexible data handling through Map-based data.
+/// scrolling, theming support, and rows of any type — `FlutterTablePlus<T>` takes
+/// a `List<T>` and reads it through the `rowId` and `valueAccessor` you supply.
+/// (It was `Map<String, dynamic>`-only before 2.0.0; see `docs/MIGRATION.md`.)
 ///
 /// ## Features
 ///

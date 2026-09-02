@@ -86,6 +86,7 @@ calculation ultimately asks.
 
 → [Never hand-maintain a list a later addition must join](../invariant/no-hand-enumeration.md) — two widgets cached row heights off two hand-written conditions, and the lists disagreed twice (#120, #128)
 → [Observe at the screen, assert by count](../invariant/observe-at-the-screen.md) — geometry is asserted through widget tests, where counting beats naming
+→ [A decorated box hands its child less than it declares](../invariant/decoration-eats-the-child.md) — the plain row and the body's list slots build the same decorated-box shape
 
 ## Blast radius
 

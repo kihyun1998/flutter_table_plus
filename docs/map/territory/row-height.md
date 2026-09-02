@@ -34,6 +34,7 @@ compute one.
 ## Cross-cutting invariants
 
 → [The widget-test font is a square per glyph](../invariant/test-font-square.md) — a measured text height in a test is the square font's height, so wrap points differ from the screen's
+→ [A decorated box hands its child less than it declares](../invariant/decoration-eats-the-child.md) — a measured height is the number declared, never the number the child receives
 
 ## Blast radius
 
