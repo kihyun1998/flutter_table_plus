@@ -13,11 +13,14 @@ hand-copied one drifts the moment lessons grows; grep `lessons.md` for the
 current set.
 
 **Before drawing a boundary, read the MAP — [`docs/map/README.md`](docs/map/README.md).**
-23 territories and 7 cross-cutting invariants, indexed by *what the system does*
-rather than by the event that produced them. Open the territory your change
-enters and treat its `## Blast radius` as a checklist. On the way out, ask
-whether the fact you just found is true outside that territory — if it is, an
-invariant note is part of the change.
+Territories and cross-cutting invariants, indexed by *what the system does*
+rather than by the event that produced them. **How many of each is the MAP's own
+fact and is not copied here** — the same reason the issue roster above is not,
+and it drifted the same way: the invariant count was corrected in `## map` and
+left wrong four lines from a paragraph forbidding exactly that. Open the
+territory your change enters and treat its `## Blast radius` as a checklist. On
+the way out, ask whether the fact you just found is true outside that territory —
+if it is, an invariant note is part of the change.
 
 **`theflow` is retired**, and its bindings doc is **deleted**. Bindings are
 consumed by the *first* build; a graph exists, so every run from here is an
