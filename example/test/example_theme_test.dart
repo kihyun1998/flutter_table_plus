@@ -99,6 +99,22 @@ void main() {
         expect(grey(s.onSurface), isTrue, reason: 'onSurface carries a hue');
         expect(grey(s.outlineVariant), isTrue, reason: 'rules carry a hue');
 
+        // These two are named because something now reads them for colour:
+        // the Code pane's highlighter (`source_pane.dart` —
+        // `_CodeState._styleFor`) draws strings, numbers and punctuation from
+        // exactly these roles and from nothing else.
+        //
+        // A `ColorScheme` carries thirty-odd roles and this list is a hand-
+        // enumeration of four of them, so "the scheme is monochrome" was being
+        // trusted for every role nobody asserted. That is the same shape as
+        // #110, which closed as "the demo goes neutral" while four blues
+        // survived in sub-themes no demo had rendered yet: a check that reads a
+        // value's SOURCE and not its DESTINATION passes anything that acquires
+        // the value another way.
+        expect(grey(s.onSurfaceVariant), isTrue,
+            reason: 'string and number tokens carry a hue');
+        expect(grey(s.outline), isTrue, reason: 'punctuation carries a hue');
+
         // Semantic colour is not decoration. A failure that reads as a shade of
         // grey is a failure nobody notices.
         expect(grey(s.error), isFalse,
