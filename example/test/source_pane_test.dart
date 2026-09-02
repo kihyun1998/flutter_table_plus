@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:example/pages/playground/models/settings_spec.dart';
+import 'package:example/shell/dart_highlighter.dart';
 import 'package:example/preview/preview_frame.dart';
 import 'package:example/shell/recipe_catalog.dart';
 import 'package:example/shell/shell_page.dart';
@@ -41,6 +43,22 @@ class _BrokenBundle extends CachingAssetBundle {
       throw FlutterError('Unable to load asset: "$key".');
 }
 
+/// A bundle that answers when told to, so the window between "asked" and
+/// "arrived" can be stood inside rather than pumped past.
+///
+/// [_FakeBundle] completes on the next microtask, so a single `pump()` already
+/// finds it settled — which is exactly why a test written against it cannot see
+/// a mid-load defect, and why one was written that way and observed nothing.
+class _ControlledBundle extends CachingAssetBundle {
+  final _completer = Completer<ByteData>();
+
+  void deliver(String contents) => _completer
+      .complete(ByteData.sublistView(Uint8List.fromList(utf8.encode(contents))));
+
+  @override
+  Future<ByteData> load(String key) => _completer.future;
+}
+
 /// A bundle that never answers, for observing the state between "asked" and
 /// "arrived".
 ///
@@ -62,7 +80,12 @@ class _FakeBundle extends CachingAssetBundle {
 
   @override
   Future<ByteData> load(String key) async =>
-      ByteData.sublistView(Uint8List.fromList(contents.codeUnits));
+      // `utf8.encode`, not `codeUnits`. `loadString` decodes UTF-8, while
+      // `codeUnits` hands over UTF-16 units truncated to bytes — so `✓`
+      // (U+2713) arrives as U+0013, silently, with no throw. The corpus draws
+      // — · ← ✓ ✗, so the first person to put one in a fixture would have got
+      // a corrupted string and a confusing failure somewhere else.
+      ByteData.sublistView(Uint8List.fromList(utf8.encode(contents)));
 }
 
 Future<void> _pumpPane(
@@ -170,6 +193,46 @@ void main() {
       expect(find.textContaining('BBB'), findsOneWidget);
       expect(find.textContaining('AAA'), findsNothing);
       expect(find.text('b.dart'), findsOneWidget);
+    });
+
+    testWidgets('and never shows the old bytes under the new path, even for a '
+        'frame', (tester) async {
+      // The test above settles past this window; this one lives inside it.
+      //
+      // `AsyncSnapshot.inState` carries `data` across a re-subscribe — the SDK
+      // documents it as persisting "even if the new state is
+      // `ConnectionState.none`" — and `FutureBuilder.didUpdateWidget` does that
+      // when the future is replaced. So a builder reading `hasData` gets the
+      // PREVIOUS file for at least one frame after the path changes, which is
+      // the exact disagreement this pane exists to make impossible, and it is
+      // reachable in the app: the shell keeps the Code view open across recipe
+      // switches on purpose.
+      // `_ControlledBundle`, not `_FakeBundle`: the latter completes on the
+      // next microtask, so a single `pump()` already finds B settled and the
+      // window is never entered. A first version of this test used it and
+      // observed nothing.
+      await _pumpPane(tester, path: 'a.dart', bundle: _FakeBundle('AAA'));
+      expect(find.textContaining('AAA'), findsOneWidget);
+
+      final slow = _ControlledBundle();
+      await tester.pumpWidget(MaterialApp(
+        theme: exampleTheme(Brightness.light),
+        home: Scaffold(body: SourcePane(assetPath: 'b.dart', bundle: slow)),
+      ));
+      await tester.pump(); // Inside the window: asked for B, B has not arrived.
+
+      expect(find.text('b.dart'), findsOneWidget,
+          reason: 'the path did not change, so the rest proves nothing');
+      expect(find.textContaining('AAA'), findsNothing,
+          reason: "recipe A's source is on screen under recipe B's path");
+      // And the control that says "copy this file" is not offering A's bytes
+      // under B's name.
+      expect(tester.widget<IconButton>(find.byType(IconButton)).onPressed,
+          isNull);
+
+      slow.deliver('BBB');
+      await tester.pumpAndSettle();
+      expect(find.textContaining('BBB'), findsOneWidget);
     });
 
     testWidgets('long source scrolls inside its own region', (tester) async {
@@ -393,10 +456,27 @@ void main() {
       // string literal renders proportional while they both stay green. That
       // is #123 becoming invisible rather than being fixed, so this is an
       // addition and not a replacement.
+      // Every kind, on purpose. The first version of this fixture had no quote
+      // character, so it produced no `string` token — and a family set on the
+      // string arm, which is the case this test's own rationale names, would
+      // have passed it. A guard whose fixture does not reach a branch does not
+      // guard that branch.
+      const everyKind = "// a comment\n"
+          "class Sentinel {\n"
+          "  final s = 'x';\n"
+          "  var n = 1;\n"
+          "}\n";
+      expect(
+        tokenizeDart(everyKind).map((t) => t.kind).toSet(),
+        DartTokenKind.values.toSet(),
+        reason: 'the fixture stopped covering a kind, so the walk below no '
+            'longer sees every arm of _styleFor',
+      );
+
       await _pumpPane(
         tester,
         path: 'lib/recipes/selection_recipe.dart',
-        bundle: _FakeBundle("// a comment\nclass Sentinel {\n  var n = 1;\n}\n"),
+        bundle: _FakeBundle(everyKind),
       );
 
       final selectable =
@@ -510,6 +590,41 @@ void main() {
 
       expect(tester.widget<IconButton>(find.byType(IconButton)).onPressed,
           isNull);
+    });
+
+    testWidgets('and its confirmation does not follow you to the next file',
+        (tester) async {
+      // The two tests around this one cover the null-source arms. This is the
+      // arm they do not reach, and it was a live defect: `_PathBarState` had no
+      // `didUpdateWidget`, so `_copied` survived a path change.
+      //
+      // Reachable in the real app, not just in principle — `SourcePane` sits in
+      // a keyless conditional slot in the shell and opening another recipe does
+      // not close the Code view, so the element is reused and this State
+      // survives. Copy A, pick B inside the 1400ms window, and the bar reads
+      // B's path with a green check against it.
+      //
+      // It never copied the wrong bytes — `onPressed` is null while the source
+      // is null — so this is a false *claim*, not a data defect. On a pane
+      // whose own doc-comment calls the path bar evidence, that is the worse
+      // of the two.
+      await _pumpPane(tester, path: 'a.dart', bundle: _FakeBundle('AAA'));
+      await tester.tap(find.byIcon(Icons.copy_all_outlined));
+      await tester.pump();
+      expect(find.byIcon(Icons.check), findsOneWidget,
+          reason: 'nothing to carry over, so the rest proves nothing');
+
+      await tester.pumpWidget(MaterialApp(
+        theme: exampleTheme(Brightness.light),
+        home: Scaffold(
+          body: SourcePane(assetPath: 'b.dart', bundle: _FakeBundle('BBB')),
+        ),
+      ));
+      await tester.pump();
+
+      expect(find.text('b.dart'), findsOneWidget);
+      expect(find.byIcon(Icons.check), findsNothing,
+          reason: 'the path bar is claiming a copy of a file never copied');
     });
 
     testWidgets('and dead when the file could not be read', (tester) async {
