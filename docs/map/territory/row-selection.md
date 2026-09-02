@@ -49,6 +49,7 @@ differently, and it is currently discoverable only from the signature list.
 ## Cross-cutting invariants
 
 → [Do not work around an upstream contract here](../invariant/upstream-contract.md) — the checkbox is a sibling package's, and its floor is ours the moment we raise the constraint
+→ [A decorated box hands its child less than it declares](../invariant/decoration-eats-the-child.md) — the selection cell and the header cell size a checkbox inside a decorated box
 
 ## Blast radius
 

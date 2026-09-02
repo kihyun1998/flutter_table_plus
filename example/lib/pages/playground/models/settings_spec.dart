@@ -267,6 +267,18 @@ const settingsSpec = <SettingGroup>[
         id: 'dynamicRowHeight',
         title: 'Dynamic row heights',
         switchId: 'dynamicRowHeight',
+        interactions: [
+          Interaction(
+            otherFeatureId: 'mergedRows',
+            effect: 'A merged group is as tall as its members added up, and '
+                'each member is drawn at the height you returned for it — not '
+                'at an equal share of the group. Before 2.17.0 it was an equal '
+                'share, so a 48/96/48 group drew three 64s.',
+            evidence: 'table_plus_merged_row.dart `_sizeMemberCell`; '
+                'test/merged_row_member_heights_test.dart, "differing heights: '
+                'grouped matches ungrouped, cell for cell"',
+          ),
+        ],
       ),
       SettingFeature(
         id: 'dimRows',

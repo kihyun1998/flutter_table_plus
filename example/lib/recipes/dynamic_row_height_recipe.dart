@@ -34,12 +34,18 @@ import '../theme/table_palette.dart';
 /// **Hold the callback still, and make it a pure function of the row.** Two
 /// separate reasons, and they pull in the same direction.
 ///
-/// The table compares `calculateRowHeight` by identity and, when it changes,
+/// The table compares `calculateRowHeight` with `==` and, when it changes,
 /// re-walks every row to re-total the scrollable height. A closure written
-/// inline in `build` is a new object each time, so an inline `(i, row) => ...`
-/// buys that walk on every rebuild — proportional to your row count, with
-/// nothing warning you. A `static` function is the cheapest possible fix: the
-/// same object every time.
+/// inline in `build` is a new object each time and is `==`-unequal to the last
+/// one, so an inline `(i, row) => ...` buys that walk on every rebuild —
+/// proportional to your row count, with nothing warning you. A `static`
+/// function is the cheapest possible fix: the same object every time.
+///
+/// It used to say *by identity*, and #137 measured that wrong: a `State` method
+/// tear-off is `identical`-false but `==`-true, and `identical` is not even
+/// stable on it — `false` in the JIT test VM, `true` under AOT. The conclusion
+/// here is unchanged, because an inline lambda fails both tests. Only the word
+/// was wrong, which is the expensive kind: no test catches a wrong reason.
 ///
 /// The second reason used to bite rather than cost, and no longer does. Row
 /// heights are also cached *per index*, one layer down, and that cache was not
