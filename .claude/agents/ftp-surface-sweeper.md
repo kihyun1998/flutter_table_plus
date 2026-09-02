@@ -4,7 +4,7 @@ description: Sweeps every surface that describes flutter_table_plus's behavior a
 tools: Read, Grep, Glob
 ---
 
-Built from `thegraph@b188918a1bba`. Method: `thegraph`'s `sweep` node
+Built from `thegraph@2b3c8d4b5d03`. Method: `thegraph`'s `sweep` node
 (`~/.claude/skills/thegraph/SKILL.md`). This file carries this project's surfaces
 and how each is read. Stamp behind? Say so and continue. Never rebuild.
 

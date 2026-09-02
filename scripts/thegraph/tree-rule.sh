@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # tree-rule.sh — thegraph `place` guard for flutter_table_plus, and `gate` again
 # over the final diff.
-# Built from thegraph@b188918a1bba.
+# Built from thegraph@2b3c8d4b5d03.
 #
 # Decider: code. Layout is where a seam is physically expressed, so a file in the
 # wrong directory breaks the seam while producing no error, no failing test and
@@ -91,7 +91,10 @@ else
   } | sed '/^$/d' | sort -u > "$tmp"
 fi
 
-echo "── rules evaluated (${#RULES[@]}) ──"
+# Counts what it PRINTS, not just what is in RULES: the free prefixes below are
+# rules too, and they are evaluated first. A header that disagrees with the list
+# under it is the defect this whole script exists to keep out of the doc.
+echo "── rules evaluated ($(( ${#RULES[@]} + ${#FREE_PREFIXES[@]} ))) ──"
 for entry in "${RULES[@]}"; do
   d="${entry%%|*}"; rest="${entry#*|}"; g="${rest%%|*}"
   printf '   %s/%s\n' "$d" "$g"
@@ -153,14 +156,20 @@ echo "  owned by a rule : $owned"
 echo "  out of scope    : $outside  (manifests, generated output, platform scaffolding)"
 echo "  unruled in scope: ${#violations[@]}"
 
-cat <<'BANNER'
+# U1 and U2 are MEASURED here, never written down. Both numbers used to be
+# hardcoded in this banner and in the graph doc at once — the shape that had two
+# other counts in that doc wrong inside a day. The tree is the authority.
+u1_cells=$(ls lib/src/widgets/cells/*.dart 2>/dev/null | wc -l | tr -d ' ')
+u2_tests=$(ls test/*.dart 2>/dev/null | wc -l | tr -d ' ')
+
+cat <<BANNER
 
   NOT CHECKED — place's unclassified rows. An undecided difference is not a
   rule, and a guard that enforced one would ratify drift:
-   · U1  widgets/cells/ (3) vs widgets/table_header_cell.dart — all four are
-         StatelessWidget cells; the only axis is body-row vs header consumer
-   · U2  test/ flat at 57 files — the peers split 2:1
-  Argue either twice and `place` writes `triggers`; `promote` counts it.
+   · U1  widgets/cells/ ($u1_cells) vs widgets/table_header_cell.dart — all of them
+         are StatelessWidget cells; the only axis is body-row vs header consumer
+   · U2  test/ flat at $u2_tests files — the peers split 2:1
+  Argue either twice and \`place\` writes \`triggers\`; \`promote\` counts it.
 BANNER
 
 status=0

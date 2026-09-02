@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # agent-grants.sh — thegraph `gate`: every generated agent's tool grant.
-# Built from thegraph@b188918a1bba.
+# Built from thegraph@2b3c8d4b5d03.
 #
 # Decider: code. Invariant (1) licenses delegating a node on the grounds that it
 # READS without adjudicating. A write-capable tool in the grant makes that false

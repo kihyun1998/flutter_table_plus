@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # cluster.sh — thegraph `search` node for flutter_table_plus (query half only).
-# Built from thegraph@b188918a1bba.
+# Built from thegraph@2b3c8d4b5d03.
 #
 # Search BY THE ARTIFACT the candidate touches — the module, the field, the
 # predicate, the config key — NEVER by the feature name. A related issue almost
@@ -43,14 +43,33 @@ for artifact in "$@"; do
   grep -n -- "$artifact" CHANGELOG.md | head -10 || echo "  (no changelog mention)"
 done
 
+echo
+echo "══ before you propose an anchor ══"
+echo "  Areas already carrying a DECISION RECORD, accepted or proposed."
+echo "  DERIVED, never listed here — a roster written into a script is stale the"
+echo "  day a record lands:"
+found=0
+for f in docs/map/invariant/*.md; do
+  [ -e "$f" ] || continue
+  found=1
+  printf '   · %-32s %s
+' "$(basename "$f")" "$(sed -n 's/^# //p' "$f" | head -1)"
+done
+for f in docs/adr/*.md; do
+  [ -e "$f" ] || continue
+  found=1
+  printf '   · %-32s %s
+' "$(basename "$f")" "$(sed -n 's/^# //p' "$f" | head -1)"
+done
+[ "$found" -eq 0 ] && echo "   (none — nothing preempts an anchor today)"
+
 cat <<'NOTE'
 
-══ before you propose an anchor ══
-  Areas already carrying a DECISION RECORD, accepted or proposed:  NONE.
-  docs/adr/ does not exist yet, so nothing preempts an anchor today.
-  Only a decision record preempts one. The module map in docs/agents/thegraph.md
-  does NOT: it is descriptive and lives in a file, while a roster is current
-  state and needs a mutable home.
+  A candidate whose ROOT is one of those areas does not get a second anchor; it
+  gets a comment on that record's cluster.
+  The test is whether the note was PROMOTED, not which directory it sits in: a
+  cross-cutting note derives decisions already taken and prescribes, a territory
+  note describes what one area does. Only the first is a record.
 
 ══ what the query cannot answer ══
   · CONFLICT — an existing issue whose proposal this change would break.
