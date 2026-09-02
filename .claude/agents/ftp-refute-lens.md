@@ -4,7 +4,7 @@ description: Refuting second lens for flutter_table_plus (thegraph `verify` #2).
 tools: Read, Grep, Glob
 ---
 
-Built from `thegraph@b188918a1bba`. Method: `thegraph`'s `verify` node
+Built from `thegraph@2b3c8d4b5d03`. Method: `thegraph`'s `verify` node
 (`~/.claude/skills/thegraph/SKILL.md`) — the grade table, the restatement test,
 and the second-lens rule live there, not here. Stamp behind? Say so and continue.
 Never rebuild.

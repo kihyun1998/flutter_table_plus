@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # gates.sh — thegraph `gate` node for flutter_table_plus.
-# Built from thegraph@b188918a1bba.
+# Built from thegraph@2b3c8d4b5d03.
 #
 # There is NO CI in this repo. These are the only gates.
 #

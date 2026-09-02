@@ -8,7 +8,7 @@ reasoning habits); this file is its **contract** for this repo.
 Per-incident evidence lives in [`lessons.md`](lessons.md); identity and
 invariants in `CLAUDE.md`.
 
-**Build stamp: `thegraph@b188918a1bba`** (SKILL.md sha256[0:12], 2026-09-02).
+**Build stamp: `thegraph@2b3c8d4b5d03`** (SKILL.md sha256[0:12], 2026-09-02).
 Every generated artifact carries it. When the stamp is behind, `thegraph` says so
 and continues — it never rebuilds on its own.
 
@@ -17,55 +17,51 @@ cache; the GitHub issue is the durable record.
 
 ---
 
-## Compile notes — the 2026-09-02 update
+## Compile notes — the 2026-09-02 update (second)
 
-An **update build**: the graph was the input, diffed against the repo. The
-bindings were **not** read — they were spent at the first build, and re-reading
-them re-applies an input in its original state, drift included.
+An **update build**, the second today. The graph was the input, diffed against
+the repo. The bindings were not read; they no longer exist.
 
 | # | Slot | Was | Now |
 |---|---|---|---|
-| 1 | build stamp | `7ba7bd7026c8` | `b188918a1bba`, on all **9** generated artifacts. `.thegraph/109.md` had recorded `8e9d71e027bb` as behind mid-run, and the hash moved again **during this build** (`5833b2f05149` → `b188918a1bba`) — the third consecutive build to find the stamp behind, and the first to watch it move while running |
-| 2 | `gate`, in the **roster** | `7 commands, extracted as a script` | the count is **gone from the roster**; `## gate` states it and nothing else does. The previous build corrected the section from 7 to 9 and left this row at 7, so the doc contradicted itself for a whole build. A count restated in two places drifts in exactly one of them, and the section that owns it already said *"stated once, here"* |
-| 3 | `sweep` · `map`, in the roster | `10 surfaces` · `23 territories + 6 invariants` | the same treatment, applied **before** they drift the same way rather than after. The roster's own fact is the **instance count**; a section's count was never the roster's to hold |
-| 4 | war-story index | a hand-copied roster, `#22 … #138` | a derive command over `lessons.md`, and the reason. It claimed `#114 … #138` while `lessons.md` stopped at `#96` — and that claim was copied onward once, into a draft of the very commit that removed it, before anyone checked it |
-| 5 | `verify` · `place` · `reference` · `boundary` · `promote` · `downstream` · `search` | — | no drift, measured: 13 sacred paths all present; `test/` still 57 files flat; MAP still 23 + 6, its gate clean; `tree-rule.sh` and `agent-grants.sh` both exit 0 |
-| 6 | agent grants | — | no drift. Three lenses `Read, Grep, Glob`; `ftp-source-fetcher` still declares its `Bash` on a `Runs:` line |
-| 7 | Schema coverage | 0 unowned | **0 unowned**, re-walked against the current `BUILD_CONTRACT` — which now asks *"is it something a node reads or checks against, and is it not a bound?"* instead of *"is it one of the kinds listed?"*. The broader question finds nothing this build does not already answer |
+| 1 | build stamp | `b188918a1bba` | `2b3c8d4b5d03`, on all 9 generated artifacts. It moved **twice** since the last build — `.thegraph/113.md` recorded `a277bd90e220` mid-run — making this the **fourth consecutive** build to find it behind. The catalog entry below is why |
+| 2 | `place` → `docs/map/invariant/*.md` | `(6)` | the count is **gone**. It was 7: #113 (`70f45f9`) added `guard-the-destination.md` and updated `## map` from 6 → 7 **in the same commit**, leaving this row wrong from the moment the other was made right |
+| 3 | `place` → `lib/src/utils/*.dart` | `(0/15 — clean)` | the count is **gone**; the `0` stays, because the `0` is the rule and the `15` was only its denominator. There were already **16** files at the build commit, so this one did not drift — it shipped stale |
+| 4 | `tree-rule.sh` banner | `rules evaluated (17)` above **19** printed lines | it counts what it prints. `${#RULES[@]}` left out the two `FREE_PREFIXES`, which are rules and are evaluated. The same treatment goes to U1/U2's hardcoded `3` and `57`: measured at run time now |
+| 5 | `promote` · `search` | `docs/adr/` alone · *"areas carrying a record: none"* | **two destinations, split by scope** — a rule that holds across territories goes to `docs/map/invariant/`, a single-context decision to `docs/adr/`. So `search`'s roster is no longer empty: it is the 7 invariant notes. Maintainer's call, 2026-09-02 |
+| 6 | everything else | — | **no drift, measured.** 13 sacred paths present · 10 surfaces present, `CONTEXT.md` and `docs/adr/` still absent · both siblings at `../`, the consumer derive returns empty · MAP 23 territories, its gate clean · `test/` still flat · `tree-rule.sh` and `agent-grants.sh` exit 0 · `gates.sh` runs 9, each bare · **the roster is unchanged** — nothing in the repo moved a count |
+| 7 | Schema coverage | 0 unowned | **0 unowned.** `BUILD_CONTRACT.md` is byte-identical to the last walk; re-walked rather than assumed, because the walk is once per *build*, not once per contract change |
 
-**`build_gaps`: none outstanding**, read first as the drift detector. `.thegraph/109.md`
-flushed `build_gaps: none` and `catalog_gaps: none`. The cache's two older entries
-are both closed: `101`'s spine roster was a compliance miss substituted in that
-run, not a wrong build value; `108`'s BG-1 — four agents granted `Bash` with no
-brief asking for one — was resolved by the previous build and re-verified here.
+**Rows 2–4 are one defect, and this is its third recurrence in this file.** The
+last build wrote *"a count restated in two places drifts in exactly one of them"*
+and applied it to the **roster alone**. It never swept its own file for the rule
+it had just written — and two counts inside that same file were wrong within the
+day, one of them already wrong when the sentence was written. So the counts are
+**deleted rather than corrected**: `tree-rule.sh` carries none of them and stayed
+right through both. A newly written rule is itself a hit, and it is the one most
+often spent on its own instance.
 
-**`catalog_gaps`: one, and it is not this repository's to fix.** The stamp is
-`SKILL.md`'s sha256, so it moves for **any** byte in that file — including
-frontmatter that carries no method at all. It moved once during this build, and
-the whole change was `disable-model-invocation: false → true`: a harness flag.
-The discriminator routes it in one step — a re-grill of *this* repo would not
-stop it recurring, and it would recur in every repo that compiles this graph — so
-it is a catalog question, filed against the catalog's own tracker the way #131
-was, never `build_gaps`. Recorded here because a stamp that moves without the
-method moving trains a reader to ignore the one warning `thegraph` gives at
-startup, which is #55's lesson wearing a different hat.
+**`build_gaps`: none outstanding**, read first as the drift detector.
+`.thegraph/113.md` is the newest flush and the last build did not cite it — it
+cited `109`, which `113` supersedes. `113` flushed `build_gaps: none` and
+`catalog_gaps: none new`; no open issue holds one. Its two recorded compliance
+misses — `classify`'s open-decision route skipped, and a recommendation attached
+to a `decide` option before the maintainer had reached one — are wrong **runs**,
+not wrong build values, and stop short of `build_gaps` for the same reason
+`101`'s spine roster did.
 
-**What this build could not measure, said plainly.** The stamp moved twice and no
-copy of the old `SKILL.md` survives, so *"what changed in `thegraph`"* is not
-answerable by diff. What **is** answerable, and was run instead, is the coverage
-check in row 7: every slot in *"What the build must supply"* is answered here, and
-every one sits on a named side of the invariant/build split. That is the check the
-stamp exists to prompt. It is not the same as a diff, and this sentence is here so
-a later reader does not mistake one for the other.
+**`catalog_gaps`: the same one, recurring exactly as predicted.** The stamp is
+`SKILL.md`'s sha256, so it moves for **any** byte in that file; `113` watched it
+move for a frontmatter flag carrying no method at all. It stays filed against the
+catalog's own tracker rather than here — a re-grill of this repo would not stop
+it, and it recurs in every repo that compiles this graph. Four builds behind in a
+row is what that costs, and a stamp that moves without the method moving trains a
+reader to ignore the one warning `thegraph` gives at startup.
 
-**`theflow` retired between builds, and it changed nothing in this file.** An
-update never reads the bindings, so their absence costs this build nothing.
-`docs/agents/theflow.md` was **deleted** by the maintainer after this build, once
-each of its sections was confirmed to live somewhere that is still read — the
-bindings here, the tooltip boundary in the MAP's `tooltips` territory, the
-incidents in `lessons.md`. The last thing it still held alone was its Step 7 gate
-matrix, and that was **wrong** (6 bare commands against 9): the risk it carried
-was being believed, not being lost.
+**What this build could not measure.** No copy of the old `SKILL.md` survives, so
+*"what changed in `thegraph`"* is again not answerable by diff. The coverage check
+in row 7 is what was run instead. It is not the same thing, and this sentence is
+here so a later reader does not mistake one for the other.
 
 ---
 
@@ -99,8 +95,12 @@ was being believed, not being lost.
 ## `map` — the MAP
 
 **Read [`docs/map/README.md`](../map/README.md) before drawing the boundary.**
-23 territories and 7 cross-cutting invariants, indexed by *what the system does*
-rather than by the event that produced them.
+Territory notes and cross-cutting invariant notes, indexed by *what the system
+does* rather than by the event that produced them. **How many of each is the
+MAP's fact, not this file's** — `ls docs/map/territory/*.md docs/map/invariant/*.md`.
+The number used to be written here and #113 had to come back and correct it in
+the same commit that changed it; the copy in `CLAUDE.md` is the maintainer's to
+retire the same way.
 
 This node used to carry a hand-written module table. It does not any more, on
 purpose: a second copy of the same answer is somewhere for the two to disagree,
@@ -160,10 +160,10 @@ rather than location — so induction was the only input, and `plat`'s
 ```
 lib/flutter_table_plus.dart      the barrel — the only public entry point.
                                  A new public symbol is exported here or it is not public.
-lib/src/models/*.dart            value types the consumer constructs and passes in   (5/5 exported)
-lib/src/models/theme/*.dart      theme value types                                   (9/9 exported)
+lib/src/models/*.dart            value types the consumer constructs and passes in
+lib/src/models/theme/*.dart      theme value types
 lib/src/utils/*.dart             computation that does not know the widget tree.
-                                 No Widget subclass.                                 (0/15 — clean)
+                                 No Widget subclass — measured, and clean.
 lib/src/widgets/*.dart           widgets, or collaborators only a widget uses
 lib/src/widgets/cells/*.dart     cell widgets a body row draws
 test/*.dart                      tests. Flat — no subdirectories
@@ -172,8 +172,8 @@ example/lib/**                   the example, a package of its own
 example/test/**                  the example's gate (#55)
 docs/*.md                        public prose — THEMING, FEATURES, MIGRATION
 docs/map/README.md               the MAP's entry point
-docs/map/territory/*.md          MAP territory notes (23)
-docs/map/invariant/*.md          MAP cross-cutting invariant notes (6)
+docs/map/territory/*.md          MAP territory notes
+docs/map/invariant/*.md          MAP cross-cutting invariant notes
 docs/agents/*.md                 agent bindings
 scripts/thegraph/*.sh            generated scripts (bash)
 scripts/map/*.py                 the MAP gate (python)
@@ -186,6 +186,14 @@ Everything outside those roots — `pubspec.yaml`, `CHANGELOG.md`, `README.md`,
 `example/`'s platform scaffolding — is **out of scope**, not unruled. The tree
 rule assigns ownership inside the roots it names; it does not adjudicate where a
 manifest goes. `tree-rule.sh` counts those files and checks nothing about them.
+
+**The rows carry no file counts, deliberately.** They used to — `(5/5 exported)`,
+`(0/15 — clean)`, `(23)`, `(6)` — and two of the four were wrong inside a day: the
+invariant count the moment #113 added a note, the `utils` count before the build
+that wrote it had even finished. The tree is the authority for how many files are
+in it, `tree-rule.sh` reads the tree, and a number copied out of it here is a
+second answer with nowhere to be checked. What survives is the part that is a
+**rule** rather than a measurement: `lib/src/utils` holds no Widget subclass.
 
 **Four of the rows above came from auditing the rule against the whole tree
 rather than from the peer comparison** — `benchmark/`, `docs/*.md`,
@@ -211,7 +219,7 @@ wearing a rule's clothes, and the guard script does **not** check them.
 - **U1 — `widgets/cells/` (3) vs `widgets/table_header_cell.dart`.** All four are
   `StatelessWidget` cells. The only axis that splits them is the consumer: a body
   row draws the first three, the header draws the fourth.
-- **U2 — `test/` flat at 57 files.** The peers split 2:1 —
+- **U2 — `test/` is flat.** The peers split 2:1 —
   `two_dimensional_scrollables` mirrors `lib/src`, `pluto_grid` splits by
   scenario, `data_table_2` is flat like us.
 
@@ -541,10 +549,19 @@ Search **by the artifact** (the module, the field, the predicate, the config key
 never by the feature name. The trigger is *naming*, not deciding: search the
 moment you can say which artifact a candidate touches, before any probe.
 
-**Areas already carrying a decision record: none** — accepted or proposed.
-`docs/adr/` does not exist yet, so **no area preempts an anchor** today. A
-descriptive note (the MAP) does **not** preempt one either: it is descriptive and
-lives in a file, while a roster is current state and needs a mutable home.
+**Areas already carrying a decision record: the MAP's cross-cutting invariant
+notes.** `docs/adr/` is still empty, so the accepted-record roster is exactly
+`docs/map/invariant/*.md` — derived, never listed here:
+
+```
+ls docs/map/invariant/*.md
+```
+
+A candidate whose root is one of those areas does **not** get a second anchor; it
+gets a comment on the note's cluster. **A territory note still preempts nothing** —
+the discriminator is not which directory the file sits in but whether it was
+*promoted*: a cross-cutting note derives decisions already taken and prescribes,
+a territory note describes what one area does. Only the first is a record.
 
 **Tracker capability: GitHub, with parent/child sub-issues available.** So the
 follow-up tree and the anchor's roster are **relations**, never prose — a `spawned
@@ -588,12 +605,26 @@ deeper layer. Stop and come to the maintainer.
 
 ## `promote` — the record format
 
-`docs/adr/` at the repo root, single-context, `NNNN-title.md` — declared in
-[`domain.md`](domain.md), created lazily, currently empty. Trigger: **two or more**
-of `thegraph`'s trigger list in one pass. One is bad luck. A record earns its
-place by **deriving** decisions already taken, not by listing them. Promotion
-closes the anchor and copies the roster **through the anchor's exclusion list** —
-into the record's *context*, never into the record as a list.
+**Two destinations, split by scope** — confirmed by the maintainer 2026-09-02,
+against the evidence that the only promotion which has ever run did not go where
+this node said it would.
+
+| Scope | Destination | State |
+|---|---|---|
+| a rule that holds **across territories** — the sites do not call each other and do not look alike | `docs/map/invariant/NNN.md`, a MAP cross-cutting invariant note, reciprocally linked from every territory it names and checked by the MAP gate | **in use.** `guard-the-destination.md` was promoted this way on two triggers in one pass (#110 · #113 · #123) |
+| a decision **inside one context** — an interface, a convention, a trade-off with a single home | `docs/adr/NNNN-title.md` at the repo root, single-context, declared in [`domain.md`](domain.md) | created lazily, **still empty** |
+
+The trigger and the bar are the same for both: **two or more** of `thegraph`'s
+trigger list in one pass. One is bad luck. A record earns its place by
+**deriving** decisions already taken, not by listing them. Promotion closes the
+anchor and copies the roster **through the anchor's exclusion list** — into the
+record's *context*, never into the record as a list.
+
+**The scope question is answered by grep, not by taste:** does the fact hold at
+any site sharing the same dimension, coordinate frame, sibling dependency, or
+test fixture? That is `verify`'s way-out question, and a `yes` is what makes the
+record cross-cutting. A note that is merely *descriptive* of one territory is not
+a promotion at all — it is `sweep`'s work, and it preempts nothing.
 
 `place` can now feed this: it writes `triggers` when the same placement is argued
 twice, and the unclassified rows U1 and U2 are the two likeliest sources.
@@ -633,7 +664,7 @@ only data slots is indifferent to that move.
 | `scripts/thegraph/tree-rule.sh` | `place`, and `gate` on the final diff | — | the tree rule as a path list matched against the changed paths; the `utils/` Widget-subclass check; U1/U2 printed as **not checked** |
 | `scripts/thegraph/gates.sh` | `gate` | — | the 9 commands, each invoked **bare** |
 | `scripts/thegraph/agent-grants.sh` | `gate` | — | every generated agent's grant, asserted against the read-only default |
-| `scripts/thegraph/cluster.sh` | `search` | — | the `gh` query by artifact, and the (currently empty) list of areas carrying a record |
+| `scripts/thegraph/cluster.sh` | `search` | — | the `gh` query by artifact, and the areas carrying a record — **derived** from `docs/map/invariant/`, never listed in the script |
 
 **A grant is derived from the brief, never defaulted, and read-only is the
 default rather than a claim to be matched.** Three of the four agents read and
@@ -669,42 +700,33 @@ they run on the main thread.
 
 ---
 
-## Schema coverage — every slot placed
+## Schema coverage — 0 unowned
 
-The coverage check runs **once per build**: walk *"What the build must supply"*
-and confirm each entry sits on one side of `thegraph`'s invariant / build / issue
-split. A slot the schema asks for and the split places on neither side is
-`unowned` — answerable, answered correctly by every build that ever ran, and
-named by nobody. Being answerable is exactly what lets it pass unnoticed.
+The check runs **once per build**: walk *"What the build must supply"* and confirm
+each entry sits on one side of `thegraph`'s invariant / build / issue split. A slot
+the schema asks for and the split places on neither side is `unowned` —
+answerable, answered correctly by every build that ever ran, and named by nobody.
+Being answerable is exactly what lets it pass unnoticed.
 
-The last build reported four. **All four are now placed, and the result this
-build is zero.**
-
-| Slot | Was | Now placed by |
-|---|---|---|
-| `proof` method per layer + tautological traps | `pending` | *"along with its **method**, its **traps**"* on the build side |
-| areas already carrying a decision record | `pending` | *"everything it reads and everything it checks against"* — `search` checks a candidate against this roster |
-| tracker capability | `pending` | named outright: *"the tracker's parent/child capability"* |
-| war-story index | `pending` | named outright: *"the war-story index"* |
-
-Two of those `thegraph` records having found the same way this build did — by a
-coverage check, with no extraction to force them — and it says the thing worth
-carrying forward: **placing a slot changes no build.** The four rows above were
-already filled and already correct. What was missing was the sentence saying who
-answers them, and a missing sentence is the one kind of gap that leaves the work
-looking finished.
+**This build: zero.** Every slot is answered here and every one is placed. The
+previous build's transition table has been **removed**, on its own instruction —
+it existed to record four slots moving from `pending` to placed, and a build with
+nothing to say here is exactly the condition it named for its own deletion. The
+lesson it carried is the one worth keeping and it is one sentence: **placing a
+slot changes no build.** The four rows were already filled and already correct;
+what was missing was the sentence saying who answers them, and a missing sentence
+is the one kind of gap that leaves the work looking finished.
 
 **A passing check leaves no trace, and that is deliberate.** There is no per-slot
 owner column anywhere in this file. Which side of the split owns a slot is
 `thegraph`'s fact rather than this project's data, and a column of them would be
 stale the day `thegraph` re-places one — the staleness the thin-artifact rule
-exists to buy immunity from. This table survives only because it records a
-transition; it goes when the next build has nothing to say here.
+exists to buy immunity from.
 
 **Not a schema gap, and tracked elsewhere:** whether two lenses that *can* write
 may share a working tree. It is a catalog question (`kihyun-skills#19`), not a
-slot, so it gets no `pending` marker here — and this build removed the exposure
-rather than waiting on it. See `verify`'s second-lens section.
+slot, so it gets no `pending` marker here — the exposure was removed rather than
+waited on. See `verify`'s second-lens section.
 
 ---
 
@@ -726,6 +748,18 @@ An inline `(#33, #88→#96)` hung on a specific rule above is *evidence*, not a
 roster: it names why that rule exists and does not go stale when lessons grows.
 
 The war-stories this build turned on:
+
+- **the count-restatement, third time in this file** — `(6)` wrong the moment a
+  sibling line was made right, `(0/15)` wrong before the build that wrote it
+  finished, `rules evaluated (17)` printed above 19 rules. The rule against this
+  was written by the previous build and applied only to the roster: a newly
+  written rule is itself a hit, and the corpus it is least often swept against is
+  its own.
+- **#110 → #113 → #123** — the promotion that went somewhere this node did not
+  name. Three sites where a guard asserted at the source and passed anything that
+  reached the destination another way, and the record for it landed in
+  `docs/map/invariant/` while `promote` still said `docs/adr/`. A record format
+  nobody writes to is indistinguishable from one nobody needs.
 
 - **#131 → #132** — two lens agents holding a shell no brief asked for, mutating
   one shared tree, and the refuter grading a run `UNADJUDICATED` on evidence that
