@@ -166,7 +166,18 @@ class _ShellPageState extends State<ShellPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Table Plus'),
+        // The app's own name, because this is the app's front door as of #147.
+        // It read 'Table Plus' while the shell was one of four entries in a
+        // home list — short because the list's own bar already said this, and
+        // because it sat beside 'Playground' and 'Viewport lab'. Both of those
+        // are gone, so the short label had inherited the top of the screen.
+        //
+        // Deliberately a second literal rather than a constant shared with
+        // `MaterialApp.title`. They are different surfaces — the OS task
+        // switcher and the bar on screen — that agree today and are allowed to
+        // diverge; one const would assert they must always match, which
+        // nothing here has established.
+        title: const Text('FlutterTablePlus Examples'),
         actions: const [ThemeModeButton()],
       ),
       body: LayoutBuilder(

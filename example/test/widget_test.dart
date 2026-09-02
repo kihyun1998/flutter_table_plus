@@ -31,6 +31,12 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(ShellMenu), findsOneWidget);
+    // The bar names the app, not the entry it used to be. Nothing asserted
+    // this before #147, which is how 'Table Plus' — a label that was short
+    // because it sat beside three siblings in a list — ended up at the top of
+    // the app when the list was deleted from above it. `MaterialApp.title` is
+    // not drawn, so this string appears once and only here.
+    expect(find.text('FlutterTablePlus Examples'), findsOneWidget);
   });
 
   testWidgets('and a table is already on screen at a desktop width',
