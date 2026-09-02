@@ -1,11 +1,11 @@
 {
-    "name": "example",
-    "short_name": "example",
+    "name": "FlutterTablePlus Examples",
+    "short_name": "FlutterTablePlus",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#F9F9F9",
+    "theme_color": "#F9F9F9",
+    "description": "The flutter_table_plus example: a recipe browser, a viewport preview, two scenarios and a playground.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
