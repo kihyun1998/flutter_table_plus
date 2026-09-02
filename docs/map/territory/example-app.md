@@ -219,6 +219,7 @@ drifting
 → [The widget-test font is a square per glyph](../invariant/test-font-square.md) — the demo's own suite is where this was measured: a 19-character label measures 304px in a test against roughly 190 on screen
 → [Observe at the screen, assert by count](../invariant/observe-at-the-screen.md) — the demo's tests count controls rather than naming them, which is what let its widgets be reorganised without rewriting the suite
 → [Viewport-local coordinates come from one frame](../invariant/viewport-local-frame.md) — the preview scales the table, and the belief that scaling broke the frame is the one thing here that was asserted, measured, and withdrawn
+→ [A guard reads the destination, never the source](../invariant/guard-the-destination.md) — measured here three times: #110’s blues, and both of #113’s guards reading a theme object and a wrapper style instead of what is drawn
 
 ## Blast radius
 

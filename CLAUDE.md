@@ -13,7 +13,7 @@ hand-copied one drifts the moment lessons grows; grep `lessons.md` for the
 current set.
 
 **Before drawing a boundary, read the MAP — [`docs/map/README.md`](docs/map/README.md).**
-23 territories and 6 cross-cutting invariants, indexed by *what the system does*
+23 territories and 7 cross-cutting invariants, indexed by *what the system does*
 rather than by the event that produced them. Open the territory your change
 enters and treat its `## Blast radius` as a checklist. On the way out, ask
 whether the fact you just found is true outside that territory — if it is, an
