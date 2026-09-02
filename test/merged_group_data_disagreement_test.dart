@@ -221,14 +221,21 @@ void main() {
               'of it — an empty cell for the absent member pushes it down');
     });
 
-    // **Two changes in this issue deliberately have no test, and the reason is
-    // that they have no observable behaviour.** `_buildRowWidget` now passes
-    // the allocated extent as `calculatedHeight` instead of letting the widget
-    // fall back to `theme.rowHeight * effectiveRowCount`, and its per-member
-    // height loop now skips an absent key. Measured under mutation: both change
-    // only the height the merged row's inner `SizedBox` *asks* for — 80 or 60
-    // instead of 40 — and the list hands that row a tight constraint, so the
-    // box, the texts and every position are byte-identical either way.
+    // **One change in this issue deliberately has no test, and the reason is
+    // that it has no observable behaviour.** `_buildRowWidget` now passes the
+    // allocated extent as `calculatedHeight` instead of letting the widget fall
+    // back to `theme.rowHeight * effectiveRowCount`. Measured under mutation it
+    // changes only the height the merged row's inner `SizedBox` *asks* for — 80
+    // or 60 instead of 40 — and the list hands that row a tight constraint, so
+    // the box, the texts and every position are byte-identical either way.
+    //
+    // **The other one stopped being unobservable, in the same unreleased
+    // version.** This used to say "two changes", the second being the per-member
+    // height loop skipping an absent key. #121 gave that loop's output a job —
+    // it sets each member's fixed extent — so restoring the absent key now moves
+    // a surviving member on screen, and `merged_row_member_heights_test.dart`
+    // asserts it. A reason with an expiry date, and the expiry arrived four
+    // issues later.
     //
     // They are still right: a widget asking for a height it will not be given
     // is a disagreement waiting for the constraint to loosen. But the only way

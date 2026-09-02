@@ -40,7 +40,7 @@ compute one.
 → [Row rendering and geometry](row-render-geometry.md) — heights accumulate into every row's top edge, so a change here moves every hit test
 → [Text overflow detection](text-overflow.md) — wrapping and clipping are the same decision seen from two sides
 → [Column width resolution](column-width.md) — a narrower column wraps to more lines
-→ [Merged rows](merged-rows.md) — a group's height is not the sum of its rows'
+→ [Merged rows](merged-rows.md) — a group is as tall as its members added up, and each member keeps its own height inside it
 → [Scale / zoom](scale-zoom.md) — scaled text changes what fits on a line
 
 ## Known holes / open

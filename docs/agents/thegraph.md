@@ -299,7 +299,7 @@ a clean diff.
 | `lib/src/widgets/flutter_table_plus.dart` | where edit commits and selection callbacks cross into the **consumer's data** |
 | `lib/src/widgets/row_geometry.dart` | drag-select hit-testing reads row geometry, and #128 records that it has **never** been exercised against changing row heights |
 | `lib/src/widgets/table_body.dart` | it caches measured row heights; #120 shipped stale ones when `calculateRowHeight` changed identity |
-| `lib/src/widgets/table_plus_merged_row.dart` | #121 — member rows split a group's height equally and ignore their own measurement |
+| `lib/src/widgets/table_plus_merged_row.dart` | it owns the height distribution — each member's extent, and which cell absorbs the group's bottom border. #121 shipped every measured height computed and discarded, through 2.16.1 |
 | `lib/src/utils/table_row_height_calculator.dart` | a **public API** (exported from the barrel) that every row's geometry is derived from |
 | `lib/src/utils/row_measurement.dart` | the **one** list both height caches consult. It is a hand-maintained enumeration Dart cannot derive, so a forgotten fourth input stales the `RowGeometry` every drag hit-test reads *and* the total that decides whether a scrollbar appears — the #120/#128 failure with the two lists collapsed into one site. #137 then measured its `identical` guard wrong, and wrong **differently in JIT and AOT** |
 | `pubspec.yaml` | a false floor breaks users' trees while `pub get` still succeeds here (#69); a dep's floor rise is BREAKING for us even with `lib/` untouched (2.16.0) |

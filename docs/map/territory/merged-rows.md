@@ -23,6 +23,19 @@ row ids — which is the question every callback in this area answers implicitly
   `RowLookup` is what reconciles the two, and `TableMetrics` is what totals them —
   which is why every count in this package goes through those two rather than
   `data.length`.
+- **A group is as tall as its present members added up, and each member is drawn
+  at its own height inside it.** Every member but the **last cell in the column**
+  gets a fixed extent; the last stays flexible, because the group's
+  `BoxDecoration` bottom border is taken out of the `Column` the members are laid
+  out in and the border sits against that cell. Absent `calculateRowHeight` every
+  cell is flexible and the equal split is correct. An expanded group's summary
+  row is `bodyTheme.rowHeight` while the members keep their measurements.
+  - Until 2.17.0 every member carried `flex: 1`, so the measured heights were
+    computed, passed into the widget and discarded — a 48/96/48 group drew three
+    64px members inside a correct 192px total (#121). Distributing the border
+    shortfall proportionally instead of placing it was tried and is worse: it
+    moves every member, by an amount that grows with `dividerThickness`, and
+    silently.
 - **Per-column merge configuration.** `MergeCellConfig` decides, per column,
   what a merged cell renders — so a group can merge some columns and keep others
   per-row.
@@ -114,4 +127,11 @@ row ids — which is the question every callback in this area answers implicitly
 
 ## Known holes / open
 
-**None.**
+- **A stacked cell decides text overflow against a height.**
+  `TablePlusMergedRow._buildStackedRowCell` passes the group's tallest-member
+  height into `_wrapWithTooltip`'s `maxWidth` parameter, which reaches
+  `TextOverflowDetector`. `_buildMergedCell` in the same file passes the column
+  width, correctly, and so does the ordinary cell. Reachable on
+  `TooltipBehavior.onlyTextOverflow`: a 200px column over a 48px group measures
+  against ~16px, so nearly every value claims overflow. Pre-existing, found by
+  both lenses on #121 and deliberately not fixed there.

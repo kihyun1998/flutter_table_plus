@@ -46,7 +46,7 @@ class TablePlusMergedRow<T> extends TablePlusRowWidget<T> {
     this.onRowSecondaryTapDown,
     this.onMergedCellChanged,
     this.calculatedHeight,
-    this.individualHeights,
+    this.memberHeights,
     this.needsVerticalScroll = false,
     this.hoverButtonBuilder,
     this.hoverButtonPosition = HoverButtonPosition.right,
@@ -97,7 +97,20 @@ class TablePlusMergedRow<T> extends TablePlusRowWidget<T> {
   final double? calculatedHeight;
 
   /// Individual heights for each row in the merge group.
-  final List<double>? individualHeights;
+  /// Each present member's own measured height, keyed by its row key.
+  ///
+  /// Null when the caller supplies no `calculateRowHeight` — and then every
+  /// member is `theme.rowHeight`, so dividing the total equally is correct and
+  /// the layout below falls back to it. Non-null exactly when heights can
+  /// differ, which is the only case the equal split got wrong (#121).
+  ///
+  /// Keyed rather than positional on purpose: pairing a height list against a
+  /// cell list by index is correct only while the two loops skip the same keys.
+  /// A map cannot silently drift out of step.
+  ///
+  /// The summary row is deliberately absent — it has no row key, and its height
+  /// is `theme.rowHeight` by construction.
+  final Map<String, double>? memberHeights;
 
   /// Whether the table needs vertical scrolling.
   final bool needsVerticalScroll;
@@ -331,9 +344,25 @@ class _TablePlusMergedRowState<T>
 
     final List<Widget> cells = [];
 
-    final maxHeight =
-        widget.individualHeights?.reduce((a, b) => a > b ? a : b) ??
-            widget.theme.rowHeight;
+    // Derived from `memberHeights`, not carried alongside it. The positional
+    // `individualHeights` list this used to read held the same numbers a second
+    // time, and `no-hand-enumeration` is the invariant against exactly that:
+    // #135's failure was two conditions that disagreed, not one that was
+    // incomplete. One representation, one place to be wrong.
+    //
+    // Numerically identical to the list it replaces, summary row included --
+    // that list appended `theme.rowHeight` when expanded, so this does too.
+    // The empty case returns `theme.rowHeight` where `reduce` used to throw;
+    // unreachable today (an anchor-less group never enters this branch) and
+    // cheaper than leaving a `StateError` waiting for the anchor rule to move.
+    final measured = <double>[
+      ...?widget.memberHeights?.values,
+      if (widget.memberHeights != null && widget.mergeGroup.isExpanded)
+        widget.theme.rowHeight,
+    ];
+    final maxHeight = measured.isEmpty
+        ? widget.theme.rowHeight
+        : measured.reduce((a, b) => a > b ? a : b);
 
     // One cell per member that `data` actually holds. This walked `rowKeys`
     // unconditionally, so a group naming a row the caller no longer passes drew
@@ -341,17 +370,44 @@ class _TablePlusMergedRowState<T>
     // the present members, the cell count and the height it is divided into had
     // stopped agreeing. `_getRowData` returning null is the test, because that
     // is exactly what an unresolvable key produces.
-    for (final entry in widget.mergeGroup.rowKeys.asMap().entries) {
-      final rowIndex = entry.key;
-      final rowKey = entry.value;
-      final rowData = _getRowData(rowKey);
-      if (rowData == null) continue;
+    final present = [
+      for (final entry in widget.mergeGroup.rowKeys.asMap().entries)
+        if (_getRowData(entry.value) != null) entry,
+    ];
+
+    // The LAST cell in the column is left flexible and every earlier one gets
+    // its measured height exactly. `_sizeMemberCell` says why: the group's
+    // bottom border is taken out of the `Column`'s height and it sits at the
+    // bottom, so the shortfall belongs to the cell next to it.
+    //
+    // "Which cell is last" is a property of the cell list, not a pairing of
+    // heights to cells -- the heights are still addressed by row key, which is
+    // the maintainer's call and is untouched here.
+    final lastIsSummary = widget.mergeGroup.isExpanded;
+
+    for (var i = 0; i < present.length; i++) {
+      final rowIndex = present[i].key;
+      final rowKey = present[i].value;
+      final isFlexibleTail = !lastIsSummary && i == present.length - 1;
+      // `maxHeight` is passed on unchanged, and what it actually reaches was
+      // measured rather than assumed. The inline editor: inert -- the cell's
+      // parent gives tight constraints, so no value here can move anything
+      // (passing the member's own height instead leaves the whole suite green).
+      // The tooltip's overflow check: the WRONG AXIS, and was before this
+      // change -- that parameter is `maxWidth`. Reported, not fixed here.
       cells.add(_buildStackedRowCell(
-          context, column, rowKey, rowData, maxHeight, rowIndex, columnIndex));
+          context,
+          column,
+          rowKey,
+          _getRowData(rowKey),
+          maxHeight,
+          rowIndex,
+          columnIndex,
+          isFlexibleTail ? null : _memberHeight(rowKey)));
     }
 
-    if (widget.mergeGroup.isExpanded) {
-      cells.add(_buildSummaryRowCell(context, column, maxHeight));
+    if (lastIsSummary) {
+      cells.add(_buildSummaryRowCell(context, column, maxHeight, null));
     }
 
     return SizedBox(
@@ -363,6 +419,51 @@ class _TablePlusMergedRowState<T>
     );
   }
 
+  /// The height this member is drawn at, or `theme.rowHeight` when the map
+  /// holds no entry for it.
+  ///
+  /// The fallback is not decoration. `memberHeights` is null-or-complete today
+  /// -- the cell loop and the height loop skip on two different tests that #135
+  /// made agree -- but if they ever drift, a missing key routed to the flexible
+  /// branch would leave that member competing for a remainder that the fixed
+  /// cells have already consumed: the row would not render short, it would
+  /// **vanish**. That is the degradation #132/#137 named as the blocker on the
+  /// by-value `rowId` compare, and `theme.rowHeight` is exactly what the body's
+  /// own height loop substitutes in the same situation.
+  double? _memberHeight(String rowKey) => widget.memberHeights == null
+      ? null
+      : (widget.memberHeights![rowKey] ?? widget.theme.rowHeight);
+
+  /// A member cell is drawn at its own measured height; the **last** cell in the
+  /// column is left flexible and takes what remains.
+  ///
+  /// `Expanded` is `Flexible(fit: FlexFit.tight)`, and a tight flex child is
+  /// forced to the extent the division allocated -- `rendering/flex.dart`:
+  /// `FlexFit.tight => minChildExtent = maxChildExtent`. Every member carried
+  /// `flex: 1`, so the measured heights were computed, passed down, and had no
+  /// effect: a 48/96/48 group drew three 64px members inside a correct 192px
+  /// total (#121).
+  ///
+  /// **Why only the last cell is flexible.** The group's `Container` carries the
+  /// row's bottom border in its `decoration`, and a `BoxDecoration` border
+  /// consumes the child's space, so the `Column` receives the group's height
+  /// *minus* `dividerThickness`. Fixed extents for every cell overflow by
+  /// exactly that -- measured, 1.00px at the default.
+  ///
+  /// Spreading that shortfall proportionally was written first and is worse,
+  /// which was measured rather than argued: it moves **every** member off the
+  /// position its ungrouped twin occupies, by an amount that grows with
+  /// `dividerThickness` and with the member's position. At `dividerThickness: 4`
+  /// the third member of a 48/96/48 group lands 2.0px high. And the error is
+  /// silent -- no overflow banner -- so the only thing that could have caught it
+  /// was a test tolerance, which happened to equal the default thickness.
+  ///
+  /// The border sits at the bottom of the group, so the cell next to it absorbs
+  /// it and every other member lands exactly where its ungrouped twin does.
+  Widget _sizeMemberCell(Widget child, double? height) => height != null
+      ? SizedBox(height: height, child: child)
+      : Expanded(child: child);
+
   /// Build a single stacked row cell.
   Widget _buildStackedRowCell(
       BuildContext context,
@@ -371,7 +472,8 @@ class _TablePlusMergedRowState<T>
       T? rowData,
       double groupHeight,
       int rowIndex,
-      int columnIndex) {
+      int columnIndex,
+      double? memberHeight) {
     final isCellEditable = widget.isEditable && column.editable;
     final originalIndex =
         widget.allData.indexWhere((row) => widget.rowId(row) == rowKey);
@@ -427,8 +529,8 @@ class _TablePlusMergedRowState<T>
       );
     }
 
-    Widget cellContainer = Expanded(
-      child: Container(
+    Widget cellContainer = _sizeMemberCell(
+      Container(
         decoration: BoxDecoration(
           border: Border(
             right: widget.theme.showVerticalDividers
@@ -449,11 +551,12 @@ class _TablePlusMergedRowState<T>
         ),
         child: content,
       ),
+      memberHeight,
     );
 
     if (isCellEditable && !isCurrentlyEditing && widget.onCellTap != null) {
-      cellContainer = Expanded(
-        child: GestureDetector(
+      cellContainer = _sizeMemberCell(
+        GestureDetector(
           onTap: () => widget.onCellTap!(originalIndex, column.key),
           child: MouseRegion(
             cursor: SystemMouseCursors.click,
@@ -482,6 +585,7 @@ class _TablePlusMergedRowState<T>
             ),
           ),
         ),
+        memberHeight,
       );
     }
 
@@ -489,8 +593,8 @@ class _TablePlusMergedRowState<T>
   }
 
   /// Build a summary row cell.
-  Widget _buildSummaryRowCell(
-      BuildContext context, TablePlusColumn<T> column, double groupHeight) {
+  Widget _buildSummaryRowCell(BuildContext context, TablePlusColumn<T> column,
+      double groupHeight, double? memberHeight) {
     Widget content;
 
     final summaryWidget = widget.mergeGroup.summaryBuilder?.call(column.key);
@@ -507,8 +611,8 @@ class _TablePlusMergedRowState<T>
       );
     }
 
-    return Expanded(
-      child: Container(
+    return _sizeMemberCell(
+      Container(
         decoration: BoxDecoration(
           color: widget.theme.summaryRowBackgroundColor ??
               widget.theme.backgroundColor.withValues(alpha: 0.2),
@@ -535,6 +639,7 @@ class _TablePlusMergedRowState<T>
         ),
         child: content,
       ),
+      memberHeight,
     );
   }
 

@@ -554,9 +554,16 @@ class TablePlusBodyState<T> extends State<TablePlusBody<T>>
         // not hold — so a short group asked for one row height more than it was
         // given and squeezed its own cells (#135).
         double? mergedHeight = _getMergedGroupExtent(mergeGroup);
-        List<double>? individualHeights;
+        // Keyed by row key, never positional. The cell list and the height list
+        // are built by two loops that skip on two different tests -- the cells
+        // on `_getRowData` returning null, the heights on `_rowLookup.indexOf`
+        // returning null -- and pairing them by index is only correct while
+        // those two agree. They do agree (#135 made them), but a layout that
+        // depends on it is one edit away from drawing a member at another
+        // member's height with nothing to say so.
+        Map<String, double>? memberHeights;
         if (widget.calculateRowHeight != null) {
-          final heights = <double>[];
+          final byKey = <String, double>{};
           double totalHeight = 0;
 
           for (final rowKey in mergeGroup.rowKeys) {
@@ -566,17 +573,17 @@ class TablePlusBodyState<T> extends State<TablePlusBody<T>>
             // `_getMergedRowHeight`. It used to add `theme.rowHeight` here as
             // well, so this list was longer than the members being drawn.
             if (rowIndex == null) continue;
-            final height = _calculateRowHeight(rowIndex);
-            heights.add(height ?? widget.theme.rowHeight);
-            totalHeight += height ?? widget.theme.rowHeight;
+            final height =
+                _calculateRowHeight(rowIndex) ?? widget.theme.rowHeight;
+            byKey[rowKey] = height;
+            totalHeight += height;
           }
 
           if (mergeGroup.isExpanded) {
-            heights.add(widget.theme.rowHeight);
             totalHeight += widget.theme.rowHeight;
           }
 
-          individualHeights = heights;
+          memberHeights = byKey;
           mergedHeight = totalHeight;
         }
 
@@ -610,7 +617,7 @@ class TablePlusBodyState<T> extends State<TablePlusBody<T>>
           onRowSecondaryTapDown: widget.onRowSecondaryTapDown,
           onMergedCellChanged: widget.onMergedCellChanged,
           calculatedHeight: mergedHeight,
-          individualHeights: individualHeights,
+          memberHeights: memberHeights,
           needsVerticalScroll: widget.needsVerticalScroll,
           hoverButtonBuilder: widget.hoverButtonBuilder,
           hoverButtonPosition: widget.hoverButtonPosition,

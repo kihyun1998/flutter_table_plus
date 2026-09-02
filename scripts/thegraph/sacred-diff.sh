@@ -25,7 +25,7 @@ PATTERNS=(
   'lib/src/widgets/flutter_table_plus.dart|where edit commits and selection callbacks cross into consumer data'
   'lib/src/widgets/row_geometry.dart|drag-select hit-testing reads row geometry, never exercised against changing row heights (#128)'
   'lib/src/widgets/table_body.dart|it caches measured row heights, and shipped stale ones when calculateRowHeight changed identity (#120)'
-  'lib/src/widgets/table_plus_merged_row.dart|member rows split a group height equally and ignore their own measurement (#121)'
+  'lib/src/widgets/table_plus_merged_row.dart|it owns the height distribution: each member extent, and which cell absorbs the group border (#121)'
   'lib/src/utils/table_row_height_calculator.dart|public API, exported from the barrel, that every row geometry derives from'
   'lib/src/utils/row_measurement.dart|the ONE list both height caches consult. A forgotten input stales the RowGeometry every drag hit-test reads AND the scroll total (#120, #128); its identical guard read differently in JIT and AOT (#137)'
   'pubspec.yaml|a false floor breaks users trees while pub get succeeds here (#69, 2.16.0)'
