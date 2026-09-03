@@ -36,6 +36,20 @@ row ids — which is the question every callback in this area answers implicitly
     shortfall proportionally instead of placing it was tried and is worse: it
     moves every member, by an amount that grows with `dividerThickness`, and
     silently.
+- **A member is drawn by the ordinary cell; only a *spanning* cell is built
+  here.** A member is an ordinary row for every purpose except that it has no
+  row of its own, so the stacked branch builds `TablePlusCell` and hands it the
+  one thing a plain row's cell does not need — the line between two members,
+  which no row decoration can reach. A merged cell is genuinely different (one
+  cell over several rows) and keeps its own build.
+  - The copy this replaced drifted one decision at a time and every drift was
+    silent: overflow measured against a **height** in a parameter named
+    `maxWidth`, two divider widths hardcoded past the theme, a widget tooltip
+    anchored to the bare `Text` rather than to the cell, no overflow cache, and
+    a fifth inline `editKeyAction` (#155). **Parity between the two paths could
+    not have caught any of it — and cannot now**: once both sides are one
+    widget, breaking that widget breaks both and the comparison still holds.
+    Measured. The assertions that discriminate read the *theme*.
 - **Per-column merge configuration.** `MergeCellConfig` decides, per column,
   what a merged cell renders — so a group can merge some columns and keep others
   per-row.
@@ -104,6 +118,7 @@ row ids — which is the question every callback in this area answers implicitly
 
 `models/merged_row_group.dart` — `MergedRowGroup`, `MergeCellConfig`
 `widgets/table_plus_merged_row.dart` — `TablePlusMergedRow`
+`widgets/cells/table_plus_cell.dart` — `TablePlusCell`
 `widgets/row_lookup.dart` — `RowLookup`
 `utils/table_metrics.dart` — `TableMetrics`
 
@@ -123,16 +138,33 @@ row ids — which is the question every callback in this area answers implicitly
 → [Row height](row-height.md) — a merged row's height is not a data row's height
 → [Cell editing](cell-editing.md) — merged cells commit through their own callback
 → [Row identity](row-identity.md) — a group id and a row id occupy the same string space in callbacks
-→ [Tooltips](tooltips.md) — the merged row renders its own cells, so tooltip wiring exists twice
+→ [Tooltips](tooltips.md) — a merged *spanning* cell still wires its own tooltip; a member cell is an ordinary cell and wires it the ordinary way (#155)
+→ [Text overflow detection](text-overflow.md) — a member measures its own text, and the width it is handed is this territory’s to get right; handing it a height is what #155 fixed
 → [Sorting](sorting.md) — a sort reorders `data` and nothing reorders `mergedGroups` with it
 
 ## Known holes / open
 
-- **A stacked cell decides text overflow against a height.**
-  `TablePlusMergedRow._buildStackedRowCell` passes the group's tallest-member
-  height into `_wrapWithTooltip`'s `maxWidth` parameter, which reaches
-  `TextOverflowDetector`. `_buildMergedCell` in the same file passes the column
-  width, correctly, and so does the ordinary cell. Reachable on
-  `TooltipBehavior.onlyTextOverflow`: a 200px column over a 48px group measures
-  against ~16px, so nearly every value claims overflow. Pre-existing, found by
-  both lenses on #121 and deliberately not fixed there.
+- **A member's separator is gated on the *group's* `isLastRow`.** The question
+  is asked at row level and the answer applied at member level, so at the
+  default `LastRowBorderBehavior.never` the **last group in a table loses every
+  internal separator** and its members render as one undivided block; every
+  other group draws two lines at its bottom edge, the last member's and the
+  group's own. Found while fixing #155 and deliberately left there — repairing
+  it widens a change sized for the cell into one about what the row assembles.
+  Measured: a parity test written with the group covering every row read `0.0`
+  where it expected the separator's width.
+- **A merged row builds a selection cell whenever `isSelectable`**, even when
+  `checkboxTheme.showCheckboxColumn` is false and no selection column was
+  injected — so the group is one column wider than every other row and each of
+  its cells is shifted right. The plain row gates on the *column*.
+- **The summary cell's `top` border is hardcoded and ungated.** It ignores
+  `showHorizontalDividers` where every other horizontal side honours it, and it
+  stacks against the last member's own bottom: at `dividerThickness: 4` that
+  boundary draws 4px + 0.5px where every other member boundary draws 4px.
+- **`getSpanningRowKey` indexes `rowKeys` positionally.** A `spanningRowIndex`
+  naming a member `data` no longer holds resolves to an absent row — the one
+  place the rule above is not held.
+- **Two the ordinary cell already had, now inherited by every member** (#156):
+  its overflow width subtracts padding but not the 0.5px divider inset, and the
+  detector ignores `MediaQuery.textScaler` while the auto-fit *width* path
+  already takes one. See [text overflow detection](text-overflow.md).

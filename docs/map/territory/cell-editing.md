@@ -64,7 +64,7 @@ focus lifecycle and data swaps during an edit.
 
 → [Row identity](row-identity.md) — a commit is reported as (row id, column key); an identity change changes the callback contract
 → [Row interaction](row-interaction.md) — entering edit mode competes with tap, double tap and selection on the same row
-→ [Merged rows](merged-rows.md) — a merged cell edits through a separate callback and its own layout
+→ [Merged rows](merged-rows.md) — a merged *spanning* cell edits through a separate callback and its own layout; a member cell edits through the ordinary cell (#155)
 → [Column model and ordering](column-model.md) — `editable` is a column flag
 → [Theme system](theme-system.md) — the editable sub-theme styles the open field
 

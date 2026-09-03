@@ -16,7 +16,12 @@ enum EditKeyAction {
 ///
 /// Only key-*down* events for Enter/Escape map to an action; key up/repeat and
 /// every other key are [EditKeyAction.none]. Extracted because this exact
-/// classification was inlined at four editing-cell key handlers.
+/// classification was inlined at editing-cell key handlers — four were folded
+/// in when it was written, and a **fifth**, in the merged row's stacked branch,
+/// was not found until that branch started reusing the ordinary cell (#155).
+/// The count was written as four for as long as the fifth survived, which is
+/// why `docs/map/invariant/no-hand-enumeration.md` covers counts as well as
+/// lists.
 EditKeyAction editKeyAction(KeyEvent event) {
   if (event is! KeyDownEvent) return EditKeyAction.none;
   if (event.logicalKey == LogicalKeyboardKey.enter) return EditKeyAction.save;

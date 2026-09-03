@@ -61,7 +61,7 @@ there — never the pub.dev rendering.
 
 → [Theme system](theme-system.md) — the row and header tooltip themes fall back to the shared one at the call site, and that chain is resolved outside this territory
 → [Text overflow detection](text-overflow.md) — "show a tooltip only when the text is clipped" makes overflow detection a precondition for showing one
-→ [Merged rows](merged-rows.md) — merged cells wire tooltips separately from ordinary cells
+→ [Merged rows](merged-rows.md) — only a merged *spanning* cell wires a tooltip separately; a member cell is an ordinary cell and measures through its cache (#155)
 → [Sorting](sorting.md) — the header cell hosts both the sort affordance and the header tooltip
 → [Public barrel](public-barrel.md) — four `just_tooltip` types are re-exported from here
 

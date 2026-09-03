@@ -20,7 +20,7 @@ typedef Row = Map<String, dynamic>;
 
 /// The divider thickness every case pins, and the size of the only residual
 /// this fix leaves behind.
-const double kT = 1.0;
+const double kT = 4.0;
 
 Map<String, TablePlusColumn<Row>> _columns() {
   final b = TableColumnsBuilder<Row>();

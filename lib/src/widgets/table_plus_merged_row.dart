@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../../flutter_table_plus.dart' show HoverButtonPosition;
 import '../models/merged_row_group.dart';
@@ -15,6 +14,7 @@ import '../utils/tooltip_resolver.dart';
 import 'row_decoration.dart';
 import '../utils/text_overflow_detector.dart';
 import 'cells/editable_text_field.dart';
+import 'cells/table_plus_cell.dart';
 import 'tooltip_wrapper.dart';
 import 'table_plus_row_widget.dart';
 
@@ -344,26 +344,6 @@ class _TablePlusMergedRowState<T>
 
     final List<Widget> cells = [];
 
-    // Derived from `memberHeights`, not carried alongside it. The positional
-    // `individualHeights` list this used to read held the same numbers a second
-    // time, and `no-hand-enumeration` is the invariant against exactly that:
-    // #135's failure was two conditions that disagreed, not one that was
-    // incomplete. One representation, one place to be wrong.
-    //
-    // Numerically identical to the list it replaces, summary row included --
-    // that list appended `theme.rowHeight` when expanded, so this does too.
-    // The empty case returns `theme.rowHeight` where `reduce` used to throw;
-    // unreachable today (an anchor-less group never enters this branch) and
-    // cheaper than leaving a `StateError` waiting for the anchor rule to move.
-    final measured = <double>[
-      ...?widget.memberHeights?.values,
-      if (widget.memberHeights != null && widget.mergeGroup.isExpanded)
-        widget.theme.rowHeight,
-    ];
-    final maxHeight = measured.isEmpty
-        ? widget.theme.rowHeight
-        : measured.reduce((a, b) => a > b ? a : b);
-
     // One cell per member that `data` actually holds. This walked `rowKeys`
     // unconditionally, so a group naming a row the caller no longer passes drew
     // an empty cell for it — and since #135 made the group's *height* count only
@@ -389,25 +369,25 @@ class _TablePlusMergedRowState<T>
       final rowIndex = present[i].key;
       final rowKey = present[i].value;
       final isFlexibleTail = !lastIsSummary && i == present.length - 1;
-      // `maxHeight` is passed on unchanged, and what it actually reaches was
-      // measured rather than assumed. The inline editor: inert -- the cell's
-      // parent gives tight constraints, so no value here can move anything
-      // (passing the member's own height instead leaves the whole suite green).
-      // The tooltip's overflow check: the WRONG AXIS, and was before this
-      // change -- that parameter is `maxWidth`. Reported, not fixed here.
+      // The column's `width` is what a member measures its text against, which
+      // is the axis the parameter it reaches is named for. It used to be the
+      // group's tallest-member HEIGHT: a 200px column over a 48px group
+      // measured against ~16px, so on `onlyTextOverflow` nearly every value
+      // claimed overflow (#155). That tallest-member value has no reader left
+      // at all now, so the derivation that produced it went with it.
       cells.add(_buildStackedRowCell(
           context,
           column,
           rowKey,
           _getRowData(rowKey),
-          maxHeight,
+          width,
           rowIndex,
           columnIndex,
           isFlexibleTail ? null : _memberHeight(rowKey)));
     }
 
     if (lastIsSummary) {
-      cells.add(_buildSummaryRowCell(context, column, maxHeight, null));
+      cells.add(_buildSummaryRowCell(context, column, null));
     }
 
     return SizedBox(
@@ -465,12 +445,33 @@ class _TablePlusMergedRowState<T>
       : Expanded(child: child);
 
   /// Build a single stacked row cell.
+  ///
+  /// A member of a merged group is an ordinary row for every purpose except
+  /// that it has no row of its own, so it is drawn by the ordinary cell rather
+  /// than by a second copy of it. That copy had drifted one decision at a time
+  /// — it measured text overflow against a *height*, hardcoded two divider
+  /// widths the theme owns, anchored a widget tooltip to the bare `Text` rather
+  /// than to the cell, and kept a fifth inline copy of `editKeyAction` (#155).
+  ///
+  /// The one thing a member needs that a plain row's cell does not is a line
+  /// beneath it: a member is not a row, so no row decoration reaches between
+  /// two of them. That is [TablePlusCell.bottomSide], and it is the whole of
+  /// the difference.
+  ///
+  /// **The gate on that side is deliberately unchanged and is deliberately
+  /// wrong.** `shouldShowBottomBorder` asks whether the *group* is the last row
+  /// in the table, and the answer decides whether every *member* draws a
+  /// separator — so at the default `LastRowBorderBehavior.never` the last group
+  /// in a table loses all of its internal separators. That is a level error,
+  /// it is not this ticket's, and repairing it here would widen a change sized
+  /// for the cell into one about what the row assembles. It is raised
+  /// separately rather than fixed quietly.
   Widget _buildStackedRowCell(
       BuildContext context,
       TablePlusColumn<T> column,
       String rowKey,
       T? rowData,
-      double groupHeight,
+      double? width,
       int rowIndex,
       int columnIndex,
       double? memberHeight) {
@@ -481,120 +482,62 @@ class _TablePlusMergedRowState<T>
         originalIndex != -1 &&
         widget.isCellEditing?.call(originalIndex, column.key) == true;
 
-    Widget content;
-
-    if (isCurrentlyEditing) {
-      content = _buildStackedCellEditingTextField(
-          context, column, originalIndex, rowData, groupHeight);
-    } else if (column.hasCustomCellBuilder && rowData != null) {
-      // A custom cell renders no text of ours, so it can only ever carry a
-      // widget tooltip — and that tooltip takes the whole cell.
-      content = _wrapWithTooltip(
-        context,
-        Container(
-          alignment: column.alignment,
-          padding: widget.theme.padding,
-          child: Align(
-            alignment: column.alignment,
-            child: column.buildCustomCell(
-                context, rowData, widget.isSelected, widget.isDim),
-          ),
-        ),
-        '',
-        column,
-        column.width,
-        rowData,
-      );
-    } else {
-      final displayValue = rowData != null
-          ? (column.valueAccessor(rowData)?.toString() ?? '')
-          : '';
-      Widget textWidget = Text(
-        displayValue,
-        style:
-            widget.theme.getEffectiveTextStyle(widget.isSelected, widget.isDim),
-        textAlign: column.textAlign,
-        overflow: column.textOverflow,
-      );
-
-      textWidget = _wrapWithTooltip(
-          context, textWidget, displayValue, column, groupHeight, rowData);
-
-      Widget cellContent = textWidget;
-
-      content = Container(
-        alignment: column.alignment,
-        padding: widget.theme.padding,
-        child: cellContent,
-      );
+    // `_buildStackedCells` filtered to the members `data` actually holds, so
+    // this is unreachable; it exists for the type. It draws nothing rather than
+    // composing a border, because a third copy of that composition inside the
+    // change that exists to remove copies is the shape both adversarial passes
+    // reached independently — and an unreachable copy is the worst kind, since
+    // nothing can ever show it has drifted.
+    if (rowData == null) {
+      return _sizeMemberCell(SizedBox(width: width), memberHeight);
     }
 
-    Widget cellContainer = _sizeMemberCell(
-      Container(
-        decoration: BoxDecoration(
-          border: Border(
-            right: widget.theme.showVerticalDividers
-                ? BorderSide(
-                    color: widget.theme.dividerColor.withValues(alpha: 0.5),
-                    width: 1,
-                  )
-                : BorderSide.none,
-            bottom: widget.theme.shouldShowBottomBorder(
-                    isLastRow: widget.isLastRow,
-                    needsVerticalScroll: widget.needsVerticalScroll)
-                ? BorderSide(
-                    color: widget.theme.dividerColor.withValues(alpha: 0.3),
-                    width: 1,
-                  )
-                : BorderSide.none,
-          ),
-        ),
-        child: content,
+    return _sizeMemberCell(
+      TablePlusCell<T>(
+        rowIndex: originalIndex,
+        column: column,
+        rowData: rowData,
+        width: width ?? column.width,
+        theme: widget.theme,
+        isEditable: widget.isEditable,
+        editableTheme: widget.editableTheme,
+        tooltipTheme: widget.tooltipTheme,
+        isCellEditing: isCurrentlyEditing,
+        isSelected: widget.isSelected,
+        isDim: widget.isDim,
+        calculatedHeight: memberHeight,
+        cellController:
+            widget.getCellController?.call(originalIndex, column.key),
+        onCellTap: (isCellEditable && widget.onCellTap != null)
+            ? () => widget.onCellTap!(originalIndex, column.key)
+            : null,
+        onStopEditing: widget.onStopEditing,
+        bottomSide: _memberBottomSide(),
       ),
       memberHeight,
     );
-
-    if (isCellEditable && !isCurrentlyEditing && widget.onCellTap != null) {
-      cellContainer = _sizeMemberCell(
-        GestureDetector(
-          onTap: () => widget.onCellTap!(originalIndex, column.key),
-          child: MouseRegion(
-            cursor: SystemMouseCursors.click,
-            child: Container(
-              decoration: BoxDecoration(
-                border: Border(
-                  right: widget.theme.showVerticalDividers
-                      ? BorderSide(
-                          color:
-                              widget.theme.dividerColor.withValues(alpha: 0.5),
-                          width: 1,
-                        )
-                      : BorderSide.none,
-                  bottom: widget.theme.shouldShowBottomBorder(
-                          isLastRow: widget.isLastRow,
-                          needsVerticalScroll: widget.needsVerticalScroll)
-                      ? BorderSide(
-                          color:
-                              widget.theme.dividerColor.withValues(alpha: 0.3),
-                          width: 1,
-                        )
-                      : BorderSide.none,
-                ),
-              ),
-              child: content,
-            ),
-          ),
-        ),
-        memberHeight,
-      );
-    }
-
-    return cellContainer;
   }
 
+  /// The separator this member draws beneath itself, or null when none is
+  /// wanted.
+  ///
+  /// The gate is [TablePlusBodyTheme.shouldShowBottomBorder] answered for the
+  /// **group**, which is the level error named in `_buildStackedRowCell`'s doc
+  /// and deliberately carried unchanged here. Extracted so its callers — the member cell
+  /// and the summary cell — stop holding a copy each, which is the shape that
+  /// produced every divergence this change exists to remove. The summary cell
+  /// was not a caller when this was first written, and that omission left a
+  /// hardcoded 1.0 line against the members' themed one in the same column.
+  BorderSide? _memberBottomSide() => widget.theme.shouldShowBottomBorder(
+        isLastRow: widget.isLastRow,
+        needsVerticalScroll: widget.needsVerticalScroll,
+      )
+          ? widget.theme.memberDividerSide
+          : null;
+
   /// Build a summary row cell.
-  Widget _buildSummaryRowCell(BuildContext context, TablePlusColumn<T> column,
-      double groupHeight, double? memberHeight) {
+  Widget _buildSummaryRowCell(
+      BuildContext context, TablePlusColumn<T> column, double? memberHeight) {
     Widget content;
 
     final summaryWidget = widget.mergeGroup.summaryBuilder?.call(column.key);
@@ -616,75 +559,32 @@ class _TablePlusMergedRowState<T>
         decoration: BoxDecoration(
           color: widget.theme.summaryRowBackgroundColor ??
               widget.theme.backgroundColor.withValues(alpha: 0.2),
+          // Two of these three sides read the theme because the member cells
+          // beside them now do. Leaving them as literals is what made the
+          // members 0.5 and this cell 1.0 in the same column — a visible step
+          // in the vertical rule at every expanded group's summary boundary,
+          // introduced by the change that fixed the members. Both adversarial
+          // passes reached it independently.
+          //
+          // `top` is deliberately NOT converted. It is hardcoded *and* ungated
+          // — it ignores `showHorizontalDividers` where every other horizontal
+          // side honours it — and it stacks against the last member's own
+          // bottom, so at `dividerThickness: 4` that boundary draws 4px + 0.5px
+          // where every other member boundary draws 4px. Which of those two
+          // lines should exist at all is a question about what the *row*
+          // assembles, not about matching a cell, and it is raised separately.
           border: Border(
-            right: widget.theme.showVerticalDividers
-                ? BorderSide(
-                    color: widget.theme.dividerColor.withValues(alpha: 0.5),
-                    width: 1,
-                  )
-                : BorderSide.none,
+            right: widget.theme.verticalDividerSide,
             top: BorderSide(
               color: widget.theme.dividerColor.withValues(alpha: 0.3),
               width: 0.5,
             ),
-            bottom: widget.theme.shouldShowBottomBorder(
-                    isLastRow: widget.isLastRow,
-                    needsVerticalScroll: widget.needsVerticalScroll)
-                ? BorderSide(
-                    color: widget.theme.dividerColor.withValues(alpha: 0.3),
-                    width: 1,
-                  )
-                : BorderSide.none,
+            bottom: _memberBottomSide() ?? BorderSide.none,
           ),
         ),
         child: content,
       ),
       memberHeight,
-    );
-  }
-
-  /// Build editing text field for individual stacked cell.
-  Widget _buildStackedCellEditingTextField(
-    BuildContext context,
-    TablePlusColumn<T> column,
-    int dataIndex,
-    T? rowData,
-    double cellHeight,
-  ) {
-    final controller = widget.getCellController?.call(dataIndex, column.key);
-    final theme = widget.editableTheme;
-
-    return Container(
-      width: double.infinity,
-      height: cellHeight,
-      padding: theme.cellContainerPadding,
-      child: Focus(
-        onFocusChange: (hasFocus) {
-          if (!hasFocus) {
-            widget.onStopEditing?.call(save: true);
-          }
-        },
-        child: EditableTextField(
-          column: column,
-          theme: theme,
-          controller: controller,
-          autofocus: true,
-          alignment: column.alignment,
-          onKeyEvent: (event) {
-            if (event is KeyDownEvent) {
-              if (event.logicalKey == LogicalKeyboardKey.enter) {
-                widget.onStopEditing?.call(save: true);
-                return true;
-              } else if (event.logicalKey == LogicalKeyboardKey.escape) {
-                widget.onStopEditing?.call(save: false);
-                return true;
-              }
-            }
-            return false;
-          },
-          onStopEditing: null,
-        ),
-      ),
     );
   }
 
