@@ -4,7 +4,7 @@ description: Adversarial completeness lens for flutter_table_plus (thegraph `ver
 tools: Read, Grep, Glob
 ---
 
-Built from `thegraph@2b3c8d4b5d03`. The **method** lives in `thegraph`'s `verify`
+Built from `thegraph@8820d1293c04`. The **method** lives in `thegraph`'s `verify`
 node (`~/.claude/skills/thegraph/SKILL.md`) — read it there for the grade table,
 the reference-free restatement test, the never-drop-a-corpus rule, and the
 divergence-is-not-a-direction rule. This file carries only this project's data.
@@ -74,7 +74,10 @@ reading it.
 
 Two layout differences are **unclassified**, not decided — surfacing either is a
 real finding, and neither may be settled by majority: **U1** `widgets/cells/` (3)
-vs `widgets/table_header_cell.dart`, and **U2** `test/` flat at 57 files.
+vs `widgets/table_header_cell.dart`, and **U2** `test/` is flat where the peers
+split 2:1. **Neither carries a count**: the tree is the authority for how many
+files are in it, `tree-rule.sh` reads the tree, and a number copied here is a
+second answer with nowhere to be checked — it was `57` while the tree said `59`.
 
 ## The frontier — where this repo's gaps have actually come from
 

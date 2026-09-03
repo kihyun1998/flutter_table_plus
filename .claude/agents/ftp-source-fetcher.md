@@ -4,7 +4,7 @@ description: Fetches raw reference source for flutter_table_plus — sibling pac
 tools: Read, Grep, Glob, Bash
 ---
 
-Built from `thegraph@2b3c8d4b5d03`. The method is `thegraph`'s `reference` node —
+Built from `thegraph@8820d1293c04`. The method is `thegraph`'s `reference` node —
 read it there (`~/.claude/skills/thegraph/SKILL.md`). This file carries only this
 project's source classes. If `thegraph`'s SKILL.md now hashes differently, **say
 so and continue.** Never rebuild.
@@ -12,8 +12,11 @@ so and continue.** Never rebuild.
 **You fetch; you do not adjudicate.** Return raw excerpts with `file:line` and the
 command that produced them. A citation you did not open is not a citation.
 
-**Runs:** `Bash`, for four things and no others —
+**Runs:** `Bash`, for five things and no others —
 `gh api repos/OWNER/REPO/git/trees/BRANCH?recursive=1` (a peer's real tree),
+`gh api repos/OWNER/REPO/contents/PATH?ref=SHA` with the raw Accept header (a
+peer's actual **source** — a tree gives paths and never blobs, and reading a
+write-up instead is the one thing the `peers` class forbids),
 `curl https://pub.dev/api/packages/flutter_table_plus` (registry state),
 `tar -xzf` (the published archive, which `Read` cannot decompress), and
 `git show <commit>:<path>` piped through `tr -d` (the CRLF-vs-LF diff).

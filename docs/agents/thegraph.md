@@ -8,12 +8,108 @@ reasoning habits); this file is its **contract** for this repo.
 Per-incident evidence lives in [`lessons.md`](lessons.md); identity and
 invariants in `CLAUDE.md`.
 
-**Build stamp: `thegraph@2b3c8d4b5d03`** (SKILL.md sha256[0:12], 2026-09-02).
+**Build stamp: `thegraph@8820d1293c04`** (SKILL.md sha256[0:12], 2026-09-03).
 Every generated artifact carries it. When the stamp is behind, `thegraph` says so
 and continues — it never rebuilds on its own.
 
 **Run state:** `.thegraph/` at the repo root, append-only, git-ignored. It is a
 cache; the GitHub issue is the durable record.
+
+---
+
+## Compile notes — the 2026-09-03 update
+
+An **update build**. The graph was the input, diffed against the repo. The
+bindings were not read; they no longer exist.
+
+**The stamp had moved, and it moved mid-session.** `SKILL.md` was
+`2b3c8d4b5d03` when `/thegraph 155` started and `b7d8ca969712` when this build
+ran — the catalog's own files are dated 2026-09-03 10:17 and 10:32. The
+**node-type catalog and the state-slot table are unchanged**, so no node or slot
+was added; what moved is the rules, and two of them are what this build is for.
+
+| # | Slot | Was | Now |
+|---|---|---|---|
+| 1 | build stamp | `2b3c8d4b5d03` | `b7d8ca969712`, on all 10 generated artifacts |
+| 2 | **slot roots** | **absent entirely** | a new `## Slot roots` section. `grill-the-graph` step 2b now requires every slot to record whether it is *derived* (a copy of a fact that lives elsewhere — never empty, fails by being silently wrong) or *decided* (the maintainer's judgement, nothing to check it against), and for a derived slot to name its authority |
+| 3 | **`slot-authority.sh`** | **did not exist** | generated, and joined to the gate list. Every machine-readable authority is now asserted **both directions**. The values were all correct when checked by hand this build — 13 sacred paths resolve, 10 surfaces resolve, 9 artifacts present — which is exactly the condition under which nobody notices there is no check |
+| 4 | `verify` sacred paths | 13 | **14** — `lib/src/widgets/cells/table_plus_cell.dart`. #155 routed the merged row through it, so a defect there now lands on every plain row *and* every group member. #156 already records two live ones in it |
+| 5 | `sweep` surfaces | 10 | **11** — `docs/agents/lessons.md`, read differently from the other ten |
+| 6 | `gate` commands | 9 | **10** |
+| 7 | BG1 — `ftp-gap-lens` hand-copied `test/` at 57 | the tree said 59 | **cause fixed, not the number.** The no-copied-counts rule reached the graph doc and not the artifacts it emits. Extended: a generated artifact carries U2's *shape* and never its count |
+| 8 | BG2 — `ftp-source-fetcher`'s `Runs:` named 4 commands | `peers` needs a 5th to read blobs | declaration widened. The node reported this itself, unprompted — the obligation invariant ① places on a node whose brief outruns its grant, working as written |
+| 9 | BG3 — `gates.sh` called `tree-rule.sh` with no base ref | 0 paths considered after a commit; it passed vacuously | base ref passed. The script already accepted one |
+
+**Two `build_gaps` from earlier runs were checked and are closed**: #101's (a
+spine roster filed as prose) was resolved in that run by enrolling all twelve
+through the sub-issues API, and #108's (four agents granted `Bash` with no
+`Runs:` declaration) is closed by `agent-grants.sh` plus the one declaration that
+now exists.
+
+**What this build could not measure.** No copy of the old `SKILL.md` survives, so
+*"what changed in `thegraph`"* is still not answerable by diff. What was compared
+instead is the node-type catalog and the state-slot table, both quoted from the
+current file and both unchanged, plus `grill-the-graph`'s own step list. That is
+not the same thing, and this sentence is here so a later reader does not mistake
+one for the other.
+
+---
+
+## Slot roots
+
+**Every slot is one of two classes, and the class decides what can go wrong.**
+
+A **derived** slot is a copy of a fact that lives somewhere else. Being a copy,
+it is *never empty* — it fails by being **silently wrong**, and no node will
+notice, because a node that receives a value uses it. That is why `build_gaps`
+covers the smaller half of the problem: it fires on an empty slot, and a derived
+slot is never empty. Two consecutive updates here carried in **zero**
+`build_gaps` and both found real drift, all of it in derived slots.
+
+A **decided** slot is the maintainer's judgement with no fact anywhere to check
+it against. Those, and only those, are what a re-grill asks about.
+
+**The authority is the fact, never a summary of it.** Where the fact is outside
+this repository — another project's tree, a platform limit — the slot is derived
+and **unassertable**; it says so, and the measurement is dated.
+
+**A value and its existence are separate facts.** A path list can be a judgement
+nothing can rank while every path in it is still a string that must resolve. The
+two `— existence` rows below are that split applied: without them a rename empties
+a guard and every copy of the list stays in perfect agreement about a file that
+is gone.
+
+| Slot | Class | Authority | Asserted |
+|---|---|---|---|
+| build stamp | derived | `sha256` of the installed `thegraph/SKILL.md`, first 12 | **yes** |
+| tree rule — paths | derived | the tree | **yes** — `tree-rule.sh`, both directions |
+| `gate` command list | derived | `scripts/thegraph/gates.sh` | **yes** |
+| `search` record roster | derived | `ls docs/map/invariant/*.md` | **yes**, and derived at read time rather than stored |
+| extraction plan | derived | the artifacts on disk | **yes**, both directions |
+| MAP counts | derived | `ls docs/map/territory/*.md docs/map/invariant/*.md` | **yes** — and deliberately **not copied** into this file |
+| war-story index | derived | `docs/agents/lessons.md` | **yes**, derived by grep rather than rostered |
+| `promote` destinations | derived | `docs/map/invariant/` exists; `docs/adr/` declared in `domain.md` | **yes** |
+| `downstream` — publishes | derived | `pubspec.yaml` | **yes** |
+| sacred paths — existence | derived | each path resolves on disk | **yes** |
+| `sweep` surfaces — existence | derived | each path resolves on disk | **yes** |
+| `reference` siblings — existence | derived | `../just_tooltip`, `../flutter_checkbox` on disk | **yes** |
+| `reference` peers — trees | derived | the peer repositories | **unassertable** — outside this repo, and stored as names only. Confirmed 2026-08-31 |
+| `boundary` rule and seams | derived | `CLAUDE.md` | **no** — prose, not machine-readable. Stated rather than checked |
+| sacred paths — value | decided | none. *Where a bug costs more than a wrong number* | no |
+| `sweep` surfaces — value | decided | none. *Which docs describe behaviour here* | no |
+| `reference` classes and routing | decided | none | no |
+| `summarized:` flags | decided | none | no |
+| layers, and the proof method per layer | decided | none | no |
+| tautological traps | decided | none | no |
+| tie-breaker per layer | decided | none | no |
+| deliberate-divergence list | decided | none | no |
+| `gate` blind spots | decided | none | no |
+| U1 / U2 | decided | none — deliberately unresolved, and a guard that enforced one would ratify drift | no |
+
+**`slot-authority.sh` asserts every row marked yes**, and carries the roster of
+rows marked **no** so a slot cannot leave the map by going quiet. An unassertable
+slot that announces itself is a known hole; one that says nothing is
+indistinguishable from a checked one.
 
 ---
 
@@ -226,7 +322,11 @@ wearing a rule's clothes, and the guard script does **not** check them.
 ### Guard and edges
 
 **Guard mechanism: `scripts/thegraph/tree-rule.sh`, a match over the diff** — not
-a recollection. Prose alone would make this node a bar with no firing mechanism,
+a recollection. **`gate` passes it a base ref and `place` does not**, and that
+asymmetry is the whole of it: before `implement` the work is uncommitted and the
+working tree *is* the diff, while at `gate` the work is committed and a
+base-less run considers **zero paths and passes**. Measured 2026-09-03 — the
+same script read 0 paths after the commit and 14 against `main`. Prose alone would make this node a bar with no firing mechanism,
 which is the exact defect its own argument is against. It runs twice: here,
 before `implement`, and again in `gate` over the final diff.
 
@@ -305,6 +405,7 @@ a clean diff.
 | `pubspec.yaml` | a false floor breaks users' trees while `pub get` still succeeds here (#69); a dep's floor rise is BREAKING for us even with `lib/` untouched (2.16.0) |
 | `CHANGELOG.md` | pub.dev snapshots at publish — a published entry edited in place splits the repo from the registry (2.15.0) |
 | `.pubignore` | it decides the archive's contents, and the archive **cannot be un-published** |
+| `lib/src/widgets/cells/table_plus_cell.dart` | #155 routed the merged row's members through it, so one defect here lands on **every plain row and every group member** at once. #156 already records two live ones in it: the overflow width ignores the divider's own inset, and the detector never reads `MediaQuery.textScaler`. Added 2026-09-03 — this run's derivation, the maintainer having delegated the call rather than ratified it |
 
 Absent a path hit, the guard is enumeration risk (decider: `AI`): many edges,
 domain semantics, cross-feature interaction. A reactive spike that keeps catching
@@ -427,7 +528,7 @@ carry a row that changes per run.
 
 ---
 
-## `sweep` — 10 surfaces
+## `sweep` — 11 surfaces
 
 | Surface | How it is read |
 |---|---|
@@ -440,10 +541,18 @@ carry a row that changes per run.
 | `.pubignore` | excludes `docs/`, `.github/`, `CLAUDE.md`, `coverage/`, `benchmark/`, `build/`, `scripts/`. A root `.pubignore` **disables git-based file listing**, so anything unlisted ships |
 | **now-false rationale** | a wrong *rationale* is more dangerous than a wrong *conclusion*: no test catches a wrong reason, and the next reader follows it. #69 (six rationales), #96 (five call sites + `THEMING.md` + two test comments) |
 | **the MAP** (`docs/map/`) | a territory note describes behaviour, so it drifts when behaviour moves. Update the note whose territory the change entered — `## Design model`, `## Code` symbols, `## Blast radius` — and run `python scripts/map/check_map.py docs/map`. A refactor that moves symbols decays **file attribution** and nothing else: the gate catches exactly that |
+| `docs/agents/lessons.md` | **the one surface read for a different question.** The other ten are read for *which sentence did this change make false*; this one for *does the war-story this change produced exist here*. An incident record is append-only, so a change never falsifies it — it leaves it incomplete, which no drift pattern can see. Missed during #155 by a sweep that walked all ten others |
 | the **cluster anchor** | this is `spine`'s flush, not a separate obligation: the root confirmed or falsified, the numbers measured, any new sibling **enrolled as a sub-issue**, what is still open. The roster never goes in the body |
 
 **Judge a sweep by what it cannot see, never by its hit count.** When a hit turns
 up, widen the pattern with the phrasing that produced it *before* fixing the hit.
+
+**One surface is read with a different question, and that is why it is here.**
+The other ten are read for *"which sentence did this change make false"*.
+`docs/agents/lessons.md` is an incident record: it is append-only, so a change
+never falsifies it — it leaves it **incomplete**. It was missed for exactly that
+reason during #155, by a sweep that walked all ten other surfaces and had no row
+telling it to look.
 
 **Glossary and decision trail:** `CONTEXT.md` and `docs/adr/` do not exist yet
 (created lazily). Nothing to sweep there until they do — and creating one is a
@@ -451,7 +560,7 @@ up, widen the pattern with the phrasing that produced it *before* fixing the hit
 
 ---
 
-## `gate` — 9 commands, each run bare
+## `gate` — 10 commands, each run bare
 
 **There is no CI.** These are the only gates, and they run on this machine — the
 Flutter SDK is on `PATH`, so run them; do not ask. (`thegraph`'s "name the CI
@@ -466,8 +575,9 @@ flutter test
 flutter analyze          (in example/)               # the example is a gate
 flutter test             (in example/)               #   - and it is two gates, not one
 python scripts/map/check_map.py docs/map             # the MAP's own gate
-scripts/thegraph/tree-rule.sh                        # the tree rule, over the final diff
+scripts/thegraph/tree-rule.sh <base>                  # the tree rule, over the final diff
 scripts/thegraph/agent-grants.sh                     # every generated agent's tool grant
+scripts/thegraph/slot-authority.sh                   # every derived slot, against its authority
 flutter pub publish --dry-run                        # only when the version is ahead
                                                      # of the registry - see below
 ```

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # tree-rule.sh — thegraph `place` guard for flutter_table_plus, and `gate` again
 # over the final diff.
-# Built from thegraph@2b3c8d4b5d03.
+# Built from thegraph@8820d1293c04.
 #
 # Decider: code. Layout is where a seam is physically expressed, so a file in the
 # wrong directory breaks the seam while producing no error, no failing test and
