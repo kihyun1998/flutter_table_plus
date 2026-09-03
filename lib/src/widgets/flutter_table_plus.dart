@@ -425,8 +425,12 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
   /// with the body (each builds its own from the same snapshot).
   ///
   /// The snapshot is (`data`, `rowId`, `mergedGroups`), and this is rebuilt
-  /// when either **list** changes identity — not when its contents do, and not
-  /// when `rowId` changes, which is compared nowhere. See [rowId].
+  /// when either **list** changes identity **or when the ids it derived no
+  /// longer match** — `RowLookup.idsMatch` re-derives them through the current
+  /// [rowId] and compares, so a swapped extractor and a list sorted or shrunk
+  /// in place are both seen. What that cannot see is an element replaced in
+  /// place under the same id; see [data] and [rowId] for the contract that
+  /// covers it.
   late RowLookup<T> _rowLookup;
 
   /// Cached total data height

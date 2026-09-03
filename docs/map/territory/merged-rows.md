@@ -167,7 +167,9 @@ row ids — which is the question every callback in this area answers implicitly
 - **`getSpanningRowKey` indexes `rowKeys` positionally.** A `spanningRowIndex`
   naming a member `data` no longer holds resolves to an absent row — the one
   place the rule above is not held.
-- **Two the ordinary cell already had, now inherited by every member** (#156):
-  its overflow width subtracts padding but not the 0.5px divider inset, and the
-  detector ignores `MediaQuery.textScaler` while the auto-fit *width* path
-  already takes one. See [text overflow detection](text-overflow.md).
+- ~~Two the ordinary cell already had, now inherited by every member~~ —
+  **closed by #156**, along with two the ticket never named. Members render
+  through the ordinary cell, so the fix reached them for free; the group's
+  **spanning** cell kept its own copy of the measurement and was repaired
+  separately, because #155's exclusion covered members and not it. See
+  [text overflow detection](text-overflow.md).

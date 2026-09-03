@@ -30,8 +30,13 @@ from that choice.
 - **Identity is the (`data`, `rowId`) pair, and only the list's identity is
   watched.** Every id-keyed derivation — `RowLookup`'s two maps, the
   renderable-index list, and the ids the drag geometry answers `idsBetween`
-  from — is built from the pair and dropped when `data` is a *different object*.
-  `rowId` is compared nowhere in the package.
+  from — is built from the pair and dropped when `data` is a *different object*,
+  **or when the ids it derived no longer match**. Since #135 `RowLookup.idsMatch`
+  re-derives them through the current `rowId` and compares, so a swapped
+  extractor, a list sorted in place and a list shrunk in place are all seen.
+  What no comparison of `rowId`'s answers can see is an element replaced in
+  place under the same id, and that is where the contract below still does the
+  work.
   - **That is a decision with a measured reason, not an omission.** `rowId` is
     **required**, so every call site writes an inline closure — all fifteen in
     this repo's own example do — and an inline closure is a new object on every
@@ -86,9 +91,12 @@ from that choice.
   - **Optional-vs-required is the wrong axis**, even though it is what
     separates these two in practice. What decides watchability *under
     `identical`* is how the caller writes the argument: an optional parameter
-    passed as an inline closure is exactly as unwatchable, and
-    `playground_page.dart` pays that cost for `calculateRowHeight` on every
-    build today.
+    passed as an inline closure is exactly as unwatchable. The worked example
+    this used to cite — `playground_page.dart` paying that cost for
+    `calculateRowHeight` — **is gone**: the page passes a `static` tear-off and
+    its own comment records the inline version as deliberately removed. The
+    argument survives without it; the demonstration does not, which is the
+    ordinary fate of an example named inside a rule.
   - **And the axis was avoidable, which is what shipped.** `RowLookup.idsMatch`
     compares the *ids* rather than the function: complete however the caller
     writes the argument, and about a tenth of the rebuild it prevents — 0.971%

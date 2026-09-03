@@ -182,11 +182,13 @@ class TablePlusBodyState<T> extends State<TablePlusBody<T>>
   List<int>? _cachedRenderableIndices;
 
   /// Shared home for the row→index / row→group derivation. Rebuilt when either
-  /// **list object** changes — not when its contents do, and not when `rowId`
-  /// changes, which is compared nowhere in the package; the contract that
-  /// replaces that guard is on `FlutterTablePlus.rowId`. The renderable-index
-  /// list and height cache below are this widget's own consumers and are kept
-  /// separate.
+  /// **list object** changes, **or when the ids no longer match** — since #135
+  /// `RowLookup.idsMatch` re-derives them through the current `rowId` and
+  /// compares, so a swapped extractor and a list sorted or shrunk in place are
+  /// both seen. The contract on `FlutterTablePlus.rowId` covers what that
+  /// cannot: an element replaced in place under the same id. The
+  /// renderable-index list and height cache below are this widget's own
+  /// consumers and are kept separate.
   late RowLookup<T> _rowLookup;
 
   /// Cached row heights.

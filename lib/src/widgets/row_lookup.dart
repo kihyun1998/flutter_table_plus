@@ -78,8 +78,13 @@ class RowLookup<T> {
   /// will get.
   ///
   /// `utils/overflow_cache.dart` is the same shape already shipping here: it
-  /// takes the `measure` function, never compares it, and keys on the derived
-  /// `(text, width)` pair. #135.
+  /// takes the `measure` function, never compares it, and keys on a derived
+  /// value. #135. (That value was the `(text, width)` pair until #156 measured
+  /// the pair to be a hand-written *subset* of what the answer depends on — the
+  /// style and the ambient text scale were the two it omitted — and replaced it
+  /// with the whole `TextMeasurement`. The property this cites is *key on
+  /// derived values, never on a closure*, and that survived; which values it
+  /// keyed on did not.)
   ///
   /// What it catches, beyond a swapped [rowId]: a `data` list **sorted in
   /// place** (the ids move), and one **shrunk in place** (the lengths differ).
