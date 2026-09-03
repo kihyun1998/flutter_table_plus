@@ -4,7 +4,7 @@ description: Fetches raw reference source for flutter_table_plus — sibling pac
 tools: Read, Grep, Glob, Bash
 ---
 
-Built from `thegraph@8820d1293c04`. The method is `thegraph`'s `reference` node —
+Built from `thegraph@3b21e3da2b66`. The method is `thegraph`'s `reference` node —
 read it there (`~/.claude/skills/thegraph/SKILL.md`). This file carries only this
 project's source classes. If `thegraph`'s SKILL.md now hashes differently, **say
 so and continue.** Never rebuild.

@@ -298,6 +298,46 @@ def reciprocity(all_notes: dict[str, str]) -> list[str]:
     return found
 
 
+def hub_reachable(notes: dict[str, str]) -> list[str]:
+    """Every note on disk is linked from the hub, and every hub link resolves.
+
+    The hub's `## Nodes` list is a second copy of what `ls docs/map/territory
+    docs/map/invariant` already says, so it can disagree with the folder — and
+    when it did, this gate reported `clean` over 32 notes while an invariant
+    note sat unlinked. Nothing pointed at it, so the run that needed it could
+    not find it from the hub.
+
+    The check runs BOTH directions, like every other rooted copy here: an
+    orphan (on disk, not in the hub) and a dangling entry (in the hub, not on
+    disk) are the same defect seen from two ends.
+    """
+    hub = os.path.join(ROOT, "docs", "map", "README.md")
+    if not os.path.isfile(hub):
+        return []
+    text = blank_code(read(hub))
+    linked = {
+        os.path.normpath(os.path.join(os.path.dirname(hub), m.group(2)))
+        for m in LINK.finditer(text)
+        if m.group(2).endswith(".md")
+    }
+    on_disk = {
+        os.path.normpath(p)
+        for p in notes
+        if os.path.basename(os.path.dirname(p)) in ("territory", "invariant")
+    }
+    out = []
+    for p in sorted(on_disk - linked):
+        rel = os.path.relpath(p, ROOT).replace("\\", "/")
+        out.append(
+            f"{rel}: on disk but not linked from docs/map/README.md "
+            f"(orphan — nothing can reach it from the hub)"
+        )
+    for p in sorted(linked - on_disk):
+        if "/territory/" in p.replace("\\", "/") or "/invariant/" in p.replace("\\", "/"):
+            rel = os.path.relpath(p, ROOT).replace("\\", "/")
+            out.append(f"docs/map/README.md: links {rel}, which is not on disk")
+    return out
+
 def collect(paths: list[str]) -> dict[str, str]:
     out = {}
     for p in paths:
@@ -344,6 +384,7 @@ def main() -> int:
     for path in sorted(notes):
         findings += check_file(path, notes)
     findings += reciprocity(notes)
+    findings += hub_reachable(notes)
     print(f"checked {len(notes)} note(s)")
     for f in findings:
         print(f"  FINDING  {f}")

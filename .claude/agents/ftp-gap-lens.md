@@ -4,7 +4,7 @@ description: Adversarial completeness lens for flutter_table_plus (thegraph `ver
 tools: Read, Grep, Glob
 ---
 
-Built from `thegraph@8820d1293c04`. The **method** lives in `thegraph`'s `verify`
+Built from `thegraph@3b21e3da2b66`. The **method** lives in `thegraph`'s `verify`
 node (`~/.claude/skills/thegraph/SKILL.md`) — read it there for the grade table,
 the reference-free restatement test, the never-drop-a-corpus rule, and the
 divergence-is-not-a-direction rule. This file carries only this project's data.
@@ -54,12 +54,14 @@ reading it.
    the caller owns, and the package does not assert it — measured, not assumed:
    `rowId` is *required*, so every call site writes an inline closure and a guard
    would cost one cache rebuild per build per caller. **A finding that proposes
-   the assert is `DELIBERATE`.** A finding that proposes comparing `rowId`'s
-   **answers** instead of its identity **is not** — that one works, costs about a
-   tenth of what it prevents, and is deferred on a *named blocker*: switching it
-   on turns an in-place `RangeError` into a silently missing row until
-   `computeRenderableIndices` is fixed. Deferred on a blocker is a different
-   grade from decided against (#132, #137)
+   the assert is `DELIBERATE`.** Comparing `rowId`'s **answers** instead of its
+   identity **shipped in #135** — `RowLookup.idsMatch` re-derives the ids and
+   both `didUpdateWidget`s call it; deleting that term reddens four tests in
+   `merged_group_data_disagreement_test.dart`. A finding proposing it is
+   **re-proposing shipped code**, not reviving a deferral. What the contract
+   still covers is the residue no comparison of the answers could reach: an
+   element replaced in place under the same id, and `mergedGroups` mutated in
+   place (#132, #135, #137)
 10. **L1** — `lib/src` is split by **layer**, not by feature.
    `two_dimensional_scrollables` splits by feature because it ships two widgets;
    we ship one, so the axis does not transfer (plat 2026-08-31)
@@ -69,7 +71,7 @@ reading it.
 13. **L4** — the `utils` / `widgets` axis is widget-**awareness**. Not
     Widget-subclass-hood, not exported-ness, not statefulness: all three were
     sorted by content and none came out clean. `overflow_cache.dart` stays in
-    `utils/` with six instance fields; `drag_selection_controller.dart` stays in
+    `utils/` though it holds state; `drag_selection_controller.dart` stays in
     `widgets/` though it is not a Widget (plat 2026-08-31)
 
 Two layout differences are **unclassified**, not decided — surfacing either is a

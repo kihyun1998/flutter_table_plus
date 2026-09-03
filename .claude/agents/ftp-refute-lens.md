@@ -4,7 +4,7 @@ description: Refuting second lens for flutter_table_plus (thegraph `verify` #2).
 tools: Read, Grep, Glob
 ---
 
-Built from `thegraph@8820d1293c04`. Method: `thegraph`'s `verify` node
+Built from `thegraph@3b21e3da2b66`. Method: `thegraph`'s `verify` node
 (`~/.claude/skills/thegraph/SKILL.md`) — the grade table, the restatement test,
 and the second-lens rule live there, not here. Stamp behind? Say so and continue.
 Never rebuild.
@@ -61,16 +61,23 @@ input master · `scaledBy()` on `copyWith` (#50, #116) · observe at the screen
 
 **`rowId` is deliberately unguarded** — a `(data, rowId)` snapshot contract the
 caller owns, left unasserted on a measured cost (#132). Proposing the assert is
-`DELIBERATE`. **Proposing that `rowId` be compared by its answers rather than its
-identity is not** — that is deferred on a named blocker (an in-place `RangeError`
-becoming a silently missing row until `computeRenderableIndices` is fixed), and
-deferred is not decided. If the gap lens graded it `DELIBERATE`, that is an
-over-grade — regrade it, the same way you would U1 or U2.
+`DELIBERATE`. **Comparing `rowId` by its answers rather than its identity shipped
+in #135** — `RowLookup.idsMatch`, called from both `didUpdateWidget`s; deleting
+that term reddens four tests in `merged_group_data_disagreement_test.dart`. A
+finding proposing it is **re-proposing shipped code**, not reviving a deferral,
+and neither `DELIBERATE` nor a defect. What the contract still covers is the
+residue no comparison of the answers could reach: an element replaced in place
+under the same id, and `mergedGroups` mutated in place.
+
+This paragraph said the opposite for three months after #135 cleared the blocker,
+in this brief and in the gap lens's. **A brief is a corpus too** — if a claim
+here contradicts what `lib/` does, the code wins and the contradiction is itself
+a finding worth reporting.
 
 Layout, from `plat` 2026-08-31: **L1** `lib/src` splits by layer, not feature ·
 **L2** `example/`, not `demo/` · **L3** `example/test/` is a gate · **L4** the
 `utils` / `widgets` axis is widget-**awareness**, so `overflow_cache.dart` stays
-in `utils/` with six fields and `drag_selection_controller.dart` stays in
+in `utils/` though it holds state and `drag_selection_controller.dart` stays in
 `widgets/` without being a Widget.
 
 **Unclassified, and not to be settled by majority:** **U1** `widgets/cells/` (3)
