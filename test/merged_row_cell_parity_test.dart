@@ -52,6 +52,8 @@ Future<void> _pump(
   bool isEditable = false,
   bool showVerticalDividers = true,
   bool showHorizontalDividers = true,
+  bool isSelectable = false,
+  bool showCheckboxColumn = true,
 }) async {
   tester.view.physicalSize = const Size(800, 900);
   tester.view.devicePixelRatio = 1.0;
@@ -70,6 +72,9 @@ Future<void> _pump(
               rowId: (r) => r['id'] as String,
               mergedGroups: groups,
               isEditable: isEditable,
+              isSelectable: isSelectable,
+              selectedRows: const {},
+              onRowSelectionChanged: (_, __) {},
               theme: TablePlusTheme(
                 bodyTheme: TablePlusBodyTheme(
                   rowHeight: 40,
@@ -78,6 +83,8 @@ Future<void> _pump(
                   showHorizontalDividers: showHorizontalDividers,
                 ),
                 headerTheme: const TablePlusHeaderTheme(height: 40),
+                checkboxTheme: TablePlusCheckboxTheme(
+                    showCheckboxColumn: showCheckboxColumn),
               ),
             ),
           ),
@@ -306,6 +313,55 @@ void main() {
       expect(decorations.first.border, isNull,
           reason: '_composeBorder must return null when it has nothing to '
               'draw, rather than a Border whose every side is none');
+    });
+  });
+
+  group('a merged row builds the cells the table has columns for', () {
+    testWidgets('no selection cell when there is no selection column',
+        (tester) async {
+      // The plain row gates on the COLUMN (`column.key == '__selection__'`);
+      // the merged row gated on `isSelectable` alone. The column is injected
+      // only when `isSelectable && checkboxTheme.showCheckboxColumn`, and
+      // `showCheckboxColumn: false` is documented and supported — "rows can
+      // only be selected by tapping on the row itself".
+      //
+      // Measured before the fix, one 200px column in a 600px viewport: a plain
+      // row's text at x=16, the group's at x=616. Off the viewport, so the
+      // group rendered BLANK. The phantom cell took its width from
+      // `columnWidths.widthAt(0, columns.first)` — with no selection column
+      // injected that is the first DATA column, so it displaced by a whole
+      // column rather than by a checkbox.
+      await _pump(
+        tester,
+        data: _rows(['a', 'b', 'c', 'd']),
+        groups: _groupOf(['a', 'b', 'c']),
+        isSelectable: true,
+        showCheckboxColumn: false,
+      );
+
+      final member = tester.getTopLeft(find.text('ra')).dx;
+      final plain = tester.getTopLeft(find.text('rd')).dx;
+      expect(member, plain,
+          reason: 'the group cells start a whole column right of a plain '
+              'row, so the group is pushed off the viewport and renders '
+              'blank');
+    });
+
+    testWidgets('the selection cell is still built when the column exists',
+        (tester) async {
+      // The control. Without it the assertion above is satisfied by never
+      // building a selection cell at all, which would break selection.
+      await _pump(
+        tester,
+        data: _rows(['a', 'b', 'c', 'd']),
+        groups: _groupOf(['a', 'b', 'c']),
+        isSelectable: true,
+      );
+      expect(tester.getTopLeft(find.text('ra')).dx,
+          tester.getTopLeft(find.text('rd')).dx);
+      expect(find.byType(FlutterCheckbox), findsWidgets,
+          reason: 'the checkbox column is on, so the group must still draw a '
+              'checkbox — otherwise the fix above just deleted selection');
     });
   });
 

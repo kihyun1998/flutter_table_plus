@@ -629,10 +629,23 @@ class _TablePlusMergedRowState<T>
 
   /// Build selection cell for merged row.
   Widget? _buildSelectionCell() {
-    if (!widget.isSelectable) return null;
+    // Gate on the COLUMN, exactly as the plain row does — not on
+    // `isSelectable`. The selection column is injected only when
+    // `isSelectable && checkboxTheme.showCheckboxColumn`, and
+    // `showCheckboxColumn: false` is a documented, supported setting: "rows can
+    // only be selected by tapping on the row itself".
+    //
+    // Gating on `isSelectable` alone built a cell no other row had, and sized
+    // it from `columns.first` — which, with no selection column injected, is
+    // the first DATA column. So the group was displaced by a whole column
+    // rather than by a checkbox. Measured 2026-09-03, one 200px column in a
+    // 600px viewport: a plain row's text at x=16, the group's at x=616. Off
+    // the viewport entirely, so the group rendered blank (#155).
+    final index =
+        widget.columns.indexWhere((col) => col.key == '__selection__');
+    if (index == -1) return null;
 
-    // The selection column is injected at index 0 when selectable.
-    final width = widget.columnWidths.widthAt(0, widget.columns.first);
+    final width = widget.columnWidths.widthAt(index, widget.columns[index]);
     final mergedHeight = widget.calculatedHeight ??
         (widget.theme.rowHeight * widget.mergeGroup.effectiveRowCount);
 
@@ -686,7 +699,7 @@ class _TablePlusMergedRowState<T>
       ),
       child: Row(
         children: [
-          if (widget.isSelectable) _buildSelectionCell()!,
+          if (_buildSelectionCell() case final selectionCell?) selectionCell,
           ...() {
             final nonSelectionColumns = widget.columns
                 .where((col) => col.key != '__selection__')
