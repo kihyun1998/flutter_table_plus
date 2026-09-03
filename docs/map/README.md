@@ -96,8 +96,17 @@ These numbers exist in no note file, and they re-ordered the map:
 
 ## Coverage, and what an absent note means
 
-**Coverage is complete** for `lib/`, `example/`, and the release surface — 23
-territories, 7 invariants. This is not a pilot.
+**Coverage is complete** for `lib/`, `example/`, and the release surface. This is
+not a pilot.
+
+**How many of each is the folder's fact, not this sentence's** — `ls
+docs/map/territory/ docs/map/invariant/`. It used to be written here, and it went
+wrong the way a hand-copied count always does: a note was added and the number
+was not, so the roster below listed seven invariants while eight sat on disk, and
+the one missing from the hub was the one an issue three days later needed. The
+gate reported `clean` throughout, because it checks the links that exist and not
+the files that have none. That blind spot is real and unclosed; the repair here
+is to stop keeping a second answer.
 
 So **an absent note is not a backlog item; it means the area is not part of the
 system.** A note becomes owed when either of these happens:
@@ -191,4 +200,5 @@ worth watching.
 [never re-assemble by hand-listing fields](invariant/no-hand-enumeration.md) ·
 [viewport-local coordinates come from one frame](invariant/viewport-local-frame.md) ·
 [observe at the screen, assert by count](invariant/observe-at-the-screen.md) ·
-[a guard reads the destination, never the source](invariant/guard-the-destination.md)
+[a guard reads the destination, never the source](invariant/guard-the-destination.md) ·
+[a decorated box hands its child less than it declares](invariant/decoration-eats-the-child.md)

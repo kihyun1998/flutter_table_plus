@@ -588,6 +588,17 @@ class _TablePlusMergedRowState<T>
     );
   }
 
+  /// How much of the spanning cell's declared width its own decoration takes
+  /// away from the child.
+  ///
+  /// Read off the border rather than re-deriving its thickness, so the
+  /// divider's width lives in one place and a change to it follows here.
+  double _spanningDecorationInset(BuildContext context) =>
+      BoxDecoration(border: widget.theme.verticalDividerBorder)
+          .padding
+          .resolve(Directionality.maybeOf(context) ?? TextDirection.ltr)
+          .horizontal;
+
   /// Determines whether a tooltip should be shown.
   bool _shouldShowTooltip(
       String displayValue, TablePlusColumn<T> column, double maxWidth) {
@@ -600,9 +611,16 @@ class _TablePlusMergedRowState<T>
       willOverflow: () => TextOverflowDetector.willTextOverflowInContext(
         context: context,
         text: displayValue,
-        maxWidth: maxWidth - widget.theme.padding.horizontal,
+        // The spanning cell's box carries `verticalDividerBorder`, and a
+        // Container folds a border's dimensions into the child's inset. #155
+        // routed the *members* through the ordinary cell; this branch kept its
+        // own copy of the measurement, so it needs its own subtraction.
+        maxWidth: maxWidth -
+            widget.theme.padding.horizontal -
+            _spanningDecorationInset(context),
         style:
             widget.theme.getEffectiveTextStyle(widget.isSelected, widget.isDim),
+        textAlign: column.textAlign,
       ),
     );
   }

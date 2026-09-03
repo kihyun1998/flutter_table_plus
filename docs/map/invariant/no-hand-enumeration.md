@@ -62,6 +62,7 @@ the API and false about the behaviour.
 → [Row rendering and geometry](../territory/row-render-geometry.md) — two widgets caching row heights off two hand-written conditions (shape 2)
 → [Drag selection](../territory/drag-selection.md) — where shape 2's symptom is visible: the hit-test geometry answers from the cache
 → [Row identity and data binding](../territory/row-identity.md) — the other branch of the same two conditions, and where shape 2's second exit is recorded (#132)
+→ [Text overflow detection](../territory/text-overflow.md) — shape 2 inside the paragraph that cited this cache as the *positive* precedent: the key listed two of the inputs, and the style and the OS text scale were the two it did not (#156)
 
 ## What a violation looks like
 
@@ -154,9 +155,20 @@ build over the same data.
   closure and comparing is complete rather than heuristic, and measured AOT
   costs 0.010% / 0.112% / **0.971%** at the same three sizes — about ten times
   less. It is not a new pattern here either: `utils/overflow_cache.dart` keys
-  on the derived `(text, width)` pair and never compares the `measure`
-  function it is handed. **The whole first analysis asked "compare the closure
-  or not" and the answer was four files away in the same directory.**
+  on a derived value and never compares the `measure` function it is handed.
+  **The whole first analysis asked "compare the closure or not" and the answer
+  was four files away in the same directory.**
+
+  **The clause that sentence needed, added by #156.** The property it leans on —
+  *key on derived values, not on a closure* — is sound and survives. What it
+  read as, and must not, is an endorsement of *which* values: that key was
+  `(text, width)`, and the answer also depended on the style and on
+  `MediaQuery.textScaler`, so it was this note's own shape 2 sitting inside the
+  paragraph citing it as precedent. #156 replaced it with the measurement
+  itself. A rationale can be true and still teach the wrong lesson, which is
+  exactly the failure mode the sweep surface for now-false rationale exists to
+  catch — and this one was **inside an invariant note**, the layer that is
+  supposed to catch it.
 
   **It shipped in #135, and the order it shipped in is the finding.** Switched
   on alone it would have made things worse, not better: 412/412 green and the
