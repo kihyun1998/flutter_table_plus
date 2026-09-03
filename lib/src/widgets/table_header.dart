@@ -362,11 +362,33 @@ class _TablePlusHeaderState<T> extends State<TablePlusHeader<T>> {
       );
     }
 
-    return Container(
+    // `SizedBox` + `DecoratedBox`, never `Container(decoration:)`.
+    //
+    // A `Container` folds `decoration.padding` — the border's own
+    // `dimensions` — into its child's inset, so the row of header cells was
+    // laid out in `totalWidth − border` while their widths still summed to
+    // `totalWidth`, and the body below has no such box. A caller setting
+    // `headerTheme.decoration` with a border therefore slid the whole header
+    // against the body by the left border's width, silently: measured at 2.0px
+    // for `Border.all(width: 2)`, with no exception and no banner (#160).
+    //
+    // `DecoratedBox` is a `RenderProxyBox` — it paints the decoration and lays
+    // the child out at full size, applying no inset. Same painted result, same
+    // paint order (the decoration is a background here as it was inside the
+    // `Container`), and the child keeps the width the header's columns were
+    // measured against.
+    //
+    // Growing the box by the inset instead does *not* work, and that was
+    // measured too: the defect is the child's origin, not its width, so a wider
+    // box leaves the desync exactly where it was and adds a `RenderFlex`
+    // overflow of the full horizontal inset on top.
+    return SizedBox(
       height: widget.theme.height,
       width: widget.totalWidth,
-      decoration: _buildHeaderDecoration(),
-      child: content,
+      child: DecoratedBox(
+        decoration: _buildHeaderDecoration(),
+        child: content,
+      ),
     );
   }
 }

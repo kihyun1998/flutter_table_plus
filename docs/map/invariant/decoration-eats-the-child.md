@@ -117,10 +117,23 @@ mismeasurement just answers a boolean wrongly, forever, in silence.
 | none | 166.0 | 166.0 | 0.0 |
 | `Border.all(width: 2)` | 168.0 | 166.0 | **2.0** |
 
-**And no exception, no overflow banner.** The header slides against the body by
+**And no exception, no overflow banner.** The header slid against the body by
 exactly the left border's width, silently, in a table whose whole contract is
 that the two stay aligned. Found by the adversarial pass on #156 and probed when
-that pass — being read-only — could only name the mutation. Not repaired there:
-the fix moves the header's width, which is
-[synced scrolling](../territory/synced-scrolling.md)'s blast radius and not text
-overflow's.
+that pass — being read-only — could only name the mutation.
+
+**Repaired in #160, and the repair is the general one for this whole note:
+`DecoratedBox`, not `Container(decoration:)`.** `RenderDecoratedBox` is a
+`RenderProxyBox` — it paints the decoration and lays the child out at full size,
+applying no inset at all. `Container` is the only widget that folds
+`decoration.padding` in. So at any site where the decoration is wanted for paint
+and not for spacing, the whole defect class disappears by choosing the narrower
+widget.
+
+**The obvious alternative was measured and is wrong.** Growing the box by the
+inset leaves the desync exactly where it was and adds a `RenderFlex` overflow of
+the full horizontal inset, because the defect is the child's **origin** and not
+its width — a wider box gives the child more room without moving its left edge
+back. That is the same shape as #121's rejected fix, which distributed a
+height shortfall proportionally instead of charging it to the child at the
+border: in both cases the repair addressed a quantity the defect was not made of.
