@@ -213,6 +213,17 @@ class _TablePlusCellState<T> extends State<TablePlusCell<T>> {
     return Border(right: right, bottom: bottom);
   }
 
+  /// The decoration this cell's box carries.
+  ///
+  /// One expression, because two consumers read it: [build] paints it, and
+  /// [_willTextOverflowCached] asks it how much of the declared width it takes
+  /// away from the child. Those two disagreeing is the defect the second one
+  /// exists to avoid.
+  BoxDecoration _decoration() => BoxDecoration(
+        color: Colors.transparent,
+        border: _composeBorder(),
+      );
+
   Widget _wrapWithTooltip({
     required bool shouldShow,
     required Widget child,
@@ -234,8 +245,6 @@ class _TablePlusCellState<T> extends State<TablePlusCell<T>> {
     // Determine if this cell can be edited
     final canEdit = widget.isEditable && widget.column.editable;
 
-    Color backgroundColor = Colors.transparent;
-
     // The divider stays while the cell is being edited. It used to be dropped
     // — `if (!isCellEditing) border = ...` — which is the maintainer's call to
     // reverse (2026-09-03) and the divergent behaviour of the two: pluto_grid
@@ -243,8 +252,6 @@ class _TablePlusCellState<T> extends State<TablePlusCell<T>> {
     // it is editing, and lets the editor draw no border of its own so the
     // container's survives. Flutter's own `DataTable` puts no decoration on a
     // cell at all, so it never has to choose (#155).
-    final BoxBorder? border = _composeBorder();
-
     Widget cellContent = Container(
       width: widget.width,
       height: widget.calculatedHeight ?? widget.theme.rowHeight,
@@ -252,10 +259,7 @@ class _TablePlusCellState<T> extends State<TablePlusCell<T>> {
           ? widget.editableTheme
               .cellContainerPadding // Use editable theme's container padding
           : widget.theme.padding,
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        border: border,
-      ),
+      decoration: _decoration(),
       child:
           widget.isCellEditing ? _buildEditingTextField() : _buildRegularCell(),
     );
@@ -286,20 +290,36 @@ class _TablePlusCellState<T> extends State<TablePlusCell<T>> {
     );
   }
 
-  /// Whether [displayValue] overflows the cell, memoized on (text, width) so a
-  /// rebuild with unchanged inputs skips re-measuring.
+  /// Whether [displayValue] overflows the cell, memoized on the measurement so
+  /// a rebuild with unchanged inputs skips re-measuring.
+  ///
+  /// The width handed to the measurement is what the glyphs receive, not what
+  /// the cell declares: [Container] folds `decoration.padding` — the border's
+  /// own [BoxBorder.dimensions] — into the child's inset, inside the box that
+  /// carries the declared width. Read it off the decoration this cell actually
+  /// builds rather than re-deriving the divider's thickness, so a third copy
+  /// of that constant is not created and a caller's own decoration is covered
+  /// by the same expression.
   bool _willTextOverflowCached(String displayValue) {
-    final availableWidth = widget.width - widget.theme.padding.horizontal;
+    final inset = _decoration()
+        .padding
+        .resolve(Directionality.maybeOf(context) ?? TextDirection.ltr)
+        .horizontal;
+    final availableWidth =
+        widget.width - widget.theme.padding.horizontal - inset;
+
+    final measurement = TextOverflowDetector.measurementFor(
+      context: context,
+      text: displayValue,
+      maxWidth: availableWidth,
+      style:
+          widget.theme.getEffectiveTextStyle(widget.isSelected, widget.isDim),
+      textAlign: widget.column.textAlign,
+    );
+
     return _overflowCache.resolve(
-      displayValue,
-      availableWidth,
-      () => TextOverflowDetector.willTextOverflowInContext(
-        context: context,
-        text: displayValue,
-        maxWidth: availableWidth,
-        style:
-            widget.theme.getEffectiveTextStyle(widget.isSelected, widget.isDim),
-      ),
+      measurement,
+      () => TextOverflowDetector.willTextOverflow(measurement),
     );
   }
 }

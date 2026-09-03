@@ -1,35 +1,121 @@
 import 'package:flutter/material.dart';
 
+/// Everything the overflow measurement consumes, as one value.
+///
+/// It exists so the measurement and the memo that caches it read the *same*
+/// list. Two lists is how the cache came to key on `(text, width)` while the
+/// layout also depended on the style and the ambient [TextScaler] — an input
+/// added to one and not the other serves a stale answer forever. There is no
+/// way in Dart to make that disagreement impossible; what is achievable is
+/// reducing the two lists to one, which is what this type is.
+@immutable
+class TextMeasurement {
+  const TextMeasurement({
+    required this.text,
+    required this.maxWidth,
+    required this.style,
+    this.textScaler = TextScaler.noScaling,
+    this.textAlign = TextAlign.start,
+    this.textDirection = TextDirection.ltr,
+  });
+
+  /// The text content to measure.
+  final String text;
+
+  /// The width the glyphs are actually laid out in — not the width the box
+  /// declares. A decoration's border is folded into the child's inset, so the
+  /// caller subtracts what its own decoration consumes before constructing
+  /// this.
+  final double maxWidth;
+
+  /// The style the glyphs are painted with, ambient inheritance already
+  /// resolved.
+  final TextStyle style;
+
+  /// The paint-time multiplier the OS text-size setting applies. It is not in
+  /// [style]: `scaledBy` scales `fontSize` *inside* the style, while this
+  /// multiplies the resolved size when the paragraph is built.
+  final TextScaler textScaler;
+
+  /// Carried because a caller has it, not because it moves the answer: a line
+  /// break does not depend on alignment, and the painter's reported width is
+  /// clamped to [maxWidth] either way.
+  final TextAlign textAlign;
+
+  /// The ambient direction the `Text` resolves from `Directionality`.
+  ///
+  /// Only bidirectional strings can break differently under it, so no failure
+  /// is known — but it is an input the glyphs get, and this type exists so the
+  /// measurement and the memo cannot list a different set of those.
+  final TextDirection textDirection;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is TextMeasurement &&
+          other.text == text &&
+          other.maxWidth == maxWidth &&
+          other.style == style &&
+          other.textScaler == textScaler &&
+          other.textAlign == textAlign &&
+          other.textDirection == textDirection;
+
+  @override
+  int get hashCode =>
+      Object.hash(text, maxWidth, style, textScaler, textAlign, textDirection);
+}
+
 /// Utility class to detect if text will overflow in a given space.
 class TextOverflowDetector {
-  /// Determines if the given text will overflow when rendered with the
-  /// specified style and constraints.
+  /// Resolves the inputs the painted glyphs will actually get from [context],
+  /// the way `Text` resolves them, and returns the measurement they define.
   ///
-  /// Returns `true` if the text would be truncated or ellipsized when
-  /// rendered in the available width.
+  /// Two of those inputs are ambient and invisible to a bare [TextPainter]:
+  /// the inherited [DefaultTextStyle] (which supplies the font family,
+  /// `letterSpacing` and `height` a theme style typically does not name) and
+  /// [MediaQuery.textScalerOf]. A measurement that skips them predicts a
+  /// different string than the one on screen.
   ///
-  /// [text] - The text content to measure
-  /// [style] - The text style to apply
-  /// [maxWidth] - The maximum available width for the text
-  /// [textAlign] - The text alignment (affects measurement for some cases)
-  static bool willTextOverflow({
+  /// [maxWidth] is the width the glyphs receive, which is **not** the width
+  /// the cell declares — see [TextMeasurement.maxWidth].
+  static TextMeasurement measurementFor({
+    required BuildContext context,
     required String text,
-    required TextStyle style,
     required double maxWidth,
+    required TextStyle style,
     TextAlign textAlign = TextAlign.start,
   }) {
-    if (text.isEmpty || maxWidth <= 0) {
+    // Mirrors Text.build: the ambient style is merged under the given one only
+    // when that one inherits.
+    final ambient = DefaultTextStyle.of(context).style;
+    return TextMeasurement(
+      text: text,
+      maxWidth: maxWidth,
+      style: style.inherit ? ambient.merge(style) : style,
+      textScaler: MediaQuery.textScalerOf(context),
+      textAlign: textAlign,
+      textDirection: Directionality.maybeOf(context) ?? TextDirection.ltr,
+    );
+  }
+
+  /// Determines if [m] would be truncated or ellipsized when rendered.
+  ///
+  /// Returns `true` if the text does not fit on one line in
+  /// [TextMeasurement.maxWidth].
+  static bool willTextOverflow(TextMeasurement m) {
+    if (m.text.isEmpty || m.maxWidth <= 0) {
       return false;
     }
 
     final textPainter = TextPainter(
-      text: TextSpan(text: text, style: style),
+      text: TextSpan(text: m.text, style: m.style),
       maxLines: 1,
-      textDirection: TextDirection.ltr,
-      textAlign: textAlign,
+      textDirection: m.textDirection,
+      textAlign: m.textAlign,
+      textScaler: m.textScaler,
     );
 
-    textPainter.layout(maxWidth: maxWidth);
+    textPainter.layout(maxWidth: m.maxWidth);
 
     // Check if the text was truncated or if it exceeds the available width
     final didExceedMaxLines = textPainter.didExceedMaxLines;
@@ -37,28 +123,27 @@ class TextOverflowDetector {
 
     textPainter.dispose();
 
-    return didExceedMaxLines || textWidth > maxWidth;
+    return didExceedMaxLines || textWidth > m.maxWidth;
   }
 
-  /// Determines if text will overflow using the current build context
-  /// and inherited text style.
+  /// Convenience for a call site with no cache: resolve, then measure.
   ///
-  /// This is a convenience method that automatically resolves text style
-  /// from the current theme context.
+  /// A site that memoizes the answer must not use this — it needs the
+  /// [TextMeasurement] itself, so the memo and the measurement key on one
+  /// list. Use [measurementFor] there.
   static bool willTextOverflowInContext({
     required BuildContext context,
     required String text,
     required double maxWidth,
-    TextStyle? style,
+    required TextStyle style,
     TextAlign textAlign = TextAlign.start,
   }) {
-    final effectiveStyle = style ?? DefaultTextStyle.of(context).style;
-
-    return willTextOverflow(
+    return willTextOverflow(measurementFor(
+      context: context,
       text: text,
-      style: effectiveStyle,
       maxWidth: maxWidth,
+      style: style,
       textAlign: textAlign,
-    );
+    ));
   }
 }

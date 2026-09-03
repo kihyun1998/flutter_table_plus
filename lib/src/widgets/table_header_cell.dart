@@ -88,13 +88,27 @@ class HeaderCell extends StatelessWidget {
         final sortIconArea = _getSortIcon() != null
             ? theme.sortIconSpacing + theme.sortIconWidth
             : 0.0;
-        final availableWidth = width - padding.horizontal - sortIconArea;
+        // The header draws its divider as a Positioned overlay, not as a
+        // border, so by default nothing is folded into the child's inset here.
+        // A caller-supplied `cellDecoration` can carry one, and asking the
+        // decoration covers both cases with the same expression.
+        final inset = _buildCellDecoration()
+            .padding
+            .resolve(Directionality.maybeOf(context) ?? TextDirection.ltr)
+            .horizontal;
+        final availableWidth =
+            width - padding.horizontal - sortIconArea - inset;
 
         return TextOverflowDetector.willTextOverflowInContext(
           context: context,
           text: label,
           maxWidth: availableWidth,
-          style: theme.textStyle,
+          // The style the glyphs get, which is the sorted one on a sorted
+          // column — the same style `_buildHeaderText` paints with. Measuring
+          // `theme.textStyle` here was wrong on every build of a sorted column,
+          // with no cache and no staleness needed to reach it.
+          style: _getTextStyle(),
+          textAlign: column.textAlign,
         );
     }
   }
