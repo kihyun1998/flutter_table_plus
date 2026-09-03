@@ -56,6 +56,7 @@ widths and text do.
 
 → [Widths and offsets are clamped on every path](../invariant/clamped-dimensions.md) — both re-derived offsets are clamped into the new extents
 → [Never re-assemble by hand-listing fields](../invariant/no-hand-enumeration.md) — scaling a theme is where a field has gone missing twice — #50 at the root, #116 one level down
+→ [A measurement is given what the paint resolves, never what the caller wrote](../invariant/measure-what-the-paint-resolves.md) — `scaledBy` multiplies `fontSize` inside the style while `TextScaler` multiplies the resolved size, so the two stack and neither substitutes for the other
 
 ## Blast radius
 

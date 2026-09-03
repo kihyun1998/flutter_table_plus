@@ -47,6 +47,7 @@ of this territory and is currently readable only from the source.
 
 → [Widths and offsets are clamped on every path](../invariant/clamped-dimensions.md) — five of the eighteen sites are in this territory alone
 → [The widget-test font is a square per glyph](../invariant/test-font-square.md) — any test that asserts a measured width is measuring the square font, not the screen
+→ [A measurement is given what the paint resolves, never what the caller wrote](../invariant/measure-what-the-paint-resolves.md) — the site that got it right, and therefore the reference the other two measurement sites were repaired against
 
 ## Blast radius
 

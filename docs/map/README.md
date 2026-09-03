@@ -201,4 +201,5 @@ worth watching.
 [viewport-local coordinates come from one frame](invariant/viewport-local-frame.md) ·
 [observe at the screen, assert by count](invariant/observe-at-the-screen.md) ·
 [a guard reads the destination, never the source](invariant/guard-the-destination.md) ·
-[a decorated box hands its child less than it declares](invariant/decoration-eats-the-child.md)
+[a decorated box hands its child less than it declares](invariant/decoration-eats-the-child.md) ·
+[a measurement is given what the paint resolves](invariant/measure-what-the-paint-resolves.md)

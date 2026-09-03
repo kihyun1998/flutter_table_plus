@@ -42,6 +42,7 @@ compute one.
 
 ## Cross-cutting invariants
 
+→ [A measurement is given what the paint resolves, never what the caller wrote](../invariant/measure-what-the-paint-resolves.md) — the public helper measured with the caller's bare style and a width the cell does not hand out; the symptom is clipped text with no banner
 → [The widget-test font is a square per glyph](../invariant/test-font-square.md) — a measured text height in a test is the square font's height, so wrap points differ from the screen's
 → [A decorated box hands its child less than it declares](../invariant/decoration-eats-the-child.md) — a measured height is the number declared, never the number the child receives
 
