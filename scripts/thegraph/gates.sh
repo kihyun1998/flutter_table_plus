@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # gates.sh — thegraph `gate` node for flutter_table_plus.
-# Built from thegraph@2b3c8d4b5d03.
+# Built from thegraph@8820d1293c04.
 #
 # There is NO CI in this repo. These are the only gates.
 #
@@ -43,7 +43,15 @@ run "test"            ""        flutter test
 run "example:analyze" "example" flutter analyze
 run "example:test"    "example" flutter test
 run "map:check"       ""        python scripts/map/check_map.py docs/map
-run "tree-rule"       ""        scripts/thegraph/tree-rule.sh
+# A BASE REF, and it is load-bearing. `place` runs this bare before `implement`,
+# when the work is uncommitted and the working tree IS the diff. By the time
+# `gate` runs, the work is committed and a bare run considers ZERO paths and
+# passes — measured 2026-09-03: 0 paths after the commit, 14 against main. A
+# gate that cannot fail is not a gate.
+BASE="${GATES_BASE:-$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null | sed 's|^origin/||')}"
+BASE="${BASE:-main}"
+run "tree-rule"       ""        scripts/thegraph/tree-rule.sh "$BASE"
+run "slot-authority"  ""        scripts/thegraph/slot-authority.sh
 run "agent-grants"    ""        scripts/thegraph/agent-grants.sh
 # The dry-run validates the archive, but it also insists the version is an
 # increment over what is published — and between releases pubspec.yaml sits AT

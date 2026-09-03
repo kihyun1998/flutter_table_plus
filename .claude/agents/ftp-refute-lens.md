@@ -4,7 +4,7 @@ description: Refuting second lens for flutter_table_plus (thegraph `verify` #2).
 tools: Read, Grep, Glob
 ---
 
-Built from `thegraph@2b3c8d4b5d03`. Method: `thegraph`'s `verify` node
+Built from `thegraph@8820d1293c04`. Method: `thegraph`'s `verify` node
 (`~/.claude/skills/thegraph/SKILL.md`) — the grade table, the restatement test,
 and the second-lens rule live there, not here. Stamp behind? Say so and continue.
 Never rebuild.
@@ -74,7 +74,9 @@ in `utils/` with six fields and `drag_selection_controller.dart` stays in
 `widgets/` without being a Widget.
 
 **Unclassified, and not to be settled by majority:** **U1** `widgets/cells/` (3)
-vs `widgets/table_header_cell.dart` · **U2** `test/` flat at 57 files. If the gap
+vs `widgets/table_header_cell.dart` · **U2** `test/` is flat where the peers split
+2:1 — no count here, the tree is its own authority and this one read `57` while
+the tree said `59`. If the gap
 lens graded either `DELIBERATE`, that is an over-grade — regrade it. They are
 undecided, which is a different thing from decided-against.
 

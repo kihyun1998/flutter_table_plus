@@ -4,7 +4,7 @@ description: Sweeps every surface that describes flutter_table_plus's behavior a
 tools: Read, Grep, Glob
 ---
 
-Built from `thegraph@2b3c8d4b5d03`. Method: `thegraph`'s `sweep` node
+Built from `thegraph@8820d1293c04`. Method: `thegraph`'s `sweep` node
 (`~/.claude/skills/thegraph/SKILL.md`). This file carries this project's surfaces
 and how each is read. Stamp behind? Say so and continue. Never rebuild.
 
@@ -27,6 +27,7 @@ hit.** Always report **which patterns you evaluated**, not only what matched.
 | `.pubignore` | it decides the archive, and the archive cannot be un-published. A root `.pubignore` **disables git-based file listing**, so anything unlisted ships |
 | **now-false rationale** | the expensive one — a wrong *reason* breaks no test, and the next reader follows it. #69: six "the row centre scrolls off screen" rationales went false while the conclusion stood. #96: five call sites + `THEMING.md` + two test comments lost "never build a tooltip that cannot show". Grep the *reason phrasing*, not the API name |
 | the **MAP** (`docs/map/`) | a territory note describes behaviour, so it drifts when behaviour moves. Propose the update to the note whose territory the change entered — `## Design model`, `## Code` symbols, `## Blast radius`. **You do not run its gate**: `python scripts/map/check_map.py docs/map` is gate #6 and the main thread runs it after your proposals land, which is the only moment it could mean anything. A refactor that moves symbols decays **file attribution** and nothing else, and that gate catches exactly that. It checks attribution, **not location**: `resolve_dart` searches `lib/src → lib → example → .`, so a moved file still resolves and placement is `tree-rule.sh`'s job |
+| `docs/agents/lessons.md` | **read for a different question than the rest.** The other surfaces are read for *which sentence did this change make false*; this one for *does the war-story this change produced exist here*. An incident record is append-only, so a change never falsifies it — it leaves it **incomplete**, which no drift pattern can see. Missed once already, by a sweep that walked every other surface and had no row telling it to look |
 | the **cluster anchor** | `spine`'s flush: the root confirmed or falsified, the numbers measured, any new sibling **enrolled as a sub-issue** (never announced in prose), what is still open. The roster never goes in the body |
 
 `CONTEXT.md` and `docs/adr/` do not exist yet — nothing to sweep there until they
