@@ -596,15 +596,38 @@ Support variable height rows based on content.
 ### Using TableRowHeightCalculator
 
 ```dart
+// Build it ONCE and hold it in a field — see the two notes below.
+_rowHeight = TableRowHeightCalculator.createHeightCalculator(
+  columns: columnsList,
+  columnWidths: columnsList.map((c) => c.width).toList(),
+  defaultTextStyle: TextStyle(fontSize: 14),
+  minHeight: 48.0,
+  // Resolves the ambient DefaultTextStyle and MediaQuery.textScalerOf, which
+  // are what the glyphs actually get. Without it the measurement is of a
+  // different string than the one on screen.
+  context: context,
+);
+
 FlutterTablePlus<User>(
-  calculateRowHeight: TableRowHeightCalculator.createHeightCalculator(
-    columns: columnsList,
-    columnWidths: columnsList.map((c) => c.width).toList(),
-    defaultTextStyle: TextStyle(fontSize: 14),
-    minHeight: 48.0,
-  ),
+  calculateRowHeight: _rowHeight,
 )
 ```
+
+> **Pass `context`.** A `TextPainter` sees only the style you hand it. The `Text`
+> in the cell merges the inherited `DefaultTextStyle` under it — that is where
+> the font family, `letterSpacing` and `height` come from when your style does
+> not name them — and applies `MediaQuery.textScalerOf`. Measured on the default
+> theme: a style naming only `fontSize` predicts **100px** for a paragraph the
+> screen lays out at **120px**, and at an OS text scale of 1.25 it needs **225px**
+> against the same prediction. The text is clipped and nothing warns you.
+
+> **Do not build it inline in the widget's constructor.** The height caches — and
+> the row geometry every drag hit-test is answered from — drop whenever this
+> callback is not equal to the previous one, and a closure built fresh in `build`
+> never is. Measured: two calls with identical arguments return callbacks that
+> compare `!=`, so the inline form re-measures every row on every frame. Hold it
+> in a field and rebuild it in `didChangeDependencies`, which is also exactly
+> when the ambient inputs above can have changed.
 
 ### Custom Height Function
 

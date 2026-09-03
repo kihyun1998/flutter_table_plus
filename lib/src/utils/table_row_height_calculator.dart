@@ -17,6 +17,21 @@ class TableRowHeightCalculator {
   /// - [textAlign]: Text alignment (optional)
   /// - [padding]: Cell padding (defaults to EdgeInsets.symmetric(vertical: 8.0))
   /// - [minHeight]: Minimum height to return (defaults to 48.0)
+  /// - [textScaler]: The OS text-size multiplier (defaults to
+  ///   [TextScaler.noScaling]). It is **not** part of [textStyle]: a scaled
+  ///   theme scales `fontSize` inside the style, while this multiplies the
+  ///   resolved size when the paragraph is built. Leave it at the default and
+  ///   this predicts one number while the screen draws another.
+  ///
+  /// **[textStyle] must be the style the glyphs actually get, ambient
+  /// inheritance already resolved.** A `Text` merges the inherited
+  /// [DefaultTextStyle] under the style it is given, which is where the font
+  /// family, `letterSpacing` and `height` come from when a theme style does not
+  /// name them — and a bare [TextPainter] sees none of that. Measured on the
+  /// default theme: a style declaring only `fontSize` predicts 100px for a
+  /// paragraph the screen lays out at 120px, and the text is clipped with no
+  /// overflow banner. [createHeightCalculator] resolves this for you when given
+  /// a `context`.
   ///
   /// Returns the calculated height needed to display the text.
   static double calculateTextHeight({
@@ -26,6 +41,7 @@ class TableRowHeightCalculator {
     TextAlign textAlign = TextAlign.start,
     EdgeInsets padding = const EdgeInsets.symmetric(vertical: 8.0),
     double minHeight = 48.0,
+    TextScaler textScaler = TextScaler.noScaling,
   }) {
     if (text.isEmpty || maxWidth <= 0) {
       return minHeight;
@@ -36,6 +52,7 @@ class TableRowHeightCalculator {
       maxLines: null,
       textDirection: TextDirection.ltr,
       textAlign: textAlign,
+      textScaler: textScaler,
     );
 
     textPainter.layout(maxWidth: maxWidth);
@@ -70,6 +87,8 @@ class TableRowHeightCalculator {
     EdgeInsets cellPadding =
         const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
     double minHeight = 48.0,
+    TextScaler textScaler = TextScaler.noScaling,
+    double extraWidth = 0.0,
   }) {
     double maxHeight = minHeight;
 
@@ -91,8 +110,16 @@ class TableRowHeightCalculator {
       final columnWidth =
           columnWidths.isNotEmpty ? columnWidths[i] : column.width;
 
-      // Account for cell padding when calculating available text width
-      final availableTextWidth = columnWidth - cellPadding.horizontal;
+      // Account for cell padding when calculating available text width, and
+      // for whatever the cell's own decoration takes on top of it: a body
+      // cell draws a vertical divider whose border a Container folds into the
+      // child's inset, so the glyphs get less than `columnWidth - padding`.
+      // The caller supplies it because only the caller knows their theme —
+      // `bodyTheme.showVerticalDividers ? bodyTheme.verticalDividerSide.width
+      // : 0` — which is the same shape `TableColumnWidthCalculator` takes as
+      // `bodyExtraWidth`.
+      final availableTextWidth =
+          columnWidth - cellPadding.horizontal - extraWidth;
 
       if (availableTextWidth <= 0) continue;
 
@@ -103,6 +130,7 @@ class TableRowHeightCalculator {
         textAlign: column.textAlign,
         padding: cellPadding,
         minHeight: minHeight,
+        textScaler: textScaler,
       );
 
       maxHeight = math.max(maxHeight, cellHeight);
@@ -123,7 +151,24 @@ class TableRowHeightCalculator {
   /// - [cellPadding]: Cell padding (defaults to EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0))
   /// - [minHeight]: Minimum height to return (defaults to 48.0)
   ///
+  /// - [context]: when given, the ambient [DefaultTextStyle] is merged under
+  ///   [defaultTextStyle] and [MediaQuery.textScalerOf] is read from it — the
+  ///   two inputs the painted glyphs get and a bare [TextPainter] does not.
+  ///   Pass it unless you have already resolved both yourself.
+  ///
   /// Returns a function that can be used as FlutterTablePlus.calculateRowHeight
+  ///
+  /// **Hold the result in a field; do not build it inline in `build`.** The
+  /// height caches — and the `RowGeometry` every drag hit-test is answered
+  /// from — drop whenever this callback is not equal to the previous one, and a
+  /// closure built fresh each build never is. Measured: two calls with
+  /// identical arguments return callbacks that compare `!=`, so the documented
+  /// inline form re-measures every row on every frame.
+  ///
+  /// A value type with an `==` does **not** fix this, which was tried and
+  /// measured: Dart compares two tear-offs of the same method by whether their
+  /// receivers are `identical`, never by whether they are `==`. A stable
+  /// receiver is the only thing that works, and only the caller can hold one.
   static double? Function(int, T) createHeightCalculator<T>({
     required List<TablePlusColumn<T>> columns,
     required List<double> columnWidths,
@@ -131,15 +176,28 @@ class TableRowHeightCalculator {
     EdgeInsets cellPadding =
         const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
     double minHeight = 48.0,
+    TextScaler textScaler = TextScaler.noScaling,
+    double extraWidth = 0.0,
+    BuildContext? context,
   }) {
+    // Mirrors Text.build: the ambient style is merged under the given one only
+    // when that one inherits.
+    final resolvedStyle = context != null && defaultTextStyle.inherit
+        ? DefaultTextStyle.of(context).style.merge(defaultTextStyle)
+        : defaultTextStyle;
+    final resolvedScaler =
+        context != null ? MediaQuery.textScalerOf(context) : textScaler;
+
     return (int rowIndex, T rowData) {
       return calculateRowHeight<T>(
         rowData: rowData,
         columns: columns,
         columnWidths: columnWidths,
-        defaultTextStyle: defaultTextStyle,
+        defaultTextStyle: resolvedStyle,
         cellPadding: cellPadding,
         minHeight: minHeight,
+        textScaler: resolvedScaler,
+        extraWidth: extraWidth,
       );
     };
   }
