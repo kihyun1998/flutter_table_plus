@@ -22,6 +22,21 @@ class TableColumnWidthCalculator {
   /// - [extraWidth]: Additional width to add (e.g., for icons or decorations).
   /// - [textScaler]: The [TextScaler] to apply (defaults to [TextScaler.noScaling]).
   ///
+  /// **[textStyle] must be the style the glyphs actually get, and [textScaler]
+  /// the one the paragraph is built with.** A `Text` merges the inherited
+  /// `DefaultTextStyle` under the style it is given — that is where the font
+  /// family, `letterSpacing` and `height` come from when a theme style does not
+  /// name them — and applies `MediaQuery.textScalerOf`. A [TextPainter] sees
+  /// neither, so a caller handing over a bare theme style measures a different
+  /// string than the one on screen, always too narrow. This package's own
+  /// caller resolves both before calling; a caller reaching this directly must
+  /// do the same:
+  ///
+  /// ```dart
+  /// final style = DefaultTextStyle.of(context).style.merge(myStyle);
+  /// final scaler = MediaQuery.textScalerOf(context);
+  /// ```
+  ///
   /// Returns the total width needed: text width + padding + extra.
   static double measureTextWidth({
     required String text,
@@ -63,6 +78,10 @@ class TableColumnWidthCalculator {
   /// - [textScaler]: The [TextScaler] to apply (defaults to [TextScaler.noScaling]).
   /// - [minWidth]: Minimum column width (defaults to 50.0).
   /// - [maxWidth]: Maximum column width (defaults to unlimited).
+  ///
+  /// The styles and the scaler carry the same requirement as
+  /// [measureTextWidth]: hand over what the glyphs actually get, ambient
+  /// inheritance already resolved.
   ///
   /// Returns the optimal width clamped to [[minWidth], [maxWidth]].
   static double calculateColumnWidth<T>({
