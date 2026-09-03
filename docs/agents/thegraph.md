@@ -8,7 +8,7 @@ reasoning habits); this file is its **contract** for this repo.
 Per-incident evidence lives in [`lessons.md`](lessons.md); identity and
 invariants in `CLAUDE.md`.
 
-**Build stamp: `thegraph@8820d1293c04`** (SKILL.md sha256[0:12], 2026-09-03).
+**Build stamp: `thegraph@3b21e3da2b66`** (SKILL.md sha256[0:12], 2026-09-03).
 Every generated artifact carries it. When the stamp is behind, `thegraph` says so
 and continues — it never rebuilds on its own.
 
@@ -17,7 +17,79 @@ cache; the GitHub issue is the durable record.
 
 ---
 
-## Compile notes — the 2026-09-03 update
+## Compile notes — the 2026-09-03 update (second)
+
+An **update build**, and the first one whose findings all came from a slot the
+assertions call green.
+
+**`slot-authority.sh` printed `every derived slot agrees with its authority,
+both directions` while three derived copies were wrong.** Each was a hand-copied
+count, and each dodged the check for its own reason: L4's *"six fields"* was
+spelled out, so the count guard's `[0-9]+` pattern never saw it; `place`'s
+*"2 public / 13 internal"* and *"(10 / 5)"* sum to fifteen against sixteen files;
+and `CLAUDE.md`'s *"9 gates"* is a third copy of a number this doc and the runner
+both put at ten, which the check misses because it never reads `CLAUDE.md`. All
+three are **deleted rather than corrected** — this doc already states, twice,
+that rows carry no counts, and a better count-checker is an enumeration problem
+answered with an enumeration.
+
+**The build stamp had been wrong in two directions at once.** The header said
+`8820d1293c04`, the compile notes below said `b7d8ca969712` "on all 10 generated
+artifacts", and the measured value was **`3b21e3da2b66`** — so the doc disagreed
+with itself *and* both values were behind. A stamp labels; it warns nobody. This
+is the fifth consecutive build to find it behind.
+
+**And it moved again during this build.** Measured `684a549ca5c2` early in the
+session and `3b21e3da2b66` an hour later, same command and same path — the second
+consecutive build to catch the catalog moving mid-run. The first stamp was
+written into all eleven files before `slot-authority.sh` said `BEHIND` and the
+value was corrected. **That is the check earning its place**: the number a human
+measures by hand and carries across a session is exactly the kind that goes stale
+between measuring and writing, and nothing but an assertion at write time can see
+it.
+
+**One gate was red on the first run and green on the second, with no edit
+between.** `analyze` exited 1 while `pub get` was still resolving, then passed
+alone and passed again in a full re-run. Recorded rather than shrugged off: #55's
+lesson is that a gate which fails for reasons unrelated to the change is one
+everybody learns to ignore, and a **flaky** gate reaches that destination by a
+shorter road than a permanently red one. Not repaired here — one observation is
+not a pattern — but it is now written down, so a second sighting is a second and
+not a first.
+
+**Divergence row 9 was three months expired, and it is the expensive kind.**
+#135 shipped the by-value `rowId` compare and cleared the blocker that had
+deferred it — `no-hand-enumeration.md` even recorded that *"that reason had an
+expiry date the first one did not"* — and nobody reclaimed the sentence when the
+date passed. It survived in four places: `row_measurement.dart` (a sacred path),
+this doc's row 9, and **both generated lens briefs**, which told every `verify`
+pass that a shipped guard was pending. A lens re-proposing `idsMatch` would have
+been graded correct.
+
+**Why nothing caught it, stated as a build fact rather than an apology.**
+`slot-authority.sh` prints the divergence list under `unassertable, by design`.
+That marking works — it announces a known hole — but announcing is not checking,
+and the sentence sitting in the hole was `verify`'s own grading rule. **And the
+row was mixed in class**: its conclusion is *decided* (we do not assert `rowId`),
+while *"not switched on yet"* is *derived* from `lib/`. Slot-level classification
+cannot reach a derived clause inside a decided slot, so no assertion could ever
+have been written for it. That is a limit of 2b's granularity, recorded here
+rather than worked around.
+
+**Two sacred paths added**, both from incidents measured this session:
+`text_overflow_detector.dart` (three call sites behind one file; #156's four
+silent defects) and `table_header.dart` (#160's silent 2.0px header/body offset).
+The list goes from fourteen to sixteen; the cost is a mandatory two-lens pass on
+any diff touching either.
+
+**Also this session, outside the build:** `check_map.py` gains a hub-reachability
+check — it reported `clean` over 32 notes while an invariant note sat on disk
+unlinked from the MAP's own roster, and the note that went missing was the one
+#156 needed.
+
+---
+
+## Compile notes — the 2026-09-03 update (first)
 
 An **update build**. The graph was the input, diffed against the repo. The
 bindings were not read; they no longer exist.
@@ -300,9 +372,9 @@ why `tree-rule.sh` carries an `--audit` mode.
 
 **The `utils` / `widgets` axis is *widget-awareness*, not Widget-subclass-hood.**
 Four axes were sorted by content and only this one came out clean. Exported-ness
-does not sort them (`utils` is 2 public / 13 internal); importing Flutter does not
-(10 / 5); holding mutable state does not — `overflow_cache.dart` carries six
-instance fields and stays in `utils/` because it does not know the widget tree.
+does not sort them; importing Flutter does not; holding mutable state does not —
+`overflow_cache.dart` is stateful and stays in `utils/` because it does not know
+the widget tree.
 That is the rule, not drift. Equally, `drag_selection_controller.dart` stays in
 `widgets/` though it is not a Widget: `CLAUDE.md`'s *"unit-testable in isolation"*
 is a claim about testability, not about location.
@@ -406,6 +478,8 @@ a clean diff.
 | `CHANGELOG.md` | pub.dev snapshots at publish — a published entry edited in place splits the repo from the registry (2.15.0) |
 | `.pubignore` | it decides the archive's contents, and the archive **cannot be un-published** |
 | `lib/src/widgets/cells/table_plus_cell.dart` | #155 routed the merged row's members through it, so one defect here lands on **every plain row and every group member** at once. #156 already records two live ones in it: the overflow width ignores the divider's own inset, and the detector never reads `MediaQuery.textScaler`. Added 2026-09-03 — this run's derivation, the maintainer having delegated the call rather than ratified it |
+| `lib/src/utils/text_overflow_detector.dart` | all **three** overflow call sites go through it — the ordinary cell, the header cell, and the merged row's spanning cell — so a defect here is three at once. #156 found four, every one silent, and the largest was named by neither the ticket nor the first adversarial pass. A diff that changes only this file touches no other sacred path, which is how those four reached release |
+| `lib/src/widgets/table_header.dart` | a caller's `headerTheme.decoration` is applied to the box wrapping the whole header, and the body has no equivalent box. One border slid every header column against its body column — measured 2.0px, no exception, no banner — and what it broke is the alignment `CLAUDE.md` names as core (#160). The failure mode here is a silent offset, which no test that does not compare the two rects can see |
 
 Absent a path hit, the guard is enumeration risk (decider: `AI`): many edges,
 domain semantics, cross-feature interaction. A reactive spike that keeps catching
@@ -506,12 +580,19 @@ carry a row that changes per run.
    contract the caller owns, and the package does not assert it — measured, not
    assumed: the guard's technique cannot reach `rowId`, because `rowId` is
    *required*, so every call site writes an inline closure and the cost becomes
-   one cache rebuild per build per caller. Comparing its **answers** rather than
-   its identity does work and costs about a tenth of what it prevents; it is not
-   switched on because doing so turns an in-place `RangeError` into a silently
-   missing row until `computeRenderableIndices` is fixed. A finding that proposes
-   the assert is `DELIBERATE`; one that proposes the by-value compare **is not** —
-   that is deferred on a named blocker, not decided against. — #132, #137
+   one cache rebuild per build per caller. **Comparing its answers rather than
+   its identity shipped in #135**: `RowLookup.idsMatch` re-derives the ids
+   through the current `rowId` and both `didUpdateWidget`s call it — measured
+   2026-09-03, deleting that term from the two call sites reddens four tests in
+   `merged_group_data_disagreement_test.dart`, though no test names `idsMatch`.
+   The **order** was the finding: switched on alone it would have traded an
+   in-place `RangeError` for a silently missing row, so `computeRenderableIndices`
+   was fixed first and the guard second. A finding that proposes the assert is
+   still `DELIBERATE`; one that proposes the by-value compare is **re-proposing
+   shipped code**, not reviving a deferral, and is graded as such. What the
+   caller's contract still covers is the residue no comparison of `rowId`'s
+   answers could reach: an element replaced in place under the same id, and
+   `mergedGroups` mutated in place. — #132, #135, #137
 10. **L1 — `lib/src` is split by layer, not by feature.** `two_dimensional_scrollables`
    splits by feature because it ships two widgets (`TableView`, `TreeView`). We ship
    one, so the axis does not transfer. Judged on role, this is not a difference at
@@ -523,7 +604,7 @@ carry a row that changes per run.
 13. **L4 — the `utils` / `widgets` axis is widget-*awareness*.** Not
     Widget-subclass-hood, not exported-ness, not statefulness — those three were
     sorted by content and none came out clean. So `overflow_cache.dart` stays in
-    `utils/` with its six fields, and `drag_selection_controller.dart` stays in
+    `utils/` though it holds state, and `drag_selection_controller.dart` stays in
     `widgets/` though it is not a Widget. — plat 2026-08-31
 
 ---

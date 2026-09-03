@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # sacred-diff.sh — thegraph `verify` inbound guard for flutter_table_plus.
-# Built from thegraph@8820d1293c04.
+# Built from thegraph@3b21e3da2b66.
 #
 # Decider: code. This overrides judgement — you do not reason your way out of a
 # hit because the diff looks small.
@@ -28,6 +28,8 @@ PATTERNS=(
   'lib/src/widgets/table_plus_merged_row.dart|it owns the height distribution: each member extent, and which cell absorbs the group border (#121)'
   'lib/src/utils/table_row_height_calculator.dart|public API, exported from the barrel, that every row geometry derives from'
   'lib/src/widgets/cells/table_plus_cell.dart|#155 routed the merged row through it, so one defect here lands on every plain row AND every group member at once; #156 records two live ones in it'
+  'lib/src/utils/text_overflow_detector.dart|all THREE overflow call sites go through it - the ordinary cell, the header cell, the merged row spanning cell - so one defect here is three at once. #156 found four, every one silent, and a diff touching only this file touches no other sacred path'
+  'lib/src/widgets/table_header.dart|a caller headerTheme.decoration is applied to the box wrapping the whole header and the body has no equivalent box. One border slid every header column against its body column: measured 2.0px, no exception, no banner, and it broke the alignment CLAUDE.md names as core (#160)'
   'lib/src/utils/row_measurement.dart|the ONE list both height caches consult. A forgotten input stales the RowGeometry every drag hit-test reads AND the scroll total (#120, #128); its identical guard read differently in JIT and AOT (#137)'
   'pubspec.yaml|a false floor breaks users trees while pub get succeeds here (#69, 2.16.0)'
   'CHANGELOG.md|pub.dev snapshots at publish — an edited published entry splits repo from registry (2.15.0)'

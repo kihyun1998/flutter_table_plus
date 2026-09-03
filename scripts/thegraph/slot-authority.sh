@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # slot-authority.sh — thegraph `gate`: every derived slot, against its authority.
-# Built from thegraph@8820d1293c04.
+# Built from thegraph@3b21e3da2b66.
 #
 # Decider: code. A DERIVED slot is a copy of a fact that lives somewhere else.
 # Being a copy it is never EMPTY — it fails by being silently wrong, and no node

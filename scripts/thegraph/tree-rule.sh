@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # tree-rule.sh — thegraph `place` guard for flutter_table_plus, and `gate` again
 # over the final diff.
-# Built from thegraph@8820d1293c04.
+# Built from thegraph@3b21e3da2b66.
 #
 # Decider: code. Layout is where a seam is physically expressed, so a file in the
 # wrong directory breaks the seam while producing no error, no failing test and
@@ -180,8 +180,8 @@ if [ ${#utils_broken[@]} -ne 0 ]; then
   printf '  %s\n' "${utils_broken[@]}"
   echo
   echo "       That directory is 'computation that does not know the widget tree'."
-  echo "       Not 'no state' (overflow_cache.dart holds six fields and belongs there)"
-  echo "       and not 'not exported' (two of its files are public API). Widget"
+  echo "       Not 'no state' (overflow_cache.dart holds state and belongs there)"
+  echo "       and not 'not exported' (some of its files are public API). Widget"
   echo "       awareness is the axis, and this file crossed it. Move it to"
   echo "       lib/src/widgets/, or bring the rule to the maintainer — do not"
   echo "       widen it here."
