@@ -192,9 +192,13 @@ build over the same data.
   `rowId` does not move an index. And the rule this was generalised into —
   *required plus closure-typed* — is wider than the evidence: what was measured
   is how a caller **happens to write** the argument, not whether the parameter
-  is optional. `playground_page.dart` passes an inline `calculateRowHeight`
-  closure and pays the full cost on every build today; a required `rowId`
-  passed as a top-level tear-off would be perfectly watchable.
+  is optional; a required `rowId` passed as a top-level tear-off would be
+  perfectly watchable. The worked example cited here — `playground_page.dart`
+  passing an inline `calculateRowHeight` and paying the full cost every build —
+  **is no longer true**: the page passes a `static` tear-off, with a comment
+  recording that the inline version was deliberately removed. The argument
+  stands without it. An example named inside a rule is the part of the rule that
+  expires first, and nothing reclaims it unless someone goes looking.
 
   So shape 2 has a **second exit**: name the input as the caller's obligation
   and record why it is not watched. **The exit is real and the reason has to be

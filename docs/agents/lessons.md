@@ -251,6 +251,28 @@
   테스트 주석 둘에서 *"그릴 게 없는 툴팁은 짓지 마라"* 근거를 회수했다.
 - **#51/#52 (제약은 사라질 때 지운다)**: #51 이 "헤더와 셀이 anchor 를 공유한다" 를 적었고
   #52 가 그걸 지웠다. lockfile: `example/pubspec.lock` 이 어디에도 없는 `2.16.0` 을 기록했다.
+- **#161 조사 (만료일 있는 근거는 만료돼도 살아남는다 — 네 곳에서, 렌즈 브리프 포함)**:
+  #135 가 `RowLookup.idsMatch` 를 출하하면서 *"by-value 비교는 `computeRenderableIndices`
+  가 고쳐질 때까지 보류"* 라는 이유를 만료시켰다. `no-hand-enumeration.md` 는 그걸 정확히
+  기록했다 — *"**그 이유에는 만료일이 있었고**, 앞의 이유에는 없었다."* **그런데 만료된
+  문장을 아무도 회수하지 않았다.** 세 달 뒤 세어보니 네 곳:
+  ① `row_measurement.dart` (sacred path), ② `thegraph.md` 의 divergence 9번 행,
+  ③④ **생성된 렌즈 브리프 둘** (`ftp-gap-lens.md`, `ftp-refute-lens.md`).
+  ③④ 가 제일 비싸다: **`verify` 패스에게 "이건 아직 열린 보류"라고 가르치고 있었으므로,
+  출하된 가드를 다시 제안하는 발견을 렌즈가 옳다고 등급 매긴다.** 이걸 잡으라고 존재하는
+  패스를 그 문장이 눈멀게 했다. 게다가 `slot-authority.sh` 는 divergence 목록을
+  **설계상 assert 불가**로 표시한다 — 즉 아무것도 못 잡는 슬롯이고, 드리프트 둘이 정확히
+  거기 앉아 있었다.
+  **회수가 코드까지는 갔고 에이전트 계층 앞에서 멈췄다:** `row_lookup.dart`,
+  `flutter_table_plus.dart` 의 `data` 문서, `row-identity.md` 의 뒤쪽 문단, CHANGELOG 는
+  전부 정정됐는데 **같은 파일의 앞쪽 문장들이 남았다.** `row-identity.md` 는 30행에서
+  *"`rowId` 는 어디서도 비교되지 않는다"* 라고 하고 92행에서 *"the axis was avoidable,
+  which is what shipped"* 라고 한다. **덧붙이기만 하고 회수하지 않으면 한 문서가 자기를
+  반박한다.**
+  **그리고 이건 뮤테이션으로 확정했다:** 두 호출부에서 `idsMatch` 를 지우면
+  `merged_group_data_disagreement_test.dart` 의 테스트 4개가 빨개진다 — `idsMatch` 를
+  이름 대는 테스트는 하나도 없는데도. read-only 렌즈가 *"미해결"* 로 넘긴 것을 메인
+  스레드가 30초에 닫았다.
 - **#156 (인바리언트 노트 자체가 틀린 근거를 실을 수 있다)**: `no-hand-enumeration.md` 가
   `overflow_cache.dart` 를 *"파생값 `(text, width)` 로 키를 잡고 클로저를 비교하지 않는다"*
   며 **긍정 선례로 인용**했다. 문장은 참이었고 읽히는 방식이 틀렸다 — 그 키는 정확히 이

@@ -47,17 +47,33 @@
 /// **`rowId` is absent for a different reason, and the two are worth keeping
 /// apart.** It is not a measurement input at all — and it is also the one
 /// caller function this predicate's own technique cannot reach. `rowId` is
-/// *required*, so every call site writes an inline closure, and the cost the
-/// comment below prices at "one cache rebuild" becomes one per build per
-/// caller; `calculateRowHeight` escapes that only because it is optional and
-/// so is usually the same `null` twice running.
+/// *required*, so every call site writes an inline closure, and comparing that
+/// closure would cost a cache rebuild per build per caller;
+/// `calculateRowHeight` escapes that only because it is optional and so is
+/// usually the same `null` twice running.
 ///
-/// **Comparing `rowId`'s answers rather than its identity does work**, costs
-/// about a tenth of the rebuild it prevents, and is the shape
-/// `utils/overflow_cache.dart` already uses. It is not here yet because
-/// switching it on turns an in-place `RangeError` into a silently missing row
-/// until `computeRenderableIndices` is fixed. Until then the contract on
-/// `FlutterTablePlus.rowId` stands in for it.
+/// **Comparing `rowId`'s answers rather than its identity works, and it
+/// shipped** — `RowLookup.idsMatch` walks the ids and both `didUpdateWidget`s
+/// call it, in `FlutterTablePlus` and in `TablePlusBody`. It costs a fraction
+/// of the rebuild it prevents (see `row_lookup.dart` for the figures, and for
+/// why a ratio quoted without saying JIT or AOT is worth nothing), and it is
+/// the shape `utils/overflow_cache.dart` already uses.
+///
+/// **This paragraph said "not here yet" for three days after it was here**, on
+/// a blocker that had already been cleared: switching the guard on alone would
+/// have traded an in-place `RangeError` for a silently missing row, so
+/// `computeRenderableIndices` was fixed first and the guard second, both in
+/// #135. That was the finding — a hand-list can have a mechanical fix that is
+/// unsafe to apply *yet*, and what is worth recording is the sequence. A reason
+/// with an expiry date outlives its expiry unless something reclaims it, and
+/// nothing here did.
+///
+/// **What the contract on `FlutterTablePlus.rowId` still covers is the
+/// residue, not the guard.** `idsMatch` cannot see an element replaced in place
+/// under the same id — the ids are equal, so no comparison of `rowId`'s answers
+/// could — and `mergedGroups` mutated in place is still watched by identity
+/// alone. Those are the caller's, and they are a narrower claim than "the
+/// contract stands in for a guard that has not shipped".
 bool rowMeasurementChanged<T>({
   required double? Function(int index, T row)? oldCalculateRowHeight,
   required double? Function(int index, T row)? newCalculateRowHeight,
