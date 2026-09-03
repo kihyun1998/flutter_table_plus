@@ -63,6 +63,28 @@ void main() {
     });
   });
 
+  // A tripwire, not a guard. `willTextOverflow` used to return
+  // `didExceedMaxLines || textWidth > maxWidth`, and the second disjunct was
+  // unreachable: under the default `TextWidthBasis.parent` the painter's
+  // reported width is the content width clamped into the range it was laid out
+  // in, so it can never exceed `maxWidth`. Removing dead code cannot be proved
+  // by a test that reddens — nothing could reach it — so the premise that made
+  // it dead is asserted instead. If a Flutter release changes it, this fails and
+  // someone re-reads that removal.
+  test('a laid-out painter never reports a width above the one it was given',
+      () {
+    for (final w in [1.0, 10.0, 50.0, 500.0]) {
+      final p = TextPainter(
+        text: const TextSpan(
+            text: 'a string far wider than any of these', style: _style),
+        maxLines: 1,
+        textDirection: TextDirection.ltr,
+      )..layout(maxWidth: w);
+      expect(p.size.width, lessThanOrEqualTo(w), reason: 'at maxWidth $w');
+      p.dispose();
+    }
+  });
+
   group('the text scaler participates in the measurement', () {
     const text = 'Scaled';
 
