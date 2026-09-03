@@ -155,8 +155,13 @@ row ids — which is the question every callback in this area answers implicitly
   where it expected the separator's width.
 - **A merged row builds a selection cell whenever `isSelectable`**, even when
   `checkboxTheme.showCheckboxColumn` is false and no selection column was
-  injected — so the group is one column wider than every other row and each of
-  its cells is shifted right. The plain row gates on the *column*.
+  injected. The plain row gates on the *column* instead. And the phantom cell
+  is sized `columnWidths.widthAt(0, columns.first)` — with no selection column
+  injected that is the first **data** column's resolved width, so the group is
+  pushed right by a whole column rather than by a checkbox. Measured
+  2026-09-03, one 200px column in a 600px viewport: a plain row's text sits at
+  `x = 16`, the group's at `x = 616` — **off the viewport entirely, so the group
+  renders blank** on a documented, supported setting.
 - **The summary cell's `top` border is hardcoded and ungated.** It ignores
   `showHorizontalDividers` where every other horizontal side honours it, and it
   stacks against the last member's own bottom: at `dividerThickness: 4` that

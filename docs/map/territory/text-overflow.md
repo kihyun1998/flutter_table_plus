@@ -40,6 +40,7 @@ not fit" needs a real measurement, not a guess.
 → [Column width resolution](column-width.md) — the width it measures against comes from there, and auto-fit uses the same text measurement
 → [Row height](row-height.md) — text that wraps instead of clipping changes the row's height
 → [Scale / zoom](scale-zoom.md) — a scaled font and a scaled width move the threshold together, and the cache key must reflect both
+→ [Merged rows](merged-rows.md) — a group's member cells measure through the ordinary cell, so anything wrong here is wrong once per member too (#155)
 
 ## Known holes / open
 
