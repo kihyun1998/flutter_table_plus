@@ -187,6 +187,27 @@ LastRowBorderBehavior.always
 LastRowBorderBehavior.smart
 ```
 
+### Derived sides
+
+`TablePlusBodyTheme` also exposes read-only getters the table composes its
+borders from. None takes configuration of its own — each is derived from the
+divider fields above.
+
+| Getter | What it is | Width |
+|---|---|---|
+| `verticalDividerSide` | the column divider a cell draws on its right, at `dividerColor` alpha 0.5 | fixed `0.5` |
+| `verticalDividerBorder` | the same side as a right-only `Border`, or `null` when `showVerticalDividers` is false | fixed `0.5` |
+| `memberDividerSide` | the separator between two **members of one merged group**, at `dividerColor` alpha 0.3 | `dividerThickness` |
+
+`memberDividerSide` is new in 2.17.0 and is the only one of the three that
+reads `dividerThickness`. That line used to be hardcoded at `1`, so raising
+`dividerThickness` thickened every divider in the table *except* the ones inside
+a merged group. It is **not** the group's own outer border — that one is drawn
+by the row decoration at full `dividerColor`. Whether a member draws one at all
+is `shouldShowBottomBorder`'s answer, not this getter's.
+
+Like `dividerThickness` itself, none of the three is scaled by `scaledBy`.
+
 ---
 
 ## TablePlusCheckboxTheme

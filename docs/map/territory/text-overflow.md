@@ -43,4 +43,14 @@ not fit" needs a real measurement, not a guess.
 
 ## Known holes / open
 
-**None.**
+- **The measured width subtracts padding and not the divider.** A cell measures
+  against `width - theme.padding.horizontal`, but it also draws a 0.5px
+  `verticalDividerSide` whose inset `Container` folds into the child — so a
+  string filling the cell is judged to fit by up to half a pixel, and
+  `onlyTextOverflow` withholds the tooltip on exactly the text that is clipped.
+- **`MediaQuery.textScaler` is not read.** The detector lays out at the style's
+  own size while the `Text` it predicts for scales, so a user text-scale setting
+  changes what is clipped on screen and not what the detector reports. The
+  *width* path already takes a `TextScaler`; this one has no parameter for one.
+- Both are the ordinary cell's, both predate merged rows, and both reached every
+  group member when the stacked branch started reusing it (#156).

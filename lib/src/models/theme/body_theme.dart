@@ -191,6 +191,25 @@ class TablePlusBodyTheme {
   Border? get verticalDividerBorder =>
       showVerticalDividers ? Border(right: verticalDividerSide) : null;
 
+  /// The [BorderSide] separating two members *inside* one merged group.
+  ///
+  /// Distinct from the group's own outer border, which [rowDecoration] draws
+  /// from [dividerThickness] at full [dividerColor] — this is the line between
+  /// two members of that group, and a member is not a row, so no row decoration
+  /// can draw it. The alpha matches what the merged row already used; only the
+  /// width moves, from a hardcoded `1` to the theme's own thickness (#155).
+  ///
+  /// Unconditional. Whether a member draws one at all is
+  /// [shouldShowBottomBorder]'s answer, which already returns false when
+  /// [showHorizontalDividers] is — so re-checking it here was a second guard
+  /// over the same condition, and a doubled guard is one no test can pin:
+  /// mutating away either half leaves the other covering for it. Measured, on
+  /// the pass that tried to pin it.
+  BorderSide get memberDividerSide => BorderSide(
+        color: dividerColor.withValues(alpha: 0.3),
+        width: dividerThickness,
+      );
+
   /// Creates a copy of this theme with the given fields replaced with new values.
   TablePlusBodyTheme copyWith({
     double? rowHeight,

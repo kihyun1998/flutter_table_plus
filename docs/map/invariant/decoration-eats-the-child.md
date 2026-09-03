@@ -19,7 +19,7 @@ usually different files. A row's height comes from a measurement or a theme; the
 box that carries it also carries the divider; the widget that fills it was
 written against the declared number because that is the number with a name.
 
-**The sites do not call each other.** Census at the time of writing: **11
+**The sites do not call each other.** Census at the time of writing: **12
 containers carry both a `height:` and a `decoration:`** — four in the merged row,
 two in the header cell, and one each in the plain row, the header, the body, the
 selection cell and the table root. Each was written on its own, and each is one

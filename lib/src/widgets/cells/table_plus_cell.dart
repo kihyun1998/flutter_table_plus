@@ -26,6 +26,7 @@ class TablePlusCell<T> extends StatefulWidget {
     this.onStopEditing,
     this.calculatedHeight,
     this.isDim = false,
+    this.bottomSide,
   });
 
   final int rowIndex;
@@ -43,6 +44,17 @@ class TablePlusCell<T> extends StatefulWidget {
   final void Function({required bool save})? onStopEditing;
   final double? calculatedHeight;
   final bool isDim;
+
+  /// An extra side this cell draws below itself, on top of the vertical
+  /// divider it always draws.
+  ///
+  /// The caller supplies it because only the caller knows whether one is
+  /// wanted: a plain row's cells need none — the row's own decoration carries
+  /// the divider beneath them — while a merged group's member cells need one,
+  /// because a member is not a row and no row decoration reaches between two of
+  /// them. Drawing a side is this cell's mechanism; *which* sides is knowledge
+  /// one level up (#155).
+  final BorderSide? bottomSide;
 
   @override
   State<TablePlusCell<T>> createState() => _TablePlusCellState<T>();
@@ -184,6 +196,23 @@ class _TablePlusCellState<T> extends State<TablePlusCell<T>> {
     );
   }
 
+  /// The sides this cell draws: its own vertical divider, plus whatever the
+  /// caller asked for below it.
+  ///
+  /// `null` rather than an all-[BorderStyle.none] [Border] when there is
+  /// nothing to draw, because a border with no visible side still reports a
+  /// [Border.dimensions] of zero *and* replaces a `null` decoration in every
+  /// widget-tree assertion that looks for one. Same painted result, different
+  /// thing to read back.
+  BoxBorder? _composeBorder() {
+    final right = widget.theme.verticalDividerSide;
+    final bottom = widget.bottomSide ?? BorderSide.none;
+    if (right.style == BorderStyle.none && bottom.style == BorderStyle.none) {
+      return null;
+    }
+    return Border(right: right, bottom: bottom);
+  }
+
   Widget _wrapWithTooltip({
     required bool shouldShow,
     required Widget child,
@@ -205,15 +234,16 @@ class _TablePlusCellState<T> extends State<TablePlusCell<T>> {
     // Determine if this cell can be edited
     final canEdit = widget.isEditable && widget.column.editable;
 
-    // For editing cells, we don't need special background/border as TextField handles it
     Color backgroundColor = Colors.transparent;
-    BoxBorder? border;
 
-    // Only apply cell-level styling when not editing
-    if (!widget.isCellEditing) {
-      // Apply normal vertical divider if needed
-      border = widget.theme.verticalDividerBorder;
-    }
+    // The divider stays while the cell is being edited. It used to be dropped
+    // — `if (!isCellEditing) border = ...` — which is the maintainer's call to
+    // reverse (2026-09-03) and the divergent behaviour of the two: pluto_grid
+    // branches its cell decoration on *which cell is current*, never on whether
+    // it is editing, and lets the editor draw no border of its own so the
+    // container's survives. Flutter's own `DataTable` puts no decoration on a
+    // cell at all, so it never has to choose (#155).
+    final BoxBorder? border = _composeBorder();
 
     Widget cellContent = Container(
       width: widget.width,

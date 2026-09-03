@@ -1,13 +1,16 @@
 import '../models/tooltip_behavior.dart';
 
 /// Centralizes the "should a body cell show a tooltip?" decision that was
-/// duplicated (and had already diverged on caching) between the normal cell and
-/// the merged cell.
+/// duplicated (and had already diverged on caching) between the ordinary cell
+/// and the merged row's own cells.
 ///
 /// The decision is pure; the overflow measurement is injected as a lazy
-/// [willOverflow] callback so each caller keeps control of *how* it measures
-/// (the normal cell caches the result, the merged cell measures directly), and
-/// so the measurement is skipped entirely when the behavior can't need it.
+/// [willOverflow] callback so each caller keeps control of *how* it measures,
+/// and so the measurement is skipped entirely when the behavior can't need it.
+///
+/// Since #155 a group's *member* cells are ordinary cells and measure through
+/// that widget's cache like any other row. The one uncached caller left is the
+/// merged row's *spanning* cell, which has no per-cell state to cache in.
 class TooltipResolver {
   const TooltipResolver._();
 
