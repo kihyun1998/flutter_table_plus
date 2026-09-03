@@ -50,6 +50,13 @@ row ids — which is the question every callback in this area answers implicitly
     not have caught any of it — and cannot now**: once both sides are one
     widget, breaking that widget breaks both and the comparison still holds.
     Measured. The assertions that discriminate read the *theme*.
+- **A merged row builds a cell per *rendered column*, gating on the column and
+  never on `isSelectable`.** The selection column is injected only when
+  `isSelectable && checkboxTheme.showCheckboxColumn`, and gating on the flag
+  instead built a cell no other row had — sized from `columns.first`, which with
+  no selection column injected is the first *data* column. Measured before the
+  fix: a plain row's text at `x = 16` and the group's at `x = 616` in a 600px
+  viewport, so the group rendered blank on a documented setting (#155).
 - **Per-column merge configuration.** `MergeCellConfig` decides, per column,
   what a merged cell renders — so a group can merge some columns and keep others
   per-row.
@@ -153,15 +160,6 @@ row ids — which is the question every callback in this area answers implicitly
   it widens a change sized for the cell into one about what the row assembles.
   Measured: a parity test written with the group covering every row read `0.0`
   where it expected the separator's width.
-- **A merged row builds a selection cell whenever `isSelectable`**, even when
-  `checkboxTheme.showCheckboxColumn` is false and no selection column was
-  injected. The plain row gates on the *column* instead. And the phantom cell
-  is sized `columnWidths.widthAt(0, columns.first)` — with no selection column
-  injected that is the first **data** column's resolved width, so the group is
-  pushed right by a whole column rather than by a checkbox. Measured
-  2026-09-03, one 200px column in a 600px viewport: a plain row's text sits at
-  `x = 16`, the group's at `x = 616` — **off the viewport entirely, so the group
-  renders blank** on a documented, supported setting.
 - **The summary cell's `top` border is hardcoded and ungated.** It ignores
   `showHorizontalDividers` where every other horizontal side honours it, and it
   stacks against the last member's own bottom: at `dividerThickness: 4` that
