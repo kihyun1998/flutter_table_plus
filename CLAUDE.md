@@ -26,8 +26,8 @@ if it is, an invariant note is part of the change.
 consumed by the *first* build; a graph exists, so every run from here is an
 **update** that reads `docs/agents/thegraph.md` and never the bindings — nothing
 read that file and nothing maintained it. Its Step 7 gate matrix had already gone
-stale, listing 6 bare commands against the real **9**, which is what a document
-nobody reads does next. Everything in it lives on: the bindings in `thegraph.md`,
+stale, listing 6 bare commands against the 9 that were real **at that time**,
+which is what a document nobody reads does next. Everything in it lives on: the bindings in `thegraph.md`,
 the tooltip boundary in the MAP's [`tooltips`](docs/map/territory/tooltips.md)
 territory, the incidents in `lessons.md`. `git log` has it if it is ever wanted
 back.
@@ -74,8 +74,12 @@ merged rows. It does **not** manage or mutate your data.
 Claude Code and the user share the same Windows machine; the Flutter SDK is on
 `PATH`, so run `flutter test` / `analyze` / `dart format` directly. Ask the user
 only for anything that opens a window (`flutter run`). **There is no CI** — the
-9 gates in `docs/agents/thegraph.md` (`## gate`) are the only gates and run
-here, each invoked **bare** (`scripts/thegraph/gates.sh`).
+gates listed in `docs/agents/thegraph.md` (`## gate`) are the only gates and run
+here, each invoked **bare** (`scripts/thegraph/gates.sh`). **How many there are
+is that list's fact and is not repeated here**: this file said *nine* for the
+three days after the tenth was added, four dozen lines below a paragraph whose
+whole point is that a document nobody reads goes stale by miscounting gates. No
+assertion reads `CLAUDE.md`, so nothing could have caught it.
 
 ## Agent skills
 
