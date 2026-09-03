@@ -18,6 +18,15 @@ compute one.
   `TableRowHeightCalculator.calculateTextHeight` measures wrapped text at a
   width, which is the piece a caller cannot compute without the layout — the
   decision of what to do with it stays theirs.
+- **What it measures has to be what the glyphs get, and three of those inputs
+  are not in the style the caller writes.** The ambient `DefaultTextStyle` a
+  `Text` merges under it, `MediaQuery.textScalerOf`, and the width the cell's
+  own decoration takes off the declared one. `createHeightCalculator` resolves
+  the first two when handed a `context`; the third is a caller-supplied
+  `extraWidth`, the same shape `TableColumnWidthCalculator` takes as
+  `bodyExtraWidth`. Skip them and the row is sized from a string the screen
+  never draws — measured at 100px predicted against 120px laid out, and the
+  text is simply clipped.
 - **A height is a per-row fact, not a per-table one**, which is what makes the
   body's geometry non-uniform and forces every offset to be accumulated rather
   than multiplied.
@@ -46,4 +55,19 @@ compute one.
 
 ## Known holes / open
 
-**None.**
+- **The documented wiring drops both height caches on every build.** The
+  callback is compared with `==`, and a closure built fresh in `build` is never
+  equal to the last one — so the per-row heights, the total that decides whether
+  a vertical scrollbar appears, and the `RowGeometry` every drag hit-test reads
+  are all rebuilt every frame. Measured 2026-09-03: two `createHeightCalculator`
+  calls with identical arguments return callbacks that compare `!=`.
+
+  **A value type with an `==` does not fix it, and that was measured rather than
+  assumed.** Dart compares two tear-offs of the same method by whether their
+  receivers are `identical`, never by whether they are `==` — so wrapping the
+  configuration in a class with value equality changes nothing at the call site.
+  (The first probe of this said otherwise because it used `const` instances,
+  which canonicalise: it was comparing one object with itself.) The only fixes
+  are a stable receiver, which only the caller can hold, or changing the type of
+  `FlutterTablePlus.calculateRowHeight` to accept a value object — which is
+  breaking. Documented on both surfaces rather than repaired.

@@ -123,9 +123,23 @@ class DynamicRowHeightRecipe extends StatelessWidget {
   /// **What it cannot carry is the font family**, and that is a real limit
   /// rather than an omission. The family is merged in at paint time from the
   /// app's `ThemeData`, which a `static` measurement cannot see, so on a device
-  /// whose font is not the measuring font the wrap points differ. Name the
-  /// family here if that matters to you — this demo leaves it out so the
-  /// recipe stays about heights.
+  /// whose font is not the measuring font the wrap points differ. Nor can it
+  /// carry `letterSpacing`, which Material's own text theme sets and which
+  /// widens every glyph advance — measured on the default theme, a style
+  /// naming only `fontSize` predicts 100px for a paragraph the screen lays out
+  /// at 120px, and the difference is 20px of clipped text with no banner.
+  ///
+  /// **There are now two ways out, and they cost different things.** Name the
+  /// family and the spacing here, which keeps the `static` and its stable
+  /// identity; or pass a `context` to
+  /// [TableRowHeightCalculator.createHeightCalculator], which resolves the
+  /// ambient style *and* `MediaQuery.textScalerOf` for you — the OS text-size
+  /// setting a `static` also cannot see, and the one this recipe's own
+  /// paragraph about "the font, the scale, and the exact width" was promising
+  /// before the calculator could deliver it. That second way needs a context,
+  /// so the callback becomes a field built in `didChangeDependencies` rather
+  /// than a `static`: same stable identity, rebuilt exactly when the ambient
+  /// inputs change. This demo takes neither, so the recipe stays about heights.
   static const TextStyle _notesStyle = TextStyle(fontSize: 13, height: 1.35);
 
   /// The height of one row, or null for the theme's.
