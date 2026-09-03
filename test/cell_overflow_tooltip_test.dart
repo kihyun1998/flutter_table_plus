@@ -146,6 +146,70 @@ void main() {
     },
   );
 
+  // The third call site. #155 routed a group's *member* cells through the
+  // ordinary cell, so they inherit whatever it does; the **spanning** cell kept
+  // its own copy of this measurement and needs its own case. Without one, a
+  // third of the sites this change touched would ship with no assertion able to
+  // observe it.
+  testWidgets(
+    'a merged group\'s spanning cell offers a tooltip when its text is cut',
+    (tester) async {
+      Widget table(double columnWidth) => MaterialApp(
+            home: Scaffold(
+              body: SizedBox(
+                width: 60,
+                child: FlutterTablePlus<Map<String, dynamic>>(
+                  columns: {
+                    'note': TablePlusColumn<Map<String, dynamic>>(
+                      key: 'note',
+                      label: 'note',
+                      order: 0,
+                      valueAccessor: (r) => r['note'],
+                      width: columnWidth,
+                      minWidth: columnWidth,
+                      maxWidth: columnWidth,
+                      tooltipBehavior: TooltipBehavior.onlyTextOverflow,
+                    ),
+                  },
+                  data: const [
+                    {'id': '1', 'note': _value},
+                    {'id': '2', 'note': _value},
+                  ],
+                  rowId: (r) => r['id'] as String,
+                  mergedGroups: const [
+                    MergedRowGroup<Map<String, dynamic>>(
+                      groupId: 'g',
+                      rowKeys: ['1', '2'],
+                      mergeConfig: {
+                        'note': MergeCellConfig(
+                          shouldMerge: true,
+                          spanningRowIndex: 0,
+                        ),
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+
+      await tester.pumpWidget(table(200));
+      await tester.pumpAndSettle();
+      // One spanning cell across two rows, so the value is drawn once.
+      expect(find.text(_value), findsOneWidget);
+      final needs = _needs(_paintedStyle(tester));
+
+      await tester.pumpWidget(table(needs + padding + 0.25));
+      await tester.pumpAndSettle();
+
+      expect(_isClipped(tester, needs), isTrue,
+          reason: 'the case is only meaningful if the text is actually cut');
+
+      await _hoverText(tester);
+      expect(find.text(_value), findsNWidgets(2));
+    },
+  );
+
   // The two causes above are not separable in the cell: measured, neither the
   // inset nor the merge repairs that case alone, so a test of it reddens when
   // either is turned off and isolates neither.
