@@ -117,13 +117,20 @@ class TextOverflowDetector {
 
     textPainter.layout(maxWidth: m.maxWidth);
 
-    // Check if the text was truncated or if it exceeds the available width
+    // `didExceedMaxLines` alone, and that is the whole verdict.
+    //
+    // This used to be `didExceedMaxLines || textWidth > maxWidth`, which reads
+    // like a width check and is one the layout has already made impossible:
+    // `TextPainter.size.width` is the *content* width, clamped into
+    // `[minWidth, maxWidth]` under the default `TextWidthBasis.parent`. It can
+    // never exceed the width just laid out at, so the second disjunct was
+    // unreachable. `test/text_overflow_detector_test.dart` pins the clamp, so
+    // the premise is asserted rather than remembered.
     final didExceedMaxLines = textPainter.didExceedMaxLines;
-    final textWidth = textPainter.size.width;
 
     textPainter.dispose();
 
-    return didExceedMaxLines || textWidth > m.maxWidth;
+    return didExceedMaxLines;
   }
 
   /// Convenience for a call site with no cache: resolve, then measure.
