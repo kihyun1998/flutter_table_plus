@@ -19,6 +19,12 @@ analyzer:
     # Excluding generated output is not lowering a threshold; no hand-written
     # code lives here.
     - build/**
+    - android/**
+    - ios/**
+    - web/**
+    - windows/**
+    - macos/**
+    - linux/**
 
 linter:
   # The lint rules applied to this project can be customized in the
