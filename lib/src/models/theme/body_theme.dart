@@ -38,6 +38,11 @@ class TablePlusBodyTheme {
     this.padding = const EdgeInsets.symmetric(horizontal: 16.0),
     this.dividerColor = const Color(0xFFE0E0E0),
     this.dividerThickness = 1.0,
+    this.verticalDividerColor,
+    this.verticalDividerThickness,
+    this.memberDividerColor,
+    this.emptyStateTextStyle,
+    this.mergedRowCountTextStyle,
     this.showVerticalDividers = true,
     this.showHorizontalDividers = true,
     this.lastRowBorderBehavior = LastRowBorderBehavior.never,
@@ -104,6 +109,51 @@ class TablePlusBodyTheme {
 
   /// The thickness of row dividers.
   final double dividerThickness;
+
+  /// The color of the vertical divider between two columns.
+  ///
+  /// If null, [dividerColor] at alpha 0.5. The default is the *derivation*
+  /// rather than the colour it currently produces, so a caller who changes
+  /// [dividerColor] keeps the hierarchy between the three lines this package
+  /// draws without restating any of it. Set this to take the column rule off
+  /// that derivation entirely (#171).
+  final Color? verticalDividerColor;
+
+  /// The width of the vertical divider between two columns.
+  ///
+  /// If null, `0.5`. Deliberately **not** [dividerThickness] — those are two
+  /// different lines today, and defaulting one to the other would change what
+  /// every existing caller renders. The header's half of this same rule reads
+  /// `headerTheme.verticalDivider.thickness`, which defaults to `1.0`, so the
+  /// column line is discontinuous at the header/body seam until someone
+  /// chooses which width it should be. This field is what makes that choice
+  /// possible to make and to undo (#171).
+  final double? verticalDividerThickness;
+
+  /// The color of the divider between two members *inside* one merged group.
+  ///
+  /// If null, [dividerColor] at alpha 0.3 — one step lighter than the column
+  /// divider's 0.5 and two lighter than a row boundary's full alpha, which is
+  /// the hierarchy the package draws by default.
+  ///
+  /// There is no matching width field, and its absence is the rule rather than
+  /// an omission: a member separator is a horizontal rule and already follows
+  /// [dividerThickness] like every other one. Adding a width here would undo
+  /// what #155 fixed.
+  final Color? memberDividerColor;
+
+  /// The text style for the placeholder shown when `data` is empty.
+  ///
+  /// If null, [textStyle] in grey and italic — derived, so it follows a scaled
+  /// or recoloured body without being restated.
+  final TextStyle? emptyStateTextStyle;
+
+  /// The text style for the "N rows" caption under a merged group's checkbox.
+  ///
+  /// If null, a 10px grey caption. Unlike [emptyStateTextStyle] this default is
+  /// **not** derived from [textStyle] — 10 is a caption size, not a scaled body
+  /// size — which is why [scaledBy] has to materialise it rather than skip it.
+  final TextStyle? mergedRowCountTextStyle;
 
   /// Whether to show vertical dividers between columns.
   final bool showVerticalDividers;
@@ -179,8 +229,8 @@ class TablePlusBodyTheme {
   /// Used to compose [Border] objects that include other sides (e.g. bottom).
   BorderSide get verticalDividerSide => showVerticalDividers
       ? BorderSide(
-          color: dividerColor.withValues(alpha: 0.5),
-          width: 0.5,
+          color: verticalDividerColor ?? dividerColor.withValues(alpha: 0.5),
+          width: verticalDividerThickness ?? 0.5,
         )
       : BorderSide.none;
 
@@ -211,8 +261,28 @@ class TablePlusBodyTheme {
   /// *row* is the table's last. That question governs this group's own outer
   /// edge through [rowDecoration] and nothing inside it (#157).
   BorderSide get memberDividerSide => BorderSide(
-        color: dividerColor.withValues(alpha: 0.3),
+        color: memberDividerColor ?? dividerColor.withValues(alpha: 0.3),
         width: dividerThickness,
+      );
+
+  /// The resolved style for the empty-data placeholder.
+  ///
+  /// Resolution lives here rather than at the call site because the fallback is
+  /// the thing being made reachable: written into `table_body.dart` it was a
+  /// `Colors.grey.shade600` no caller could name (#171).
+  TextStyle get effectiveEmptyStateTextStyle =>
+      emptyStateTextStyle ??
+      textStyle.copyWith(
+        color: const Color(0xFF757575), // Colors.grey.shade600
+        fontStyle: FontStyle.italic,
+      );
+
+  /// The resolved style for a merged group's "N rows" caption.
+  TextStyle get effectiveMergedRowCountTextStyle =>
+      mergedRowCountTextStyle ??
+      const TextStyle(
+        fontSize: 10,
+        color: Color(0xFF757575), // Colors.grey.shade600
       );
 
   /// Creates a copy of this theme with the given fields replaced with new values.
@@ -232,6 +302,11 @@ class TablePlusBodyTheme {
     EdgeInsets? padding,
     Color? dividerColor,
     double? dividerThickness,
+    Color? verticalDividerColor,
+    double? verticalDividerThickness,
+    Color? memberDividerColor,
+    TextStyle? emptyStateTextStyle,
+    TextStyle? mergedRowCountTextStyle,
     bool? showVerticalDividers,
     bool? showHorizontalDividers,
     LastRowBorderBehavior? lastRowBorderBehavior,
@@ -260,6 +335,13 @@ class TablePlusBodyTheme {
       padding: padding ?? this.padding,
       dividerColor: dividerColor ?? this.dividerColor,
       dividerThickness: dividerThickness ?? this.dividerThickness,
+      verticalDividerColor: verticalDividerColor ?? this.verticalDividerColor,
+      verticalDividerThickness:
+          verticalDividerThickness ?? this.verticalDividerThickness,
+      memberDividerColor: memberDividerColor ?? this.memberDividerColor,
+      emptyStateTextStyle: emptyStateTextStyle ?? this.emptyStateTextStyle,
+      mergedRowCountTextStyle:
+          mergedRowCountTextStyle ?? this.mergedRowCountTextStyle,
       showVerticalDividers: showVerticalDividers ?? this.showVerticalDividers,
       showHorizontalDividers:
           showHorizontalDividers ?? this.showHorizontalDividers,
@@ -332,7 +414,7 @@ class TablePlusBodyTheme {
 
   /// Returns a new [TablePlusBodyTheme] with dimensional values scaled by [factor].
   ///
-  /// Scales: rowHeight, textStyle fontSize, padding.
+  /// Scales: rowHeight, every text style's fontSize, padding.
   /// Does NOT scale: colors, divider thickness, booleans, durations.
   TablePlusBodyTheme scaledBy(double factor) {
     if (factor == 1.0) return this;
@@ -346,6 +428,19 @@ class TablePlusBodyTheme {
       ),
       dimRowTextStyle: dimRowTextStyle?.copyWith(
         fontSize: (dimRowTextStyle!.fontSize ?? 14) * factor,
+      ),
+      // Null-safe, because an unset one needs no help: its default derives from
+      // [textStyle], which this same call has already scaled. Materialising it
+      // here would scale it twice.
+      emptyStateTextStyle: emptyStateTextStyle?.copyWith(
+        fontSize: (emptyStateTextStyle!.fontSize ?? 14) * factor,
+      ),
+      // And the opposite, for the opposite reason. A null here is not "nothing
+      // to scale" — the default is a bare 10px caption deriving from no scaled
+      // field, so skipping it leaves the caption at 10 while every other size
+      // in the table doubles. Resolve first, then scale.
+      mergedRowCountTextStyle: effectiveMergedRowCountTextStyle.copyWith(
+        fontSize: (effectiveMergedRowCountTextStyle.fontSize ?? 10) * factor,
       ),
       padding: padding * factor,
     );

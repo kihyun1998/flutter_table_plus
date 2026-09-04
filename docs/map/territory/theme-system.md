@@ -39,6 +39,24 @@ why, and nothing records the fallback chain's precedence as a decision either.
   test here and it is not sufficient — see the semantic-versus-regression
   distinction in
   [the invariant](../invariant/no-hand-enumeration.md).
+- **A field being reachable is not the same as the value being reachable, and a
+  default should be the derivation rather than what it evaluates to.** Six
+  values this package painted had no field at all — the column rule's hardcoded
+  0.5px, three alphas multiplied onto `dividerColor`, two placeholder styles,
+  and `Colors.red` for a rejected edit, in a theme family where the word *error*
+  appeared nowhere. Each is now `field ?? <what it drew before>`, and the
+  fallback is deliberately the *expression*: move `dividerColor` and all three
+  lines still move together. Writing the produced colour into the default would
+  make every new field a second place the hierarchy is stated, which is the
+  hand-list failure one level down from the one above. #171.
+
+  **#153 is why this is a rule here rather than a repair there.** It found four
+  hardcoded widths, fixed them, and recorded that the colours "do follow the
+  theme; only the widths do not". Both halves measured false three months later:
+  two more widths did not follow, and a literal multiplier over a theme colour
+  is not that colour following the theme. Fixing instances without retiring the
+  shape leaves the shape free to produce more — the same sequence #135 → #151
+  ran in the merged-rows territory.
 - **Tooltip themes fall back at the call site**, not inside the theme:
   `rowTooltipTheme` / `headerTooltipTheme` fall back to `tooltipTheme` where they
   are read, which is why the chain is a property of the caller and not of the
@@ -94,6 +112,15 @@ way: it resolves the package through `.dart_tool/package_config.json` and pins
 the field set read out of the source. Verified 2026-08-26 — green at the pinned
 0.3.1, red at 0.3.2 naming `shadows`. An earlier version of this note said no
 test was possible; that was written before anyone tried.
+
+**The column rule is discontinuous at the header/body seam.** The header half
+reads `headerTheme.verticalDivider.thickness` — `1.0` at full `color`; the body
+half reads `bodyTheme.verticalDividerThickness` — `0.5` at alpha 0.5. The same
+vertical line halves in width and opacity where the header ends, on the default
+theme, and it has since both were written. Both are settable since #171 and
+neither default moved with it: making them agree changes what every existing
+caller renders, which is a decision to be taken rather than a repair to be
+slipped into a change about reachability.
 
 **The example app could not have caught this, and still cannot.**
 `example/lib/theme/table_palette.dart`'s demo style sets `size`, `activeColor`,

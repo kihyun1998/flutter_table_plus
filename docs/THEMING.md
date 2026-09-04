@@ -137,6 +137,8 @@ TablePlusBodyTheme(
 
   // Text
   textStyle: TextStyle(fontSize: 14, color: Colors.black87),
+  emptyStateTextStyle: TextStyle(color: Colors.grey),   // null = textStyle, grey, italic
+  mergedRowCountTextStyle: TextStyle(fontSize: 10),     // null = 10px grey caption
 
   // Padding
   padding: EdgeInsets.symmetric(horizontal: 16.0),
@@ -144,6 +146,9 @@ TablePlusBodyTheme(
   // Dividers
   dividerColor: Color(0xFFE0E0E0),
   dividerThickness: 1.0,
+  verticalDividerColor: Colors.grey,   // null = dividerColor at alpha 0.5
+  verticalDividerThickness: 1.0,       // null = 0.5, NOT dividerThickness
+  memberDividerColor: Colors.grey,     // null = dividerColor at alpha 0.3
   showHorizontalDividers: true,
   showVerticalDividers: true,
   lastRowBorderBehavior: LastRowBorderBehavior.never,
@@ -190,23 +195,39 @@ LastRowBorderBehavior.smart
 ### Derived sides
 
 `TablePlusBodyTheme` also exposes read-only getters the table composes its
-borders from. None takes configuration of its own — each is derived from the
-divider fields above.
+borders and placeholder text from. Each **resolves** the matching field above:
+set the field and the getter returns it, leave it null and the getter returns
+the derivation shown below.
 
-| Getter | What it is | Width |
+| Getter | Colour | Width / size |
 |---|---|---|
-| `verticalDividerSide` | the column divider a cell draws on its right, at `dividerColor` alpha 0.5 | fixed `0.5` |
-| `verticalDividerBorder` | the same side as a right-only `Border`, or `null` when `showVerticalDividers` is false | fixed `0.5` |
-| `memberDividerSide` | the separator between two **members of one merged group**, at `dividerColor` alpha 0.3 | `dividerThickness` |
+| `verticalDividerSide` | `verticalDividerColor` ?? `dividerColor` at alpha 0.5 | `verticalDividerThickness` ?? `0.5` |
+| `verticalDividerBorder` | the same side as a right-only `Border`, or `null` when `showVerticalDividers` is false | — |
+| `memberDividerSide` | `memberDividerColor` ?? `dividerColor` at alpha 0.3 | `dividerThickness` — no field of its own |
+| `effectiveEmptyStateTextStyle` | `emptyStateTextStyle` ?? `textStyle` in grey, italic | — |
+| `effectiveMergedRowCountTextStyle` | `mergedRowCountTextStyle` ?? a 10px grey caption | — |
 
-`memberDividerSide` is new in 2.17.0 and is the only one of the three that
-reads `dividerThickness`. That line used to be hardcoded at `1`, so raising
-`dividerThickness` thickened every divider in the table *except* the ones inside
-a merged group. It is **not** the group's own outer border — that one is drawn
-by the row decoration at full `dividerColor`. Whether a member draws one at all
-is `shouldShowBottomBorder`'s answer, not this getter's.
+**The default is the derivation, not the colour it produces.** Move
+`dividerColor` and all three lines move together, keeping the hierarchy a row
+boundary at full alpha, a column rule at 0.5 and a member separator at 0.3.
+Naming any of the fields takes that line off the derivation entirely.
 
-Like `dividerThickness` itself, none of the three is scaled by `scaledBy`.
+`memberDividerSide` is the only one of the three lines whose width reads
+`dividerThickness`, and it has no width field for that reason: it used to be
+hardcoded at `1`, so raising `dividerThickness` thickened every divider in the
+table *except* the ones inside a merged group, and adding a field back would
+undo the fix. It is **not** the group's own outer border — that one is drawn by
+the row decoration at full `dividerColor`. Whether a member draws one at all is
+answered at its call site, not by this getter.
+
+**`verticalDividerThickness` defaults to `0.5`, deliberately not to
+`dividerThickness`.** The header's half of the same vertical line reads
+`headerTheme.verticalDivider.thickness`, which defaults to `1.0` at full alpha,
+so on the default theme the column rule halves in width and opacity where the
+header ends. Both halves are settable; making the defaults agree would change
+what every existing table renders, so it is left to the caller.
+
+Like `dividerThickness` itself, no divider width is scaled by `scaledBy`.
 
 ---
 
@@ -320,6 +341,10 @@ TablePlusEditableTheme(
   // Input decoration
   focusedBorderColor: Colors.blue,     // null = uses editingBorderColor
   enabledBorderColor: Colors.grey,     // null = lighter editingBorderColor
+  enabledBorderWidth: 1.0,             // null = 1.0; editingBorderWidth is the FOCUSED one
+  errorBorderColor: Colors.orange,     // null = Colors.red.shade400
+  focusedErrorBorderColor: Colors.deepOrange,  // null = Colors.red.shade600
+  errorBorderWidth: 1.0,               // null = 1.0
   borderRadius: BorderRadius.circular(4),  // null = uses editingBorderRadius
   fillColor: Colors.white,            // null = uses editingCellColor
   filled: false,
@@ -563,9 +588,9 @@ final scaledTheme = theme.scaledBy(1.5);
 | Theme Class | Scaled | Not Scaled |
 |-------------|--------|------------|
 | `TablePlusHeaderTheme` | height, fontSize, padding, sortIconSpacing, sortIconWidth, resizeHandle | colors, borders, dividers, decorations |
-| `TablePlusBodyTheme` | rowHeight, fontSize, padding | colors, dividerThickness, booleans, durations |
+| `TablePlusBodyTheme` | rowHeight, every text style's fontSize, padding | colors, every divider thickness, booleans, durations |
 | `TablePlusCheckboxTheme` | `CheckboxStyle.scale`, checkboxColumnWidth | every other `CheckboxStyle` field, and the layout flags |
-| `TablePlusEditableTheme` | fontSize, borderWidth, padding | colors, borderRadius, booleans |
+| `TablePlusEditableTheme` | fontSize, every border width, padding | colors, borderRadius, booleans |
 | `TablePlusScrollbarTheme` | *(has `scaledBy`, but the root never calls it)* | all properties, in practice |
 | `TablePlusTooltipTheme` | *(excluded from scaling)* | all properties |
 | `TablePlusHoverButtonTheme` | horizontalOffset | — |

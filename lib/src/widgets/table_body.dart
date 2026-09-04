@@ -424,10 +424,7 @@ class TablePlusBodyState<T> extends State<TablePlusBody<T>>
         child: Center(
           child: Text(
             'No data available',
-            style: widget.theme.textStyle.copyWith(
-              color: Colors.grey.shade600,
-              fontStyle: FontStyle.italic,
-            ),
+            style: widget.theme.effectiveEmptyStateTextStyle,
           ),
         ),
       );

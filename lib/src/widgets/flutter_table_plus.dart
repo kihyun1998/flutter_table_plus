@@ -842,8 +842,17 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
     final double sortIconArea = hasSortIcon
         ? headerTheme.sortIconSpacing + headerTheme.sortIconWidth
         : 0.0;
-    // Account for the vertical divider border in body cells (right border 0.5px)
-    final double bodyBorderWidth = bodyTheme.showVerticalDividers ? 0.5 : 0.0;
+    // Account for the vertical divider border in body cells: a `Container`
+    // folds its border into the child's inset, so the glyphs get less than
+    // `width - padding` (#156). Read off the same getter the cell paints with
+    // rather than restated as a number — that literal was `0.5` and correct
+    // only while the divider's width was hardcoded to match. Since #171 a
+    // caller can set `verticalDividerThickness`, and a measurement that kept
+    // saying 0.5 would size auto-fit columns against width the text does not
+    // get, which is the defect #156 exists about.
+    final double bodyBorderWidth = bodyTheme.showVerticalDividers
+        ? bodyTheme.verticalDividerSide.width
+        : 0.0;
 
     // Measure header + body via the shared (tested) calculator, in scaled
     // space, then unscale for storage. This reproduces the exact formula the
