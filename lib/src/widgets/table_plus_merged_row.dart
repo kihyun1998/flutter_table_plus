@@ -151,8 +151,28 @@ class TablePlusMergedRow<T> extends TablePlusRowWidget<T> {
 
 class _TablePlusMergedRowState<T>
     extends TablePlusRowStateBase<TablePlusMergedRow<T>, T> {
+  /// The row a hover button is handed for this group: its **first present
+  /// member**.
+  ///
+  /// This read `rowKeys.first` unconditionally, so a group whose first key
+  /// names a row `data` no longer holds silently lost its hover button — while
+  /// `_buildStackedCells`, in this same class, already filtered to the members
+  /// actually there.
+  ///
+  /// **First in `rowKeys` order, not the earliest by data index.** The two
+  /// coincide whenever `rowKeys` is in `data` order, which is the documented
+  /// shape; where they differ this follows the neighbour above rather than
+  /// `TablePlusBodyState._mergedGroupAnchor`, because this widget holds no
+  /// `RowLookup` and resolving data indices here would scan `allData` once per
+  /// key to answer a question about which row a button represents.
   @override
-  T? get hoverData => _getRowData(widget.mergeGroup.rowKeys.first);
+  T? get hoverData {
+    for (final rowKey in widget.mergeGroup.rowKeys) {
+      final data = _getRowData(rowKey);
+      if (data != null) return data;
+    }
+    return null;
+  }
 
   /// Get the data for a specific row key within the merge group.
   T? _getRowData(String rowKey) {

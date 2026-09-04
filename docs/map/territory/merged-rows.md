@@ -114,8 +114,14 @@ row ids — which is the question every callback in this area answers implicitly
     four that were found live in pure functions and state methods. A hand-list
     audited only where it is testable in isolation reports itself complete —
     the pure tests were all green while the screen was still wrong.
-  - The anchor has one home now, `TablePlusBodyState._mergedGroupAnchor`, so a
-    fourth copy cannot be written by accident.
+  - The anchor has one home now, `TablePlusBodyState._mergedGroupAnchor`, and
+    so does the other end — `_mergedGroupTail`, added by #151, which the group's
+    own `isLastRow` reads. #135 replaced the `rowKeys.first` read and left the
+    `rowKeys.last` one, so for three months a group whose keys were out of
+    `data` order reported the wrong last row and drew a border
+    `LastRowBorderBehavior.never` forbids. **Fixing one end of a positional read
+    does not fix the other**, and nothing in a one-sentence rule says there are
+    two ends.
   - **What that cost is worth stating, because "the two disagree" understates
     it.** Anchoring on `rowKeys.first` made the render condition *unsatisfiable*
     when that key was gone, while the loop still marked every other member
@@ -123,8 +129,19 @@ row ids — which is the question every callback in this area answers implicitly
     2026-08-31: a group over `['0','1']` and a `data` list without `'0'` drew
     neither. The same shape with the keys merely out of order was pinned as
     correct by a test named *"preserves the out-of-order-rowKeys quirk"*.
-  - The rule is one sentence and every site holds it: **a group is anchored,
-    measured and drawn on the members that are actually there.**
+  - The rule is one sentence: **`rowKeys` is a set of claims, not a set of
+    positions — every answer about a group is computed from the members `data`
+    actually holds, and from where they are rather than from where they are
+    written.** Anchored, measured, drawn, ended, and hovered are all the same
+    question.
+  - **Stated that way deliberately, because the previous phrasing was a
+    hand-list wearing a rule's clothes.** It read "anchored, measured and
+    drawn", which names three consumers and is silent about a fourth — and
+    there were three more: `isLastRow` and `hoverData` (both #151) and
+    `getSpanningRowKey`. A rule that enumerates its sites is the shape
+    [never re-assemble by hand-listing fields](../invariant/no-hand-enumeration.md)
+    exists to prevent, and it bit the sentence written to prevent it. The test
+    is whether a *new* consumer is covered by the words without editing them.
 - **Sorting is the case where those two lists diverge fastest, and the divergence
   is silent.** The table reports a sort and renders what comes back; it does not
   reconcile the new row order with `mergedGroups`, and there is nothing it could
@@ -184,8 +201,14 @@ row ids — which is the question every callback in this area answers implicitly
   drawing a second one, so with the doubled edge gone the offset is 0.0 and
   grouped now matches ungrouped exactly, last member included.
 - **`getSpanningRowKey` indexes `rowKeys` positionally.** A `spanningRowIndex`
-  naming a member `data` no longer holds resolves to an absent row — the one
-  place the rule above is not held.
+  naming a member `data` no longer holds resolves to an absent row and renders a
+  blank merged cell; an index past the end throws inside a widget build. **The
+  last place the rule above is not held**, and the only one where it may be
+  deliberate — `spanningRowIndex` is public API meaning "which row of the group
+  shows the merged content", so a positional read may be the contract rather
+  than a defect. Nothing records which, and it sits in `models/` where no
+  `RowLookup` reaches, so the repair changes a public signature or moves the
+  resolution to the caller. Its own issue.
 - ~~Two the ordinary cell already had, now inherited by every member~~ —
   **closed by #156**, along with two the ticket never named. Members render
   through the ordinary cell, so the fix reached them for free; the group's
