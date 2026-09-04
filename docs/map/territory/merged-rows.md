@@ -142,6 +142,23 @@ row ids — which is the question every callback in this area answers implicitly
     [never re-assemble by hand-listing fields](../invariant/no-hand-enumeration.md)
     exists to prevent, and it bit the sentence written to prevent it. The test
     is whether a *new* consumer is covered by the words without editing them.
+  - **One stated exception, and it is about content rather than extent.**
+    `MergeCellConfig.spanningRowIndex` **is** a position in `rowKeys`, settled
+    in #173 after both readings were rendered side by side. The rule above
+    answers *how far a group reaches* — anchored, measured, drawn, ended,
+    hovered — and those must come from what `data` holds, because they decide
+    geometry. This one answers *whose value the merged cell shows*, and the cell
+    is drawn once across the whole group, so position is already settled and
+    only identity is left. Resolving it among the rendered rows would move a
+    merged cell's content every time the caller sorted `data`, from a
+    configuration they never touched.
+
+    The exception is narrow on purpose: the index is positional, and presence is
+    a **fallback** consulted only when the position it names holds nothing. An
+    absent key falls forward through `rowKeys` to the first present member
+    rather than rendering blank, and an out-of-range index clamps rather than
+    throwing out of a widget build — both with one debug warning, never a throw.
+    Neither can move the answer in a case where the named row exists.
 - **Sorting is the case where those two lists diverge fastest, and the divergence
   is silent.** The table reports a sort and renders what comes back; it does not
   reconcile the new row order with `mergedGroups`, and there is nothing it could
@@ -201,15 +218,22 @@ row ids — which is the question every callback in this area answers implicitly
   2026-09-04: the border comes from the group's decoration and the member was
   drawing a second one, so with the doubled edge gone the offset is 0.0 and
   grouped now matches ungrouped exactly, last member included.
-- **`getSpanningRowKey` indexes `rowKeys` positionally.** A `spanningRowIndex`
-  naming a member `data` no longer holds resolves to an absent row and renders a
-  blank merged cell; an index past the end throws inside a widget build. **The
-  last place the rule above is not held**, and the only one where it may be
-  deliberate — `spanningRowIndex` is public API meaning "which row of the group
-  shows the merged content", so a positional read may be the contract rather
-  than a defect. Nothing records which, and it sits in `models/` where no
-  `RowLookup` reaches, so the repair changes a public signature or moves the
-  resolution to the caller. Its own issue.
+- ~~`getSpanningRowKey` indexes `rowKeys` positionally~~ — **answered by #173,
+  and the answer was *contract*.** The positional read stays and is now stated
+  in the rule above as its one exception; what was a defect was everything
+  around it. An index past the end threw `RangeError` out of `_buildMergedCell`
+  and now clamps to the last member; an index naming a row `data` does not hold
+  rendered a silent blank — the value simply left the screen — and now falls
+  forward through `rowKeys` to the first present member. Both warn once in
+  debug and neither throws, because this package's own docs taught the
+  positional form and a crash would punish callers for following them.
+
+  **The layer problem was real and was solved by adding rather than changing.**
+  `models/` still cannot see `data`, so the presence walk lives in a new
+  `resolveSpanningRowKey(columnKey, allData, rowId)` beside the existing
+  `getRowData(allData, rowKey, rowId)` — the shape this class already uses for
+  anything needing the data list. `getSpanningRowKey`'s signature is untouched,
+  so nothing broke.
 - ~~Two the ordinary cell already had, now inherited by every member~~ —
   **closed by #156**, along with two the ticket never named. Members render
   through the ordinary cell, so the fix reached them for free; the group's
