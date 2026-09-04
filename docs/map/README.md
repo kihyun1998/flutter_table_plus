@@ -202,4 +202,5 @@ worth watching.
 [observe at the screen, assert by count](invariant/observe-at-the-screen.md) ·
 [a guard reads the destination, never the source](invariant/guard-the-destination.md) ·
 [a decorated box hands its child less than it declares](invariant/decoration-eats-the-child.md) ·
-[a measurement is given what the paint resolves](invariant/measure-what-the-paint-resolves.md)
+[a measurement is given what the paint resolves](invariant/measure-what-the-paint-resolves.md) ·
+[a caller's function is not a cache key](invariant/a-callers-function-is-not-a-key.md)

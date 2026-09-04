@@ -329,6 +329,27 @@ class FlutterTablePlus<T> extends StatefulWidget {
 
   /// Callback to calculate the height of a specific row.
   /// Return null to use the default row height.
+  ///
+  /// **Hold this in a field; do not build it inline here.** Unlike [rowId],
+  /// this function *is* compared — by `==`, which is right for every shape a
+  /// caller writes — and when it changes, both height caches drop: this
+  /// widget's total, which decides whether a vertical scrollbar appears, and
+  /// the body's per-row heights, which feed the rendered extents and the row
+  /// geometry every drag hit-test is answered from. A closure built fresh in
+  /// `build` is never `==` to the last one, so that happens every frame.
+  ///
+  /// The cost is invisible until it is not: measured at a thousand rows with a
+  /// text-measuring height function, one rebuild is **62ms — 3.7 frames**; at a
+  /// hundred rows it is 2.2ms and nobody notices. A `static` or top-level
+  /// tear-off is `==`-stable, and a field rebuilt in `didChangeDependencies` is
+  /// the shape to use when the callback needs a `BuildContext`. In debug, this
+  /// widget says so once if it sees the callback change identity on several
+  /// consecutive builds while nothing else did.
+  ///
+  /// Wrapping the configuration in a value type does **not** help, and that was
+  /// measured rather than argued: Dart compares two tear-offs of the same
+  /// method by whether their receivers are `identical`, never by whether they
+  /// are `==` (#161).
   final double? Function(int rowIndex, T rowData)? calculateRowHeight;
 
   /// Builder function to create custom hover buttons for each row.
@@ -433,6 +454,21 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
   /// covers it.
   late RowLookup<T> _rowLookup;
 
+  /// How many consecutive callback-only builds it takes to speak. An inline
+  /// callback fires on *every* build, so any small number finds it; the number
+  /// is not what excludes the false positive — see
+  /// [_warnInlineRowHeightCallback].
+  static const int _inlineHeightWarnThreshold = 5;
+
+  /// Consecutive builds on which [FlutterTablePlus.calculateRowHeight] was the
+  /// only thing that moved. Written and read inside an `assert` only, so it
+  /// never counts in a release build. See [_warnInlineRowHeightCallback].
+  int _inlineHeightStreak = 0;
+
+  /// Whether [_warnInlineRowHeightCallback] has already spoken for this state.
+  /// The condition holds on every subsequent build, so anything else floods.
+  bool _warnedInlineHeight = false;
+
   /// Cached total data height
   double _cachedTotalDataHeight = 0;
 
@@ -532,6 +568,9 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
         _resizedWidths.addAll(widget.initialResizedWidths!);
       }
     }
+    // Debug-only, and it observes the branch below rather than joining it: it
+    // adds no walk and reads nothing the branch has not already been handed.
+    assert(_warnInlineRowHeightCallback(oldWidget));
     if (!identical(widget.data, oldWidget.data) ||
         !identical(widget.mergedGroups, oldWidget.mergedGroups) ||
         rowMeasurementChanged<T>(
@@ -600,6 +639,75 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
       }
       ids.add(id);
     }
+  }
+
+  /// Say so, once, when [FlutterTablePlus.calculateRowHeight] looks like it is
+  /// being rebuilt inline in the caller's `build`.
+  ///
+  /// The callback is compared with `==`, so a closure built fresh each build is
+  /// never equal to the last one and both height caches drop every frame — this
+  /// state's total, which decides whether a vertical scrollbar appears, and the
+  /// body's per-row heights, which feed the rendered extents *and* the
+  /// `RowGeometry` every drag hit-test is answered from. The behaviour is
+  /// correct and the cost is not visible: measured at a thousand rows with a
+  /// text-measuring height function, one rebuild is 62ms, or 3.7 frames (#161).
+  /// `docs/FEATURES.md` taught exactly that shape until 2.17.0.
+  ///
+  /// **This is a heuristic and says so.** The condition it can see is "the
+  /// callback's identity moved and nothing else did", which is the *symptom* of
+  /// an inline build rather than proof of one. Four choices follow from that,
+  /// and each is load-bearing:
+  ///
+  /// * **`columns` identity is part of the condition.** A caller who stores the
+  ///   width [FlutterTablePlus.onColumnResized] hands back and passes new
+  ///   columns down rebuilds their height callback legitimately on every frame
+  ///   of a resize drag — which runs far past any threshold, so the threshold is
+  ///   not what excludes it. This term is.
+  /// * **`RowLookup.idsMatch` is deliberately not consulted**, though the cache
+  ///   branch below does consult it. It walks every row, and a diagnostic may
+  ///   not add a walk to a build it is only observing. The case it gives up is
+  ///   a caller swapping `rowId`'s answers *and* the height callback in the same
+  ///   build, which is still the shape being diagnosed.
+  /// * **It lives inside an `assert`**, so a release build carries neither the
+  ///   counter nor the message. [_validateColumns] and [_validateUniqueIds]
+  ///   print unconditionally; this follows their wording and deliberately not
+  ///   their release behaviour. A diagnostic that says *probably* belongs where
+  ///   a developer reads it, not where a consumer's crash reporter collects it.
+  /// * **It prints rather than throws.** Turning this package's own former
+  ///   recommendation into a debug crash would punish callers for following the
+  ///   documentation. Enforcement, if it is ever wanted, belongs in a major.
+  ///
+  /// Returns `true` unconditionally so the whole body can sit inside `assert`.
+  bool _warnInlineRowHeightCallback(FlutterTablePlus<T> oldWidget) {
+    final onlyTheCallbackMoved =
+        widget.calculateRowHeight != oldWidget.calculateRowHeight &&
+            widget.scale == oldWidget.scale &&
+            widget.theme.bodyTheme.rowHeight ==
+                oldWidget.theme.bodyTheme.rowHeight &&
+            identical(widget.data, oldWidget.data) &&
+            identical(widget.mergedGroups, oldWidget.mergedGroups) &&
+            identical(widget.columns, oldWidget.columns);
+
+    if (!onlyTheCallbackMoved) {
+      _inlineHeightStreak = 0;
+      return true;
+    }
+    _inlineHeightStreak++;
+    if (_warnedInlineHeight ||
+        _inlineHeightStreak < _inlineHeightWarnThreshold) {
+      return true;
+    }
+    _warnedInlineHeight = true;
+    debugPrint(
+      '⚠️ FlutterTablePlus: calculateRowHeight changed identity on '
+      '$_inlineHeightWarnThreshold consecutive builds while data and columns '
+      'did not. It is probably being built inline in build() — every such '
+      'build drops the row-height caches and the drag hit-test geometry and '
+      're-measures every row. Hold it in a field, rebuilt in '
+      'didChangeDependencies; see '
+      'TableRowHeightCalculator.createHeightCalculator.',
+    );
+    return true;
   }
 
   /// Rebuild cached values for total height, row count, and lookup maps.
