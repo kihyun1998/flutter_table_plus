@@ -125,6 +125,17 @@ build over the same data.
   possible and is now a one-site problem with the read sites named in the
   doc-comment.
 
+  **And the remedy was half of one, which took until #169 to see.** Unifying the
+  predicate left each caller to decide *what to drop* when it fired, and that
+  decision was still copied into two widgets — so it drifted the same way. The
+  body split structural from measurement-only and said so in a comment; the
+  parent kept one branch and rebuilt its `RowLookup` on every `scale` change,
+  for an answer no scale can move. The asymmetry is visible inside #120's own
+  issue body, which quotes both files side by side, and it survived #120, #128,
+  #132 and #135. **Extracting a shared predicate is not the same as extracting
+  the rule** — the rule is the predicate *and* the response, and only the second
+  one being copied is enough to reproduce the defect.
+
   Two traps, both measured. The scale term is **redundant for the body and
   load-bearing for the parent**, because the parent hands the predicate an
   unscaled `theme.bodyTheme.rowHeight` while the body hands it one `scaledBy`

@@ -12,7 +12,7 @@ import '../models/theme/checkbox_theme.dart';
 import '../models/theme/editable_theme.dart' show TablePlusEditableTheme;
 import '../models/theme/tooltip_theme.dart' show TablePlusTooltipTheme;
 import '../utils/row_background_color.dart';
-import '../utils/row_measurement.dart';
+import '../utils/row_cache_invalidation.dart';
 import '../utils/table_metrics.dart';
 import 'row_geometry.dart';
 import 'row_locator.dart';
@@ -195,18 +195,24 @@ class TablePlusBodyState<T> extends State<TablePlusBody<T>>
   Map<int, double> _cachedRowHeights = const {};
 
   /// Cached pure hit-test geometry for the [RowLocator] port. Built lazily on
-  /// the first drag query, and dropped by [didUpdateWidget] on a `data` or
-  /// `mergedGroups` **identity** change, or when `rowMeasurementChanged`
-  /// fires — `calculateRowHeight`, `scale`, or `theme.rowHeight`.
+  /// the first drag query, and dropped by [didUpdateWidget] whenever
+  /// `classifyRowCacheInvalidation` answers anything but
+  /// [RowCacheInvalidation.none] — on a structural change with everything else,
+  /// and on a measurement-only change with the heights alone.
   ///
-  /// The measurement half of that list lives in `rowMeasurementChanged`, shared
-  /// with `FlutterTablePlusState` so the two cannot drift again. This comment
-  /// said "data/mergedGroups/scale" until #128: `calculateRowHeight` had been
-  /// added to the branch by #120 and the comment was left behind, and
-  /// `theme.rowHeight` was in neither. **#132 found the sentence above still
-  /// omitting `theme.rowHeight` while this paragraph said it had been** — the
-  /// narrative was corrected and the list it narrates was not, which is the
-  /// same failure one layer up from the one it describes.
+  /// **Neither the inputs nor the response is written here**, and both were
+  /// once. The inputs live in `rowMeasurementChanged` (#120, #128); the
+  /// response — which of the caches an answer invalidates — lives in
+  /// `classifyRowCacheInvalidation` (#169), because it too was copied into two
+  /// widgets and drifted: this side split structural from measurement-only and
+  /// the parent did not.
+  ///
+  /// The history is worth keeping because it is a doc-comment failure and this
+  /// is a doc-comment. This paragraph said "data/mergedGroups/scale" until
+  /// #128, then **#132 found the sentence above still omitting
+  /// `theme.rowHeight` while this paragraph claimed it had been added** — the
+  /// narrative was corrected and the list it narrates was not. A comment that
+  /// restates a list is a second copy of it.
   RowGeometry? _rowGeometry;
 
   @override
@@ -224,46 +230,53 @@ class TablePlusBodyState<T> extends State<TablePlusBody<T>>
     // Structure changed — which rows exist, which index maps to which row,
     // which of them a group swallows. Everything is stale, including the
     // heights.
-    if (!identical(widget.data, oldWidget.data) ||
-        !identical(widget.mergedGroups, oldWidget.mergedGroups) ||
-        // Identity is watched by value, not by the extractor's object identity:
-        // see `RowLookup.idsMatch`. Ordered last so the two `identical` checks
-        // short-circuit it on the builds where something already changed.
-        !_rowLookup.idsMatch(widget.data, widget.rowId)) {
-      _rebuildCaches();
-    } else if (rowMeasurementChanged<T>(
+    switch (classifyRowCacheInvalidation<T>(
+      oldData: oldWidget.data,
+      newData: widget.data,
+      oldMergedGroups: oldWidget.mergedGroups,
+      newMergedGroups: widget.mergedGroups,
       oldCalculateRowHeight: oldWidget.calculateRowHeight,
       newCalculateRowHeight: widget.calculateRowHeight,
       oldScale: oldWidget.scale,
       newScale: widget.scale,
       oldRowHeight: oldWidget.theme.rowHeight,
       newRowHeight: widget.theme.rowHeight,
+      // Identity is watched by value, not by the extractor's object identity:
+      // see `RowLookup.idsMatch`. A callback so it stays behind the two
+      // `identical` checks, which is the ordering the classifier preserves.
+      idsStillMatch: () => _rowLookup.idsMatch(widget.data, widget.rowId),
     )) {
-      // Measurements changed and structure did not. `RowLookup` and the
-      // renderable indices are answers about identity, so they survive; only
-      // the heights and the geometry accumulated from them go.
-      //
-      // `calculateRowHeight` sits here rather than above because its identity
-      // changing says nothing about which rows exist — and it was missing from
-      // this method entirely until #120, while `FlutterTablePlus` has always
-      // watched it. So a new height function over the same list changed
-      // nothing here: measured before the fix, a swap from 100 to 40 with
-      // `data` identity held left the rows at 100.
-      //
-      // What that cost is narrower than it looks, and worth stating exactly
-      // because the obvious guess is wrong. The ListView's scroll extent is
-      // **not** implicated: `itemExtentBuilder` reads this same cache, so the
-      // extent was stale in step with the rows. What did move on without them
-      // is the parent's own total-height figure, which decides
-      // `needsVerticalScroll` — handed back down here, and the input to the
-      // last row's bottom border.
-      //
-      // A tear-off can never trigger it, which is why nothing caught it: every
-      // test and both example recipes passed a static function. A closure over
-      // state — a density toggle, a font-size slider — is a new object every
-      // build, and that is the ordinary way to write one.
-      _cachedRowHeights = {};
-      _rowGeometry = null;
+      case RowCacheInvalidation.structural:
+        _rebuildCaches();
+      case RowCacheInvalidation.measurementOnly:
+        // `RowLookup` and the renderable indices are answers about identity, so
+        // they survive; only the heights and the geometry accumulated from them
+        // go.
+        //
+        // `calculateRowHeight` counts as a measurement input rather than a
+        // structural one because its identity changing says nothing about which
+        // rows exist — and it was missing from this method entirely until #120,
+        // while `FlutterTablePlus` has always watched it. So a new height
+        // function over the same list changed nothing here: measured before the
+        // fix, a swap from 100 to 40 with `data` identity held left the rows at
+        // 100.
+        //
+        // What that cost is narrower than it looks, and worth stating exactly
+        // because the obvious guess is wrong. The ListView's scroll extent is
+        // **not** implicated: `itemExtentBuilder` reads this same cache, so the
+        // extent was stale in step with the rows. What did move on without them
+        // is the parent's own total-height figure, which decides
+        // `needsVerticalScroll` — handed back down here, and the input to the
+        // last row's bottom border.
+        //
+        // A tear-off can never trigger it, which is why nothing caught it:
+        // every test and both example recipes passed a static function. A
+        // closure over state — a density toggle, a font-size slider — is a new
+        // object every build, and that is the ordinary way to write one.
+        _cachedRowHeights = {};
+        _rowGeometry = null;
+      case RowCacheInvalidation.none:
+        break;
     }
   }
 
