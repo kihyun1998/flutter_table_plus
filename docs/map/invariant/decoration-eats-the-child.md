@@ -106,6 +106,22 @@ anywhere to overflow and no banner to print. That is the harder half of this
 rule, because the height cases at least have `RenderFlex` to complain: a
 mismeasurement just answers a boolean wrongly, forever, in silence.
 
+**And the compensation is a third place it recurs, one step past the fix.**
+Once a site adds the inset back, that addend is a second statement of the border
+width — and it drifts from the first the moment the border becomes
+configurable. `flutter_table_plus.dart`'s auto-fit passed
+`showVerticalDividers ? 0.5 : 0.0` as `bodyExtraWidth`, correct for exactly as
+long as the divider's width was hardcoded to match it. #171 made that width a
+theme field and the literal went silently wrong: probed at
+`verticalDividerThickness` 4, 8 and 12, auto-fit reported **461.0 for every one
+of them** — the same width it reports with the divider turned off — so a
+thickened column rule ate 12px of glyphs from a column sized as though it took
+none. The repair is not a better number: it is reading
+`bodyTheme.verticalDividerSide.width`, the same getter the cell paints with, so
+the compensation cannot disagree with the border by construction. **A
+compensating constant is a copy of a value that lives somewhere else**, and this
+note's whole subject is two places holding one number.
+
 **One site is confirmed, measured, and reachable through a public field.**
 `table_header.dart`'s `_buildHeaderDecoration` returns the caller's
 `theme.decoration` unchanged when they set one, and the box it decorates is

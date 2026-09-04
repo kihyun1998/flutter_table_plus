@@ -91,7 +91,7 @@ class EditableTextField extends StatelessWidget {
               borderSide: BorderSide(
                 color: theme.enabledBorderColor ??
                     theme.editingBorderColor.withValues(alpha: 0.5),
-                width: 1.0,
+                width: theme.effectiveEnabledBorderWidth,
               ),
             ),
             enabledBorder: OutlineInputBorder(
@@ -99,7 +99,7 @@ class EditableTextField extends StatelessWidget {
               borderSide: BorderSide(
                 color: theme.enabledBorderColor ??
                     theme.editingBorderColor.withValues(alpha: 0.5),
-                width: 1.0,
+                width: theme.effectiveEnabledBorderWidth,
               ),
             ),
             focusedBorder: OutlineInputBorder(
@@ -112,14 +112,14 @@ class EditableTextField extends StatelessWidget {
             errorBorder: OutlineInputBorder(
               borderRadius: theme.borderRadius ?? theme.editingBorderRadius,
               borderSide: BorderSide(
-                color: Colors.red.shade400,
-                width: 1.0,
+                color: theme.effectiveErrorBorderColor,
+                width: theme.effectiveErrorBorderWidth,
               ),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: theme.borderRadius ?? theme.editingBorderRadius,
               borderSide: BorderSide(
-                color: Colors.red.shade600,
+                color: theme.effectiveFocusedErrorBorderColor,
                 width: theme.editingBorderWidth,
               ),
             ),

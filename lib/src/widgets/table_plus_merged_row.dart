@@ -728,10 +728,7 @@ class _TablePlusMergedRowState<T>
                     const SizedBox(height: 4),
                     Text(
                       '${widget.mergeGroup.rowCount} rows',
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: Colors.grey.shade600,
-                      ),
+                      style: widget.theme.effectiveMergedRowCountTextStyle,
                     ),
                   ],
                 ],
