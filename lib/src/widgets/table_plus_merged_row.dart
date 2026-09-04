@@ -369,6 +369,9 @@ class _TablePlusMergedRowState<T>
       final rowIndex = present[i].key;
       final rowKey = present[i].value;
       final isFlexibleTail = !lastIsSummary && i == present.length - 1;
+      // A summary cell, when there is one, follows the last member — so the
+      // last member draws its separator and the summary does not.
+      final hasFollowingCell = i < present.length - 1 || lastIsSummary;
       // The column's `width` is what a member measures its text against, which
       // is the axis the parameter it reaches is named for. It used to be the
       // group's tallest-member HEIGHT: a 200px column over a 48px group
@@ -383,7 +386,8 @@ class _TablePlusMergedRowState<T>
           width,
           rowIndex,
           columnIndex,
-          isFlexibleTail ? null : _memberHeight(rowKey)));
+          isFlexibleTail ? null : _memberHeight(rowKey),
+          hasFollowingCell));
     }
 
     if (lastIsSummary) {
@@ -458,14 +462,13 @@ class _TablePlusMergedRowState<T>
   /// two of them. That is [TablePlusCell.bottomSide], and it is the whole of
   /// the difference.
   ///
-  /// **The gate on that side is deliberately unchanged and is deliberately
-  /// wrong.** `shouldShowBottomBorder` asks whether the *group* is the last row
-  /// in the table, and the answer decides whether every *member* draws a
-  /// separator — so at the default `LastRowBorderBehavior.never` the last group
-  /// in a table loses all of its internal separators. That is a level error,
-  /// it is not this ticket's, and repairing it here would widen a change sized
-  /// for the cell into one about what the row assembles. It is raised
-  /// separately rather than fixed quietly.
+  /// **The gate on that side asks about this cell, not about the group.** It
+  /// used to ask `shouldShowBottomBorder` — whether the *group* is the table's
+  /// last row — and apply the answer to every member's line, which #155 named
+  /// as a level error and carried unchanged because repairing it widened a
+  /// change sized for the cell into one about what the row assembles. #157 was
+  /// that change. See [_memberBottomSide] for the rule that replaced it and for
+  /// the two opposite symptoms the substitution produced.
   Widget _buildStackedRowCell(
       BuildContext context,
       TablePlusColumn<T> column,
@@ -474,7 +477,8 @@ class _TablePlusMergedRowState<T>
       double? width,
       int rowIndex,
       int columnIndex,
-      double? memberHeight) {
+      double? memberHeight,
+      bool hasFollowingCell) {
     final isCellEditable = widget.isEditable && column.editable;
     final originalIndex =
         widget.allData.indexWhere((row) => widget.rowId(row) == rowKey);
@@ -512,26 +516,40 @@ class _TablePlusMergedRowState<T>
             ? () => widget.onCellTap!(originalIndex, column.key)
             : null,
         onStopEditing: widget.onStopEditing,
-        bottomSide: _memberBottomSide(),
+        bottomSide: _memberBottomSide(hasFollowingCell: hasFollowingCell),
       ),
       memberHeight,
     );
   }
 
-  /// The separator this member draws beneath itself, or null when none is
-  /// wanted.
+  /// The separator this cell draws beneath itself, or null when none is wanted.
   ///
-  /// The gate is [TablePlusBodyTheme.shouldShowBottomBorder] answered for the
-  /// **group**, which is the level error named in `_buildStackedRowCell`'s doc
-  /// and deliberately carried unchanged here. Extracted so its callers — the member cell
-  /// and the summary cell — stop holding a copy each, which is the shape that
-  /// produced every divergence this change exists to remove. The summary cell
-  /// was not a caller when this was first written, and that omission left a
-  /// hardcoded 1.0 line against the members' themed one in the same column.
-  BorderSide? _memberBottomSide() => widget.theme.shouldShowBottomBorder(
-        isLastRow: widget.isLastRow,
-        needsVerticalScroll: widget.needsVerticalScroll,
-      )
+  /// **Every boundary has exactly one owner, and that is the whole rule.** A
+  /// group's *inner* boundaries belong to its members; its *outer* boundary
+  /// belongs to the group's own [rowDecoration]. So a cell draws only when
+  /// another cell follows it inside the group, and the last one leaves the edge
+  /// to the decoration.
+  ///
+  /// **It deliberately does not ask [TablePlusBodyTheme.shouldShowBottomBorder]**,
+  /// which answers a question about the *group* — is it the table's last row.
+  /// Applying that answer to a member-level line was the level error #157 fixed,
+  /// and one substitution produced two opposite symptoms: with the group not
+  /// last the predicate returned true for every member including the last, whose
+  /// line then stacked against the group's own border and drew the edge twice;
+  /// with the group last the default `LastRowBorderBehavior.never` returned false
+  /// for *every* member and the group rendered as one undivided block.
+  ///
+  /// `showHorizontalDividers` is still honoured, and is read here rather than
+  /// inside [TablePlusBodyTheme.memberDividerSide]: a condition checked in two
+  /// places is one no test can pin, because mutating away either half leaves the
+  /// other covering for it — measured on the pass that tried.
+  ///
+  /// Single-homed across the member cell and the summary cell, which is what
+  /// stops them drifting. The summary cell was not a caller when this was first
+  /// written, and that omission left a hardcoded line against the members'
+  /// themed one in the same column.
+  BorderSide? _memberBottomSide({required bool hasFollowingCell}) =>
+      widget.theme.showHorizontalDividers && hasFollowingCell
           ? widget.theme.memberDividerSide
           : null;
 
@@ -566,20 +584,22 @@ class _TablePlusMergedRowState<T>
           // introduced by the change that fixed the members. Both adversarial
           // passes reached it independently.
           //
-          // `top` is deliberately NOT converted. It is hardcoded *and* ungated
-          // — it ignores `showHorizontalDividers` where every other horizontal
-          // side honours it — and it stacks against the last member's own
-          // bottom, so at `dividerThickness: 4` that boundary draws 4px + 0.5px
-          // where every other member boundary draws 4px. Which of those two
-          // lines should exist at all is a question about what the *row*
-          // assembles, not about matching a cell, and it is raised separately.
+          // `top` is gone, and its absence is the rule rather than an
+          // omission. The boundary above this cell is the last member's, and
+          // that member owns it — drawing here as well is what made the
+          // boundary 4px + 0.5px at `dividerThickness: 4` where every other
+          // member boundary drew 4px. It was hardcoded *and* ungated on top of
+          // that, ignoring `showHorizontalDividers` where every other
+          // horizontal side honours it (#157).
+          //
+          // `bottom` asks the same question every cell asks and gets `null`:
+          // nothing follows a summary cell, so the group's outer edge belongs
+          // to [rowDecoration]. Written as the call rather than as a literal
+          // `none` so the rule has one home and not two.
           border: Border(
             right: widget.theme.verticalDividerSide,
-            top: BorderSide(
-              color: widget.theme.dividerColor.withValues(alpha: 0.3),
-              width: 0.5,
-            ),
-            bottom: _memberBottomSide() ?? BorderSide.none,
+            bottom:
+                _memberBottomSide(hasFollowingCell: false) ?? BorderSide.none,
           ),
         ),
         child: content,

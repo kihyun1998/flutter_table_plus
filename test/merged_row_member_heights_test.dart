@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
+import 'package:flutter_table_plus/src/widgets/cells/table_plus_cell.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 // #121. A merged group's TOTAL height is the sum of its members' measured
@@ -86,6 +87,20 @@ Future<void> _pump(
 
 /// Each visible `c0` cell's text top, relative to the body's `ListView`.
 /// Position rather than widget identity, following the #135 harness.
+/// The rendered height of each member's own cell box, in order.
+///
+/// The heights are the claim; a text baseline is only a proxy for one, and the
+/// proxy stopped agreeing with the claim at #157. Until then every member cell
+/// carried an identical bottom inset, so equal boxes produced equal text gaps —
+/// and once the last member stopped drawing a separator the gaps diverged by
+/// exactly that inset while the boxes stayed equal. Measure the boxes.
+double _memberCellHeight(WidgetTester tester, String id) => tester
+    .getRect(find
+        .ancestor(
+            of: find.text('r$id'), matching: find.byType(TablePlusCell<Row>))
+        .first)
+    .height;
+
 Map<String, double> _tops(WidgetTester tester, List<String> ids) {
   final listTop = tester.getRect(find.byType(ListView)).top;
   return {
@@ -93,30 +108,33 @@ Map<String, double> _tops(WidgetTester tester, List<String> ids) {
   };
 }
 
-/// Every member except the last lands **exactly** where its ungrouped twin
-/// does; the last is high by half the group's bottom border, because that
-/// border is taken out of the `Column` and sits against that member.
+/// Every member lands **exactly** where its ungrouped twin does — the last one
+/// included, which it did not until #157.
 ///
-/// Stated as two assertions rather than one loose tolerance on purpose. The
-/// first version of this test allowed 1.0px on every member, which is the same
-/// number as the default `dividerThickness` — so it passed under a proportional
-/// layout that moved all three members, by up to 0.87px. A tolerance equal to
-/// the error it is meant to catch is not a tolerance, it is a blindfold.
+/// **This used to carry a residual and the residual was a defect, not a cost.**
+/// The last member was high by half the group's bottom border, and the reason
+/// recorded here was that "the border has to come from somewhere and this is
+/// the one cell adjacent to it". Measured 2026-09-04: the border comes from the
+/// group's own decoration, and the member was *also* drawing one of its own —
+/// the doubled edge #157 removed. With that gone the offset is 0.0 at
+/// `dividerThickness: 4`, so parity is now exact and this helper makes one
+/// claim instead of two.
+///
+/// The tolerance stays deliberate. The first version of this test allowed 1.0px
+/// on every member, which is the same number as the default `dividerThickness`
+/// — so it passed under a proportional layout that moved all three members, by
+/// up to 0.87px. A tolerance equal to the error it is meant to catch is not a
+/// tolerance, it is a blindfold. `kT` is 4.0 for the same reason.
 void expectMembersMatchUngrouped(
   Map<String, double> grouped,
   Map<String, double> ungrouped,
   List<String> members,
 ) {
-  for (final id in members.sublist(0, members.length - 1)) {
+  for (final id in members) {
     expect(grouped[id], closeTo(ungrouped[id]!, 0.05),
         reason: 'member $id is drawn exactly where an ungrouped row of the '
             'same measured height is drawn');
   }
-  final last = members.last;
-  expect(ungrouped[last]! - grouped[last]!, closeTo(kT / 2, 0.05),
-      reason: 'the last member is short by exactly the group border, and its '
-          'centred text by half of it — the border has to come from somewhere '
-          'and this is the one cell adjacent to it');
 }
 
 MergedRowGroup<Row> _group(List<String> keys, {bool expanded = false}) =>
@@ -229,13 +247,22 @@ void main() {
       // The claim here is EQUAL DIVISION, not agreement with the ungrouped
       // rendering, and the difference is not pedantry: an equal split also
       // absorbs the group's bottom border across all three members, so each one
-      // sits 0.17px high. That is pre-existing and is what "unchanged" means
+      // sits slightly high. That is pre-existing and is what "unchanged" means
       // for this case. Asserting agreement with the ungrouped rows instead
       // would demand of the old path something this fix never promised — and
       // would only pass on a tolerance wide enough to hide the residual it is
       // supposed to be measuring.
-      expect(grouped['b']! - grouped['a']!,
-          closeTo(grouped['c']! - grouped['b']!, 0.05),
+      //
+      // **Measured on the boxes, not on the text.** This asserted equal text
+      // gaps until #157, which worked only because every member carried the
+      // same bottom inset — so the assertion could not tell equal boxes from
+      // equal insets. Once the last member stopped drawing a separator the
+      // boxes stayed equal and the text gaps moved by exactly that inset,
+      // which is what a proxy does when the thing it stood for changes.
+      final ha = _memberCellHeight(tester, 'a');
+      expect(_memberCellHeight(tester, 'b'), closeTo(ha, 0.05),
+          reason: 'the three members are divided equally');
+      expect(_memberCellHeight(tester, 'c'), closeTo(ha, 0.05),
           reason: 'the three members are divided equally');
       for (final id in ['a', 'b', 'c']) {
         expect((ungrouped[id]! - grouped[id]!).abs(), lessThanOrEqualTo(kT),

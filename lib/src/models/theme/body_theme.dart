@@ -199,12 +199,17 @@ class TablePlusBodyTheme {
   /// can draw it. The alpha matches what the merged row already used; only the
   /// width moves, from a hardcoded `1` to the theme's own thickness (#155).
   ///
-  /// Unconditional. Whether a member draws one at all is
-  /// [shouldShowBottomBorder]'s answer, which already returns false when
-  /// [showHorizontalDividers] is — so re-checking it here was a second guard
-  /// over the same condition, and a doubled guard is one no test can pin:
-  /// mutating away either half leaves the other covering for it. Measured, on
-  /// the pass that tried to pin it.
+  /// Unconditional, and the condition lives at the one call site. Whether a
+  /// member draws at all is answered by `_memberBottomSide` in
+  /// `table_plus_merged_row.dart` — *is another cell following me inside this
+  /// group*, and is `showHorizontalDividers` on. Re-checking either here would
+  /// be a second guard over the same condition, and a doubled guard is one no
+  /// test can pin: mutating away either half leaves the other covering for it.
+  /// Measured, on the pass that tried to pin it.
+  ///
+  /// It is deliberately **not** [shouldShowBottomBorder], which asks whether a
+  /// *row* is the table's last. That question governs this group's own outer
+  /// edge through [rowDecoration] and nothing inside it (#157).
   BorderSide get memberDividerSide => BorderSide(
         color: dividerColor.withValues(alpha: 0.3),
         width: dividerThickness,
