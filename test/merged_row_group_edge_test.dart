@@ -29,7 +29,12 @@ void main() {
       expect(group.effectiveRowCount, 1);
     });
 
-    test('getSpanningRowKey throws when the span index is out of bounds', () {
+    test('getSpanningRowKey clamps an out-of-bounds span index', () {
+      // This asserted `throwsRangeError` until #173, and the assertion was
+      // accurate — it was the behaviour that was wrong. `getSpanningRowKey` is
+      // called from inside `_buildMergedCell`, so the throw left a widget
+      // build, which is a red screen in release rather than a caught error.
+      // See `merged_row_spanning_resolution_test.dart` for the rest.
       const group = MergedRowGroup<Map<String, dynamic>>(
         groupId: 'g1',
         rowKeys: ['a', 'b'],
@@ -37,7 +42,7 @@ void main() {
           'name': MergeCellConfig(shouldMerge: true, spanningRowIndex: 5),
         },
       );
-      expect(() => group.getSpanningRowKey('name'), throwsRangeError);
+      expect(group.getSpanningRowKey('name'), 'b');
     });
 
     test('getAllRowData drops keys that are missing from the data', () {

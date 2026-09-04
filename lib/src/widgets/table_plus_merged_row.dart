@@ -212,8 +212,14 @@ class _TablePlusMergedRowState<T>
   Widget _buildMergedCell(BuildContext context, TablePlusColumn<T> column,
       double? width, int columnIndex) {
     final mergedContent = widget.mergeGroup.getMergedContent(column.key);
-    final spanningRowKey = widget.mergeGroup.getSpanningRowKey(column.key);
-    final rowData = _getRowData(spanningRowKey);
+    // Resolved against `data`, not read positionally out of `rowKeys`. The
+    // index is still a position in the caller's list — that is the contract
+    // #173 settled — but a position naming a row `data` no longer holds used
+    // to render an empty cell with no signal, and an out-of-range one threw a
+    // RangeError out of this build.
+    final spanningRowKey = widget.mergeGroup
+        .resolveSpanningRowKey(column.key, widget.allData, widget.rowId);
+    final rowData = spanningRowKey == null ? null : _getRowData(spanningRowKey);
 
     final mergedHeight = widget.calculatedHeight ??
         (widget.theme.rowHeight * widget.mergeGroup.effectiveRowCount);
@@ -221,8 +227,10 @@ class _TablePlusMergedRowState<T>
     final isCellEditable = widget.isEditable &&
         column.editable &&
         widget.mergeGroup.isMergedCellEditable(column.key);
-    final spanningDataIndex =
-        widget.allData.indexWhere((row) => widget.rowId(row) == spanningRowKey);
+    final spanningDataIndex = spanningRowKey == null
+        ? -1
+        : widget.allData
+            .indexWhere((row) => widget.rowId(row) == spanningRowKey);
     final isCurrentlyEditing = isCellEditable &&
         spanningDataIndex != -1 &&
         widget.isCellEditing?.call(spanningDataIndex, column.key) == true;

@@ -488,10 +488,10 @@ MergedRowGroup<User>(
   groupId: 'sales-team',
   rowKeys: ['user-4', 'user-5'],
   mergeConfig: {
-    // Show first row's data in merged cell
+    // Show the value of the row you listed first in `rowKeys`
     'name': MergeCellConfig(
       shouldMerge: true,
-      spanningRowIndex: 0,  // Use first row's value
+      spanningRowIndex: 0,
     ),
     // Custom widget
     'status': MergeCellConfig(
@@ -516,6 +516,29 @@ onMergedCellChanged: (String groupId, String columnKey, dynamic newValue) {
   // Update your data
 },
 ```
+
+**`spanningRowIndex` counts positions in `rowKeys`, not rows on screen.** The
+list you wrote, in the order you wrote it — so with `data: ['a', 'b']` and
+`rowKeys: ['b', 'a']`, `spanningRowIndex: 1` is `'a'`. Written in `data` order
+the two are the same thing, which is why the difference only shows up when they
+are not.
+
+It is defined this way so that **sorting cannot move it**. `data` order is
+yours to change and this package sorts nothing itself; if the index counted
+rendered rows, every sort would change which row's value a merged cell shows,
+from a configuration you had not touched.
+
+Two cases are handled for you rather than left to fail, both since 2.17.0:
+
+| you wrote | what happens |
+|---|---|
+| an index past the end of `rowKeys` | clamps to the last member. It used to throw a `RangeError` **out of the widget build** |
+| an index naming a row `data` does not hold | walks forward through `rowKeys`, wrapping once, to the first member that *is* present. It used to render an empty cell, so the value simply disappeared |
+
+Each prints one `debugPrint` naming the group, the column and what it did.
+Neither throws, and neither costs anything in a release build — the check sits
+inside an `assert`. A merged cell is empty only when the group has no member
+`data` holds at all, which is the one case where empty is the right answer.
 
 **The expand control is yours to draw.** The package renders no
 expand/collapse affordance anywhere and fires no callback for one — put an
