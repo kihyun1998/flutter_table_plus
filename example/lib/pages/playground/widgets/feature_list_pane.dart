@@ -53,56 +53,69 @@ class _FeatureListPaneState extends State<FeatureListPane> {
     final matches = searchFeatures(query, widget.settings);
     final searching = query.trim().isNotEmpty;
 
-    return Container(
-      width: 220,
-      height: double.infinity,
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerLow,
-        border: Border(
-          right: BorderSide(color: Theme.of(context).dividerColor),
+    // The pane's ground is a `Material`, and the `Container` below keeps only
+    // the border. That split is a correctness requirement, not a tidy-up:
+    // `ListTile` paints its selection fill and its ink splashes onto the
+    // nearest `Material` ancestor, so a `DecoratedBox` carrying a background
+    // colour *between* the two covers both. Every entry in this pane is a
+    // `ListTile`, and `selected:` is how the open feature is shown — so the
+    // colour sitting here is exactly the thing that was hiding it.
+    //
+    // Flutter 3.47 turned that into an assertion and 21 tests in this package
+    // went red with nothing here having changed. Before it, the only symptom
+    // was ink that never appeared, which nothing fails on.
+    return Material(
+      color: Theme.of(context).colorScheme.surfaceContainerLow,
+      child: Container(
+        width: 220,
+        height: double.infinity,
+        decoration: BoxDecoration(
+          border: Border(
+            right: BorderSide(color: Theme.of(context).dividerColor),
+          ),
         ),
-      ),
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(8, 12, 8, 4),
-            child: TextField(
-              controller: _search,
-              onChanged: (_) => setState(() {}),
-              style: const TextStyle(fontSize: 13),
-              decoration: InputDecoration(
-                isDense: true,
-                hintText: 'Search',
-                prefixIcon: const Icon(Icons.search, size: 18),
-                suffixIcon: searching
-                    ? IconButton(
-                        icon: const Icon(Icons.clear, size: 16),
-                        onPressed: () => setState(_search.clear),
-                      )
-                    : null,
-                border: const OutlineInputBorder(),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 12, 8, 4),
+              child: TextField(
+                controller: _search,
+                onChanged: (_) => setState(() {}),
+                style: const TextStyle(fontSize: 13),
+                decoration: InputDecoration(
+                  isDense: true,
+                  hintText: 'Search',
+                  prefixIcon: const Icon(Icons.search, size: 18),
+                  suffixIcon: searching
+                      ? IconButton(
+                          icon: const Icon(Icons.clear, size: 16),
+                          onPressed: () => setState(_search.clear),
+                        )
+                      : null,
+                  border: const OutlineInputBorder(),
+                ),
               ),
             ),
-          ),
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.only(bottom: 8),
-              children: [
-                // While a search runs the groups say nothing: the list is no
-                // longer the description's shape, it is the query's.
-                if (searching)
-                  for (final match in matches) _entry(match)
-                else
-                  for (final group in settingsSpec) ...[
-                    _groupHeading(group.title),
-                    for (final feature in group.features)
-                      _entry(matches
-                          .firstWhere((m) => m.feature.id == feature.id)),
-                  ],
-              ],
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.only(bottom: 8),
+                children: [
+                  // While a search runs the groups say nothing: the list is no
+                  // longer the description's shape, it is the query's.
+                  if (searching)
+                    for (final match in matches) _entry(match)
+                  else
+                    for (final group in settingsSpec) ...[
+                      _groupHeading(group.title),
+                      for (final feature in group.features)
+                        _entry(matches
+                            .firstWhere((m) => m.feature.id == feature.id)),
+                    ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
