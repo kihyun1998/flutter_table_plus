@@ -165,10 +165,24 @@ class DragSelectionController {
   /// Whether a drag has crossed the activation threshold and is live.
   bool get isDragging => _isDragging;
 
-  /// Re-resolve the row under the (stationary) pointer after an auto-scroll has
-  /// shifted the content beneath it, emitting an update only when the row
-  /// actually changed. The host calls this each auto-scroll tick after moving
-  /// the scroll offsets, since no pointer event fires during pure auto-scroll.
+  /// Re-resolve the row under the (stationary) pointer, emitting an update only
+  /// when the row actually changed.
+  ///
+  /// **The moving endpoint only.** [_startRenderIndex] is never touched here:
+  /// the anchor means *the row you pressed*, and nothing that happens under a
+  /// held pointer may move it.
+  ///
+  /// **Two callers, and they are two different reasons the row under a still
+  /// pointer changes.** Each auto-scroll tick that actually moved the view,
+  /// since no pointer event fires during pure auto-scroll — and the host's
+  /// `didUpdateWidget`, post-frame, when a rebuild dropped the row geometry
+  /// underneath a live drag (#133): a height change re-lays out the rows
+  /// without moving the pointer or the scroll.
+  ///
+  /// The second is not a variation on the first, which is why it needs its own
+  /// caller. [_tick] reaches this line only when the scroll succeeded, so a
+  /// rebuild that shrinks the content onto the scroll extent stops the timer on
+  /// exactly the tick that would have re-resolved.
   void refresh() {
     final local = _currentLocal;
     if (local == null || !_isDragging || _startRenderIndex == null) return;

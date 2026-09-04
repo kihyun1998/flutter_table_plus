@@ -203,12 +203,35 @@ class FlutterTablePlus<T> extends StatefulWidget {
   ///
   /// Only contains IDs from the current drag — the parent decides whether to
   /// replace or merge with existing [selectedRows].
+  ///
+  /// **A rebuild while the pointer is still down keeps the anchor and moves
+  /// the other end.** If the rows change height mid-drag — a density toggle, a
+  /// font-size slider, a new [calculateRowHeight], a new `rowHeight` on the
+  /// theme — the row the drag *started* on stays the row it started on, and
+  /// the far end re-resolves to whatever now sits under the pointer at its new
+  /// height. So this can fire with a different set from a rebuild alone, with
+  /// no pointer movement behind it.
+  ///
+  /// **Replacing [data] mid-drag is outside that.** The anchor is a position
+  /// in the list the drag began on; hand over a different list and the range
+  /// reported for the rest of that gesture is undefined. Nothing asserts it —
+  /// end the gesture, or accept whatever it reports. The re-resolve above does
+  /// not exempt this case, and it does not make it noisier either: it reports
+  /// only when the resolved row actually moved, so a new list that leaves
+  /// every height alone emits nothing on the rebuild. One that also changes
+  /// heights delivers the same undefined range a pointer move would have —
+  /// only sooner.
   final void Function(Set<String> draggedRowIds)? onDragSelectionUpdate;
 
   /// Callback fired once when drag-selection ends with the final drag range set.
   ///
   /// Genuinely optional — unlike [onDragSelectionUpdate]. If null,
   /// [onDragSelectionUpdate] serves as both live and final callback.
+  ///
+  /// What a rebuild during a held drag does to the reported range is stated on
+  /// [onDragSelectionUpdate] and holds here identically — a pointer, not a
+  /// second copy, because the two callbacks report the same range and a
+  /// restatement is the thing that goes stale.
   final void Function(Set<String> draggedRowIds)? onDragSelectionEnd;
 
   /// Callback when a row is double-tapped.
@@ -576,7 +599,7 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
     // that rebuilt everything, so a `scale` change threw away a `RowLookup` no
     // scale can move; the body had reasoned its way to the split years of
     // issues ago and this side had not.
-    switch (classifyRowCacheInvalidation<T>(
+    final rowCacheInvalidation = classifyRowCacheInvalidation<T>(
       oldData: oldWidget.data,
       newData: widget.data,
       oldMergedGroups: oldWidget.mergedGroups,
@@ -588,7 +611,8 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
       oldRowHeight: oldWidget.theme.bodyTheme.rowHeight,
       newRowHeight: widget.theme.bodyTheme.rowHeight,
       idsStillMatch: () => _rowLookup.idsMatch(widget.data, widget.rowId),
-    )) {
+    );
+    switch (rowCacheInvalidation) {
       case RowCacheInvalidation.structural:
         _rebuildCaches();
       case RowCacheInvalidation.measurementOnly:
@@ -597,6 +621,14 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
         _recomputeMetrics();
       case RowCacheInvalidation.none:
         break;
+    }
+    // The same answer decides one more thing, and it is about a gesture rather
+    // than a cache: the body drops its `RowGeometry` on either non-`none`
+    // branch, so a drag that is *currently held* is now pointing into a
+    // snapshot that no longer describes the screen. See
+    // [_scheduleDragEndpointRefresh].
+    if (rowCacheInvalidation != RowCacheInvalidation.none) {
+      _scheduleDragEndpointRefresh();
     }
     // Correct scroll positions when scale changes.
     //
@@ -628,6 +660,54 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
         }
       });
     }
+  }
+
+  /// Re-resolve the row under a held pointer after the row geometry was
+  /// dropped, on the frame *after* the body has rebuilt it.
+  ///
+  /// **Only the moving endpoint is re-resolved, and that is the whole rule.**
+  /// A drag holds two render indices. The anchor means "the row you pressed"
+  /// and must not move when the layout does; the current endpoint means "the
+  /// row under the pointer" and must.
+  ///
+  /// Nothing here touches the anchor, and on a height change the anchor needs
+  /// nothing. *What* [RowCacheInvalidation.measurementOnly] leaves standing is
+  /// stated on that enum and is deliberately not restated here; the
+  /// consequence for a drag is that an unchanged index still answers with the
+  /// row it was taken on. #133 proposed re-pointing the anchor at its row id
+  /// to buy that; measured 2026-09-04, it is already true.
+  ///
+  /// The current endpoint is not covered, because nothing outside this
+  /// controller's own pointer and tick handlers rewrites it and a rebuild
+  /// reaches none of them — stated as a property rather than as the list of
+  /// handlers, which a later one would silently falsify.
+  ///
+  /// **The auto-scroll case is the one that never recovers.** Shrinking the
+  /// rows shrinks `maxScrollExtent`, the offset is clamped onto it, and the
+  /// next tick's `scrollVerticalBy` returns false — which stops the timer on
+  /// exactly the tick whose successful scroll would have called
+  /// [DragSelectionController.refresh]. No further event is coming, so `up()`
+  /// reports the range the drag had before the rebuild. Measured 2026-09-04
+  /// over 30 rows going 80px -> 40px mid-drag: the pointer sat on row 29 and
+  /// the callback said row 15.
+  ///
+  /// **Post-frame, not inline.** This runs in the parent's `didUpdateWidget`,
+  /// and two things it depends on have not happened yet: `TablePlusBodyState`
+  /// clears `_rowGeometry` in *its* `didUpdateWidget`, which the child element
+  /// reaches later in this build, and the scroll offset is not clamped onto
+  /// the new extent until layout. Refreshing now would resolve the pointer
+  /// against the very snapshot being invalidated, at the old offset.
+  ///
+  /// The [DragSelectionController.isDragging] guard is what keeps this off the
+  /// ordinary path: a data change with no drag in flight schedules nothing.
+  /// [DragSelectionController.refresh] is itself a no-op unless the row
+  /// actually changed, so a rebuild that moves nothing emits nothing.
+  void _scheduleDragEndpointRefresh() {
+    if (!_dragController.isDragging) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _dragController.refresh();
+    });
   }
 
   /// Validate that columns are properly configured.

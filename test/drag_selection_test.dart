@@ -86,6 +86,11 @@ Future<_DragHarness> _pumpDragTable(
   // that single change turned the whole suite green. The comment saying "rows
   // is deliberately the same object" could not stop it; this can.
   bool requireSameData = false,
+  // `pumpAndSettle` never returns while the auto-scroll timer is alive: every
+  // tick calls `setState` through `onTick`, so a frame is always scheduled.
+  // The mid-gesture group below re-pumps *during* auto-scroll and so must
+  // settle for a single frame instead.
+  bool settle = true,
   double? Function(int, Map<String, dynamic>)? calculateRowHeight,
   double scale = 1.0,
   // Identity, for the group at the bottom. Defaults to the plain `id` field so
@@ -142,7 +147,11 @@ Future<_DragHarness> _pumpDragTable(
       ),
     ),
   );
-  await tester.pumpAndSettle();
+  if (settle) {
+    await tester.pumpAndSettle();
+  } else {
+    await tester.pump();
+  }
   return h;
 }
 
@@ -872,6 +881,300 @@ void main() {
       expect(h.ends, hasLength(2), reason: 'the second drag did not emit');
       expect(h.ends.last, equals(<String>{'g0'}),
           reason: 'the pointer was resolved against the collapsed extent');
+    });
+  });
+
+  group('Drag selection — the geometry moves mid-gesture (#133)', () {
+    // The group above changes row heights *between* drags. This one changes
+    // them **inside one**: pointer down, rebuild, pointer still down.
+    //
+    // Measured 2026-09-04 before anything was written, because the issue's
+    // premise turned out to be wrong and the fix would otherwise have been
+    // aimed at the wrong end of the range:
+    //
+    //   the anchor does **not** move. `classifyRowCacheInvalidation` answers
+    //   `measurementOnly` for a height change, and what that answer leaves
+    //   standing is stated on the enum rather than copied here. Its
+    //   consequence, which is this group's business: the rebuilt
+    //   `RowGeometry` answers an unchanged index with the same row, so the
+    //   anchor still denotes the row that was pressed. #133 proposed
+    //   re-resolving the anchor to its row id to buy that property, and it is
+    //   already there for free.
+    //
+    // What is stale is the **other** endpoint. `_currentRenderIndex` is only
+    // rewritten by a pointer move or by an auto-scroll tick that actually
+    // scrolled, so between the rebuild and the next such event it answers
+    // against heights the rows no longer have. Hence the rule these four pin:
+    //
+    //   the anchor holds the row you pressed; the current endpoint tracks the
+    //   row under the pointer, and a rebuild is one of the things that can
+    //   change which row that is.
+    //
+    // The auto-scroll arm is not a variation on the plain one — it is the only
+    // one that never recovers. `_tick` gates `refresh()` on the scroll having
+    // moved, so shrinking the rows far enough to clamp the offset to the new
+    // (smaller) extent stops the timer on the same tick that would have
+    // re-resolved. The pointer is stationary, no further event is coming, and
+    // `up()` reports the pre-rebuild range. Measured 2026-09-04 in the setup
+    // below: the pointer sat on row 29 and the callback said row 15, and it
+    // stayed that way for as long as the drag was held.
+
+    Offset at(WidgetTester tester, GlobalKey key, double y) => Offset(
+          tester.getRect(find.byKey(key)).left + 50,
+          tester.getRect(find.byType(ListView)).top + y,
+        );
+
+    /// Presses at [from] and drags to [to] **without lifting**, leaving the
+    /// gesture live so the caller can re-pump under it.
+    Future<TestGesture> pressAndDragTo(
+      WidgetTester tester,
+      Offset from,
+      Offset to,
+    ) async {
+      final gesture = await tester.startGesture(from);
+      await tester.pump();
+      await gesture.moveTo(to);
+      await tester.pump();
+      return gesture;
+    }
+
+    testWidgets('the anchor keeps the row it was pressed on', (tester) async {
+      // **A guard, not a regression test.** Alone in this group it does not
+      // redden when the endpoint refresh is deleted, because it observes
+      // nothing that change does. What it observes is the opposite mistake:
+      // a later "fix" that re-resolves the anchor by *position* cannot land
+      // quietly. Measured — mutating `refresh()` to re-point
+      // `_startRenderIndex` from `_downLocal` reddens it. It would
+      // read y=200 against the new 40px rows, answer row 5, and report {5}
+      // for a drag the user began on row 2.
+      final rows = _buildData(6);
+      final h = await _pumpDragTable(
+        tester,
+        rowCount: 6,
+        data: rows,
+        tableHeight: 560,
+        calculateRowHeight: (i, r) => 80,
+      );
+
+      // y=200 at 80px is row 2 (160..240); the 15px move crosses the 8px
+      // activation threshold without leaving it.
+      final g = await pressAndDragTo(
+          tester, at(tester, h.tableKey, 200), at(tester, h.tableKey, 215));
+      expect(h.updates.last, equals(<String>{'2'}),
+          reason: 'the anchor was not taken against the 80px rows, so the '
+              'rest of this test measures nothing');
+
+      await _pumpDragTable(
+        tester,
+        rowCount: 6,
+        data: rows,
+        harness: h,
+        requireSameData: true,
+        tableHeight: 560,
+        calculateRowHeight: (i, r) => 40,
+      );
+
+      // y=220 at 40px is row 5 (200..240).
+      await g.moveTo(at(tester, h.tableKey, 220));
+      await tester.pump();
+      await g.up();
+      await tester.pump();
+
+      expect(h.ends.last, equals(<String>{'2', '3', '4', '5'}),
+          reason: 'the anchor moved with the layout instead of holding the '
+              'row that was pressed');
+    });
+
+    testWidgets('lifting without moving reports the row now under the pointer',
+        (tester) async {
+      final rows = _buildData(6);
+      final h = await _pumpDragTable(
+        tester,
+        rowCount: 6,
+        data: rows,
+        tableHeight: 560,
+        calculateRowHeight: (i, r) => 80,
+      );
+
+      final g = await pressAndDragTo(
+          tester, at(tester, h.tableKey, 200), at(tester, h.tableKey, 215));
+      expect(h.updates.last, equals(<String>{'2'}),
+          reason: 'the priming drag did not resolve against 80px rows');
+
+      await _pumpDragTable(
+        tester,
+        rowCount: 6,
+        data: rows,
+        harness: h,
+        requireSameData: true,
+        tableHeight: 560,
+        calculateRowHeight: (i, r) => 40,
+      );
+
+      // No pointer event at all after the rebuild — the pointer has not moved,
+      // the rows have moved under it. y=215 at 40px is row 5 (200..240).
+      await g.up();
+      await tester.pump();
+
+      expect(h.ends.last, equals(<String>{'2', '3', '4', '5'}),
+          reason: 'the drag ended on the range it had before the rebuild: the '
+              'rows are drawn at 40px but the pointer was still resolved '
+              'against 80px');
+    });
+
+    testWidgets(
+        'auto-scroll at the extent re-resolves when the rows shrink under it',
+        (tester) async {
+      // The one that never recovers on its own. 30 rows at 80px is 2400 over a
+      // 360px viewport; at 40px it is 1200, so `maxScrollExtent` falls from
+      // 2040 to 840 and an offset above 840 is clamped onto it.
+      // `scrollVerticalBy` then returns false, `_tick` stops the timer, and
+      // the `refresh()` it gates behind that scroll never runs.
+      final rows = _buildData(30);
+      final h = await _pumpDragTable(
+        tester,
+        rowCount: 30,
+        data: rows,
+        tableHeight: 400,
+        calculateRowHeight: (i, r) => 80,
+      );
+
+      // y=100 at 80px is row 1; y=345 is inside the 40px bottom edge zone of
+      // the 360px viewport, so auto-scroll engages.
+      final g = await pressAndDragTo(
+          tester, at(tester, h.tableKey, 100), at(tester, h.tableKey, 345));
+      await _pumpFrames(tester, frames: 100);
+      // Measured 2026-09-04: 100 ticks put the offset at 925, which is the
+      // premise of the whole test — it must land *above* the 840 the extent
+      // falls to at 40px, or nothing is clamped and the timer keeps ticking
+      // its own correction. Asserting the ids asserts the offset: row 15 at
+      // 80px spans absolute 1200..1280, and the pointer sits at 345 + 925.
+      expect(h.updates.last, equals({for (int i = 1; i <= 15; i++) '$i'}),
+          reason: 'auto-scroll did not run to the offset this test is '
+              'measured against');
+
+      await _pumpDragTable(
+        tester,
+        rowCount: 30,
+        data: rows,
+        harness: h,
+        requireSameData: true,
+        tableHeight: 400,
+        calculateRowHeight: (i, r) => 40,
+        settle: false,
+      );
+      await _pumpFrames(tester, frames: 20);
+      await g.up();
+      await tester.pump();
+
+      // Offset clamps 925 -> 840, so the pointer's absolute Y is 1185 —
+      // inside row 29 (1160..1200), the last one.
+      expect(h.ends.last, equals({for (int i = 1; i <= 29; i++) '$i'}),
+          reason: 'the drag ended 14 rows short: the timer stopped on the '
+              'tick that could not scroll, and that is the same tick that '
+              'would have re-resolved the pointer');
+    });
+
+    testWidgets('a new data list under the pointer emits nothing by itself',
+        (tester) async {
+      // The refresh is scheduled on **either** non-`none` answer, so it fires
+      // on a structural change too — the case this territory declares
+      // undefined. What that costs is worth pinning rather than assuming: the
+      // re-resolve emits only when the resolved *index* moved, and replacing a
+      // list without changing any height does not move it. So the rebuild
+      // alone is silent, and the undefined range still waits for the pointer.
+      //
+      // Deliberately not asserted: which ids that range holds. The anchor is a
+      // position in the list the drag began on and the MAP says so; writing
+      // the stale answer down here would freeze a documented non-guarantee
+      // into a test, and a later decision to guard it would read as a
+      // regression.
+      final h = await _pumpDragTable(
+        tester,
+        rowCount: 6,
+        data: _buildData(6),
+        tableHeight: 400,
+      );
+
+      // y=100 at the default 40px is row 2; the 15px move crosses the
+      // threshold without leaving it.
+      final g = await pressAndDragTo(
+          tester, at(tester, h.tableKey, 100), at(tester, h.tableKey, 115));
+      expect(h.updates, hasLength(1),
+          reason: 'the drag did not start, so the rest measures nothing');
+
+      // A different list object — the structural branch — with the same six
+      // heights, so every render index still sits where it did.
+      await _pumpDragTable(
+        tester,
+        rowCount: 6,
+        data: _buildData(6).reversed.toList(),
+        harness: h,
+        tableHeight: 400,
+      );
+
+      expect(h.updates, hasLength(1),
+          reason: 'the rebuild emitted on its own: a structural change with '
+              'no height change moves no render index, so the re-resolve had '
+              'nothing to report and should have stayed quiet');
+
+      // The witness. Without it a gesture that died on the rebuild would leave
+      // the count at 1 and pass the assertion above for the wrong reason.
+      await g.moveTo(at(tester, h.tableKey, 180));
+      await tester.pump();
+      await g.up();
+      await tester.pump();
+      expect(h.updates.length, greaterThan(1),
+          reason: 'the drag stopped responding to the pointer after the '
+              'rebuild, so the silence above proves nothing');
+    });
+
+    testWidgets('a growing row height re-resolves before the next tick',
+        (tester) async {
+      // The other arm. Auto-scroll keeps moving here, so a later tick would
+      // have corrected it anyway — what this pins is that the correction does
+      // not wait for one. The window is small and it is the window the user
+      // sees the selection wrong in.
+      final rows = _buildData(30);
+      final h = await _pumpDragTable(
+        tester,
+        rowCount: 30,
+        data: rows,
+        tableHeight: 400,
+        calculateRowHeight: (i, r) => 40,
+      );
+
+      final g = await pressAndDragTo(
+          tester, at(tester, h.tableKey, 50), at(tester, h.tableKey, 345));
+      await _pumpFrames(tester, frames: 60);
+      // Measured 2026-09-04: 60 ticks put the offset at 555, and unlike the
+      // test above it stays there — growing the rows grows the extent, so
+      // nothing is clamped and auto-scroll goes on running.
+      expect(h.updates.last, equals({for (int i = 1; i <= 22; i++) '$i'}),
+          reason: 'auto-scroll did not run to the offset this test is '
+              'measured against');
+
+      await _pumpDragTable(
+        tester,
+        rowCount: 30,
+        data: rows,
+        harness: h,
+        requireSameData: true,
+        tableHeight: 400,
+        calculateRowHeight: (i, r) => 80,
+        settle: false,
+      );
+
+      // Offset is unchanged at 555, so the pointer's absolute Y is 900 —
+      // row 11 at 80px (880..960). Asserted here, before any further tick, and
+      // the frames are not pumped afterwards because auto-scroll would carry
+      // it past this value and the assertion would stop meaning anything.
+      expect(h.updates.last, equals({for (int i = 1; i <= 11; i++) '$i'}),
+          reason: 'the selection still answered against the 40px rows until '
+              'the next tick that happened to scroll');
+
+      await g.up();
+      await tester.pump();
     });
   });
 }

@@ -32,6 +32,16 @@ and neither has a record above it.
 - **Lazy anchor.** A pointer-down in the empty area below the last row defers the
   anchor until the pointer first crosses into a real row, so a drag confined to
   empty space selects nothing.
+- **The two endpoints answer different questions, and a rebuild moves only one.**
+  The anchor means *the row you pressed* and must survive the layout changing
+  under it; the current endpoint means *the row under the pointer* and must
+  follow it. A height change mid-gesture leaves the anchor alone for free, on
+  account of what `measurementOnly` leaves standing — owned by
+  [row rendering and geometry](row-render-geometry.md) and by the
+  `RowCacheInvalidation` enum, and not restated here. The current endpoint is
+  not covered: nothing outside the controller's own pointer and tick handlers
+  rewrites it and a rebuild reaches none of them, so `FlutterTablePlusState`
+  re-resolves it post-frame whenever that geometry was dropped (#133).
 
 ## Code
 
@@ -65,4 +75,24 @@ read against this implementation.
 
 ## Known holes / open
 
-**None.**
+**The anchor drifts when `data` itself is replaced mid-gesture.** The endpoint
+refresh above covers a geometry change; it does not cover the snapshot moving.
+`_startRenderIndex` is a position in the list the drag began on, so handing over
+a different list re-points it at whoever now holds that index — measured
+2026-09-04 with a reversed six-row list, where an anchor taken on row `'2'`
+reported the range from row `'3'`. Left undefined rather than repaired: what
+"the row you pressed" means when that row may no longer exist is a question
+nobody has needed an answer to, and the three candidate answers (re-point by id,
+cancel the drag, leave it) each cost something. Stated on
+`onDragSelectionUpdate` so a consumer meets it before a bug report does.
+
+The endpoint refresh fires here too, and measured 2026-09-04 that costs less
+than it sounds: it reports only when the resolved index moved, so a new list
+that leaves every height alone emits nothing at all on the rebuild — pinned by
+*a new data list under the pointer emits nothing by itself*. A structural change
+that also moves heights delivers the undefined range a pointer move would have
+delivered, only sooner. The refresh is deliberately **not** narrowed to
+`measurementOnly` to sidestep that: a structural change drops the geometry too,
+so the endpoint is equally stale there, and gating one consumer of
+`classifyRowCacheInvalidation` on a hand-drawn subset of its answers is the
+shape that has drifted in this repository three times (#120, #128, #169).

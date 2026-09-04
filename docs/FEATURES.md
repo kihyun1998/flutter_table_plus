@@ -450,6 +450,25 @@ FlutterTablePlus<User>(
 )
 ```
 
+### If the rows can change height while a drag is held
+
+A density toggle or a font-size slider is operable with the mouse button still
+down, and it rebuilds the table underneath the gesture. The two ends of the
+drag answer that differently, on purpose:
+
+*   the **anchor** keeps the row the drag was pressed on — the layout moving
+    does not move which row you started from;
+*   the **far end** re-resolves to whatever now sits under the pointer at the
+    new height.
+
+So `onDragSelectionUpdate` can fire with a different set from a rebuild alone,
+with no pointer movement behind it. Nothing needs to be done about it.
+
+Replacing `data` mid-drag is **not** covered by that. The anchor is a position
+in the list the drag began on, so a different list re-points it, and the range
+reported for the rest of that gesture is undefined — end the gesture first, or
+accept whatever it reports.
+
 ---
 
 ## Merged Rows

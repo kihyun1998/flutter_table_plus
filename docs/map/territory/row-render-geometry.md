@@ -26,7 +26,10 @@ calculation ultimately asks.
   colour after a rebuild.
 - **Cache invalidation is split by what the change *is*, not by which field
   carried it.** `classifyRowCacheInvalidation` answers `structural` /
-  `measurementOnly` / `none`, and each caching widget switches on it: *structural*
+  `measurementOnly` / `none`, and every consumer switches on it — the two
+  caching widgets, and since #133 a third that drops no cache at all: a live
+  drag's moving endpoint is re-resolved on the same answer, because the row
+  geometry it hit-tests against is one of the things being dropped. *structural*
   (`data`, `mergedGroups`, or the ids no longer matching) drops everything,
   because which rows exist has moved; *measurementOnly* (`scale`,
   `theme.rowHeight`, `calculateRowHeight`) keeps `RowLookup` and the renderable
@@ -42,8 +45,9 @@ calculation ultimately asks.
   body's, #128 had the theme's height in neither.
 - **And the *response* to that predicate is one function too**, which it was not
   until #169. `classifyRowCacheInvalidation` returns `structural` /
-  `measurementOnly` / `none` and both widgets switch on it, each dropping its
-  own caches. Unifying the predicate and leaving each caller to decide what to
+  `measurementOnly` / `none` and its consumers switch on it, each dropping its
+  own caches — or, in the drag-selection case, re-resolving a gesture rather
+  than a cache. Unifying the predicate and leaving each caller to decide what to
   drop had left the same defect one layer up: the body reasoned its way to the
   split above and the parent kept a single branch, so a `scale` change rebuilt a
   `RowLookup` no scale can move. `structural` dominates `measurementOnly`, so
