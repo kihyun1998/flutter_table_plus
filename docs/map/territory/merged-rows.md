@@ -36,6 +36,24 @@ row ids — which is the question every callback in this area answers implicitly
     shortfall proportionally instead of placing it was tried and is worse: it
     moves every member, by an amount that grows with `dividerThickness`, and
     silently.
+- **Every boundary has exactly one owner.** A group's *inner* boundaries belong
+  to its members — a cell draws beneath itself when another cell follows it
+  inside the group, and the summary cell counts as a follower. Its *outer*
+  boundary belongs to the group's own `rowDecoration`, which is the same box
+  that draws a plain row's. So the answer never depends on whether the group is
+  the table's last row, and a group renders as a run of rows does: n cells, n−1
+  inner lines, one outer boundary governed by `lastRowBorderBehavior`.
+  - Two owners for one edge is what #157 removed, and one substitution produced
+    two opposite symptoms from it: with the group not last every member drew
+    including the last, so the edge was the member separator at alpha 0.3 with
+    the full-alpha group border adjacent; with the group last the default
+    `LastRowBorderBehavior.never` silenced every member and the group rendered
+    as one undivided block. The summary cell's own hardcoded `top` was a third
+    instance of the same thing and went with it.
+  - The two lines are **adjacent, not coincident** — a `Container` folds its
+    border into the child's inset — which is why a doubled edge reads as one
+    heavier rule rather than as a mistake, and why the assertions for it name
+    the owner instead of counting lines at a coordinate.
 - **A member is drawn by the ordinary cell; only a *spanning* cell is built
   here.** A member is an ordinary row for every purpose except that it has no
   row of its own, so the stacked branch builds `TablePlusCell` and hands it the
@@ -151,19 +169,20 @@ row ids — which is the question every callback in this area answers implicitly
 
 ## Known holes / open
 
-- **A member's separator is gated on the *group's* `isLastRow`.** The question
-  is asked at row level and the answer applied at member level, so at the
-  default `LastRowBorderBehavior.never` the **last group in a table loses every
-  internal separator** and its members render as one undivided block; every
-  other group draws two lines at its bottom edge, the last member's and the
-  group's own. Found while fixing #155 and deliberately left there — repairing
-  it widens a change sized for the cell into one about what the row assembles.
-  Measured: a parity test written with the group covering every row read `0.0`
-  where it expected the separator's width.
-- **The summary cell's `top` border is hardcoded and ungated.** It ignores
-  `showHorizontalDividers` where every other horizontal side honours it, and it
-  stacks against the last member's own bottom: at `dividerThickness: 4` that
-  boundary draws 4px + 0.5px where every other member boundary draws 4px.
+- ~~A member's separator is gated on the *group's* `isLastRow`~~ and ~~the
+  summary cell's `top` border is hardcoded and ungated~~ — **both closed by
+  #157**, which turned out to be one repair rather than two. Every boundary now
+  has exactly one owner: a group's inner boundaries belong to its members, its
+  outer boundary to the group's own decoration, and a cell draws beneath itself
+  only when another cell follows it inside the group. See `## Design model`.
+
+  **It also closed a residual #121 had recorded as unavoidable.** The last
+  member's centred content sat half a `dividerThickness` high, and the reason
+  written in `merged_row_member_heights_test.dart` was that "the border has to
+  come from somewhere and this is the one cell adjacent to it". Measured
+  2026-09-04: the border comes from the group's decoration and the member was
+  drawing a second one, so with the doubled edge gone the offset is 0.0 and
+  grouped now matches ungrouped exactly, last member included.
 - **`getSpanningRowKey` indexes `rowKeys` positionally.** A `spanningRowIndex`
   naming a member `data` no longer holds resolves to an absent row — the one
   place the rule above is not held.

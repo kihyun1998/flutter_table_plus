@@ -206,16 +206,20 @@ void main() {
 
     testWidgets('the member separator follows theme.dividerThickness',
         (tester) async {
-      // The group must NOT be the last row. Written first with the group
-      // covering every row, this measured 0.0 rather than the hardcoded 1.0 --
-      // because a member's separator is gated on the GROUP's `isLastRow`, and
-      // at the default `LastRowBorderBehavior.never` the last group's members
-      // lose their separators entirely. That is a real defect and it is not
-      // this assertion's; it is recorded as a candidate. Keeping the group off
-      // the last row is what lets this assertion measure the width it names.
+      // **The group covers every row, and that is the point.** Written this
+      // way first, it measured 0.0 rather than the width it names — because a
+      // member's separator was gated on the GROUP's `isLastRow`, so at the
+      // default `LastRowBorderBehavior.never` the last group's members lost
+      // their separators entirely. A fourth row was parked after the group to
+      // get the assertion running, with a comment saying why.
+      //
+      // That workaround was the defect's fingerprint in the suite, and #157
+      // retired both. A suite shaped to avoid a defect defends it: the shape
+      // that could not be measured is exactly the shape nobody would notice
+      // regressing.
       await _pump(
         tester,
-        data: _rows(['a', 'b', 'c', 'd']),
+        data: _rows(['a', 'b', 'c']),
         groups: _groupOf(['a', 'b', 'c']),
       );
       final grouped = _cellBorder(tester, 'ra');
@@ -257,6 +261,7 @@ void main() {
       );
 
       final member = _cellBorder(tester, 'ra');
+      final lastMember = _cellBorder(tester, 'rc');
       final summary = _cellBorder(tester, 'sum');
       expect(member, isNotNull);
       expect(summary, isNotNull,
@@ -265,8 +270,31 @@ void main() {
 
       expect(summary!.right.width, member!.right.width);
       expect(summary.right.color, member.right.color);
-      expect(summary.bottom.width, member.bottom.width);
-      expect(summary.bottom.color, member.bottom.color);
+
+      // #157 moved what the bottom side answers, so this asserts the rule
+      // rather than a copied value. A cell draws beneath itself only when
+      // another cell follows it in the group:
+      //
+      //   * the LAST member is followed by the summary, so it draws — and it
+      //     draws the same side as the first member, which is the parity claim
+      //     this case was written for;
+      //   * nothing follows the summary, so it draws none. Its outer edge
+      //     belongs to the group's own decoration.
+      //
+      // Before #157 the summary also painted a hardcoded 0.5px `top` against
+      // the last member's themed bottom, so that one boundary drew 4px + 0.5px
+      // where every other member boundary drew 4px.
+      expect(lastMember, isNotNull);
+      expect(lastMember!.bottom.width, member.bottom.width,
+          reason: 'the last member is followed by the summary, so it draws the '
+              'same separator every other member draws');
+      expect(lastMember.bottom.color, member.bottom.color);
+      expect(summary.bottom.style, BorderStyle.none,
+          reason: 'nothing follows the summary cell, so the edge below it '
+              'belongs to the group decoration and is not a second line');
+      expect(summary.top.style, BorderStyle.none,
+          reason: 'the boundary above the summary belongs to the last '
+              'member, and it is drawn once');
     });
 
     testWidgets('turning horizontal dividers off removes the member separator',
