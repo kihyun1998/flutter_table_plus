@@ -544,6 +544,30 @@ class TablePlusBodyState<T> extends State<TablePlusBody<T>>
     return lowest;
   }
 
+  /// The data index a merged group **ends** at: its **latest present member**.
+  ///
+  /// The mirror of [_mergedGroupAnchor], and it was missing. #135 replaced the
+  /// group's `rowKeys.first` read with the anchor and left the `rowKeys.last`
+  /// read at the other end, so a group's `isLastRow` was still answered
+  /// positionally: `indexOf` returns `null` for a key `data` does not hold, and
+  /// the **wrong** index whenever `rowKeys` is not in `data` order. Both are
+  /// shapes #135 deliberately legalised for the anchor.
+  ///
+  /// Reproduce the second one with `data: ['a','b']` and `rowKeys: ['b','a']` —
+  /// the group *is* the last render row, reported `isLastRow: false`, and drew
+  /// a bottom border that `LastRowBorderBehavior.never` says it must not.
+  ///
+  /// `null` means no member of the group is in `data` at all, matching
+  /// [_mergedGroupAnchor]: the group is drawn nowhere and has no last row to be.
+  int? _mergedGroupTail(MergedRowGroup<T> group) {
+    int? highest;
+    for (final rowKey in group.rowKeys) {
+      final idx = _rowLookup.indexOf(rowKey);
+      if (idx != null && (highest == null || idx > highest)) highest = idx;
+    }
+    return highest;
+  }
+
   /// Build a row widget for the given index.
   TablePlusRowWidget<T> _buildRowWidget(int index, int renderIndex) {
     final mergeGroup = _getMergedGroupForRow(index);
@@ -602,9 +626,11 @@ class TablePlusBodyState<T> extends State<TablePlusBody<T>>
           mergedHeight = totalHeight;
         }
 
-        final lastRowKey = mergeGroup.rowKeys.last;
-        final lastRowIndex = _rowLookup.indexOf(lastRowKey);
-        final isLastRow = lastRowIndex == widget.data.length - 1;
+        // The group's own outer edge is a row-level question, and since #157
+        // it is the only consumer of this answer — a member's separator is
+        // decided at member level and no longer reads it.
+        final tailIndex = _mergedGroupTail(mergeGroup);
+        final isLastRow = tailIndex == widget.data.length - 1;
 
         return TablePlusMergedRow<T>(
           mergeGroup: mergeGroup,
