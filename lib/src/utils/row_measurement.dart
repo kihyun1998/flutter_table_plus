@@ -1,10 +1,13 @@
 /// Whether anything a measured row height is computed from has changed.
 ///
-/// Two widgets cache row heights and both must drop their caches on the same
-/// events: `FlutterTablePlusState`, whose total feeds `needsVerticalScroll` and
-/// the last row's border, and `TablePlusBodyState`, whose heights feed the
-/// rendered extents *and* the `RowGeometry` snapshot every drag hit-test is
-/// answered from.
+/// **Its one caller is `classifyRowCacheInvalidation`**, which is the
+/// measurement half of a three-way answer the two caching widgets share —
+/// `FlutterTablePlusState`, whose total feeds `needsVerticalScroll` and the last
+/// row's border, and `TablePlusBodyState`, whose heights feed the rendered
+/// extents *and* the `RowGeometry` snapshot every drag hit-test is answered
+/// from. Both widgets called this directly until #169; unifying the predicate
+/// and leaving each caller to decide what to drop was half a repair, and the
+/// halves drifted apart exactly the way the two lists below did.
 ///
 /// They used to hold that rule as two hand-written conditions, and the two
 /// drifted twice:

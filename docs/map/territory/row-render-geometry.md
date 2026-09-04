@@ -25,20 +25,31 @@ calculation ultimately asks.
   are functions of (state, theme), so a row cannot be left wearing a stale
   colour after a rebuild.
 - **Cache invalidation is split by what the change *is*, not by which field
-  carried it.** `TablePlusBodyState.didUpdateWidget` has two branches:
-  *structure* (`data`, `mergedGroups`) drops everything, because which rows
-  exist has moved; *measurement* (`scale`, `calculateRowHeight`) keeps
-  `RowLookup` and the renderable indices — those are answers about identity —
-  and drops only the heights and the geometry accumulated from them. A new
-  field goes in whichever branch that question puts it in. The split used to be
-  a list of fields, and `calculateRowHeight` was simply missing from it while
-  `FlutterTablePlus` watched it (#120), which is the failure a list has and a
-  question does not.
+  carried it.** `classifyRowCacheInvalidation` answers `structural` /
+  `measurementOnly` / `none`, and each caching widget switches on it: *structural*
+  (`data`, `mergedGroups`, or the ids no longer matching) drops everything,
+  because which rows exist has moved; *measurementOnly* (`scale`,
+  `theme.rowHeight`, `calculateRowHeight`) keeps `RowLookup` and the renderable
+  indices — those are answers about identity — and drops only the heights and the
+  geometry accumulated from them. A new field goes in whichever branch that
+  question puts it in. The split used to be a list of fields, and
+  `calculateRowHeight` was simply missing from it while `FlutterTablePlus`
+  watched it (#120), which is the failure a list has and a question does not.
 - **The measurement inputs are one list, in one place.** `rowMeasurementChanged`
   in `utils/` holds them — the height callback, the scale, and the body theme's
-  `rowHeight` — and both widgets call it. They used to be two hand-written
-  conditions, and the two disagreed twice: #120 had the height callback in the
-  parent's and not the body's, #128 had the theme's height in neither.
+  `rowHeight`. They used to be two hand-written conditions, and the two
+  disagreed twice: #120 had the height callback in the parent's and not the
+  body's, #128 had the theme's height in neither.
+- **And the *response* to that predicate is one function too**, which it was not
+  until #169. `classifyRowCacheInvalidation` returns `structural` /
+  `measurementOnly` / `none` and both widgets switch on it, each dropping its
+  own caches. Unifying the predicate and leaving each caller to decide what to
+  drop had left the same defect one layer up: the body reasoned its way to the
+  split above and the parent kept a single branch, so a `scale` change rebuilt a
+  `RowLookup` no scale can move. `structural` dominates `measurementOnly`, so
+  the id walk is consulted before a measurement-only answer can be returned —
+  measured at 13–15% of the rebuild it replaces, which is what makes paying it
+  the cheaper side.
   - **It is a reduced list, not a derivation**, and the difference is the point.
     Dart cannot enumerate what a computation reads, and folding the inputs into
     a value type with an `==` moves the hand-list into that operator — which is
@@ -72,6 +83,8 @@ calculation ultimately asks.
 `widgets/row_geometry.dart` — `RowGeometry`
 `widgets/row_lookup.dart` — `RowLookup`
 `utils/table_metrics.dart` — `TableMetrics`
+`utils/row_cache_invalidation.dart` — `RowCacheInvalidation`, `classifyRowCacheInvalidation`
+`utils/row_measurement.dart` — `rowMeasurementChanged`
 `widgets/table_plus_row.dart` — `TablePlusRow`
 `widgets/table_plus_row_widget.dart` — `TablePlusRowWidget`, `TablePlusRowStateBase`
 `widgets/row_decoration.dart` — `rowDecoration`
