@@ -141,11 +141,21 @@ seam, because the header half does not follow it. Measured shape — at
 `dividerThickness: 8` the body rule would be 8.0px against the header's
 unchanged 1.0, a 7px step where there is now a 0.5px one.
 
-Both halves are settable since #171 and neither default moved with it, and #177
-holds the open question. The current difference is also defensible on its own: a lighter body rule under a
-stronger header is what `DataTable`, `pluto_grid` and AG Grid all default to.
-The open question is not which value is right — it is that a shared visual
-element has no owner that can hold it.
+**Decided 2026-09-04: left split, and said so rather than repaired.** The
+current difference is defensible on its own — a lighter body rule under a
+stronger header is what `DataTable`, `pluto_grid` and AG Grid all default to —
+and the four things that make "split" a position rather than an omission are all
+in place: both halves are settable (#171), `docs/THEMING.md` tells a caller the
+default is `0.5` and *why* it is not `dividerThickness`, this note carries the
+measurement, and `theme_reachable_values_test.dart` pins it so a later change to
+that default reddens instead of passing. #177 closed on that basis.
+
+**What would reopen it** is the root gaining a place to hold the rule —
+`TablePlusTheme` is the only scope that sees both sub-themes, so a
+`ColorScheme`-derived factory (#112) is the change that would have to answer
+this rather than inherit it. The question is not which value is right; it is
+that a shared visual element has no owner that can hold it, and only the root
+can become one.
 
 **A public sub-theme went undocumented for its whole life, and a count asserted
 otherwise.** `TablePlusDragSelectionTheme` — five fields on the root, with its
