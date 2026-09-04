@@ -53,6 +53,8 @@ has never been checked against their sources — only assumed to hold.
 ## Cross-cutting invariants
 
 → [Do not work around an upstream contract here](../invariant/upstream-contract.md) — a re-export is the seam itself: it carries the sibling's names, and its floor, straight to every consumer
+→ [A defect in these files produces no signal](../invariant/no-signal-on-failure.md) — `table_row_height_calculator.dart` is exported, so a change to it is a change to the published API whether or not it looks like one
+→ [A file's directory is decided before it is written](../invariant/tree-rule.md) — the barrel row is the rule's sharpest: a symbol is exported here or it is not public
 
 ## Blast radius
 

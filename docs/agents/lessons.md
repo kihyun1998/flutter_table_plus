@@ -1,8 +1,9 @@
 # Lessons — flutter_table_plus 실증
 
 이 repo 가 실제로 **무엇을 놓쳤나** 의 기록 — 규칙에 무게를 주는 근거. 전부 이 repo 에서
-실제로 일어났다. `docs/agents/thegraph.md` 가 추상으로 읽히면 여기 사건과 대조하라.
-새 실증은 해당 단계 밑에.
+실제로 일어났다. `CLAUDE.md` 나 MAP 의 invariant 노트가 추상으로 읽히면 여기 사건과
+대조하라 — 규칙이 사는 곳은 그 둘이고, `docs/agents/thegraph.md` 는 이제 바깥 참조원만
+들고 있다. 새 실증은 해당 단계 밑에.
 
 아래 `Step N` 은 은퇴한 `theflow` 에서 물려받은 번호지만, 이제 이 파일 **자신의** 목차다.
 바깥 어디와도 대조하지 마라 — 대조할 것이 이미 없다.

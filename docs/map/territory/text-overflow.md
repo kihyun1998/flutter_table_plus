@@ -52,6 +52,8 @@ not fit" needs a real measurement, not a guess.
 → [A decorated box hands its child less than it declares](../invariant/decoration-eats-the-child.md) — the width axis, and the case where what the box shortchanges is a *number* rather than a child, so nothing overflows and nothing paints wrong (#156)
 → [Never re-assemble by hand-listing fields](../invariant/no-hand-enumeration.md) — shape 2, and the site the note itself had cited as the positive precedent: the cache listed two of the inputs the answer depends on (#156)
 → [A caller's function is not a cache key](../invariant/a-callers-function-is-not-a-key.md) — the site that escapes by keying on the values the measurement consumes, which works here because every one of them is a value (#156)
+→ [A defect in these files produces no signal](../invariant/no-signal-on-failure.md) — both files every overflow decision funnels through are on the register, and #156 found four silent defects in them at once
+→ [A file's directory is decided before it is written](../invariant/tree-rule.md) — `overflow_cache.dart` is the named exception on the `utils/` side: stateful, and placed there anyway
 
 ## Blast radius
 

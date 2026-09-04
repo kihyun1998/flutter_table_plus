@@ -59,6 +59,7 @@ focus lifecycle and data swaps during an edit.
 ## Cross-cutting invariants
 
 → [Observe at the screen, assert by count](../invariant/observe-at-the-screen.md) — the edit tests are widget tests, and this is the rule that keeps them from pinning implementation
+→ [A defect in these files produces no signal](../invariant/no-signal-on-failure.md) — an edit commit crosses into the consumer's own data, which this package does not own and cannot validate
 
 ## Blast radius
 

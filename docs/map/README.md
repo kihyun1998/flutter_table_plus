@@ -21,8 +21,10 @@ tells you arrives as design rather than as rework. The write is `sweep`'s tenth
 surface.
 
 There is no separate rule to remember, because the copy this replaces is gone:
-`docs/agents/thegraph.md` used to hand-list the module layout, and it now points
-here instead. This is the only place that answer exists.
+`docs/agents/thegraph.md` used to hand-list the module layout, and that document
+no longer describes this repository's internals at all — it holds the outside
+sources this package is read against, and nothing else. This is the only place
+that answer exists.
 
 Section by section, what you are expected to *do*:
 
@@ -203,4 +205,6 @@ worth watching.
 [a guard reads the destination, never the source](invariant/guard-the-destination.md) ·
 [a decorated box hands its child less than it declares](invariant/decoration-eats-the-child.md) ·
 [a measurement is given what the paint resolves](invariant/measure-what-the-paint-resolves.md) ·
-[a caller's function is not a cache key](invariant/a-callers-function-is-not-a-key.md)
+[a caller's function is not a cache key](invariant/a-callers-function-is-not-a-key.md) ·
+[a defect in these files produces no signal](invariant/no-signal-on-failure.md) ·
+[a file's directory is decided before it is written](invariant/tree-rule.md)

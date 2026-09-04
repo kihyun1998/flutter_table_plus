@@ -46,6 +46,7 @@ compute one.
 → [The widget-test font is a square per glyph](../invariant/test-font-square.md) — a measured text height in a test is the square font's height, so wrap points differ from the screen's
 → [A decorated box hands its child less than it declares](../invariant/decoration-eats-the-child.md) — a measured height is the number declared, never the number the child receives
 → [A caller's function is not a cache key](../invariant/a-callers-function-is-not-a-key.md) — the one site where neither escape is available, because deriving the answers *is* the cost being avoided (#161)
+→ [A defect in these files produces no signal](../invariant/no-signal-on-failure.md) — four of the register's entries, including the pair whose halves drifted across four issues (#120, #128, #169)
 
 ## Blast radius
 

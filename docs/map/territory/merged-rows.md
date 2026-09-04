@@ -172,6 +172,7 @@ row ids — which is the question every callback in this area answers implicitly
 
 → [Never hand-maintain a list a later addition must join](../invariant/no-hand-enumeration.md) — four derivations of one fact, two of them wrong, and no mechanism that made them agree (#135)
 → [A decorated box hands its child less than it declares](../invariant/decoration-eats-the-child.md) — the group box carries the row divider, and its members are laid out inside `height − border` (#121)
+→ [A defect in these files produces no signal](../invariant/no-signal-on-failure.md) — the height distribution is on the register: every measured height was computed and discarded through 2.16.1 (#121)
 
 ## Blast radius
 
