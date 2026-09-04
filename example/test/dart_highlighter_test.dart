@@ -1,5 +1,6 @@
 import 'package:example/shell/dart_highlighter.dart';
 import 'package:example/shell/recipe_catalog.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -64,29 +65,36 @@ void main() {
                 'what the pane draws is no longer what the bundle holds');
       }
 
-      // Without this the loop above is a vacuous window on some checkouts: if
-      // every recipe on the machine running it happens to be LF, a scanner that
-      // eats `\r` passes and ships. It deliberately does not assert WHICH files
-      // are CRLF — that is checkout state and would be a test of git — only
-      // that the claim "the real corpus covers this" is checked rather than
-      // believed. When it fails, `_awkward` below is doing the work alone,
-      // which is exactly what a reader needs to be told.
+      // `withCrlf` is counted and deliberately **not** asserted on, and the
+      // assertion that used to stand here was removed by following its own
+      // instructions rather than by lowering a bar.
       //
-      // It is a real objection that this can redden on a correct tree: a Linux
-      // clone, or `core.autocrlf=false`, legitimately produces eleven LF files
-      // and nothing is wrong. It is kept because there is no CI — these gates
-      // run on one machine — and because the alternative is losing the only
-      // signal that says when the corpus stopped contributing. The failure
-      // message therefore has to say which of the two it is, or it teaches
-      // someone to ignore a gate, which is #55's lesson.
-      expect(withCrlf, greaterThan(0),
-          reason: 'No bundled recipe carries CRLF on THIS CHECKOUT. That is '
-              'probably not a defect — .gitattributes is `* text=auto`, so a '
-              'Linux clone makes all eleven LF. What it means is that the loop '
-              'above is no longer able to observe a carriage return being '
-              'dropped, and `_awkward` below is now the only witness. Delete '
-              'this assertion if that trade is acceptable; do not "fix" the '
-              'tree to satisfy it.');
+      // It read `expect(withCrlf, greaterThan(0))`, and it was a vacuity guard:
+      // if every recipe on the machine happens to be LF, the loop above cannot
+      // observe a scanner that eats `\r`, so it wanted to say out loud when the
+      // real corpus stopped contributing. It was kept knowing it could redden
+      // on a correct tree, on the stated ground that "these gates run on one
+      // machine" — and at the time `CLAUDE.md` said that machine was Windows,
+      // where `text=auto` checks the corpus out as CRLF.
+      //
+      // The machine moved. This checkout is macOS with `core.autocrlf` unset,
+      // so `* text=auto` produces LF and all eleven recipes carry zero CR
+      // bytes — measured 2026-09-04. No edit to this repository can make the
+      // count non-zero, and the one edit that would is the one the assertion's
+      // own message forbade: "do not 'fix' the tree to satisfy it." What was
+      // left was a gate that could only fail, which is #55's lesson exactly.
+      //
+      // So the trade it named is taken: the escape-literal test below — *and
+      // over line endings the real corpus may not have today* — is now the sole
+      // witness for CRLF, and it is the better one, because escapes are
+      // immune to the checkout in a way a bundled file can never be. If it is
+      // ever deleted, nothing here covers a carriage return at all.
+      //
+      // The count stays because a Windows clone makes it non-zero again, and a
+      // reader comparing two machines should be able to see which one they are
+      // on without re-deriving it.
+      debugPrint('recipes carrying CRLF on this checkout: '
+          '$withCrlf of ${recipeCatalog.length}');
     });
 
     test('and over line endings the real corpus may not have today', () {
@@ -133,8 +141,8 @@ void main() {
           reason: 'the apostrophe was treated as a quote');
       // And the code after it is still code.
       expect(
-        tokens.any((t) =>
-            t.kind == DartTokenKind.keyword && t.text.contains('final')),
+        tokens.any(
+            (t) => t.kind == DartTokenKind.keyword && t.text.contains('final')),
         isTrue,
       );
     });
@@ -250,8 +258,8 @@ void main() {
           tokens.where((t) => t.kind == DartTokenKind.string).toList();
       expect(strings.single.text, "'oops");
       expect(
-        tokens.any((t) =>
-            t.kind == DartTokenKind.keyword && t.text.contains('final')),
+        tokens.any(
+            (t) => t.kind == DartTokenKind.keyword && t.text.contains('final')),
         isTrue,
         reason: 'the second line was swallowed by the unterminated string',
       );

@@ -118,10 +118,23 @@ stop, not a task.** Come to the maintainer.
 
 ## Environment
 
-Claude Code and the user share the same Windows machine; the Flutter SDK is on
-`PATH`, so run `flutter test` / `analyze` / `dart format` directly. Ask the user
-only for anything that opens a window (`flutter run`). **There is no CI** — these
-are the only gates, and they run here:
+Claude Code and the user share **one** machine, and **which** one is a fact to
+read rather than to remember: this paragraph said *Windows* until 2026-09-04,
+when it was macOS. The Flutter SDK is on `PATH` either way, so run
+`flutter test` / `analyze` / `dart format` directly, and ask the user only for
+anything that opens a window (`flutter run`).
+
+The line endings a checkout carries follow from that, and they are **a property
+of the machine, not of the repository** — `.gitattributes` is `* text=auto`, so
+a Windows clone makes the recipe corpus CRLF and a macOS or Linux clone makes it
+LF. A test that uses that corpus as a fixture is therefore testing the checkout
+as much as the code. One did: `example/test/dart_highlighter_test.dart` asserted
+that at least one bundled recipe carried CRLF, was written on the Windows
+machine where that held, and could only fail on this one. It is gone, on the
+instruction its own failure message carried; the escape-literal test beside it
+is the witness now, because escapes are immune to the checkout.
+
+**There is no CI** — these are the only gates, and they run here:
 
 ```
 flutter analyze
