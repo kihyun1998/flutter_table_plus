@@ -628,6 +628,11 @@ FlutterTablePlus<User>(
 > compare `!=`, so the inline form re-measures every row on every frame. Hold it
 > in a field and rebuild it in `didChangeDependencies`, which is also exactly
 > when the ambient inputs above can have changed.
+>
+> Since 2.17.0 the table says so in debug — one `debugPrint` per table, when the
+> callback changes identity on several consecutive builds while the data and the
+> columns do not. It is a heuristic, so it prints and does not throw, and a
+> release build carries neither the check nor the message.
 
 ### Custom Height Function
 

@@ -45,6 +45,7 @@ compute one.
 → [A measurement is given what the paint resolves, never what the caller wrote](../invariant/measure-what-the-paint-resolves.md) — the public helper measured with the caller's bare style and a width the cell does not hand out; the symptom is clipped text with no banner
 → [The widget-test font is a square per glyph](../invariant/test-font-square.md) — a measured text height in a test is the square font's height, so wrap points differ from the screen's
 → [A decorated box hands its child less than it declares](../invariant/decoration-eats-the-child.md) — a measured height is the number declared, never the number the child receives
+→ [A caller's function is not a cache key](../invariant/a-callers-function-is-not-a-key.md) — the one site where neither escape is available, because deriving the answers *is* the cost being avoided (#161)
 
 ## Blast radius
 
@@ -68,7 +69,22 @@ compute one.
   receivers are `identical`, never by whether they are `==` — so wrapping the
   configuration in a class with value equality changes nothing at the call site.
   (The first probe of this said otherwise because it used `const` instances,
-  which canonicalise: it was comparing one object with itself.) The only fixes
-  are a stable receiver, which only the caller can hold, or changing the type of
-  `FlutterTablePlus.calculateRowHeight` to accept a value object — which is
-  breaking. Documented on both surfaces rather than repaired.
+  which canonicalise: it was comparing one object with itself.)
+
+  **Changing the parameter's type to take a value object was also measured, and
+  is refused.** Probed 2026-09-04 with non-`const` instances: such an object
+  compares equal only when the caller already holds their `columns` stable —
+  because the configuration contains a `List<TablePlusColumn>` whose
+  `valueAccessor` is a function and which has no `==`, and a hand-written `==`
+  on that class still fails for an inline accessor. Holding `columns` stable is
+  the same discipline as holding the callback stable, so a breaking signature
+  change buys nothing that is not already reachable. Worse, `const`-ness alone
+  flips the comparison and the analyzer pushes callers toward `const`, so the
+  fast path would exist by lint accident.
+
+  **So the hole stays open, but it is no longer silent.** Since 2.17.0 the table
+  emits one `debugPrint` per table when it sees the callback change identity on
+  several consecutive builds while the data and the columns did not — a
+  heuristic, in an `assert`, gated on `columns` identity so a resize drag does
+  not trip it. A stable receiver is still the only actual repair and only the
+  caller can hold one.

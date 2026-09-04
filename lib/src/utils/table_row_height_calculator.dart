@@ -169,6 +169,11 @@ class TableRowHeightCalculator {
   /// measured: Dart compares two tear-offs of the same method by whether their
   /// receivers are `identical`, never by whether they are `==`. A stable
   /// receiver is the only thing that works, and only the caller can hold one.
+  ///
+  /// Since 2.17.0 `FlutterTablePlus` says so in debug — once per table, when it
+  /// sees the callback change identity on several consecutive builds while the
+  /// data and the columns did not. It is a heuristic and a `debugPrint`, not a
+  /// guard: the fast path is still the caller's to take.
   static double? Function(int, T) createHeightCalculator<T>({
     required List<TablePlusColumn<T>> columns,
     required List<double> columnWidths,

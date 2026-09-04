@@ -51,6 +51,7 @@ not fit" needs a real measurement, not a guess.
 → [The widget-test font is a square per glyph](../invariant/test-font-square.md) — this territory is where the invariant bites hardest: in a test the same string measures far wider than on screen, so an overflow in a test is a worst-case width simulation and not a defect to be resized away
 → [A decorated box hands its child less than it declares](../invariant/decoration-eats-the-child.md) — the width axis, and the case where what the box shortchanges is a *number* rather than a child, so nothing overflows and nothing paints wrong (#156)
 → [Never re-assemble by hand-listing fields](../invariant/no-hand-enumeration.md) — shape 2, and the site the note itself had cited as the positive precedent: the cache listed two of the inputs the answer depends on (#156)
+→ [A caller's function is not a cache key](../invariant/a-callers-function-is-not-a-key.md) — the site that escapes by keying on the values the measurement consumes, which works here because every one of them is a value (#156)
 
 ## Blast radius
 

@@ -144,6 +144,7 @@ confirmed peers.
 ## Cross-cutting invariants
 
 → [Never hand-maintain a list a later addition must join](../invariant/no-hand-enumeration.md) — the caches keyed on identity are invalidated by a hand-written condition, and `rowId` is the input it deliberately omits (#132)
+→ [A caller's function is not a cache key](../invariant/a-callers-function-is-not-a-key.md) — `rowId` is the site that escapes by comparing the answers, and it can only do so because deriving them is cheap (#135)
 
 ## Blast radius
 
