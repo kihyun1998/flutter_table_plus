@@ -32,7 +32,7 @@ A highly customizable, type-safe Flutter table widget with synchronized scrollin
 | **Smart Tooltips** | Text, widget, and whole-row tooltips, anchored beside the widget or beside the cursor |
 | **Dim Rows** | Style inactive rows differently |
 | **Scale / Zoom** | Ctrl/Cmd+wheel zoom with platform-aware modifier key, scroll-safe physics, automatic position correction, and optional `blockModifierScroll` control |
-| **Deep Theming** | 8 nested theme classes for complete customization |
+| **Deep Theming** | Nested theme classes down to individual borders, dividers and placeholder text |
 | **Minimal Dependencies** | Only [`just_tooltip`](https://pub.dev/packages/just_tooltip) and [`flutter_checkbox`](https://pub.dev/packages/flutter_checkbox) |
 
 ---
@@ -198,7 +198,7 @@ onCellChanged: (row, columnKey, rowIndex, oldValue, newValue) {
 | Guide | Description |
 |-------|-------------|
 | [Features Guide](docs/FEATURES.md) | Sorting, Selection, Editing, Merged Rows, Hover Buttons, and more |
-| [Theming Guide](docs/THEMING.md) | Complete theming reference with all 8 theme classes |
+| [Theming Guide](docs/THEMING.md) | Every theme class, what each field reaches, and what `scaledBy` scales |
 | [Migration Guide](docs/MIGRATION.md) | Migrating from v1.x (`Map`) to v2.x (`Generic<T>`) |
 
 ---

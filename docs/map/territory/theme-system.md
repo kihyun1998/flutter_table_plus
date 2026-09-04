@@ -147,6 +147,15 @@ stronger header is what `DataTable`, `pluto_grid` and AG Grid all default to.
 The open question is not which value is right — it is that a shared visual
 element has no owner that can hold it.
 
+**A public sub-theme went undocumented for its whole life, and a count asserted
+otherwise.** `TablePlusDragSelectionTheme` — five fields on the root, with its
+own `scaledBy` — appeared in neither `docs/THEMING.md` nor `docs/FEATURES.md`,
+while `README.md` said the theming guide covered *"all 8 theme classes"*. It
+covered seven of the root's eight, and the package publishes eleven theme
+classes in total. Repaired 2026-09-04 by writing the section and deleting both
+counts. **The count is what made it invisible**: a number that reads as complete
+is the thing a reader checks instead of the list.
+
 **The example app could not have caught this, and still cannot.**
 `example/lib/theme/table_palette.dart`'s demo style sets `size`, `activeColor`,
 `checkColor` and `borderColor` — none of the five that were dropped — and the

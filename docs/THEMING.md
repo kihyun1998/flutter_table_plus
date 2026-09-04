@@ -481,6 +481,31 @@ content is not a message, so the flag does not apply to it.
 
 ---
 
+## TablePlusDragSelectionTheme
+
+Styling for the rubber-band rectangle drawn while a drag selection is in
+progress.
+
+```dart
+TablePlusDragSelectionTheme(
+  show: true,                              // false = drag still selects, nothing is drawn
+  fillColor: Color(0x33448AFF),            // the band's interior, alpha included
+  borderColor: Color(0xFF448AFF),
+  borderWidth: 1.0,
+  borderRadius: BorderRadius.zero,
+)
+```
+
+`show: false` is a **visual** switch only — the drag still selects rows. To turn
+the behaviour off, leave `enableDragSelection` at its default; see
+[Drag Selection](FEATURES.md#drag-selection) for the four inputs the feature
+requires before it wires anything at all.
+
+`borderWidth` is the one field `scaledBy` touches. The colours and the radius do
+not scale, like every other colour and radius in the family.
+
+---
+
 ## TablePlusHoverButtonTheme
 
 Styling for hover action buttons.
@@ -593,6 +618,7 @@ final scaledTheme = theme.scaledBy(1.5);
 | `TablePlusEditableTheme` | fontSize, every border width, padding | colors, borderRadius, booleans |
 | `TablePlusScrollbarTheme` | *(has `scaledBy`, but the root never calls it)* | all properties, in practice |
 | `TablePlusTooltipTheme` | *(excluded from scaling)* | all properties |
+| `TablePlusDragSelectionTheme` | borderWidth | colours, borderRadius, show |
 | `TablePlusHoverButtonTheme` | horizontalOffset | — |
 
 Scrollbar and tooltip themes are excluded because they are UI chrome / overlay elements that should remain at a fixed size regardless of table zoom level.
