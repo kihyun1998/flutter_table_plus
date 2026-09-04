@@ -113,14 +113,39 @@ the field set read out of the source. Verified 2026-08-26 — green at the pinne
 0.3.1, red at 0.3.2 naming `shadows`. An earlier version of this note said no
 test was possible; that was written before anyone tried.
 
-**The column rule is discontinuous at the header/body seam.** The header half
-reads `headerTheme.verticalDivider.thickness` — `1.0` at full `color`; the body
-half reads `bodyTheme.verticalDividerThickness` — `0.5` at alpha 0.5. The same
-vertical line halves in width and opacity where the header ends, on the default
-theme, and it has since both were written. Both are settable since #171 and
-neither default moved with it: making them agree changes what every existing
-caller renders, which is a decision to be taken rather than a repair to be
-slipped into a change about reachability.
+**One vertical line, two owners that cannot see each other.** The header half
+is `headerTheme.verticalDivider`, the body half is `bodyTheme`'s
+`verticalDividerSide`, and they have never referred to each other. Probed on the
+default theme, 500px viewport, two 150px columns:
+
+| | header | body |
+|---|---|---|
+| x at the same column edge | **[249.0, 250.0]** | **[249.5, 250.0]** |
+| width | `1.0` | `0.5` |
+| painted on white | `#E0E0E0` | `#EFEFEF` — `#E0E0E0` at alpha 0.5 |
+
+Right-aligned to the same edge, so the step is on the left. They do **not** abut:
+`headerTheme.bottomBorder` sits between them at 1.0px opaque, full width, which
+is most of why nobody has reported this.
+
+**Neither value was decided.** `dfa2f5f` (2026-03-05) extracted the body's
+`alpha: 0.5, width: 0.5` from **five** copy-pasted widget sites into one getter;
+the header's `1.0` at full colour is `TablePlusHeaderDividerTheme`'s constructor
+default, written separately. Nothing connects them and no record chooses either.
+
+**And a default cannot reconcile them, which is the part worth keeping.** A
+default expression can only name fields of its own class, and these are sibling
+sub-themes — only the root `TablePlusTheme` sees both. So the obvious repair
+runs backwards: making the body half follow `dividerThickness` *widens* the
+seam, because the header half does not follow it. Measured shape — at
+`dividerThickness: 8` the body rule would be 8.0px against the header's
+unchanged 1.0, a 7px step where there is now a 0.5px one.
+
+Both halves are settable since #171 and neither default moved with it, and #177
+holds the open question. The current difference is also defensible on its own: a lighter body rule under a
+stronger header is what `DataTable`, `pluto_grid` and AG Grid all default to.
+The open question is not which value is right — it is that a shared visual
+element has no owner that can hold it.
 
 **The example app could not have caught this, and still cannot.**
 `example/lib/theme/table_palette.dart`'s demo style sets `size`, `activeColor`,
