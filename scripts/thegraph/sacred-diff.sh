@@ -31,6 +31,7 @@ PATTERNS=(
   'lib/src/utils/text_overflow_detector.dart|all THREE overflow call sites go through it - the ordinary cell, the header cell, the merged row spanning cell - so one defect here is three at once. #156 found four, every one silent, and a diff touching only this file touches no other sacred path'
   'lib/src/widgets/table_header.dart|a caller headerTheme.decoration is applied to the box wrapping the whole header and the body has no equivalent box. One border slid every header column against its body column: measured 2.0px, no exception, no banner, and it broke the alignment CLAUDE.md names as core (#160)'
   'lib/src/utils/row_measurement.dart|the ONE list both height caches consult. A forgotten input stales the RowGeometry every drag hit-test reads AND the scroll total (#120, #128); its identical guard read differently in JIT and AOT (#137)'
+  'lib/src/utils/row_cache_invalidation.dart|the response half of that same rule: which caches an update invalidates, for both widgets that hold any. structural must dominate measurementOnly or a list sorted in place reads as a height change; the id walk sits behind two identical checks and nothing in the return value holds that order (#169)'
   'pubspec.yaml|a false floor breaks users trees while pub get succeeds here (#69, 2.16.0)'
   'CHANGELOG.md|pub.dev snapshots at publish — an edited published entry splits repo from registry (2.15.0)'
   '.pubignore|it decides the archive, and the archive cannot be un-published'
