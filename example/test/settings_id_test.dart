@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:example/pages/playground/models/playground_settings.dart';
 import 'package:example/pages/playground/models/settings_spec.dart';
-import 'package:example/pages/playground/widgets/feature_detail_pane.dart';
+import 'package:example/pages/playground/playground_settings_host.dart';
 import 'package:example/gallery/gallery.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -31,10 +31,13 @@ Widget _pane(SettingFeature feature) {
       body: SizedBox(
         width: 380,
         child: FeatureDetailPane(
-          settings: const PlaygroundSettings(),
+          host: PlaygroundSettingsHost(
+            settings: const PlaygroundSettings(),
+            onChanged: (_) {},
+            onGenerateData: () {},
+            isGenerating: false,
+          ),
           feature: feature,
-          onSettingsChanged: (_) {},
-          onGenerateData: () {},
         ),
       ),
     ),

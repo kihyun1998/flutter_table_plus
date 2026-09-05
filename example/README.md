@@ -25,7 +25,7 @@ A recipe is written to be *taken*, which shapes it in two ways:
   *adds* a summary row rather than hiding the members. Those notes are the part that took the
   longest to learn and the part a snippet cannot carry.
 
-The roster lives in [`lib/shell/recipe_catalog.dart`](lib/shell/recipe_catalog.dart) and nowhere
+The roster lives in [`lib/app/recipe_catalog.dart`](lib/app/recipe_catalog.dart) and nowhere
 else. **There is deliberately no list of recipes in this README**, not even in prose: a second copy
 is somewhere for the two to disagree, and a new recipe would have to remember to join it.
 
@@ -70,7 +70,7 @@ the playground's own performance monitor, which is exactly the import a recipe m
 One of them refuses the side-by-side mode. Three tables over the same hundred thousand rows would
 make a frame rate a measurement of the wall, so opening that scenario leaves the mode and takes the
 segment away. Which destinations may be drawn there is the destination's own call — see
-[`lib/shell/shell_destination.dart`](lib/shell/shell_destination.dart).
+[`lib/gallery/src/shell/shell_destination.dart`](lib/gallery/src/shell/shell_destination.dart).
 
 ## Pages
 

@@ -4,7 +4,7 @@ library;
 import 'package:flutter/material.dart';
 
 import '../pages/playground/models/playground_settings.dart';
-import '../pages/playground/widgets/feature_detail_pane.dart';
+import '../pages/playground/playground_settings_host.dart';
 import 'recipe_catalog.dart';
 import '../gallery/gallery.dart';
 
@@ -67,10 +67,15 @@ class RecipeKnobs extends StatelessWidget {
     return AnimatedBuilder(
       animation: demo,
       builder: (context, _) => FeatureDetailPane(
-        settings: demo.settings,
+        host: PlaygroundSettingsHost(
+          settings: demo.settings,
+          onChanged: (value) => demo.settings = value,
+          // A recipe's knob pane draws one feature's controls and nothing that
+          // needs these — the `data` feature is not among them.
+          onGenerateData: () {},
+          isGenerating: false,
+        ),
         feature: demo.recipe.feature,
-        onSettingsChanged: (value) => demo.settings = value,
-        onGenerateData: () {},
       ),
     );
   }

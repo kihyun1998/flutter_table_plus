@@ -89,4 +89,3 @@ class Interaction {
 /// call sites already use.
 SettingFeature featureIn(List<SettingGroup> spec, String id) =>
     spec.expand((g) => g.features).firstWhere((f) => f.id == id);
-

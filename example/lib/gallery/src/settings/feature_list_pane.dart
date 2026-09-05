@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../models/feature_switches.dart';
-import '../models/playground_settings.dart';
-import '../models/settings_spec.dart';
 import 'feature_search.dart';
+import 'settings_host.dart';
 
 /// The twenty features, in a column of their own.
 ///
@@ -23,15 +21,13 @@ import 'feature_search.dart';
 class FeatureListPane extends StatefulWidget {
   const FeatureListPane({
     super.key,
-    required this.settings,
+    required this.host,
     required this.selectedFeatureId,
-    required this.onSettingsChanged,
     required this.onFeatureSelected,
   });
 
-  final PlaygroundSettings settings;
+  final SettingsHost host;
   final String? selectedFeatureId;
-  final ValueChanged<PlaygroundSettings> onSettingsChanged;
   final ValueChanged<String> onFeatureSelected;
 
   @override
@@ -50,7 +46,7 @@ class _FeatureListPaneState extends State<FeatureListPane> {
   @override
   Widget build(BuildContext context) {
     final query = _search.text;
-    final matches = searchFeatures(query, widget.settings);
+    final matches = searchFeatures(query, widget.host);
     final searching = query.trim().isNotEmpty;
 
     // The pane's ground is a `Material`, and the `Container` below keeps only
@@ -105,7 +101,7 @@ class _FeatureListPaneState extends State<FeatureListPane> {
                   if (searching)
                     for (final match in matches) _entry(match)
                   else
-                    for (final group in settingsSpec) ...[
+                    for (final group in widget.host.spec) ...[
                       _groupHeading(group.title),
                       for (final feature in group.features)
                         _entry(matches
@@ -139,8 +135,7 @@ class _FeatureListPaneState extends State<FeatureListPane> {
   Widget _entry(FeatureMatch match) {
     final feature = match.feature;
     final switchId = feature.switchId;
-    final on =
-        switchId != null && featureSwitches[switchId]!.read(widget.settings);
+    final on = switchId != null && widget.host.isOn(switchId);
 
     return KeyedSubtree(
       key: ValueKey('feature-${feature.id}'),
@@ -160,9 +155,7 @@ class _FeatureListPaneState extends State<FeatureListPane> {
                 : _Dot(
                     key: ValueKey('feature-dot-${feature.id}'),
                     on: on,
-                    onTap: () => widget.onSettingsChanged(
-                      featureSwitches[switchId]!.write(widget.settings, !on),
-                    ),
+                    onTap: () => widget.host.setSwitch(switchId, !on),
                   ),
             title: Text(
               feature.title,

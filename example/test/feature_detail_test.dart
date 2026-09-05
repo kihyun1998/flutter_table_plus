@@ -1,7 +1,7 @@
 import 'package:example/pages/playground/models/playground_settings.dart';
 import 'package:example/pages/playground/models/settings_spec.dart';
 import 'package:example/pages/playground/playground_page.dart';
-import 'package:example/pages/playground/widgets/feature_detail_pane.dart';
+import 'package:example/pages/playground/playground_settings_host.dart';
 import 'package:example/gallery/gallery.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
@@ -36,10 +36,13 @@ Widget _pane(
       body: SizedBox(
         width: 380,
         child: FeatureDetailPane(
-          settings: settings,
+          host: PlaygroundSettingsHost(
+            settings: settings,
+            onChanged: onSettingsChanged ?? (_) {},
+            onGenerateData: () {},
+            isGenerating: false,
+          ),
           feature: feature,
-          onSettingsChanged: onSettingsChanged ?? (_) {},
-          onGenerateData: () {},
         ),
       ),
     ),

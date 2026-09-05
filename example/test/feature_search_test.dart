@@ -1,5 +1,6 @@
+import 'package:example/pages/playground/playground_settings_host.dart';
+import 'package:example/gallery/gallery.dart';
 import 'package:example/pages/playground/models/playground_settings.dart';
-import 'package:example/pages/playground/widgets/feature_search.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 // Search used to narrow one scrolling column to the controls whose labels
@@ -11,7 +12,12 @@ import 'package:flutter_test/flutter_test.dart';
 // is on screen, and typing what you can see and getting nothing back reads as a
 // broken search, not as a narrow contract.
 
-const _bare = PlaygroundSettings();
+final _bare = PlaygroundSettingsHost(
+  settings: const PlaygroundSettings(),
+  onChanged: (_) {},
+  onGenerateData: () {},
+  isGenerating: false,
+);
 
 List<String> _ids(String query) =>
     searchFeatures(query, _bare).map((m) => m.feature.id).toList();
@@ -42,7 +48,8 @@ void main() {
   });
 
   test('a setting is found while its feature is off', () {
-    expect(_bare.rowCardTooltip, isFalse);
+    // Asked through the port, which is the path the search itself reads.
+    expect(_bare.isOn('rowCardTooltip'), isFalse);
 
     final m = _match('row card wait', 'rowCard');
     expect(m.matchedLabels, ['Row Card Wait']);

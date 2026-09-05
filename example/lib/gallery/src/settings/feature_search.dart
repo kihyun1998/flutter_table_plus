@@ -1,8 +1,6 @@
-import '../models/feature_switches.dart';
-import '../models/playground_settings.dart';
-import '../models/settings_spec.dart';
-import '../../../gallery/gallery.dart';
-import 'settings_registry.dart';
+import 'setting_spec.dart';
+import 'settings_controls.dart';
+import 'settings_host.dart';
 
 /// A feature the search kept, and why it kept it.
 class FeatureMatch {
@@ -38,11 +36,11 @@ class FeatureMatch {
 /// also reads the feature's **name**, because the names are what is on screen,
 /// and typing what you can see and getting nothing back reads as a broken
 /// search rather than as a narrow contract.
-List<FeatureMatch> searchFeatures(String query, PlaygroundSettings settings) {
+List<FeatureMatch> searchFeatures(String query, SettingsHost host) {
   final searching = query.trim().isNotEmpty;
 
   final matches = <FeatureMatch>[];
-  for (final feature in settingsSpec.expand((g) => g.features)) {
+  for (final feature in host.spec.expand((g) => g.features)) {
     final nameMatched = searching && settingMatches(feature.title, query);
 
     // Only the options. A feature's switch *is* the feature, and listing "Drag
@@ -51,7 +49,7 @@ List<FeatureMatch> searchFeatures(String query, PlaygroundSettings settings) {
     final matchedLabels = <String>[];
     if (searching) {
       for (final id in feature.options) {
-        final label = settingsRegistry[id]!(settings, (_) {}).label;
+        final label = host.control(id).label;
         if (settingMatches(label, query)) matchedLabels.add(label);
       }
     }
@@ -62,8 +60,7 @@ List<FeatureMatch> searchFeatures(String query, PlaygroundSettings settings) {
       feature: feature,
       nameMatched: nameMatched,
       matchedLabels: matchedLabels,
-      isOn: feature.switchId == null ||
-          featureSwitches[feature.switchId!]!.read(settings),
+      isOn: feature.switchId == null || host.isOn(feature.switchId!),
     ));
   }
   return matches;

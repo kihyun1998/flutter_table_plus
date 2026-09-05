@@ -42,14 +42,23 @@ notes.
   its own title through `ShellDestinations`;
   a bare `List` would have moved the building out and left the disposing behind.
   Two things are deliberately *outside* the zone. `lib/theme/table_palette.dart`,
-  because every recipe imports it under a rule #101 settled. And the three
-  feature panes — **not** because they name the package, which they do not, but
-  because they are typed on `PlaygroundSettings`, which does. Classifying them by
-  direct import said they were portable and that was wrong three times running;
-  the axis is the transitive one. Moving them needs a port over the settings bag,
-  which is a design decision rather than a move, and `settings_controls.dart` and
-  the spec vocabulary went in ahead of them because neither mentions a settings
-  type at all.
+  because every recipe imports it under a rule #101 settled. Everything else went in, the
+  three feature panes last and through a port.
+  They were the hard case: free of any package import and still unmovable,
+  because they were typed on `PlaygroundSettings`, which is not. Classifying by
+  direct import called them portable and that was wrong — **the axis is the
+  transitive one**, and the same mistake was made three times before it was
+  measured. `SettingsHost` is the answer, and **every member on it was read off a
+  call site**: walk the spec, read a switch, write a switch, build one control,
+  and contribute widgets a control cannot express. The last exists because the
+  pane already carried `if (feature.id == 'data')` twice — a hardcoded feature id
+  inside something claiming to render any description is the tell that a slot is
+  missing.
+  A port being *present* is not a port being *sufficient*, and the seam test
+  cannot tell those apart: it reads imports. `test/settings_host_test.dart` names
+  no type from this example at all, so it fails if a pane needs anything the port
+  does not carry — which is the failure that would otherwise arrive on the day of
+  extraction.
 
 - **The demo does not re-test the package.** A behaviour the package pins in its
   own suite is not re-asserted here; doing so would mean fighting the demo's own
@@ -236,6 +245,11 @@ bundle; it never knew which app's keys they were
 which settings exist belongs to whoever is being demonstrated
 `lib/gallery/src/settings/settings_controls.dart` — the control rows a
 description is rendered into
+`lib/gallery/src/settings/settings_host.dart` — `SettingsHost`, the port the
+panes read settings through
+`lib/gallery/src/settings/feature_list_pane.dart`
+`lib/gallery/src/settings/feature_detail_pane.dart`
+`lib/gallery/src/settings/feature_search.dart` — `searchFeatures`, `FeatureMatch`
 `lib/gallery/src/perf/performance_monitor.dart` — `PerformanceMetrics`,
 `PerformanceMonitor`
 `lib/gallery/src/theme/example_theme.dart`
@@ -255,11 +269,9 @@ what its bar says
 `lib/pages/playground/models/settings_spec.dart` — this app's 58 settings in the
 gallery's vocabulary, plus `featureById` binding `featureIn` to them so the
 fifteen call sites that read a global did not have to change
-`lib/pages/playground/widgets/feature_list_pane.dart`
-`lib/pages/playground/widgets/feature_detail_pane.dart`
-`lib/pages/playground/widgets/feature_search.dart`
-`lib/pages/playground/widgets/feature_list_pane.dart`
-`lib/pages/playground/widgets/feature_detail_pane.dart`
+`lib/pages/playground/playground_settings_host.dart` — `PlaygroundSettingsHost`,
+this app's answer to that port, and the only place the `data` feature's row
+count badge and Generate button now live
 `lib/pages/tooltip_anchor/tooltip_anchor_page.dart`
 `lib/recipes/` — one file per feature. Listed as a directory on purpose: the
 pasteability rule is a property of the *directory* and

@@ -20,7 +20,13 @@ lib/src/widgets/*.dart           widgets, or collaborators only a widget uses
 lib/src/widgets/cells/*.dart     cell widgets a body row draws
 test/*.dart                      tests. Flat — no subdirectories
 benchmark/*.dart                 standalone benchmarks. Outside every gate, excluded from the archive
-example/lib/**                   the example, a package of its own
+example/lib/gallery/**           the portable zone: a package-shaped tree inside
+                                 the example. gallery.dart is its barrel and the
+                                 only path the rest of example/lib may import;
+                                 src/ is private to it, by rule rather than by
+                                 the compiler
+example/lib/app/**               this example's wiring of that zone
+example/lib/**                   the rest of the example, a package of its own
 example/test/**                  the example's gate (#55)
 docs/*.md                        public prose — THEMING, FEATURES, MIGRATION
 docs/map/README.md               the MAP's entry point

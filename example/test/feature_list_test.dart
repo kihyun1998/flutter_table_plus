@@ -1,10 +1,10 @@
 import 'package:example/pages/playground/models/feature_switches.dart';
 import 'package:example/pages/playground/models/playground_settings.dart';
 import 'package:example/pages/playground/models/settings_presets.dart';
+import 'package:example/pages/playground/playground_settings_host.dart';
 import 'package:example/gallery/gallery.dart';
 import 'package:example/pages/playground/models/settings_spec.dart';
 import 'package:example/pages/playground/playground_page.dart';
-import 'package:example/pages/playground/widgets/feature_list_pane.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -35,10 +35,14 @@ Widget _pane({
       body: SizedBox(
         width: 220,
         child: FeatureListPane(
-          settings: settings ??
-              applyPreset(const PlaygroundSettings(), presetById('bare')),
+          host: PlaygroundSettingsHost(
+            settings: settings ??
+                applyPreset(const PlaygroundSettings(), presetById('bare')),
+            onChanged: onSettingsChanged ?? (_) {},
+            onGenerateData: () {},
+            isGenerating: false,
+          ),
           selectedFeatureId: selected,
-          onSettingsChanged: onSettingsChanged ?? (_) {},
           onFeatureSelected: onFeatureSelected ?? (_) {},
         ),
       ),

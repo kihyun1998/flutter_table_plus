@@ -11,8 +11,7 @@ import 'models/settings_presets.dart';
 import 'models/settings_spec.dart';
 import 'playground_columns.dart';
 import 'playground_format.dart';
-import 'widgets/feature_detail_pane.dart';
-import 'widgets/feature_list_pane.dart';
+import 'playground_settings_host.dart';
 import 'widgets/preset_bar.dart';
 
 /// Interactive playground for testing FlutterTablePlus
@@ -163,6 +162,18 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
     _handleSettingsChanged(applyPreset(_settings, preset));
     setState(() => _activePresetId = preset.id);
   }
+
+  /// This page's settings, in the shape the gallery's panes read.
+  ///
+  /// A getter rather than a field: it wraps the *current* settings, and a field
+  /// would hand the panes whatever was current when the state was created.
+  /// Holding nothing is what makes rebuilding it free.
+  PlaygroundSettingsHost get _host => PlaygroundSettingsHost(
+        settings: _settings,
+        onChanged: _handleSettingsChanged,
+        onGenerateData: _generateData,
+        isGenerating: _isGenerating,
+      );
 
   void _handleSettingsChanged(PlaygroundSettings newSettings) {
     _activePresetId = null;
@@ -628,9 +639,8 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
             child: Row(
               children: [
                 FeatureListPane(
-                  settings: _settings,
+                  host: _host,
                   selectedFeatureId: _selectedFeatureId,
-                  onSettingsChanged: _handleSettingsChanged,
                   onFeatureSelected: (id) =>
                       setState(() => _selectedFeatureId = id),
                 ),
@@ -647,11 +657,8 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
                     children: [
                       Expanded(
                         child: FeatureDetailPane(
-                          settings: _settings,
+                          host: _host,
                           feature: featureById(_selectedFeatureId),
-                          onSettingsChanged: _handleSettingsChanged,
-                          onGenerateData: _generateData,
-                          isGenerating: _isGenerating,
                         ),
                       ),
                       // The monitor belongs to no feature, so it does not

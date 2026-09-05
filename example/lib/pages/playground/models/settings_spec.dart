@@ -281,4 +281,3 @@ const settingsSpec = <SettingGroup>[
 /// The gallery's [featureIn] takes a spec because it has none of its own; this
 /// binds it to ours so the call sites read the way they always have.
 SettingFeature featureById(String id) => featureIn(settingsSpec, id);
-
