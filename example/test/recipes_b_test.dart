@@ -4,8 +4,8 @@ import 'package:example/pages/playground/models/settings_spec.dart';
 import 'package:example/recipes/column_reorder_recipe.dart';
 import 'package:example/recipes/column_resize_recipe.dart';
 import 'package:example/recipes/zoom_recipe.dart';
-import 'package:example/shell/recipe_catalog.dart';
-import 'package:example/theme/example_theme.dart';
+import 'package:example/app/recipe_catalog.dart';
+import 'package:example/gallery/gallery.dart';
 import 'package:example/theme/table_palette.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
@@ -139,14 +139,22 @@ void main() {
       ColumnResizeRecipe built(PlaygroundSettings s) =>
           recipe.build(s) as ColumnResizeRecipe;
 
-      expect(built(base.copyWith(resizableEnabled: !base.resizableEnabled))
-          .resizable, isNot(built(base).resizable));
-      expect(built(base.copyWith(columnMinWidth: base.columnMinWidth + 10))
-          .columnMinWidth, built(base).columnMinWidth + 10);
-      expect(built(base.copyWith(stretchLastColumn: !base.stretchLastColumn))
-          .stretchLastColumn, isNot(built(base).stretchLastColumn));
-      expect(built(base.copyWith(resizeHandleWidth: base.resizeHandleWidth + 1))
-          .handleWidth, built(base).handleWidth + 1);
+      expect(
+          built(base.copyWith(resizableEnabled: !base.resizableEnabled))
+              .resizable,
+          isNot(built(base).resizable));
+      expect(
+          built(base.copyWith(columnMinWidth: base.columnMinWidth + 10))
+              .columnMinWidth,
+          built(base).columnMinWidth + 10);
+      expect(
+          built(base.copyWith(stretchLastColumn: !base.stretchLastColumn))
+              .stretchLastColumn,
+          isNot(built(base).stretchLastColumn));
+      expect(
+          built(base.copyWith(resizeHandleWidth: base.resizeHandleWidth + 1))
+              .handleWidth,
+          built(base).handleWidth + 1);
       expect(
           built(base.copyWith(
                   resizeHandleThickness: base.resizeHandleThickness + 1))
@@ -197,13 +205,13 @@ void main() {
   group('reordering rewrites order, which is what the table reads', () {
     testWidgets('a header dropped on another takes its place', (tester) async {
       await _pump(tester, const ColumnReorderRecipe());
-      expect(_displayOrder(tester),
-          ['name', 'department', 'position', 'salary']);
+      expect(
+          _displayOrder(tester), ['name', 'department', 'position', 'salary']);
 
       await _dragHeader(tester, 'Name', 'Position');
 
-      expect(_displayOrder(tester),
-          ['department', 'position', 'name', 'salary'],
+      expect(
+          _displayOrder(tester), ['department', 'position', 'name', 'salary'],
           reason: 'the drop did not move the column, or moved it by a '
               'different arithmetic than remove-then-insert');
     });
@@ -237,7 +245,8 @@ void main() {
           size: const Size(1500, 900));
 
       final targets = find.byType(DragTarget<int>);
-      final trailing = tester.getRect(targets.at(targets.evaluate().length - 1));
+      final trailing =
+          tester.getRect(targets.at(targets.evaluate().length - 1));
       expect(trailing.width, greaterThan(100),
           reason: 'the trailing drop target has no width, so a column can be '
               'dragged past the last one and nothing accepts it');
@@ -385,8 +394,8 @@ void main() {
 
       final applied = _table(tester).theme.headerTheme.resizeHandle;
       expect(applied.width, 14, reason: 'the knob did not reach the theme');
-      expect(applied.color, demoTableTheme(Brightness.light)
-          .headerTheme.resizeHandle.color,
+      expect(applied.color,
+          demoTableTheme(Brightness.light).headerTheme.resizeHandle.color,
           reason: 'the recipe rebuilt the sub-theme instead of copying it');
     });
   });
@@ -455,7 +464,8 @@ void main() {
         await _pump(tester, const ZoomRecipe(blockModifierScroll: false));
 
         expect(_table(tester).blockModifierScroll, isFalse);
-        expect(find.textContaining('zooms and scrolls at once'), findsOneWidget);
+        expect(
+            find.textContaining('zooms and scrolls at once'), findsOneWidget);
       });
     });
   });

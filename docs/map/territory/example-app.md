@@ -26,6 +26,31 @@ notes.
 - **The demo is an example, not policy.** Every option is exposed, including
   combinations a real app would not use, because the point is to show what the
   package can be asked to do.
+- **There are two zones here, and each is a property rather than an
+  intention.** `lib/recipes/` is pasteable — one feature, one self-contained
+  file. `lib/gallery/` is *portable* — the shell, the preview stage and the app
+  chrome, which demonstrate a package without naming one, and which are laid out
+  as the package they are going to be (`gallery.dart` plus `src/`).
+  `test/portable_seam_test.dart` walks the directory the way the recipe rule
+  does, and holds three things the compiler cannot: nothing in the zone imports
+  outward, nothing outside it reaches past the barrel, and the barrel and the
+  tree name the same set of files. **All three are legal Dart today and
+  impossible after extraction**, which is the whole reason they need a rule —
+  `lib/preview/` was already clean and `lib/shell/` was not, and neither fact was
+  visible from anywhere.
+  The shell reaches that state by receiving its destinations, their lifetime and
+  its own title through `ShellDestinations`;
+  a bare `List` would have moved the building out and left the disposing behind.
+  Two things are deliberately *outside* the zone. `lib/theme/table_palette.dart`,
+  because every recipe imports it under a rule #101 settled. And the three
+  feature panes — **not** because they name the package, which they do not, but
+  because they are typed on `PlaygroundSettings`, which does. Classifying them by
+  direct import said they were portable and that was wrong three times running;
+  the axis is the transitive one. Moving them needs a port over the settings bag,
+  which is a design decision rather than a move, and `settings_controls.dart` and
+  the spec vocabulary went in ahead of them because neither mentions a settings
+  type at all.
+
 - **The demo does not re-test the package.** A behaviour the package pins in its
   own suite is not re-asserted here; doing so would mean fighting the demo's own
   fixtures for a fact that is already proven.
@@ -183,32 +208,69 @@ notes.
 
 ## Code
 
+**`lib/gallery/` is the portable zone**, laid out as the package it is going to
+be: a barrel plus `src/`. Nothing under it names a table, and
+`test/portable_seam_test.dart` holds that by walking the directory. Outside it,
+`lib/app/` is this example's own wiring and everything else is content.
+
+`lib/gallery/gallery.dart` — the barrel, and the only path anything outside the
+zone may import. A file not exported here is missing from the package on the day
+it becomes one, and reachable through its `src/` path until then
+`lib/gallery/src/shell/shell_page.dart` — takes `title` and a
+`ShellDestinations` factory; names no destination
+`lib/gallery/src/shell/shell_destination.dart` — `ShellCategory`,
+`StageDestination`, `allowsWall`, `RouteDestination`
+`lib/gallery/src/shell/shell_destinations.dart` — the port the shell receives its
+destinations *and their lifetime* through
+`lib/gallery/src/shell/shell_menu.dart`
+`lib/gallery/src/shell/source_pane.dart` — takes an `assetPath` and an injectable
+bundle; it never knew which app's keys they were
+`lib/gallery/src/shell/dart_highlighter.dart` — `DartTokenKind`, `DartToken`,
+`tokenizeDart`
+`lib/gallery/src/preview/preview_stage.dart`
+`lib/gallery/src/preview/preview_frame.dart`
+`lib/gallery/src/preview/device_wall.dart`
+`lib/gallery/src/preview/viewport_spec.dart`
+`lib/gallery/src/settings/setting_spec.dart` — `SettingGroup`, `SettingFeature`,
+`Interaction`, `featureIn`. The vocabulary a settings panel is described in;
+which settings exist belongs to whoever is being demonstrated
+`lib/gallery/src/settings/settings_controls.dart` — the control rows a
+description is rendered into
+`lib/gallery/src/perf/performance_monitor.dart` — `PerformanceMetrics`,
+`PerformanceMonitor`
+`lib/gallery/src/theme/example_theme.dart`
+`lib/gallery/src/theme/theme_mode_button.dart`
+
+`lib/app/destinations.dart` — `TablePlusDestinations`, this app's answer to the
+port: the demos, their disposal, and every destination the menu shows
+`lib/app/recipe_catalog.dart`
+`lib/app/recipe_destination.dart`
+`lib/app/employee_demo.dart` — `EmployeeDemo`
+`lib/main.dart` — `MyApp`, the entry point that names what the app opens on and
+what its bar says
+
 `lib/pages/playground/playground_page.dart`
 `lib/pages/playground/widgets/settings_registry.dart`
 `lib/pages/playground/models/playground_settings.dart`
+`lib/pages/playground/models/settings_spec.dart` — this app's 58 settings in the
+gallery's vocabulary, plus `featureById` binding `featureIn` to them so the
+fifteen call sites that read a global did not have to change
+`lib/pages/playground/widgets/feature_list_pane.dart`
+`lib/pages/playground/widgets/feature_detail_pane.dart`
+`lib/pages/playground/widgets/feature_search.dart`
 `lib/pages/playground/widgets/feature_list_pane.dart`
 `lib/pages/playground/widgets/feature_detail_pane.dart`
 `lib/pages/tooltip_anchor/tooltip_anchor_page.dart`
-`lib/shell/shell_page.dart`
-`lib/shell/shell_destination.dart` — `ShellCategory`, `StageDestination`, `allowsWall`, `RouteDestination`
-`lib/main.dart` — `MyApp`, the entry point that names what the app opens on
-`lib/shell/recipe_catalog.dart`
-`lib/scenarios/hr_dashboard_scenario.dart` — `HrDashboardDemo`
-`lib/scenarios/large_table_scenario.dart` — `LargeTableDemo`
-`lib/shell/destinations/recipe_destination.dart`
 `lib/recipes/` — one file per feature. Listed as a directory on purpose: the
 pasteability rule is a property of the *directory* and
 `test/recipe_seam_test.dart` walks it rather than the catalogue, so naming the
 files here would be a second roster to keep in step and nothing would catch it
 drifting
-`lib/theme/table_palette.dart`
-`lib/theme/example_theme.dart`
-`lib/shell/source_pane.dart`
-`lib/shell/dart_highlighter.dart` — `DartTokenKind`, `DartToken`, `tokenizeDart`
+`lib/scenarios/hr_dashboard_scenario.dart` — `HrDashboardDemo`
+`lib/scenarios/large_table_scenario.dart` — `LargeTableDemo`
+`lib/theme/table_palette.dart` — deliberately outside the zone: every recipe
+imports it and `test/recipe_seam_test.dart`'s allow-list names `../theme/` (#101)
 `../scripts/fonts/subset_pretendard.py` — the font charset, as ranges
-`lib/preview/preview_stage.dart`
-`lib/preview/preview_frame.dart`
-`lib/preview/device_wall.dart`
 
 ## Reference behaviour
 

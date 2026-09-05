@@ -1,6 +1,7 @@
 import 'package:example/pages/playground/models/feature_switches.dart';
 import 'package:example/pages/playground/models/playground_settings.dart';
 import 'package:example/pages/playground/models/settings_presets.dart';
+import 'package:example/gallery/gallery.dart';
 import 'package:example/pages/playground/models/settings_spec.dart';
 import 'package:example/pages/playground/playground_page.dart';
 import 'package:example/pages/playground/widgets/feature_list_pane.dart';

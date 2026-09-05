@@ -3,19 +3,13 @@ library;
 
 import 'package:flutter/material.dart';
 
-import '../pages/playground/playground_page.dart';
-import '../pages/tooltip_anchor/tooltip_anchor_page.dart';
 import '../preview/device_wall.dart';
 import '../preview/preview_frame.dart';
 import '../preview/preview_stage.dart';
 import '../preview/viewport_spec.dart';
-import '../scenarios/hr_dashboard_scenario.dart';
-import '../scenarios/large_table_scenario.dart';
 import '../theme/theme_mode_button.dart';
-import 'destinations/employee_demo.dart';
-import 'destinations/recipe_destination.dart';
-import 'recipe_catalog.dart';
 import 'shell_destination.dart';
+import 'shell_destinations.dart';
 import 'shell_menu.dart';
 import 'source_pane.dart';
 
@@ -25,12 +19,34 @@ import 'source_pane.dart';
 /// division is what makes the shell reusable — nothing here knows what a recipe
 /// or a scenario is, only that a destination supplies a stage and some knobs.
 ///
-/// **The playground is pointed at, not absorbed.** It is a full page with its own
-/// app bar and its own three panes, and hosting it inside the stage would mean
-/// taking it apart. It opens on the route it already has, working exactly as it
-/// does today, and `pages/playground/` is untouched by this ticket.
+/// **A full page is pointed at, not absorbed.** Something with its own app bar
+/// and its own panes would have to be taken apart to sit inside the stage, so
+/// [RouteDestination] opens it on its own route instead.
+///
+/// **Nothing here names a destination.** The set arrives through
+/// [ShellDestinations], and the bar's [title] with it, because both are the one
+/// thing a shell around a different package could not reuse. The list used to be
+/// a field of this state, which is what made a page that knows nothing about
+/// recipes import eleven of them.
 class ShellPage extends StatefulWidget {
-  const ShellPage({super.key});
+  const ShellPage({
+    super.key,
+    required this.title,
+    required this.createDestinations,
+  });
+
+  /// What the app bar says.
+  ///
+  /// Deliberately not defaulted. A shell with a plausible fallback title is a
+  /// shell that ships someone else's product name when a caller forgets.
+  final String title;
+
+  /// Builds the destinations, once, when this page's state is created.
+  ///
+  /// A factory rather than a built value: the state owns the result for exactly
+  /// as long as it owns itself, which is the lifetime the notifiers behind the
+  /// destinations already had. See [ShellDestinations].
+  final ShellDestinations Function() createDestinations;
 
   /// Below this the three regions do not fit side by side, and the shell shows
   /// one at a time instead. Measured against the widest of them plus the stage's
@@ -42,61 +58,10 @@ class ShellPage extends StatefulWidget {
 }
 
 class _ShellPageState extends State<ShellPage> {
-  final _employeeDemo = EmployeeDemo();
+  /// Built once, owned for exactly as long as this state is.
+  late final ShellDestinations _destinationSet = widget.createDestinations();
 
-  /// One per recipe, owned here so a recipe's selection and its knobs survive
-  /// every rebuild of the shell around them.
-  late final Map<String, RecipeDemo> _recipeDemos = {
-    for (final recipe in recipeCatalog) recipe.featureId: RecipeDemo(recipe),
-  };
-
-  final _hrDashboard = HrDashboardDemo();
-  final _largeTable = LargeTableDemo();
-
-  late final List<ShellDestination> _destinations = [
-    StageDestination(
-      id: 'employees',
-      label: 'Employees',
-      category: ShellCategory.recipes,
-      stage: (context) => EmployeeDemoTable(demo: _employeeDemo),
-      knobs: (context) => EmployeeDemoKnobs(demo: _employeeDemo),
-    ),
-    ...recipeDestinations(_recipeDemos),
-    StageDestination(
-      id: 'scenario/hr-dashboard',
-      label: 'HR dashboard',
-      category: ShellCategory.scenarios,
-      stage: (context) => HrDashboardStage(demo: _hrDashboard),
-      knobs: (context) => HrDashboardKnobs(demo: _hrDashboard),
-    ),
-    StageDestination(
-      id: 'scenario/large-table',
-      label: 'A hundred thousand rows',
-      category: ShellCategory.scenarios,
-      stage: (context) => LargeTableStage(demo: _largeTable),
-      knobs: (context) => LargeTableKnobs(demo: _largeTable),
-      // The one destination the wall must not draw: three tables over the same
-      // hundred thousand rows makes a frame rate a measurement of the wall.
-      allowsWall: false,
-    ),
-    RouteDestination(
-      id: 'playground',
-      label: 'Every setting',
-      category: ShellCategory.pages,
-      open: (context) => const PlaygroundPage(),
-    ),
-    RouteDestination(
-      id: 'tooltip-anchors',
-      label: 'Tooltip anchors',
-      category: ShellCategory.pages,
-      // Pointed at rather than absorbed, for the same reason the playground is:
-      // it is a full page with its own `Scaffold` and `AppBar`. It survives the
-      // retirement of the old home list because it answers a question the
-      // tooltips recipe structurally cannot — a recipe shows one configuration,
-      // and this compares two (#147).
-      open: (context) => const TooltipAnchorPage(),
-    ),
-  ];
+  List<ShellDestination> get _destinations => _destinationSet.all;
 
   late String _selectedId =
       _destinations.whereType<StageDestination>().first.id;
@@ -131,12 +96,7 @@ class _ShellPageState extends State<ShellPage> {
 
   @override
   void dispose() {
-    _employeeDemo.dispose();
-    for (final demo in _recipeDemos.values) {
-      demo.dispose();
-    }
-    _hrDashboard.dispose();
-    _largeTable.dispose();
+    _destinationSet.dispose();
     super.dispose();
   }
 
@@ -166,18 +126,10 @@ class _ShellPageState extends State<ShellPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        // The app's own name, because this is the app's front door as of #147.
-        // It read 'Table Plus' while the shell was one of four entries in a
-        // home list — short because the list's own bar already said this, and
-        // because it sat beside 'Playground' and 'Viewport lab'. Both of those
-        // are gone, so the short label had inherited the top of the screen.
-        //
-        // Deliberately a second literal rather than a constant shared with
-        // `MaterialApp.title`. They are different surfaces — the OS task
-        // switcher and the bar on screen — that agree today and are allowed to
-        // diverge; one const would assert they must always match, which
-        // nothing here has established.
-        title: const Text('FlutterTablePlus Examples'),
+        // Whose name this is belongs to the caller — see [ShellPage.title].
+        // What stays here is that the shell has an app bar at all: it is the
+        // app's front door as of #147, not one entry in a home list.
+        title: Text(widget.title),
         actions: const [ThemeModeButton()],
       ),
       body: LayoutBuilder(

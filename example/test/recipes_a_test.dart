@@ -4,7 +4,7 @@ import 'package:example/recipes/cell_editing_recipe.dart';
 import 'package:example/recipes/drag_selection_recipe.dart';
 import 'package:example/recipes/selection_recipe.dart';
 import 'package:example/recipes/sorting_recipe.dart';
-import 'package:example/shell/recipe_catalog.dart';
+import 'package:example/app/recipe_catalog.dart';
 import 'package:example/theme/table_palette.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
@@ -277,11 +277,12 @@ void main() {
             isNot(const Color(0xFF448AFF)),
             reason: 'the package default blue rubber band survived into an '
                 'achromatic app ($brightness)');
-        expect(theme.dragSelectionTheme.fillColor,
-            isNot(const Color(0x33448AFF)));
+        expect(
+            theme.dragSelectionTheme.fillColor, isNot(const Color(0x33448AFF)));
         expect(theme.editableTheme.editingBorderColor,
             isNot(const Color(0xFF2196F3)),
-            reason: 'the package default blue edit border survived ($brightness)');
+            reason:
+                'the package default blue edit border survived ($brightness)');
         expect(theme.editableTheme.cursorColor, isNot(const Color(0xFF2196F3)));
       }
     });
@@ -372,7 +373,8 @@ void main() {
   group('the catalogue grew by three', () {
     test('and each names a feature that exists', () {
       final ids = recipeCatalog.map((r) => r.featureId).toList();
-      expect(ids, containsAll(['selection', 'sorting', 'dragSelection', 'editing']));
+      expect(ids,
+          containsAll(['selection', 'sorting', 'dragSelection', 'editing']));
 
       final featureIds =
           settingsSpec.expand((g) => g.features).map((f) => f.id).toSet();

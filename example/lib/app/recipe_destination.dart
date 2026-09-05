@@ -3,10 +3,10 @@ library;
 
 import 'package:flutter/material.dart';
 
-import '../../pages/playground/models/playground_settings.dart';
-import '../../pages/playground/widgets/feature_detail_pane.dart';
-import '../recipe_catalog.dart';
-import '../shell_destination.dart';
+import '../pages/playground/models/playground_settings.dart';
+import '../pages/playground/widgets/feature_detail_pane.dart';
+import 'recipe_catalog.dart';
+import '../gallery/gallery.dart';
 
 /// The state a recipe's stage and its knob pane both need.
 ///

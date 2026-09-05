@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
 
 import '../models/playground_settings.dart';
-import 'settings_controls.dart';
+import '../../../gallery/gallery.dart';
 
 /// How each setting is drawn.
 ///

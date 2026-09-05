@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
 
 import '../demo_data/demo_data.dart';
-import '../pages/playground/widgets/performance_monitor.dart';
+import '../gallery/gallery.dart';
 import '../theme/table_palette.dart';
 
 /// A table with far more rows than fit on a screen, and the numbers to go

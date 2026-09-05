@@ -1,13 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:example/app/destinations.dart';
 import 'package:example/pages/playground/models/settings_spec.dart';
-import 'package:example/shell/dart_highlighter.dart';
-import 'package:example/preview/preview_frame.dart';
-import 'package:example/shell/recipe_catalog.dart';
-import 'package:example/shell/shell_page.dart';
-import 'package:example/shell/source_pane.dart';
-import 'package:example/theme/example_theme.dart';
+import 'package:example/gallery/gallery.dart';
+import 'package:example/app/recipe_catalog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -52,8 +49,8 @@ class _BrokenBundle extends CachingAssetBundle {
 class _ControlledBundle extends CachingAssetBundle {
   final _completer = Completer<ByteData>();
 
-  void deliver(String contents) => _completer
-      .complete(ByteData.sublistView(Uint8List.fromList(utf8.encode(contents))));
+  void deliver(String contents) => _completer.complete(
+      ByteData.sublistView(Uint8List.fromList(utf8.encode(contents))));
 
   @override
   Future<ByteData> load(String key) => _completer.future;
@@ -112,7 +109,10 @@ Future<void> _pumpShell(WidgetTester tester) async {
 
   await tester.pumpWidget(MaterialApp(
     theme: exampleTheme(Brightness.light),
-    home: const ShellPage(),
+    home: ShellPage(
+      title: 'FlutterTablePlus Examples',
+      createDestinations: TablePlusDestinations.new,
+    ),
   ));
   await tester.pumpAndSettle();
 }
@@ -195,7 +195,8 @@ void main() {
       expect(find.text('b.dart'), findsOneWidget);
     });
 
-    testWidgets('and never shows the old bytes under the new path, even for a '
+    testWidgets(
+        'and never shows the old bytes under the new path, even for a '
         'frame', (tester) async {
       // The test above settles past this window; this one lives inside it.
       //
@@ -227,8 +228,8 @@ void main() {
           reason: "recipe A's source is on screen under recipe B's path");
       // And the control that says "copy this file" is not offering A's bytes
       // under B's name.
-      expect(tester.widget<IconButton>(find.byType(IconButton)).onPressed,
-          isNull);
+      expect(
+          tester.widget<IconButton>(find.byType(IconButton)).onPressed, isNull);
 
       slow.deliver('BBB');
       await tester.pumpAndSettle();
@@ -588,8 +589,8 @@ void main() {
       // in this file pumps straight past.
       await tester.pump();
 
-      expect(tester.widget<IconButton>(find.byType(IconButton)).onPressed,
-          isNull);
+      expect(
+          tester.widget<IconButton>(find.byType(IconButton)).onPressed, isNull);
     });
 
     testWidgets('and its confirmation does not follow you to the next file',
@@ -639,8 +640,8 @@ void main() {
       );
 
       expect(find.textContaining('Could not read'), findsOneWidget);
-      expect(tester.widget<IconButton>(find.byType(IconButton)).onPressed,
-          isNull);
+      expect(
+          tester.widget<IconButton>(find.byType(IconButton)).onPressed, isNull);
     });
   });
 }

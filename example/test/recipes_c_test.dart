@@ -1,3 +1,4 @@
+import 'package:example/app/destinations.dart';
 import 'package:example/demo_data/demo_data.dart';
 import 'package:example/pages/playground/models/playground_settings.dart';
 import 'package:example/recipes/dynamic_row_height_recipe.dart';
@@ -5,10 +6,9 @@ import 'package:example/recipes/merged_rows_recipe.dart';
 import 'package:example/recipes/row_card_recipe.dart';
 import 'package:example/recipes/tooltips_recipe.dart';
 import 'package:example/pages/playground/models/settings_spec.dart';
-import 'package:example/shell/destinations/recipe_destination.dart';
-import 'package:example/shell/recipe_catalog.dart';
-import 'package:example/shell/shell_page.dart';
-import 'package:example/theme/example_theme.dart';
+import 'package:example/app/recipe_destination.dart';
+import 'package:example/app/recipe_catalog.dart';
+import 'package:example/gallery/gallery.dart';
 import 'package:example/theme/table_palette.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
@@ -95,7 +95,9 @@ void main() {
 
       expect(built(base.copyWith(tooltipWaitDurationMs: 1234)).waitDuration,
           const Duration(milliseconds: 1234));
-      expect(built(base.copyWith(tooltipDirection: TooltipDirection.top)).direction,
+      expect(
+          built(base.copyWith(tooltipDirection: TooltipDirection.top))
+              .direction,
           TooltipDirection.top);
       expect(
           built(base.copyWith(tooltipAlignment: TooltipAlignment.start))
@@ -171,17 +173,18 @@ void main() {
     test('merged rows, and dynamic row heights', () {
       final merged = _recipe('mergedRows');
       expect(
-          (merged.build(base.copyWith(
-                  mergedRowsEnabled: !base.mergedRowsEnabled))
-              as MergedRowsRecipe)
+          (merged.build(
+                      base.copyWith(mergedRowsEnabled: !base.mergedRowsEnabled))
+                  as MergedRowsRecipe)
               .merged,
           isNot((merged.build(base) as MergedRowsRecipe).merged));
       expect(merged.knobIds, ['mergedRowsEnabled']);
 
       final heights = _recipe('dynamicRowHeight');
       expect(
-          (heights.build(base.copyWith(dynamicRowHeight: !base.dynamicRowHeight))
-              as DynamicRowHeightRecipe)
+          (heights.build(
+                      base.copyWith(dynamicRowHeight: !base.dynamicRowHeight))
+                  as DynamicRowHeightRecipe)
               .perRowHeight,
           isNot((heights.build(base) as DynamicRowHeightRecipe).perRowHeight));
       expect(heights.knobIds, ['dynamicRowHeight']);
@@ -241,8 +244,7 @@ void main() {
       // `_pump` carried a `brightness` parameter no caller used, so the two
       // colours this ticket added to the dark palette were asserted nowhere.
       // A tooltip is drawn *over* the page, so the two grounds must not agree.
-      await _pump(tester, const TooltipsRecipe(),
-          brightness: Brightness.dark);
+      await _pump(tester, const TooltipsRecipe(), brightness: Brightness.dark);
 
       final dark = _table(tester).theme.tooltipTheme;
       expect(dark.backgroundColor, TablePalette.dark.tooltipBand);
@@ -309,7 +311,8 @@ void main() {
               'the recipe demonstrates the precedence, not one side of it');
     });
 
-    testWidgets('and the data is mixed, which is the only state that shows '
+    testWidgets(
+        'and the data is mixed, which is the only state that shows '
         'a gate', (tester) async {
       // Asserted structurally rather than in pixels. This suite's font draws
       // every glyph as a square of the font size, so a width measured here is
@@ -334,7 +337,8 @@ void main() {
     });
   });
 
-  group('the row card is the consumer\'s widget, and the bubble gets out of '
+  group(
+      'the row card is the consumer\'s widget, and the bubble gets out of '
       'its way', () {
     testWidgets('the tooltip around it draws nothing of its own',
         (tester) async {
@@ -575,8 +579,7 @@ void main() {
                 'height was measured at');
 
         final painted = tester
-            .renderObject<RenderBox>(
-                find.textContaining('joined the').first)
+            .renderObject<RenderBox>(find.textContaining('joined the').first)
             .size
             .width;
         expect(painted, closeTo(declared - padding, 1.0),
@@ -597,7 +600,8 @@ void main() {
       final drawn = _table(tester).theme.bodyTheme.textStyle;
       expect(drawn.fontSize, 13);
       expect(drawn.height, 1.35,
-          reason: 'the line height the measurement used did not reach the cell');
+          reason:
+              'the line height the measurement used did not reach the cell');
       // Merged onto the shared style, not assigned over it. Assigning drops the
       // palette's ink and the row falls back to whatever DefaultTextStyle had —
       // a colour nothing in this app chose, and legible only by luck.
@@ -612,8 +616,8 @@ void main() {
       // broken rather than absent.
       await _pump(tester, const DynamicRowHeightRecipe());
 
-      expect(_table(tester).columns['notes']!.textOverflow,
-          TextOverflow.visible);
+      expect(
+          _table(tester).columns['notes']!.textOverflow, TextOverflow.visible);
     });
   });
 
@@ -629,7 +633,10 @@ void main() {
 
       await tester.pumpWidget(MaterialApp(
         theme: exampleTheme(Brightness.light),
-        home: const ShellPage(),
+        home: ShellPage(
+          title: 'FlutterTablePlus Examples',
+          createDestinations: TablePlusDestinations.new,
+        ),
       ));
       await tester.pumpAndSettle();
 

@@ -3,7 +3,7 @@ library;
 
 import 'dart:async';
 
-import 'package:example/shell/dart_highlighter.dart';
+import 'dart_highlighter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -245,11 +245,13 @@ class _PathBarState extends State<_PathBar> {
       padding: const EdgeInsets.only(left: 14, right: 6, top: 2, bottom: 2),
       decoration: BoxDecoration(
         color: scheme.surfaceContainerHighest,
-        border: Border(bottom: BorderSide(color: Theme.of(context).dividerColor)),
+        border:
+            Border(bottom: BorderSide(color: Theme.of(context).dividerColor)),
       ),
       child: Row(
         children: [
-          Icon(Icons.description_outlined, size: 15, color: scheme.onSurfaceVariant),
+          Icon(Icons.description_outlined,
+              size: 15, color: scheme.onSurfaceVariant),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
@@ -310,7 +312,8 @@ class _Failure extends StatelessWidget {
             Text(
               'Could not read $path',
               textAlign: TextAlign.center,
-              style: TextStyle(fontWeight: FontWeight.w600, color: scheme.error),
+              style:
+                  TextStyle(fontWeight: FontWeight.w600, color: scheme.error),
             ),
             const SizedBox(height: 8),
             Text(
@@ -460,4 +463,3 @@ class _CodeState extends State<_Code> {
     );
   }
 }
-

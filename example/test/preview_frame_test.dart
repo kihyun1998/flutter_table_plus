@@ -1,6 +1,4 @@
-import 'package:example/preview/preview_frame.dart';
-import 'package:example/preview/preview_stage.dart';
-import 'package:example/preview/viewport_spec.dart';
+import 'package:example/gallery/gallery.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
 import 'package:flutter_test/flutter_test.dart';

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'shell/shell_page.dart';
-import 'theme/example_theme.dart';
+import 'app/destinations.dart';
+import 'gallery/gallery.dart';
 
 void main() {
   runApp(const MyApp());
@@ -38,7 +38,15 @@ class _MyAppState extends State<MyApp> {
           theme: exampleTheme(Brightness.light),
           darkTheme: exampleTheme(Brightness.dark),
           themeMode: _themeController.mode,
-          home: const ShellPage(),
+          // Deliberately a second literal rather than one constant shared with
+          // `MaterialApp.title` above. They are different surfaces — the OS
+          // task switcher and the bar on screen — that agree today and are
+          // allowed to diverge; one const would assert they must always match,
+          // which nothing here has established.
+          home: ShellPage(
+            title: 'FlutterTablePlus Examples',
+            createDestinations: TablePlusDestinations.new,
+          ),
         ),
       ),
     );

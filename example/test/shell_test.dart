@@ -1,13 +1,9 @@
+import 'package:example/app/destinations.dart';
 import 'package:example/demo_data/demo_data.dart';
 import 'package:example/pages/playground/playground_page.dart';
-import 'package:example/preview/preview_stage.dart';
-import 'package:example/preview/viewport_spec.dart';
-import 'package:example/shell/destinations/employee_demo.dart';
-import 'package:example/shell/shell_destination.dart';
+import 'package:example/gallery/gallery.dart';
+import 'package:example/app/employee_demo.dart';
 import 'package:example/pages/tooltip_anchor/tooltip_anchor_page.dart';
-import 'package:example/shell/shell_menu.dart';
-import 'package:example/shell/shell_page.dart';
-import 'package:example/theme/example_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -42,7 +38,10 @@ Future<void> _pumpShell(
 }) async {
   await tester.pumpWidget(MaterialApp(
     theme: exampleTheme(brightness),
-    home: const ShellPage(),
+    home: ShellPage(
+      title: 'FlutterTablePlus Examples',
+      createDestinations: TablePlusDestinations.new,
+    ),
   ));
   await tester.pumpAndSettle();
 }

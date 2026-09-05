@@ -1,5 +1,5 @@
-import 'package:example/shell/dart_highlighter.dart';
-import 'package:example/shell/recipe_catalog.dart';
+import 'package:example/gallery/gallery.dart';
+import 'package:example/app/recipe_catalog.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';

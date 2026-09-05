@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/feature_switches.dart';
 import '../models/playground_settings.dart';
 import '../models/settings_spec.dart';
-import 'settings_controls.dart';
+import '../../../gallery/gallery.dart';
 import 'settings_registry.dart';
 
 /// One feature, opened.

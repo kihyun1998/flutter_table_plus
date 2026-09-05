@@ -5,7 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../demo_data/demo_data.dart';
 import '../../theme/table_palette.dart';
-import '../../theme/theme_mode_button.dart';
+import '../../gallery/gallery.dart';
 import 'models/playground_settings.dart';
 import 'models/settings_presets.dart';
 import 'models/settings_spec.dart';
@@ -13,7 +13,6 @@ import 'playground_columns.dart';
 import 'playground_format.dart';
 import 'widgets/feature_detail_pane.dart';
 import 'widgets/feature_list_pane.dart';
-import 'widgets/performance_monitor.dart';
 import 'widgets/preset_bar.dart';
 
 /// Interactive playground for testing FlutterTablePlus
@@ -220,32 +219,33 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         if (column != null) {
           // A new list, not an in-place sort: `data` is invalidated on the
           // list's identity.
-          _data = List.of(_data)..sort((a, b) {
-            final aValue = column.valueAccessor(a);
-            final bValue = column.valueAccessor(b);
+          _data = List.of(_data)
+            ..sort((a, b) {
+              final aValue = column.valueAccessor(a);
+              final bValue = column.valueAccessor(b);
 
-            int comparison = 0;
+              int comparison = 0;
 
-            if (aValue == null && bValue == null) {
-              comparison = 0;
-            } else if (aValue == null) {
-              comparison = 1;
-            } else if (bValue == null) {
-              comparison = -1;
-            } else if (aValue is num && bValue is num) {
-              comparison = aValue.compareTo(bValue);
-            } else if (aValue is String && bValue is String) {
-              comparison = aValue.compareTo(bValue);
-            } else if (aValue is DateTime && bValue is DateTime) {
-              comparison = aValue.compareTo(bValue);
-            } else {
-              comparison = aValue.toString().compareTo(bValue.toString());
-            }
+              if (aValue == null && bValue == null) {
+                comparison = 0;
+              } else if (aValue == null) {
+                comparison = 1;
+              } else if (bValue == null) {
+                comparison = -1;
+              } else if (aValue is num && bValue is num) {
+                comparison = aValue.compareTo(bValue);
+              } else if (aValue is String && bValue is String) {
+                comparison = aValue.compareTo(bValue);
+              } else if (aValue is DateTime && bValue is DateTime) {
+                comparison = aValue.compareTo(bValue);
+              } else {
+                comparison = aValue.toString().compareTo(bValue.toString());
+              }
 
-            return direction == SortDirection.ascending
-                ? comparison
-                : -comparison;
-          });
+              return direction == SortDirection.ascending
+                  ? comparison
+                  : -comparison;
+            });
         }
       }
 

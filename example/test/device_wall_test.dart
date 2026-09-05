@@ -1,7 +1,5 @@
 import 'package:example/demo_data/demo_data.dart';
-import 'package:example/preview/device_wall.dart';
-import 'package:example/preview/preview_frame.dart';
-import 'package:example/preview/viewport_spec.dart';
+import 'package:example/gallery/gallery.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -324,7 +322,8 @@ void main() {
 // generator — see `RandomDataGenerator._randomFor`.
 void _dataGroup() {
   group('every frame shows the same data', () {
-    testWidgets('a stage that generates rows in State is still identical '
+    testWidgets(
+        'a stage that generates rows in State is still identical '
         'across the three frames', (tester) async {
       _surface(tester, const Size(1600, 900));
       await tester.pumpWidget(MaterialApp(

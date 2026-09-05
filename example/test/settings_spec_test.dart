@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:example/gallery/gallery.dart';
 import 'package:example/pages/playground/models/settings_spec.dart';
 import 'package:flutter_test/flutter_test.dart';
 

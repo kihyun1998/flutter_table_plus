@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../theme/theme_mode_button.dart';
+import '../../gallery/gallery.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
 
 /// One row of the anchor demo. The value is long on purpose: a text tooltip's

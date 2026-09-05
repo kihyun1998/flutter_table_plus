@@ -4,8 +4,8 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
 
-import '../../demo_data/demo_data.dart';
-import '../../theme/table_palette.dart';
+import '../demo_data/demo_data.dart';
+import '../theme/table_palette.dart';
 
 /// The state the stage and the knob region both need.
 ///

@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:example/pages/playground/models/playground_settings.dart';
 import 'package:example/pages/playground/models/settings_spec.dart';
 import 'package:example/pages/playground/widgets/feature_detail_pane.dart';
-import 'package:example/pages/playground/widgets/settings_controls.dart';
+import 'package:example/gallery/gallery.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

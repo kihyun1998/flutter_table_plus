@@ -1,8 +1,8 @@
+import 'package:example/app/destinations.dart';
 import 'package:example/demo_data/demo_data.dart';
 import 'package:example/scenarios/hr_dashboard_scenario.dart';
 import 'package:example/scenarios/large_table_scenario.dart';
-import 'package:example/shell/shell_page.dart';
-import 'package:example/theme/example_theme.dart';
+import 'package:example/gallery/gallery.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -64,7 +64,8 @@ void main() {
           findsNWidgets(HrDashboardDemo.departments.length));
     });
 
-    testWidgets('a performance bar is drawn against the range the generator '
+    testWidgets(
+        'a performance bar is drawn against the range the generator '
         'actually produces', (tester) async {
       // `RandomDataGenerator` makes `0.5 + nextDouble() * 0.5`, so every score
       // is between 0.5 and 1.0. The bar divided by 5.0 under a comment claiming
@@ -365,7 +366,10 @@ void main() {
 
       await tester.pumpWidget(MaterialApp(
         theme: exampleTheme(Brightness.light),
-        home: const ShellPage(),
+        home: ShellPage(
+          title: 'FlutterTablePlus Examples',
+          createDestinations: TablePlusDestinations.new,
+        ),
       ));
       await tester.pumpAndSettle();
 

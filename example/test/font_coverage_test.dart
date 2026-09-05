@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:example/theme/example_theme.dart';
+import 'package:example/gallery/gallery.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 // The bundled Pretendard is a subset, and a subset is a claim about which

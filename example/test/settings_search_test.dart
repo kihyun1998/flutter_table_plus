@@ -1,4 +1,4 @@
-import 'package:example/pages/playground/widgets/settings_controls.dart';
+import 'package:example/gallery/gallery.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

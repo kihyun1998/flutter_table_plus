@@ -1,15 +1,13 @@
 import 'dart:io';
 
+import 'package:example/app/destinations.dart';
 import 'package:example/demo_data/demo_data.dart';
 import 'package:example/pages/playground/models/playground_settings.dart';
 import 'package:example/pages/playground/models/settings_spec.dart';
-import 'package:example/pages/playground/widgets/settings_controls.dart';
+import 'package:example/gallery/gallery.dart';
 import 'package:example/recipes/selection_recipe.dart';
-import 'package:example/shell/destinations/recipe_destination.dart';
-import 'package:example/shell/recipe_catalog.dart';
-import 'package:example/shell/shell_menu.dart';
-import 'package:example/shell/shell_page.dart';
-import 'package:example/theme/example_theme.dart';
+import 'package:example/app/recipe_destination.dart';
+import 'package:example/app/recipe_catalog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -194,7 +192,8 @@ void main() {
       final composed = [
         for (final file in scenarios)
           for (final import in _importsOf(file))
-            if (!_allowedImports.any(import.startsWith)) '${file.path}: $import',
+            if (!_allowedImports.any(import.startsWith))
+              '${file.path}: $import',
       ];
       expect(composed, isNotEmpty,
           reason: 'every scenario would pass the allow-list, so nothing rests '
@@ -260,8 +259,10 @@ void main() {
     const base = PlaygroundSettings();
 
     test('and no other', () {
-      expect(built(base.copyWith(selectionEnabled: !base.selectionEnabled))
-          .selectable, isNot(built(base).selectable));
+      expect(
+          built(base.copyWith(selectionEnabled: !base.selectionEnabled))
+              .selectable,
+          isNot(built(base).selectable));
 
       expect(
           built(base.copyWith(
@@ -324,8 +325,7 @@ void main() {
           builder: (context, setState) => Column(
             children: [
               ElevatedButton(
-                onPressed: () =>
-                    setState(() => mode = SelectionMode.single),
+                onPressed: () => setState(() => mode = SelectionMode.single),
                 child: const Text('single'),
               ),
               Expanded(child: SelectionRecipe(selectionMode: mode)),
@@ -432,8 +432,7 @@ void main() {
         const SelectionRecipe(selectAllEnabled: false),
       );
 
-      await tester.tap(find.byType(FlutterCheckbox).first,
-          warnIfMissed: false);
+      await tester.tap(find.byType(FlutterCheckbox).first, warnIfMissed: false);
       await tester.pumpAndSettle();
 
       expect(_selectedCount(tester), 0,
@@ -473,7 +472,10 @@ void main() {
 
       await tester.pumpWidget(MaterialApp(
         theme: exampleTheme(Brightness.light),
-        home: const ShellPage(),
+        home: ShellPage(
+          title: 'FlutterTablePlus Examples',
+          createDestinations: TablePlusDestinations.new,
+        ),
       ));
       await tester.pumpAndSettle();
     }
@@ -500,7 +502,8 @@ void main() {
       // description rather than written here, so the assertion cannot drift
       // away from what the feature owns — and it is nowhere near 58.
       final owned = recipeCatalog.first.knobIds.length;
-      expect(owned, 6, reason: 'selection still owns a switch and five options');
+      expect(owned, 6,
+          reason: 'selection still owns a switch and five options');
       expect(find.byType(SettingsControl), findsNWidgets(owned));
     });
 
