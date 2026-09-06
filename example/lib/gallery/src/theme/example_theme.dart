@@ -44,7 +44,6 @@ import 'package:flutter/material.dart';
 /// typeface seam rather than as an error (#122). `font_coverage_test.dart` now
 /// asserts both halves as a pair, so the next person to write Korean here gets
 /// a red test instead of a fallback.
-const exampleChromeFont = 'Pretendard';
 
 // Flutter derives the scheme; this file only says which one.
 //
@@ -79,13 +78,34 @@ ColorScheme _scheme(Brightness brightness) => ColorScheme.fromSeed(
 /// defaults get wrong for a demo shell and nothing else: the app bar's tint and
 /// scroll elevation, cards that want a hairline instead of a shadow, and
 /// controls sized for a settings panel rather than a phone.
-ThemeData exampleTheme(Brightness brightness) {
+/// The app chrome's theme, in the family the caller names.
+///
+/// **The gallery carries no typeface and therefore names none.** [chromeFont] is
+/// a family name and nothing more: producing the face — shipping the files,
+/// declaring them in a manifest — belongs to whoever chose it, because they are
+/// that caller's files. Passing nothing leaves Flutter's own Material
+/// typography, which Flutter ships, so the default is correct in any consumer
+/// with no assets, no declaration and no network.
+///
+/// It used to name `Pretendard` here, while the four weights behind that name
+/// lived in the example app's `assets/fonts/`. Once this file moved into the
+/// portable zone the name travelled and the files did not, and **nothing
+/// reported it**: a missing glyph does not throw — Flutter draws it from another
+/// face, so the failure reads as a typeface seam rather than as an error
+/// (#122, #179).
+///
+/// Fetching a face over the network was the other candidate and is rejected.
+/// This repository already rejected it once inside this zone, for the Code pane:
+/// see `SourcePane.monoFallback`. An example that needs the network to draw its
+/// own chrome fails on a train, draws a fallback and reflows on first paint, and
+/// makes an outbound request its consumer never asked a library for.
+ThemeData exampleTheme(Brightness brightness, {String? chromeFont}) {
   final scheme = _scheme(brightness);
 
   return ThemeData(
     useMaterial3: true,
     colorScheme: scheme,
-    fontFamily: exampleChromeFont,
+    fontFamily: chromeFont,
     scaffoldBackgroundColor: scheme.surface,
     appBarTheme: AppBarTheme(
       backgroundColor: scheme.surface,
@@ -95,7 +115,7 @@ ThemeData exampleTheme(Brightness brightness) {
       scrolledUnderElevation: 0,
       shape: Border(bottom: BorderSide(color: scheme.outlineVariant)),
       titleTextStyle: TextStyle(
-        fontFamily: exampleChromeFont,
+        fontFamily: chromeFont,
         fontSize: 16,
         fontWeight: FontWeight.w600,
         letterSpacing: -0.2,
@@ -119,13 +139,13 @@ ThemeData exampleTheme(Brightness brightness) {
     listTileTheme: ListTileThemeData(
       iconColor: scheme.primary,
       titleTextStyle: TextStyle(
-        fontFamily: exampleChromeFont,
+        fontFamily: chromeFont,
         fontSize: 15.5,
         fontWeight: FontWeight.w600,
         color: scheme.onSurface,
       ),
       subtitleTextStyle: TextStyle(
-        fontFamily: exampleChromeFont,
+        fontFamily: chromeFont,
         fontSize: 13,
         color: scheme.secondary,
       ),
@@ -133,7 +153,7 @@ ThemeData exampleTheme(Brightness brightness) {
     segmentedButtonTheme: SegmentedButtonThemeData(
       style: ButtonStyle(
         textStyle: WidgetStatePropertyAll(
-          TextStyle(fontFamily: exampleChromeFont, fontSize: 13),
+          TextStyle(fontFamily: chromeFont, fontSize: 13),
         ),
       ),
     ),

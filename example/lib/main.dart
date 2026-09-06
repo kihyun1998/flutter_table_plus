@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'app/chrome_font.dart';
 import 'app/destinations.dart';
 import 'gallery/gallery.dart';
 
@@ -35,8 +36,8 @@ class _MyAppState extends State<MyApp> {
         builder: (context, _) => MaterialApp(
           title: 'FlutterTablePlus Examples',
           debugShowCheckedModeBanner: false,
-          theme: exampleTheme(Brightness.light),
-          darkTheme: exampleTheme(Brightness.dark),
+          theme: exampleTheme(Brightness.light, chromeFont: exampleChromeFont),
+          darkTheme: exampleTheme(Brightness.dark, chromeFont: exampleChromeFont),
           themeMode: _themeController.mode,
           // Deliberately a second literal rather than one constant shared with
           // `MaterialApp.title` above. They are different surfaces — the OS

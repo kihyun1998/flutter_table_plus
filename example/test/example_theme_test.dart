@@ -146,6 +146,103 @@ void main() {
     });
   });
 
+  group('the chrome font is the caller\'s', () {
+    /// The leaf styles this theme writes itself, keyed by where it writes them.
+    ///
+    /// **Reading the typography alone is not enough.** A theme whose text theme
+    /// defers to Flutter while a leaf still says `Pretendard` reproduces exactly
+    /// the failure this parameter exists to remove — a family name with no files
+    /// behind it, falling back without saying so. Same shape as the Code pane's
+    /// monospace test, which passed while reading the wrapper `SelectableText`
+    /// puts around a span tree and had to move to a leaf (#123), and the same
+    /// rule as `docs/map/invariant/guard-the-destination.md`.
+    Map<String, String?> leafFamilies(ThemeData t) => {
+          'appBarTheme.titleTextStyle': t.appBarTheme.titleTextStyle?.fontFamily,
+          'listTileTheme.titleTextStyle':
+              t.listTileTheme.titleTextStyle?.fontFamily,
+          'listTileTheme.subtitleTextStyle':
+              t.listTileTheme.subtitleTextStyle?.fontFamily,
+          'segmentedButtonTheme.textStyle': t.segmentedButtonTheme.style
+              ?.textStyle
+              ?.resolve(const <WidgetState>{})
+              ?.fontFamily,
+        };
+
+    /// Where `ThemeData(fontFamily:)` actually lands.
+    ///
+    /// Measured 2026-09-06 rather than assumed, and the measurement moved this
+    /// test twice. `ThemeData` exposes no `fontFamily` getter at all — the
+    /// argument is applied to `textTheme` and `primaryTextTheme` and is not
+    /// readable anywhere else. And with **no** family given, Flutter's own
+    /// Material typography names `Roboto`, which it carries: the default is not
+    /// null, and asserting null here would have been asserting a wrong model.
+    String? typography(ThemeData t) => t.textTheme.bodyMedium?.fontFamily;
+
+    /// What Flutter answers when nobody names a family. Derived rather than
+    /// written down, so a framework that changes its default does not redden a
+    /// test about this package.
+    String? flutterDefault() =>
+        ThemeData(useMaterial3: true).textTheme.bodyMedium?.fontFamily;
+
+    test('every site the theme names a family at is watched', () {
+      // The map above is a hand-written roster and this is what keeps it from
+      // going stale -- `docs/map/invariant/no-hand-enumeration.md`. Dart has no
+      // reflection, so the source is read, the way `settings_spec_test.dart`
+      // and `recipe_seam_test.dart` do it.
+      //
+      // A sixth styled surface added later is invisible to the two tests below:
+      // they would keep passing while the new leaf named a font nobody carries.
+      // The +1 is the top-level argument, which `leafFamilies` cannot see
+      // because `ThemeData` does not expose it.
+      final source =
+          File('lib/gallery/src/theme/example_theme.dart').readAsStringSync();
+      final sites = RegExp(r'fontFamily:').allMatches(source).length;
+
+      expect(sites, leafFamilies(exampleTheme(Brightness.light)).length + 1,
+          reason: 'example_theme.dart names a font family at $sites sites; this '
+              'test watches ${leafFamilies(exampleTheme(Brightness.light)).length}'
+              ' leaves plus the top level');
+    });
+
+    test('names no family of its own by default', () {
+      // The gallery carries no font, so by default it must add none. What is
+      // left is Flutter's, which Flutter ships -- correct with no assets, no
+      // declaration and no network, in any consumer.
+      for (final brightness in Brightness.values) {
+        final named = leafFamilies(exampleTheme(brightness))
+            .entries
+            .where((e) => e.value != null)
+            .map((e) => '${e.key} = ${e.value}');
+
+        expect(named, isEmpty,
+            reason: 'a leaf naming a family the zone does not carry is the '
+                'silent fallback this parameter removes; at $brightness: '
+                '${named.join(', ')}');
+
+        expect(typography(exampleTheme(brightness)), flutterDefault(),
+            reason: 'the typography must be left as Flutter set it');
+      }
+    });
+
+    test('names the family it is given, at every one of those sites', () {
+      const face = 'Not A Real Face';
+
+      for (final brightness in Brightness.values) {
+        final theme = exampleTheme(brightness, chromeFont: face);
+        final missed = leafFamilies(theme)
+            .entries
+            .where((e) => e.value != face)
+            .map((e) => '${e.key} = ${e.value}');
+
+        expect(missed, isEmpty,
+            reason: 'a caller\'s font must reach every styled surface, not '
+                'only the typography; missed at $brightness: '
+                '${missed.join(', ')}');
+        expect(typography(theme), face);
+      }
+    });
+  });
+
   group('buildPlaygroundTheme', () {
     test('defaults to light, so the existing callers keep their theme', () {
       expect(

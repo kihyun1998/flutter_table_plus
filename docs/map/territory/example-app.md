@@ -185,6 +185,27 @@ notes.
   expensive shape is reachable without a scenario. The tables build their rows
   lazily, so the cost is three times what is on screen rather than three times
   the data.
+- **The typeface is the caller's, and the zone names none.** `exampleTheme`
+  takes a family name; passing nothing leaves Flutter's own Material typography,
+  which Flutter ships — measured 2026-09-06, and it is `Roboto` rather than null,
+  so a test asserting null would have been asserting a wrong model. `ThemeData`
+  exposes no `fontFamily` getter at all; the argument lands in `textTheme`, which
+  is the only place it can be read.
+  This was the last thing in the zone that did not travel. The theme named
+  `Pretendard` while the four weights behind it stayed in the example's
+  `assets/fonts/`, so extracting the zone left a name with no files — and
+  **nothing reported it**, for the reason the subset bullet below already gives.
+  A standalone-package probe compiled clean and passed a consumer suite with the
+  font already missing: **compile-time portability is not portability**, and any
+  future proof that consists only of compiling shares that blind spot.
+  Fetching the face was rejected rather than untried. `SourcePane.monoFallback`
+  had already recorded the argument for the Code pane — a pane whose job is to
+  show bytes on disk should not need the network — and it is stronger for a
+  package: offline evaluation, a fallback that reflows on first paint, and an
+  outbound request a consumer never asked a library for. Bundling the faces
+  *inside* the zone is refused for the mirror reason: it decides what the
+  consumer's app looks like.
+
 - **The bundled font is a subset, and the subset is a claim.** Four Pretendard
   weights ship with the app, cut from the full faces to a Latin charset written
   down as Unicode ranges in `scripts/fonts/subset_pretendard.py`. Two properties
@@ -252,7 +273,8 @@ panes read settings through
 `lib/gallery/src/settings/feature_search.dart` — `searchFeatures`, `FeatureMatch`
 `lib/gallery/src/perf/performance_monitor.dart` — `PerformanceMetrics`,
 `PerformanceMonitor`
-`lib/gallery/src/theme/example_theme.dart`
+`lib/gallery/src/theme/example_theme.dart` — takes the chrome family as an
+argument and names none of its own (#179)
 `lib/gallery/src/theme/theme_mode_button.dart`
 
 `lib/app/destinations.dart` — `TablePlusDestinations`, this app's answer to the
@@ -269,6 +291,8 @@ what its bar says
 `lib/pages/playground/models/settings_spec.dart` — this app's 58 settings in the
 gallery's vocabulary, plus `featureById` binding `featureIn` to them so the
 fifteen call sites that read a global did not have to change
+`lib/app/chrome_font.dart` — `exampleChromeFont`, the family name this app
+hands the gallery, beside the assets it describes
 `lib/pages/playground/playground_settings_host.dart` — `PlaygroundSettingsHost`,
 this app's answer to that port, and the only place the `data` feature's row
 count badge and Generate button now live

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:example/app/chrome_font.dart';
 import 'package:example/app/destinations.dart';
 import 'package:example/pages/playground/models/settings_spec.dart';
 import 'package:example/gallery/gallery.dart';

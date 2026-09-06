@@ -40,7 +40,7 @@ class SourcePane extends StatefulWidget {
   /// resolves `fontFamily` first and reaches `fontFamilyFallback` only for
   /// glyphs that family lacks; a `TextStyle` with `inherit: true` — the default
   /// — merges the ambient `DefaultTextStyle`, which carries
-  /// [exampleChromeFont] from `ThemeData.fontFamily`. So a style that lists
+  /// the chrome family from `ThemeData.fontFamily`. So a style that lists
   /// only fallbacks renders in the proportional chrome font, and the list below
   /// is reached by nothing but the few characters Pretendard's subset is
   /// missing. This pane did exactly that from #104 until #123.
