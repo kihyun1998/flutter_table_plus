@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../models/settings_presets.dart';
+import 'settings_host.dart';
 
 /// The named combinations, above the table.
 ///
@@ -8,18 +8,20 @@ import '../models/settings_presets.dart';
 /// the panel was rebuilt: a set of feature switches applied to the settings,
 /// and `copyWith` was always enough for that.
 class PresetBar extends StatelessWidget {
-  const PresetBar({
-    super.key,
-    required this.activePresetId,
-    required this.onPresetSelected,
-  });
+  const PresetBar({super.key, required this.host});
 
-  final String? activePresetId;
-  final ValueChanged<SettingsPreset> onPresetSelected;
+  final SettingsHost host;
 
   @override
   Widget build(BuildContext context) {
-    final active = activePresetId == null ? null : presetById(activePresetId!);
+    final presets = host.presets;
+    // A host with no named combinations draws nothing at all -- not an empty
+    // strip with a rule under it, which is a piece of chrome announcing a
+    // feature that is not there.
+    if (presets.isEmpty) return const SizedBox.shrink();
+
+    final activeId = host.activePresetId;
+    final active = presets.where((p) => p.id == activeId).firstOrNull;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
@@ -41,9 +43,9 @@ class PresetBar extends StatelessWidget {
               for (final preset in presets)
                 ChoiceChip(
                   label: Text(preset.title),
-                  selected: preset.id == activePresetId,
+                  selected: preset.id == activeId,
                   onSelected: (picked) =>
-                      picked ? onPresetSelected(preset) : null,
+                      picked ? host.applyPreset(preset.id) : null,
                 ),
             ],
           ),

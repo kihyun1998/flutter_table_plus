@@ -61,4 +61,25 @@ abstract class SettingsHost {
   /// Widgets drawn after this feature's options. See [extrasBeforeOptions].
   List<Widget> extrasAfterOptions(String featureId, BuildContext context) =>
       const [];
+
+  /// The named combinations this host offers, in the order to show them.
+  ///
+  /// Empty by default, and `PresetBar` draws nothing at all for an empty list —
+  /// not an empty strip with a rule under it. A package with no named
+  /// combinations should not have to say so.
+  List<PresetSummary> get presets => const [];
+
+  /// The preset the current settings still match, or null once anything has
+  /// been changed by hand.
+  ///
+  /// The host's, not the bar's: whether a hand-edit clears it is a question
+  /// about what a preset *means*, which only the side owning the settings can
+  /// answer.
+  String? get activePresetId => null;
+
+  /// Applies one, by id.
+  ///
+  /// A command like [setSwitch], and for the same reason: the bar used to hand
+  /// back a preset object, which meant knowing the type it was handing back.
+  void applyPreset(String presetId) {}
 }

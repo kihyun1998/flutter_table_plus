@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../../gallery/gallery.dart';
 import 'models/feature_switches.dart';
 import 'models/playground_settings.dart';
+import 'models/settings_presets.dart';
 import 'models/settings_spec.dart';
 import 'widgets/settings_registry.dart';
 
@@ -25,12 +26,35 @@ class PlaygroundSettingsHost extends SettingsHost {
     required this.onChanged,
     required this.onGenerateData,
     required this.isGenerating,
+    this.activePresetId,
+    this.onPresetSelected,
   });
 
   final PlaygroundSettings settings;
   final ValueChanged<PlaygroundSettings> onChanged;
   final VoidCallback onGenerateData;
   final bool isGenerating;
+
+  @override
+  final String? activePresetId;
+
+  /// Applying a preset is more than writing switches — the page also records
+  /// which one is now active, and every other settings change clears it. That
+  /// bookkeeping is the page's, so the host forwards rather than deciding.
+  ///
+  /// Optional, because not every place that draws these panes has anywhere to
+  /// put a preset: a recipe's knob pane shows one feature's controls. **A host
+  /// with no way to apply one offers none** — [presets] is empty rather than
+  /// listing combinations whose chips would do nothing.
+  final ValueChanged<SettingsPreset>? onPresetSelected;
+
+  @override
+  List<PresetSummary> get presets =>
+      onPresetSelected == null ? const [] : allPresets;
+
+  @override
+  void applyPreset(String presetId) =>
+      onPresetSelected?.call(presetById(presetId));
 
   @override
   List<SettingGroup> get spec => settingsSpec;

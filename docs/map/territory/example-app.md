@@ -59,6 +59,23 @@ notes.
   no type from this example at all, so it fails if a pane needs anything the port
   does not carry — which is the failure that would otherwise arrive on the day of
   extraction.
+  **Everything optional on the port is opt-in, and a host that claims nothing
+  gets nothing drawn.** The extras hooks, and `presets`, default to empty; a
+  `PresetBar` over an empty list draws no widget at all rather than an empty
+  strip with a rule under it, which would be chrome announcing a capability that
+  is not there. `PlaygroundSettingsHost` takes this further and reports **no**
+  presets when it was given no way to apply one — a recipe's knob pane draws one
+  feature's controls and has nowhere to put a preset, so offering chips that do
+  nothing would be worse than offering none.
+  That default is exercised by a second fake that overrides only what the port
+  leaves abstract. It exists because `redden` found the gap: the ordinary fake
+  overrides `presets`, so the empty default was asserted **nowhere**, and a port
+  that started handing out phantom presets reddened nothing.
+  What stays outside is `featuresOn` — which of this package's switches a preset
+  turns on. The bar never reads it, so carrying it across would put the
+  consumer's vocabulary in the gallery for a field nothing there looks at.
+  `PresetSummary` is `id`, `title` and `lookFor`, and `SettingsPreset` extends
+  it.
 
 - **The demo does not re-test the package.** A behaviour the package pins in its
   own suite is not re-asserted here; doing so would mean fighting the demo's own
@@ -271,6 +288,8 @@ panes read settings through
 `lib/gallery/src/settings/feature_list_pane.dart`
 `lib/gallery/src/settings/feature_detail_pane.dart`
 `lib/gallery/src/settings/feature_search.dart` — `searchFeatures`, `FeatureMatch`
+`lib/gallery/src/settings/preset_bar.dart` — draws `SettingsHost.presets`, and
+nothing at all when there are none
 `lib/gallery/src/perf/performance_monitor.dart` — `PerformanceMetrics`,
 `PerformanceMonitor`
 `lib/gallery/src/theme/example_theme.dart` — takes the chrome family as an

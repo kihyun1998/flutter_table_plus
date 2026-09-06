@@ -30,8 +30,8 @@ void main() {
 
   group('applyPreset', () {
     test('bare turns every feature off', () {
-      final bare = applyPreset(const PlaygroundSettings(), presets.first);
-      expect(presets.first.id, 'bare');
+      final bare = applyPreset(const PlaygroundSettings(), allPresets.first);
+      expect(allPresets.first.id, 'bare');
 
       for (final entry in featureSwitches.entries) {
         expect(entry.value.read(bare), isFalse, reason: entry.key);
@@ -83,7 +83,7 @@ void main() {
   });
 
   test('every preset says what to look for', () {
-    for (final p in presets) {
+    for (final p in allPresets) {
       expect(p.title.trim(), isNotEmpty, reason: p.id);
       expect(p.lookFor.trim(), isNotEmpty, reason: p.id);
     }
@@ -91,7 +91,7 @@ void main() {
 
   test('every preset names features the description knows', () {
     final declared = _specSwitchIds();
-    for (final p in presets) {
+    for (final p in allPresets) {
       expect(p.featuresOn.difference(declared), isEmpty, reason: p.id);
     }
   });

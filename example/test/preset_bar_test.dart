@@ -25,7 +25,7 @@ void main() {
       (tester) async {
     await _pumpPlayground(tester);
 
-    for (final preset in presets) {
+    for (final preset in allPresets) {
       expect(find.text(preset.title), findsOneWidget, reason: preset.id);
     }
     expect(find.text(presetById('bare').lookFor), findsOneWidget);

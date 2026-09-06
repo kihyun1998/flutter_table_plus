@@ -89,3 +89,29 @@ class Interaction {
 /// call sites already use.
 SettingFeature featureIn(List<SettingGroup> spec, String id) =>
     spec.expand((g) => g.features).firstWhere((f) => f.id == id);
+
+/// A named combination of features, as far as the bar that draws it is
+/// concerned.
+///
+/// **What it turns on is deliberately not here.** A preset in the demonstrated
+/// package is a set of that package's switch ids, and the bar never reads them —
+/// it draws a chip and a line of guidance and hands an id back. Carrying
+/// `featuresOn` across the seam would put the consumer's vocabulary in the
+/// gallery for the sake of a field nothing here looks at.
+///
+/// [lookFor] is the reason a preset earns a name. Naming a preset after the
+/// switch it flips says nothing a switch did not; naming the *interaction* it
+/// produces, and saying what to watch, is the whole content.
+class PresetSummary {
+  const PresetSummary({
+    required this.id,
+    required this.title,
+    required this.lookFor,
+  });
+
+  final String id;
+  final String title;
+
+  /// What to watch for once this preset is applied.
+  final String lookFor;
+}

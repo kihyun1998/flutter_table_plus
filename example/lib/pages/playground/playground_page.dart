@@ -12,7 +12,6 @@ import 'models/settings_spec.dart';
 import 'playground_columns.dart';
 import 'playground_format.dart';
 import 'playground_settings_host.dart';
-import 'widgets/preset_bar.dart';
 
 /// Interactive playground for testing FlutterTablePlus
 ///
@@ -173,6 +172,8 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
         onChanged: _handleSettingsChanged,
         onGenerateData: _generateData,
         isGenerating: _isGenerating,
+        activePresetId: _activePresetId,
+        onPresetSelected: _applyPreset,
       );
 
   void _handleSettingsChanged(PlaygroundSettings newSettings) {
@@ -631,10 +632,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
       ),
       body: Column(
         children: [
-          PresetBar(
-            activePresetId: _activePresetId,
-            onPresetSelected: _applyPreset,
-          ),
+          PresetBar(host: _host),
           Expanded(
             child: Row(
               children: [

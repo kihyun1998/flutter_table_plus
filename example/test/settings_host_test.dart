@@ -41,8 +41,29 @@ const _spec = [
 ];
 
 class _FakeHost extends SettingsHost {
-  _FakeHost({Map<String, bool>? switches})
+  _FakeHost({Map<String, bool>? switches, this.withPresets = true})
       : switches = switches ?? {'stripesOn': false, 'glowOn': true};
+
+  final bool withPresets;
+  final List<String> applied = [];
+  String? active = 'loud';
+
+  @override
+  List<PresetSummary> get presets => withPresets
+      ? const [
+          PresetSummary(id: 'loud', title: 'Loud', lookFor: 'Everything on.'),
+          PresetSummary(id: 'quiet', title: 'Quiet', lookFor: 'Nothing on.'),
+        ]
+      : const [];
+
+  @override
+  String? get activePresetId => active;
+
+  @override
+  void applyPreset(String presetId) {
+    applied.add(presetId);
+    active = presetId;
+  }
 
   final Map<String, bool> switches;
   final List<String> writes = [];
@@ -65,6 +86,25 @@ class _FakeHost extends SettingsHost {
         label: 'Label for $settingId',
         child: Text('control:$settingId'),
       );
+}
+
+/// Overrides only what the port leaves abstract.
+///
+/// The optional members have defaults, and a fake that overrides them cannot
+/// exercise those defaults — which is what a consumer who implements the
+/// minimum actually gets. `_FakeHost` overrides `presets`, so without this
+/// class the empty default was asserted nowhere and a port that started
+/// offering phantom presets would not have reddened anything.
+class _MinimalHost extends SettingsHost {
+  @override
+  List<SettingGroup> get spec => _spec;
+  @override
+  bool isOn(String switchId) => false;
+  @override
+  void setSwitch(String switchId, bool on) {}
+  @override
+  SettingsControl control(String settingId) =>
+      SettingsControl(id: settingId, label: settingId, child: const SizedBox());
 }
 
 Widget _list(_FakeHost host, {String? selected}) => MaterialApp(
@@ -140,6 +180,77 @@ void main() {
 
       expect(find.byType(ElevatedButton), findsNothing);
       expect(find.textContaining('Generate'), findsNothing);
+    });
+
+    testWidgets('the preset bar draws the host\'s presets and their guidance',
+        (t) async {
+      final host = _FakeHost();
+      await t
+          .pumpWidget(MaterialApp(home: Scaffold(body: PresetBar(host: host))));
+
+      expect(find.text('Loud'), findsOneWidget);
+      expect(find.text('Quiet'), findsOneWidget);
+      // The line that makes a preset worth its name: not which switches it
+      // turned on, but what to watch now that they are.
+      expect(find.text('Everything on.'), findsOneWidget);
+    });
+
+    testWidgets('picking one is a command by id, not a settings object',
+        (t) async {
+      final host = _FakeHost();
+      await t
+          .pumpWidget(MaterialApp(home: Scaffold(body: PresetBar(host: host))));
+
+      await t.tap(find.text('Quiet'));
+      await t.pump();
+
+      expect(host.applied, ['quiet'],
+          reason: 'the bar no longer hands back something it had to construct');
+    });
+
+    testWidgets(
+        'a host with no presets gets no bar, and says nothing to get it',
+        (t) async {
+      // `SettingsHost.presets` defaults to empty, the same way the extras hooks
+      // do. A gallery around a package with no named combinations should draw
+      // no chrome for them rather than an empty strip with a border.
+      await t.pumpWidget(MaterialApp(
+        home: Scaffold(body: PresetBar(host: _FakeHost(withPresets: false))),
+      ));
+
+      expect(find.byType(ChoiceChip), findsNothing);
+      expect(find.byType(Container), findsNothing);
+    });
+
+    testWidgets(
+        'a host that overrides only the essentials offers nothing extra',
+        (t) async {
+      // The defaults, exercised. Everything optional on the port is opt-in, so
+      // implementing the minimum must produce a panel with no preset bar, no
+      // extras and no active preset — never a piece of chrome announcing a
+      // capability the host never claimed.
+      final host = _MinimalHost();
+
+      expect(host.presets, isEmpty);
+      expect(host.activePresetId, isNull);
+      expect(() => host.applyPreset('anything'), returnsNormally);
+
+      await t
+          .pumpWidget(MaterialApp(home: Scaffold(body: PresetBar(host: host))));
+      expect(find.byType(ChoiceChip), findsNothing);
+
+      await t.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: SizedBox(
+            width: 380,
+            child: FeatureDetailPane(
+              host: host,
+              feature: _spec.first.features.first,
+            ),
+          ),
+        ),
+      ));
+      expect(find.byType(ElevatedButton), findsNothing);
     });
 
     test('search reads the spec and the labels through the port', () {

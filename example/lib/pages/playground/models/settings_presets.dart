@@ -1,3 +1,4 @@
+import '../../../gallery/gallery.dart';
 import 'feature_switches.dart';
 import 'playground_settings.dart';
 
@@ -13,19 +14,15 @@ import 'playground_settings.dart';
 /// A preset that names an interaction must actually produce it. Turning on drag
 /// selection over data with no merged group demonstrates nothing, so
 /// `dragOverMergedRows` names all three features the interaction needs.
-class SettingsPreset {
+/// A [PresetSummary] plus the thing the gallery has no vocabulary for: which of
+/// *this* package's switches it turns on.
+class SettingsPreset extends PresetSummary {
   const SettingsPreset({
-    required this.id,
-    required this.title,
-    required this.lookFor,
+    required super.id,
+    required super.title,
+    required super.lookFor,
     required this.featuresOn,
   });
-
-  final String id;
-  final String title;
-
-  /// What to watch for once the preset is applied.
-  final String lookFor;
 
   /// The switch ids to turn on. Everything else is turned off.
   final Set<String> featuresOn;
@@ -34,7 +31,7 @@ class SettingsPreset {
 /// `bare` is first because the playground opens on it: an addition needs a zero
 /// to be measured against, and the row count is not what makes a table bare —
 /// a table with no scroll cannot show drag selection or auto-scroll.
-final List<SettingsPreset> presets = [
+final List<SettingsPreset> allPresets = [
   SettingsPreset(
     id: 'bare',
     title: 'Bare',
@@ -69,7 +66,8 @@ final List<SettingsPreset> presets = [
   ),
 ];
 
-SettingsPreset presetById(String id) => presets.firstWhere((p) => p.id == id);
+SettingsPreset presetById(String id) =>
+    allPresets.firstWhere((p) => p.id == id);
 
 /// Turns on exactly the features [preset] names, and turns off every other one.
 ///

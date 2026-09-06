@@ -23,6 +23,7 @@ export 'src/preview/viewport_spec.dart';
 export 'src/settings/feature_detail_pane.dart';
 export 'src/settings/feature_list_pane.dart';
 export 'src/settings/feature_search.dart';
+export 'src/settings/preset_bar.dart';
 export 'src/settings/setting_spec.dart';
 export 'src/settings/settings_host.dart';
 export 'src/settings/settings_controls.dart';
