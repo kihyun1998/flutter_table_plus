@@ -147,7 +147,7 @@ flutter test
 flutter analyze                             (in example/)
 flutter test                                (in example/)
 python scripts/map/check_map.py docs/map
-flutter pub publish --dry-run               (only when the version is ahead of the registry)
+flutter pub publish --dry-run               (checks the archive, never the version)
 ```
 
 **Each runs bare, never piped.** A pipeline's exit status is the last command's,
@@ -166,10 +166,28 @@ top-level `flutter test` — its own manifest, its own analyzer run — and a
 leftover `flutter create` template once kept it permanently red, which trains
 everyone to ignore it (#55). `dart format` covers `lib test` only, so
 **`example/lib` is outside the formatter gate**, deliberately. And
-`publish:dry-run` insists the version is an *increment* over what is published,
-so between releases it would be red for every change that is not a release —
-ask the registry first, and report **N/A with the reason on screen** rather than
-a quiet pass.
+`flutter pub publish --dry-run` **checks the archive, and never the version** —
+so it runs on every change, not only on a release.
+
+That sentence used to say the opposite: that the command insists on a version
+*ahead* of the registry, so between releases it is red for anything that is not
+a release, and the honest report is *N/A with the reason on screen*. **Measured
+2026-09-07 and false.** At `2.17.0`, with `2.17.0` already on pub.dev, it
+returns `Package has 0 warnings` and exits 0. The collision is the server's
+check, at the moment of publish, and no local command performs it.
+
+Which inverts what the gate is for. It was described as the release gate and it
+is the **archive** gate: it resolves `.pubignore` and prints every file that
+would ship, and the archive is the one artifact on this list that **cannot be
+un-published** — see the release rows in
+[`no-signal-on-failure`](docs/map/invariant/no-signal-on-failure.md). Read the
+file tree it prints; that is the output worth having. What it cannot tell you is
+whether the version is free, so **a green dry-run is not evidence that a publish
+will succeed** — ask the registry for that, separately.
+
+The N/A convention stays, for the case it was actually written for: a gate that
+genuinely cannot run here reports N/A **with the reason on screen**, never a
+quiet pass. It just does not apply to this one.
 
 ## Agent skills
 

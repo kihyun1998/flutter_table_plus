@@ -344,17 +344,20 @@ deliberately not extracted with the shell: every recipe imports it and
   "unreachable from the app" is what gets a branch deleted as dead code the day
   before someone needs it.
 
-- **The extraction took one guard with it, and the guard was the roster's own
-  check.** `example_theme_test.dart` read `example_theme.dart` as text, counted
+- **The extraction took one guard with it, and it was rewritten on the other
+  side.** `example_theme_test.dart` read `example_theme.dart` as text, counted
   `fontFamily:` and required the count to equal the hand-written roster of leaf
-  styles it watches, plus one for the top-level argument — so a sixth styled
+  styles it watches, plus one for the top-level argument — so a fifth styled
   surface could not be added without the roster noticing. The source is in
   another package now, reachable only through a resolved dependency path, and a
-  test that greps into `.dart_tool/` asserts where pub happened to put a file.
-  The pair it backstopped is still here and is weaker in exactly the way it
-  warned about: both read the built `ThemeData`, so a new leaf naming a font
-  nobody carries passes them. **This is the shell's test to write, and it does
-  not have one.**
+  test that greps into `.dart_tool/` asserts where pub happened to put a file,
+  so it was deleted here rather than moved. **A guard that reads source cannot
+  cross a seam; the side that keeps the code is the side that has to hold it** —
+  and `flutter_example_template` now does, verified by mutation there rather
+  than by being green. What stays here is the pair it backstops, kept
+  deliberately: both read the built `ThemeData`, so they are the weaker half and
+  they are also this repository's only observation of that dependency's font
+  contract.
 - **Nothing here gates the shell's own behaviour, and there is no CI on either
   side.** The example's suite still pumps it — the viewport control, the wall,
   the panes, the Code pane over this app's recipes — so a regression that

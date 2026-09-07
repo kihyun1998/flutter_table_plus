@@ -50,6 +50,15 @@ a publish — as a rule that resolves the *next* case rather than the last one.
   listing.** An earlier version of this line said the dry-run never warns about
   uncommitted changes at all; that was measured false here, and the sharper
   claim is the one that catches something.
+- **The dry-run does not check the version either, so it is green between
+  releases and can be run on any change.** Measured 2026-09-07 at `2.17.0` with
+  `2.17.0` already on pub.dev: `Package has 0 warnings`, exit 0. The collision
+  is the server's check at the moment of publish, and no local command performs
+  it — which is the second direction the same command is over-trusted in. A
+  green dry-run is not evidence that a publish will succeed, and the previous
+  bullet's *read the file listing* is the whole reason to run it. `CLAUDE.md`
+  had claimed the opposite for long enough that a runnable gate was being
+  skipped as N/A on every non-release change.
 
 ## Code
 
