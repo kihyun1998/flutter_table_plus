@@ -3,8 +3,8 @@ import 'dart:io';
 import 'package:example/pages/playground/models/playground_settings.dart';
 import 'package:example/pages/playground/models/settings_spec.dart';
 import 'package:example/pages/playground/playground_settings_host.dart';
-import 'package:example/gallery/gallery.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_example_template/flutter_example_template.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 // A control's label is prose: it repeats, and a redesign is free to change it.

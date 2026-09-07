@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_example_template/flutter_example_template.dart';
 
 import 'app/chrome_font.dart';
 import 'app/destinations.dart';
-import 'gallery/gallery.dart';
 
 void main() {
   runApp(const MyApp());

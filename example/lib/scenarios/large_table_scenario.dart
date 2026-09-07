@@ -2,10 +2,11 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_example_template/flutter_example_template.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
 
+import '../app/performance_metrics.dart';
 import '../demo_data/demo_data.dart';
-import '../gallery/gallery.dart';
 import '../theme/table_palette.dart';
 
 /// A table with far more rows than fit on a screen, and the numbers to go
@@ -13,10 +14,10 @@ import '../theme/table_palette.dart';
 ///
 /// **A scenario is not a recipe.** `lib/recipes/` is the pasteable zone and its
 /// imports are held to an allow-list by `test/recipe_seam_test.dart`; this file
-/// deliberately reaches into `pages/playground/` for [PerformanceMonitor],
-/// which is exactly the kind of import a recipe may not have. A recipe is a
-/// thing you copy; a scenario is a thing you look at, and it is allowed to be
-/// composed out of what the app already has.
+/// deliberately reaches into `lib/app/` for [PerformanceMetrics], which is exactly
+/// the kind of import a recipe may not have. A recipe is a thing you copy; a
+/// scenario is a thing you look at, and it is allowed to be composed out of
+/// what the app already has.
 ///
 /// **The rows are generated eagerly, in the constructor and in the row-count
 /// setter, and that is a correctness requirement rather than a simplification.**
@@ -224,10 +225,10 @@ class LargeTableStage extends StatelessWidget {
 
 /// The knob half — the row count, and the existing monitor reporting on it.
 ///
-/// The monitor is [PerformanceMonitor], reporting Total Rows, Data Generation
-/// and Last Sort. It had a fourth field, `lastRenderTimeMs`, which was declared
-/// and rendered and assigned by nothing — reusing it here is what made
-/// that visible, and it is gone.
+/// The monitor is the shell's `MetricsPanel`, given this app's readings by
+/// [PerformanceMetrics]: Total Rows, Data Generation and Last Sort. It had a fourth
+/// field, `lastRenderTimeMs`, which was declared and rendered and assigned by
+/// nothing — reusing it here is what made that visible, and it is gone.
 class LargeTableKnobs extends StatelessWidget {
   const LargeTableKnobs({super.key, required this.demo});
 
@@ -264,7 +265,10 @@ class LargeTableKnobs extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 20),
-          PerformanceMonitor(metrics: demo.metrics),
+          MetricsPanel(
+            metrics: demo.metrics.toMetrics(),
+            title: 'Performance Metrics',
+          ),
           const SizedBox(height: 16),
           Text(
             'Sort by clicking Name, Department or Salary. The sort is this '

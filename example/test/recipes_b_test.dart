@@ -5,12 +5,12 @@ import 'package:example/recipes/column_reorder_recipe.dart';
 import 'package:example/recipes/column_resize_recipe.dart';
 import 'package:example/recipes/zoom_recipe.dart';
 import 'package:example/app/recipe_catalog.dart';
-import 'package:example/gallery/gallery.dart';
 import 'package:example/theme/table_palette.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_example_template/flutter_example_template.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
 import 'package:flutter_test/flutter_test.dart';
 

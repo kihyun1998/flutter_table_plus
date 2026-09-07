@@ -2,10 +2,10 @@
 library;
 
 import 'package:flutter/widgets.dart';
+import 'package:flutter_example_template/flutter_example_template.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
 
 import '../pages/playground/models/playground_settings.dart';
-import '../gallery/gallery.dart';
 import '../pages/playground/models/settings_spec.dart';
 import '../recipes/cell_editing_recipe.dart';
 import '../recipes/column_reorder_recipe.dart';

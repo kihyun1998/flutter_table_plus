@@ -1,10 +1,10 @@
 import 'package:example/app/destinations.dart';
 import 'package:example/demo_data/demo_data.dart';
 import 'package:example/pages/playground/playground_page.dart';
-import 'package:example/gallery/gallery.dart';
 import 'package:example/app/employee_demo.dart';
 import 'package:example/pages/tooltip_anchor/tooltip_anchor_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_example_template/flutter_example_template.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
 import 'package:flutter_test/flutter_test.dart';
 

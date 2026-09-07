@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_example_template/flutter_example_template.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../app/performance_metrics.dart';
 import '../../demo_data/demo_data.dart';
 import '../../theme/table_palette.dart';
-import '../../gallery/gallery.dart';
 import 'models/playground_settings.dart';
 import 'models/settings_presets.dart';
 import 'models/settings_spec.dart';
@@ -663,7 +664,10 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
                       // scroll away with one.
                       Padding(
                         padding: const EdgeInsets.all(20),
-                        child: PerformanceMonitor(metrics: _performanceMetrics),
+                        child: MetricsPanel(
+                          metrics: _performanceMetrics.toMetrics(),
+                          title: 'Performance Metrics',
+                        ),
                       ),
                     ],
                   ),

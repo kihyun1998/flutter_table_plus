@@ -4,10 +4,11 @@ import 'dart:convert';
 import 'package:example/app/chrome_font.dart';
 import 'package:example/app/destinations.dart';
 import 'package:example/pages/playground/models/settings_spec.dart';
-import 'package:example/gallery/gallery.dart';
 import 'package:example/app/recipe_catalog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_example_template/flutter_example_template.dart';
+import 'package:flutter_syntax_highlight/flutter_syntax_highlight.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 // The Code pane shows the recipe's real bytes, read from the bundle at runtime.
@@ -98,7 +99,7 @@ Future<void> _pumpPane(
 
   await tester.pumpWidget(MaterialApp(
     theme: exampleTheme(Brightness.light),
-    home: Scaffold(body: SourcePane(assetPath: path, bundle: bundle)),
+    home: Scaffold(body: CodePane(assetPath: path, bundle: bundle)),
   ));
   await tester.pumpAndSettle();
 }
@@ -183,7 +184,7 @@ void main() {
       await tester.pumpWidget(MaterialApp(
         theme: exampleTheme(Brightness.light),
         home: Scaffold(
-          body: SourcePane(
+          body: CodePane(
             assetPath: 'b.dart',
             bundle: _FakeBundle('BBB'),
           ),
@@ -219,7 +220,7 @@ void main() {
       final slow = _ControlledBundle();
       await tester.pumpWidget(MaterialApp(
         theme: exampleTheme(Brightness.light),
-        home: Scaffold(body: SourcePane(assetPath: 'b.dart', bundle: slow)),
+        home: Scaffold(body: CodePane(assetPath: 'b.dart', bundle: slow)),
       ));
       await tester.pump(); // Inside the window: asked for B, B has not arrived.
 
@@ -264,14 +265,14 @@ void main() {
           reason: 'nothing to scroll, so the rest of this proves nothing');
       expect(vertical().position.pixels, 0);
 
-      await tester.drag(find.byType(SourcePane), const Offset(0, -300));
+      await tester.drag(find.byType(CodePane), const Offset(0, -300));
       await tester.pumpAndSettle();
 
       expect(vertical().position.pixels, greaterThan(0),
           reason: 'the region did not scroll');
 
       // And the shell around it did not move instead.
-      expect(tester.getTopLeft(find.byType(SourcePane)).dy, 0);
+      expect(tester.getTopLeft(find.byType(CodePane)).dy, 0);
     });
 
     testWidgets('an unreadable asset is drawn, not swallowed', (tester) async {
@@ -305,18 +306,18 @@ void main() {
       await _openSelection(tester);
 
       expect(find.text('Code'), findsOneWidget);
-      expect(find.byType(SourcePane), findsNothing);
+      expect(find.byType(CodePane), findsNothing);
 
       await tester.tap(find.text('Code'));
       await tester.pumpAndSettle();
 
-      expect(find.byType(SourcePane), findsOneWidget);
+      expect(find.byType(CodePane), findsOneWidget);
       expect(find.text('lib/recipes/selection_recipe.dart'), findsOneWidget);
     });
 
     testWidgets('and Code replaces the frame rather than sitting inside it',
         (tester) async {
-      // Load-bearing. A `SourcePane` inside `PreviewFrame` would be scaled to
+      // Load-bearing. A `CodePane` inside `PreviewFrame` would be scaled to
       // whatever factor fits 1440px into the pane and then clipped to the
       // viewport — unreadable, and an answer to a question nobody asked. Source
       // has no viewport.
@@ -379,7 +380,7 @@ void main() {
       await tester.tap(find.text('Code'));
       await tester.pumpAndSettle();
 
-      final pane = tester.widget<SourcePane>(find.byType(SourcePane));
+      final pane = tester.widget<CodePane>(find.byType(CodePane));
       expect(pane.assetPath, recipeCatalog.first.source);
       expect(pane.assetPath, 'lib/recipes/selection_recipe.dart');
       // No injected bundle: in the app it reads the real one.
@@ -400,7 +401,7 @@ void main() {
     // the chrome font, and the fallback list is never reached except by the
     // handful of characters Pretendard's subset is missing.
     //
-    // Asserted on the resolved style rather than on `SourcePane`'s own
+    // Asserted on the resolved style rather than on `CodePane`'s own
     // `TextStyle`: the merge is the thing that was wrong, so a test that reads
     // the unmerged style would have passed throughout.
 
@@ -413,8 +414,8 @@ void main() {
 
       final editable = tester.widget<EditableText>(find.byType(EditableText));
 
-      expect(editable.style.fontFamily, SourcePane.monoFamily);
-      expect(editable.style.fontFamilyFallback, SourcePane.monoFallback);
+      expect(editable.style.fontFamily, CodePane.monoFamily);
+      expect(editable.style.fontFamilyFallback, CodePane.monoFallback);
       // The side condition is the whole point: the family that used to win.
       expect(editable.style.fontFamily, isNot(exampleChromeFont));
     });
@@ -435,8 +436,8 @@ void main() {
         ),
       );
 
-      expect(header.text.style?.fontFamily, SourcePane.monoFamily);
-      expect(header.text.style?.fontFamilyFallback, SourcePane.monoFallback);
+      expect(header.text.style?.fontFamily, CodePane.monoFamily);
+      expect(header.text.style?.fontFamilyFallback, CodePane.monoFallback);
       expect(header.text.style?.fontFamily, isNot(exampleChromeFont));
     });
 
@@ -444,8 +445,8 @@ void main() {
       // Naming it twice would read as belt-and-braces and is the shape that
       // hides the bug: `monoFallback.first` looking like the family is exactly
       // why nobody noticed the family was never set.
-      expect(SourcePane.monoFallback, isNot(contains(SourcePane.monoFamily)));
-      expect(SourcePane.monoFallback.last, 'monospace');
+      expect(CodePane.monoFallback, isNot(contains(CodePane.monoFamily)));
+      expect(CodePane.monoFallback.last, 'monospace');
     });
 
     testWidgets('and no token span reintroduces a family of its own',
@@ -463,10 +464,21 @@ void main() {
       // string arm, which is the case this test's own rationale names, would
       // have passed it. A guard whose fixture does not reach a branch does not
       // guard that branch.
+      //
+      // **It grew when the tokenizer became a dependency.** The kinds are
+      // `flutter_syntax_highlight`'s now, and 0.1.0 has two this fixture had
+      // never reached: `escape`, a backslash sequence inside a non-raw string,
+      // and `function`, an identifier immediately before `(` — a lexical
+      // position, so a declaration and a call are both it. Six of the eight
+      // satisfied the old set-equality, because the enum it compared against
+      // was this repository's own and had six values. The assertion is what
+      // reported the two new arms rather than letting the walk style them
+      // unseen.
       const everyKind = "// a comment\n"
           "class Sentinel {\n"
-          "  final s = 'x';\n"
+          "  final s = 'x\\ny';\n"
           "  var n = 1;\n"
+          "  void go() => use(n);\n"
           "}\n";
       expect(
         tokenizeDart(everyKind).map((t) => t.kind).toSet(),
@@ -511,8 +523,11 @@ void main() {
   });
 
   group('the highlighter cannot change what you paste', () {
-    // `dart_highlighter_test.dart` proves the tokenizer partitions its input.
-    // That is a claim about a return value, and between it and the clipboard
+    // `flutter_syntax_highlight` proves in its own suite that the tokenizer
+    // partitions its input — that claim left this repository with the
+    // tokenizer, which is the right place for it and also two packages from
+    // here. That is a claim about a return value, and between it and the
+    // clipboard
     // sit the span tree, the controller, and `Clipboard.setData`. This group is
     // the rest of the path — the property is *select, copy, paste, get the
     // file*, and observing the tokenizer instead is the surface ablation the
@@ -583,7 +598,7 @@ void main() {
       await tester.pumpWidget(MaterialApp(
         theme: exampleTheme(Brightness.light),
         home: Scaffold(
-          body: SourcePane(assetPath: 'x.dart', bundle: _PendingBundle()),
+          body: CodePane(assetPath: 'x.dart', bundle: _PendingBundle()),
         ),
       ));
       // One frame, deliberately not settled: this is the state every other test
@@ -600,7 +615,7 @@ void main() {
       // arm they do not reach, and it was a live defect: `_PathBarState` had no
       // `didUpdateWidget`, so `_copied` survived a path change.
       //
-      // Reachable in the real app, not just in principle — `SourcePane` sits in
+      // Reachable in the real app, not just in principle — `CodePane` sits in
       // a keyless conditional slot in the shell and opening another recipe does
       // not close the Code view, so the element is reused and this State
       // survives. Copy A, pick B inside the 1400ms window, and the bar reads
@@ -619,7 +634,7 @@ void main() {
       await tester.pumpWidget(MaterialApp(
         theme: exampleTheme(Brightness.light),
         home: Scaffold(
-          body: SourcePane(assetPath: 'b.dart', bundle: _FakeBundle('BBB')),
+          body: CodePane(assetPath: 'b.dart', bundle: _FakeBundle('BBB')),
         ),
       ));
       await tester.pump();

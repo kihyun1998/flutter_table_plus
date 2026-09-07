@@ -26,22 +26,26 @@ notes.
 - **The demo is an example, not policy.** Every option is exposed, including
   combinations a real app would not use, because the point is to show what the
   package can be asked to do.
-- **There are two zones here, and each is a property rather than an
-  intention.** `lib/recipes/` is pasteable — one feature, one self-contained
-  file. `lib/gallery/` is *portable* — the shell, the preview stage and the app
-  chrome, which demonstrate a package without naming one, and which are laid out
-  as the package they are going to be (`gallery.dart` plus `src/`).
-  `test/portable_seam_test.dart` walks the directory the way the recipe rule
-  does, and holds three things the compiler cannot: nothing in the zone imports
-  outward, nothing outside it reaches past the barrel, and the barrel and the
-  tree name the same set of files. **All three are legal Dart today and
-  impossible after extraction**, which is the whole reason they need a rule —
-  `lib/preview/` was already clean and `lib/shell/` was not, and neither fact was
-  visible from anywhere.
+- **There were two zones here; one of them left, which was the point.**
+  `lib/recipes/` is pasteable — one feature, one self-contained file — and is
+  still held to that by `test/recipe_seam_test.dart`. `lib/gallery/` was
+  *portable*: the shell, the preview stage and the app chrome, demonstrating a
+  package without naming one, laid out as the package it was going to be
+  (`gallery.dart` plus `src/`) and held to three rules by
+  `test/portable_seam_test.dart` — nothing in the zone imports outward, nothing
+  outside it reaches past the barrel, and the barrel and the tree name the same
+  set of files. **All three were legal Dart and impossible after extraction**,
+  which is the whole reason they needed a rule: `lib/preview/` was already clean
+  and `lib/shell/` was not, and neither fact was visible from anywhere.
+  Extracted 2026-09-07 to `flutter_example_template`, consumed from pub. The
+  seam test is gone with the zone — its two import rules are now the compiler's,
+  since `src/` in another package is unreachable and a shell that named a table
+  would not build there. What the extraction cost is recorded under **Known
+  holes**; what it repaid is that a claim held by a rule is held by a boundary.
   The shell reaches that state by receiving its destinations, their lifetime and
   its own title through `ShellDestinations`;
   a bare `List` would have moved the building out and left the disposing behind.
-  Two things are deliberately *outside* the zone. `lib/theme/table_palette.dart`,
+  Two things were deliberately left *outside* it. `lib/theme/table_palette.dart`,
   because every recipe imports it under a rule #101 settled. Everything else went in, the
   three feature panes last and through a port.
   They were the hard case: free of any package import and still unmovable,
@@ -55,10 +59,14 @@ notes.
   inside something claiming to render any description is the tell that a slot is
   missing.
   A port being *present* is not a port being *sufficient*, and the seam test
-  cannot tell those apart: it reads imports. `test/settings_host_test.dart` names
-  no type from this example at all, so it fails if a pane needs anything the port
-  does not carry — which is the failure that would otherwise arrive on the day of
-  extraction.
+  could not tell those apart: it read imports. `test/settings_host_test.dart`
+  names no type from this example at all, so it fails if a pane needs anything
+  the port does not carry — which is the failure that would otherwise have
+  arrived on the day of extraction. **It did not arrive**: the day came, the
+  panes moved out under an unchanged port, and this example's host compiled
+  against it with no member added. The test is kept anyway, now aimed the other
+  way — the port belongs to a dependency, so the thing it watches is no longer
+  this repository's panes outgrowing it but a release upstream shrinking it.
   **Everything optional on the port is opt-in, and a host that claims nothing
   gets nothing drawn.** The extras hooks, and `presets`, default to empty; a
   `PresetBar` over an empty list draws no widget at all rather than an empty
@@ -72,8 +80,8 @@ notes.
   overrides `presets`, so the empty default was asserted **nowhere**, and a port
   that started handing out phantom presets reddened nothing.
   What stays outside is `featuresOn` — which of this package's switches a preset
-  turns on. The bar never reads it, so carrying it across would put the
-  consumer's vocabulary in the gallery for a field nothing there looks at.
+  turns on. The bar never reads it, so carrying it across would have put the
+  consumer's vocabulary in the shell for a field nothing there looks at.
   `PresetSummary` is `id`, `title` and `lookFor`, and `SettingsPreset` extends
   it.
 
@@ -255,52 +263,25 @@ notes.
 
 ## Code
 
-**`lib/gallery/` is the portable zone**, laid out as the package it is going to
-be: a barrel plus `src/`. Nothing under it names a table, and
-`test/portable_seam_test.dart` holds that by walking the directory. Outside it,
-`lib/app/` is this example's own wiring and everything else is content.
-
-`lib/gallery/gallery.dart` — the barrel, and the only path anything outside the
-zone may import. A file not exported here is missing from the package on the day
-it becomes one, and reachable through its `src/` path until then
-`lib/gallery/src/shell/shell_page.dart` — takes `title` and a
-`ShellDestinations` factory; names no destination
-`lib/gallery/src/shell/shell_destination.dart` — `ShellCategory`,
-`StageDestination`, `allowsWall`, `RouteDestination`
-`lib/gallery/src/shell/shell_destinations.dart` — the port the shell receives its
-destinations *and their lifetime* through
-`lib/gallery/src/shell/shell_menu.dart`
-`lib/gallery/src/shell/source_pane.dart` — takes an `assetPath` and an injectable
-bundle; it never knew which app's keys they were
-`lib/gallery/src/shell/dart_highlighter.dart` — `DartTokenKind`, `DartToken`,
-`tokenizeDart`
-`lib/gallery/src/preview/preview_stage.dart`
-`lib/gallery/src/preview/preview_frame.dart`
-`lib/gallery/src/preview/device_wall.dart`
-`lib/gallery/src/preview/viewport_spec.dart`
-`lib/gallery/src/settings/setting_spec.dart` — `SettingGroup`, `SettingFeature`,
-`Interaction`, `featureIn`. The vocabulary a settings panel is described in;
-which settings exist belongs to whoever is being demonstrated
-`lib/gallery/src/settings/settings_controls.dart` — the control rows a
-description is rendered into
-`lib/gallery/src/settings/settings_host.dart` — `SettingsHost`, the port the
-panes read settings through
-`lib/gallery/src/settings/feature_list_pane.dart`
-`lib/gallery/src/settings/feature_detail_pane.dart`
-`lib/gallery/src/settings/feature_search.dart` — `searchFeatures`, `FeatureMatch`
-`lib/gallery/src/settings/preset_bar.dart` — draws `SettingsHost.presets`, and
-nothing at all when there are none
-`lib/gallery/src/perf/performance_monitor.dart` — `PerformanceMetrics`,
-`PerformanceMonitor`
-`lib/gallery/src/theme/example_theme.dart` — takes the chrome family as an
-argument and names none of its own (#179)
-`lib/gallery/src/theme/theme_mode_button.dart`
+**The shell is `package:flutter_example_template`** — the menu, the destination
+model, the preview stage, the device wall, the Code pane, the settings panes and
+the app's own chrome theme. It was `lib/gallery/` here, a package-shaped tree
+inside the example held to three rules by a seam test that walked the directory,
+because all three are legal Dart and nothing else caught a violation. It is that
+package now, so two of the three are the compiler's and the third is upstream's
+walk. What is below is this example's own.
 
 `lib/app/destinations.dart` — `TablePlusDestinations`, this app's answer to the
 port: the demos, their disposal, and every destination the menu shows
 `lib/app/recipe_catalog.dart`
 `lib/app/recipe_destination.dart`
 `lib/app/employee_demo.dart` — `EmployeeDemo`
+`lib/app/performance_metrics.dart` — `PerformanceMetrics`, this example's
+answer to the shell's metrics port: the fields the two call sites write, the
+three formatters, and the row-count thresholds. The panel takes a `value` that
+is already a `String`, so where to put a `K`, a `ms` and a rate is the
+consumer's — and the thresholds are what a table is, which is why they came back
+across the seam rather than staying in a panel that must not know
 `lib/main.dart` — `MyApp`, the entry point that names what the app opens on and
 what its bar says
 
@@ -308,10 +289,10 @@ what its bar says
 `lib/pages/playground/widgets/settings_registry.dart`
 `lib/pages/playground/models/playground_settings.dart`
 `lib/pages/playground/models/settings_spec.dart` — this app's 58 settings in the
-gallery's vocabulary, plus `featureById` binding `featureIn` to them so the
+shell's vocabulary, plus `featureById` binding `featureIn` to them so the
 fifteen call sites that read a global did not have to change
 `lib/app/chrome_font.dart` — `exampleChromeFont`, the family name this app
-hands the gallery, beside the assets it describes
+hands the shell, beside the assets it describes
 `lib/pages/playground/playground_settings_host.dart` — `PlaygroundSettingsHost`,
 this app's answer to that port, and the only place the `data` feature's row
 count badge and Generate button now live
@@ -323,8 +304,9 @@ files here would be a second roster to keep in step and nothing would catch it
 drifting
 `lib/scenarios/hr_dashboard_scenario.dart` — `HrDashboardDemo`
 `lib/scenarios/large_table_scenario.dart` — `LargeTableDemo`
-`lib/theme/table_palette.dart` — deliberately outside the zone: every recipe
-imports it and `test/recipe_seam_test.dart`'s allow-list names `../theme/` (#101)
+`lib/theme/table_palette.dart` — deliberately outside `lib/recipes/` and equally
+deliberately not extracted with the shell: every recipe imports it and
+`test/recipe_seam_test.dart`'s allow-list names `../theme/` (#101)
 `../scripts/fonts/subset_pretendard.py` — the font charset, as ranges
 
 ## Reference behaviour
@@ -361,3 +343,22 @@ imports it and `test/recipe_seam_test.dart`'s allow-list names `../theme/` (#101
   `ShellMenu` directly rather than through the shell. Recorded here because
   "unreachable from the app" is what gets a branch deleted as dead code the day
   before someone needs it.
+
+- **The extraction took one guard with it, and the guard was the roster's own
+  check.** `example_theme_test.dart` read `example_theme.dart` as text, counted
+  `fontFamily:` and required the count to equal the hand-written roster of leaf
+  styles it watches, plus one for the top-level argument — so a sixth styled
+  surface could not be added without the roster noticing. The source is in
+  another package now, reachable only through a resolved dependency path, and a
+  test that greps into `.dart_tool/` asserts where pub happened to put a file.
+  The pair it backstopped is still here and is weaker in exactly the way it
+  warned about: both read the built `ThemeData`, so a new leaf naming a font
+  nobody carries passes them. **This is the shell's test to write, and it does
+  not have one.**
+- **Nothing here gates the shell's own behaviour, and there is no CI on either
+  side.** The example's suite still pumps it — the viewport control, the wall,
+  the panes, the Code pane over this app's recipes — so a regression that
+  reaches this demo is caught. What is not caught is a regression that does not:
+  the shell can change under a version range with `example/lib` untouched, which
+  is the shape `docs/map/invariant/upstream-contract.md` records for
+  `just_tooltip` and `flutter_checkbox` and which now has a third member.

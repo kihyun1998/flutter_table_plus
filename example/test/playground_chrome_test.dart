@@ -1,6 +1,6 @@
 import 'package:example/pages/playground/playground_page.dart';
-import 'package:example/gallery/gallery.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_example_template/flutter_example_template.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 // The playground's own chrome — its preset bar, its panes, the box around the

@@ -130,9 +130,13 @@ a Windows clone makes the recipe corpus CRLF and a macOS or Linux clone makes it
 LF. A test that uses that corpus as a fixture is therefore testing the checkout
 as much as the code. One did: `example/test/dart_highlighter_test.dart` asserted
 that at least one bundled recipe carried CRLF, was written on the Windows
-machine where that held, and could only fail on this one. It is gone, on the
-instruction its own failure message carried; the escape-literal test beside it
-is the witness now, because escapes are immune to the checkout.
+machine where that held, and could only fail on this one. It went first, on the
+instruction its own failure message carried; the rest of that file went with the
+tokenizer when the shell was extracted, because a pure function two packages
+away is its own repository's to test. **The witness is
+`example/test/code_pane_test.dart`'s `everyKind` fixture**, an escape literal
+for the same reason — a `\n` written as two characters says the
+same thing in every checkout.
 
 **There is no CI** — these are the only gates, and they run here:
 

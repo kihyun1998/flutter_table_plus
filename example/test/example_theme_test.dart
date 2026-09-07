@@ -2,9 +2,9 @@ import 'dart:io';
 
 import 'package:example/pages/playground/models/playground_settings.dart';
 import 'package:example/pages/playground/playground_page.dart';
-import 'package:example/gallery/gallery.dart';
 import 'package:example/theme/table_palette.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_example_template/flutter_example_template.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -184,25 +184,17 @@ void main() {
     String? flutterDefault() =>
         ThemeData(useMaterial3: true).textTheme.bodyMedium?.fontFamily;
 
-    test('every site the theme names a family at is watched', () {
-      // The map above is a hand-written roster and this is what keeps it from
-      // going stale -- `docs/map/invariant/no-hand-enumeration.md`. Dart has no
-      // reflection, so the source is read, the way `settings_spec_test.dart`
-      // and `recipe_seam_test.dart` do it.
-      //
-      // A sixth styled surface added later is invisible to the two tests below:
-      // they would keep passing while the new leaf named a font nobody carries.
-      // The +1 is the top-level argument, which `leafFamilies` cannot see
-      // because `ThemeData` does not expose it.
-      final source =
-          File('lib/gallery/src/theme/example_theme.dart').readAsStringSync();
-      final sites = RegExp(r'fontFamily:').allMatches(source).length;
-
-      expect(sites, leafFamilies(exampleTheme(Brightness.light)).length + 1,
-          reason: 'example_theme.dart names a font family at $sites sites; this '
-              'test watches ${leafFamilies(exampleTheme(Brightness.light)).length}'
-              ' leaves plus the top level');
-    });
+    // **A test is missing here, and its absence is the cost of the move.**
+    // It read `example_theme.dart` as text, counted `fontFamily:` and required
+    // the count to match the roster below plus one — so a sixth styled surface
+    // added later could not name a font nobody carries while the two tests
+    // below kept passing. The file is in another package now, reachable only
+    // through a resolved dependency path, and a test that greps into
+    // `.dart_tool/` asserts where pub happened to put something.
+    //
+    // What is left below is the pair it existed to backstop, which is weaker in
+    // exactly the way it warned about. The roster it guarded belongs with the
+    // source now: this is the shell's test to write.
 
     test('names no family of its own by default', () {
       // The gallery carries no font, so by default it must add none. What is

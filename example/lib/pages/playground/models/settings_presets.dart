@@ -1,4 +1,5 @@
-import '../../../gallery/gallery.dart';
+import 'package:flutter_example_template/flutter_example_template.dart';
+
 import 'feature_switches.dart';
 import 'playground_settings.dart';
 

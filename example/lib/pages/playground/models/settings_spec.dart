@@ -1,12 +1,12 @@
 /// This example's settings, described in the gallery's vocabulary.
 ///
-/// The types are in `package:example/gallery/gallery.dart`; what is here is the
+/// The types are in `package:flutter_example_template/…`; what is here is the
 /// description itself — every group, every feature, and every interaction
 /// between two of them. `test/settings_spec_test.dart` keeps it true against
 /// `PlaygroundSettings`.
 library;
 
-import '../../../gallery/gallery.dart';
+import 'package:flutter_example_template/flutter_example_template.dart';
 
 const settingsSpec = <SettingGroup>[
   SettingGroup(

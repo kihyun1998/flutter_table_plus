@@ -2,8 +2,8 @@ import 'package:example/app/destinations.dart';
 import 'package:example/demo_data/demo_data.dart';
 import 'package:example/scenarios/hr_dashboard_scenario.dart';
 import 'package:example/scenarios/large_table_scenario.dart';
-import 'package:example/gallery/gallery.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_example_template/flutter_example_template.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
 import 'package:flutter_test/flutter_test.dart';
 

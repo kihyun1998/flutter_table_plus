@@ -5,6 +5,11 @@ version: 1.0.0+1
 
 environment:
   sdk: ^3.6.1
+  # Named rather than inherited, because a dependency below sets it. The shell
+  # declares `>=3.27.0`, measured at both ends by its own CI rather than by the
+  # SDK that happened to build it; the root package already declares the same
+  # floor, so this costs a consumer nothing and states what was already true.
+  flutter: ">=3.27.0"
 
 
 dependencies:
@@ -16,10 +21,31 @@ dependencies:
   flutter_table_plus:
     path: ../
 
+  # The shell this example is drawn in — the menu, the preview stage, the device
+  # wall, the Code pane and the settings panel. It used to be `lib/gallery/`
+  # here, a directory laid out as the package it was going to be and held to
+  # that by a seam test, because all three of its rules are legal Dart and
+  # nothing but a rule caught a violation. It is that package now, so the rules
+  # are the compiler's.
+  #
+  # A hosted version rather than a `path:` to the sibling checkout, matching how
+  # the root package consumes `just_tooltip` and `flutter_checkbox`. `example/`
+  # is a gate, and a gate that only resolves on a machine holding a second
+  # checkout is a gate a fresh clone cannot run.
+  flutter_example_template: ^0.1.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+
+  # Already in the tree, under the shell. Named here because one guard reaches
+  # for it directly: the Code pane's monospace test walks every token kind, and
+  # its own comment records why — a fixture that does not reach a branch does
+  # not guard that branch, and the branch it missed is the one #123 shipped. A
+  # transitive dependency is not importable, so the alternative was to weaken
+  # the assertion the guard exists for.
+  flutter_syntax_highlight: ^0.1.0
 
 flutter:
   uses-material-design: true

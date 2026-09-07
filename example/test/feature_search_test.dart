@@ -1,6 +1,6 @@
 import 'package:example/pages/playground/playground_settings_host.dart';
-import 'package:example/gallery/gallery.dart';
 import 'package:example/pages/playground/models/playground_settings.dart';
+import 'package:flutter_example_template/flutter_example_template.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 // Search used to narrow one scrolling column to the controls whose labels

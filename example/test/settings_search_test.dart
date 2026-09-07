@@ -1,4 +1,4 @@
-import 'package:example/gallery/gallery.dart';
+import 'package:flutter_example_template/flutter_example_template.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

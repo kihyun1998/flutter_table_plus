@@ -1,7 +1,8 @@
 /// What this example asks the shell to show.
 library;
 
-import '../gallery/gallery.dart';
+import 'package:flutter_example_template/flutter_example_template.dart';
+
 import '../pages/playground/playground_page.dart';
 import '../pages/tooltip_anchor/tooltip_anchor_page.dart';
 import '../scenarios/hr_dashboard_scenario.dart';

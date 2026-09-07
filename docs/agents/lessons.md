@@ -176,7 +176,7 @@
   덮어써도 그 테스트는 초록이다(변이로 측정: 새 leaf 가드만 빨개지고 기존 셋은 초록 유지).
   **가드를 쓸 땐 값이 어디서 오는지가 아니라 어디에 도달하는지를 물어라.**
 - **#113 (`CachingAssetBundle` 은 String 이 아니라 Future 를 캐싱한다)**:
-  `source_pane_test.dart` 가 증상으로만 적어둔 *"green by run order"* 의 메커니즘.
+  `code_pane_test.dart`(당시 `source_pane_test.dart`) 가 증상으로만 적어둔 *"green by run order"* 의 메커니즘.
   `asset_bundle.dart` 의 캐시는 `Map<String, Future<String>>` 이라, 같은 키를 로드하는 두 번째
   `testWidgets` 는 **첫 테스트의 fake-async zone 에서 만들어진 Future** 를 받고 자기 zone 은
   그걸 굴리지 않는다 → 로드만 하는 테스트가 `TimeoutException after 0:10:00`. 하나로 합쳐서
@@ -326,6 +326,21 @@
   결론(행 29)이 **같은 행으로 붕괴**하는 자리였다 — 틱 수를 줄여 925 로 내리고서야 전제와
   결론이 14 행 떨어졌다. **숫자는 하네스 안에서 다시 재고, 그 숫자가 vacuous 경계에서 얼마나
   떨어져 있는지까지 본다.**
+
+- **갤러리 추출 (`enum.values` 와의 집합 동치는 그 enum 을 우리가 소유할 때만 완전성이다)**:
+  `example/lib/gallery/` 를 `flutter_example_template` 로 빼면서 토크나이저가
+  `flutter_syntax_highlight` 의 것이 됐다. Code pane 의 monospace 가드는 픽스처가 모든 토큰
+  종류에 닿는지를 `tokenizeDart(everyKind).map(kind).toSet() == DartTokenKind.values.toSet()`
+  로 지키고 있었다 — 자기 주석에 *"분기에 닿지 못하는 픽스처는 그 분기를 지키지 않는다"* 까지
+  적힌, 잘 쓰인 가드다. **그런데 그 완전성은 enum 이 우리 것일 때만 성립했다.** 남의 것이 되는
+  순간 값이 6 개에서 8 개로 늘었고(`escape`, `function`) 픽스처는 6/8 에서 멈췄다.
+  다행히 **단언이 등가라 빨개졌다** — `containsAll` 이나 종류를 손으로 나열했으면 새 분기 둘을
+  조용히 통과시켰을 것이다. 교훈은 가드를 약하게 쓰지 말라는 쪽이 아니라,
+  **의존성 경계를 넘는 순간 "전부"의 정의가 상대편 릴리스에 딸려 움직인다**는 것.
+  같은 이관에서 하나는 되살릴 수 없었다: `example_theme_test.dart` 가 소스를 텍스트로 읽어
+  `fontFamily:` 출현 수를 손-명단과 맞추던 검사는, 파일이 남의 패키지로 가면서
+  `.dart_tool/` 을 grep 하는 테스트가 되어 삭제했다. **소스를 읽는 가드는 그 소스가 seam 을
+  넘어가면 같이 넘어가지 못한다** — 남는 쪽이 약해진다는 사실을 노트에 적는 것이 유일한 수리.
 
 ## Step 6 — 정합성 스윕 (틀린 근거 > 틀린 결론)
 

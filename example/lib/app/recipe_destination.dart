@@ -2,11 +2,11 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_example_template/flutter_example_template.dart';
 
 import '../pages/playground/models/playground_settings.dart';
 import '../pages/playground/playground_settings_host.dart';
 import 'recipe_catalog.dart';
-import '../gallery/gallery.dart';
 
 /// The state a recipe's stage and its knob pane both need.
 ///

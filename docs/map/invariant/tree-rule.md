@@ -20,12 +20,16 @@ lib/src/widgets/*.dart           widgets, or collaborators only a widget uses
 lib/src/widgets/cells/*.dart     cell widgets a body row draws
 test/*.dart                      tests. Flat — no subdirectories
 benchmark/*.dart                 standalone benchmarks. Outside every gate, excluded from the archive
-example/lib/gallery/**           the portable zone: a package-shaped tree inside
-                                 the example. gallery.dart is its barrel and the
-                                 only path the rest of example/lib may import;
-                                 src/ is private to it, by rule rather than by
-                                 the compiler
-example/lib/app/**               this example's wiring of that zone
+example/lib/app/**               this example's wiring of the shell it is drawn
+                                 in, and its answers to that shell's ports.
+                                 A portable zone sat at example/lib/gallery/**
+                                 until 2026-09-07: a package-shaped tree with a
+                                 barrel, a private src/ and a seam test — every
+                                 part of it a rule, because the compiler is
+                                 indifferent to all of it. It is
+                                 flutter_example_template now, which is what a
+                                 row of this kind is for: the tree was stating
+                                 a seam nobody had drawn yet
 example/lib/**                   the rest of the example, a package of its own
 example/test/**                  the example's gate (#55)
 docs/*.md                        public prose — THEMING, FEATURES, MIGRATION
@@ -143,6 +147,13 @@ The concrete shapes:
   `example/` its own tab; `pluto_grid` uses `demo/` and loses it.
 - **L3 — `example/test/` is a gate.** Of the three peers only
   `two_dimensional_scrollables` has example tests at all (#55).
+- **2026-09-07** — a root removed by becoming a package.
+  `example/lib/gallery/**` had been laid out as the package it was going to be,
+  which is the one case where the tree is a *prediction* rather than a
+  statement. The prediction held: the extraction moved files without moving a
+  symbol between directories, and this row is the only place that fact was ever
+  written down. **A row can be retired by the seam it describes being drawn for
+  real**, and that is the outcome to prefer over enforcing it here forever.
 - **2026-09-04** — two roots removed with the generated agent build they
   described (`scripts/thegraph/*.sh`, `.claude/agents/ftp-*.md`). The rule's
   enforcement went with them: it was a script matching these paths against the

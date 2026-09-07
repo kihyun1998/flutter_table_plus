@@ -8,9 +8,9 @@ import 'package:example/recipes/tooltips_recipe.dart';
 import 'package:example/pages/playground/models/settings_spec.dart';
 import 'package:example/app/recipe_destination.dart';
 import 'package:example/app/recipe_catalog.dart';
-import 'package:example/gallery/gallery.dart';
 import 'package:example/theme/table_palette.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_example_template/flutter_example_template.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
 import 'package:flutter_test/flutter_test.dart';
 

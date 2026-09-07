@@ -64,13 +64,13 @@ at once and answers the other question: *what does this look like when you assem
 
 The two are deliberately different zones, and `test/recipe_seam_test.dart` asserts the difference
 rather than trusting the directory names. A recipe is held to an import allow-list, because it is a
-thing you copy. A scenario is not, because it is a thing you look at — the large-row-count one reuses
-the playground's own performance monitor, which is exactly the import a recipe may not have.
+thing you copy. A scenario is not, because it is a thing you look at — the large-row-count one reaches
+into `lib/app/` for this example's readings, which is exactly the import a recipe may not have.
 
 One of them refuses the side-by-side mode. Three tables over the same hundred thousand rows would
 make a frame rate a measurement of the wall, so opening that scenario leaves the mode and takes the
-segment away. Which destinations may be drawn there is the destination's own call — see
-[`lib/gallery/src/shell/shell_destination.dart`](lib/gallery/src/shell/shell_destination.dart).
+segment away. Which destinations may be drawn there is the destination's own call —
+`StageDestination.allowsWall`, in the shell package.
 
 ## Pages
 

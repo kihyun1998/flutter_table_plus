@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_example_template/flutter_example_template.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
 
 import '../models/playground_settings.dart';
-import '../../../gallery/gallery.dart';
 
 /// How each setting is drawn.
 ///

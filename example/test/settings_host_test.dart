@@ -1,16 +1,23 @@
-import 'package:example/gallery/gallery.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_example_template/flutter_example_template.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-// `portable_seam_test.dart` proves the panes import nothing from this app. That
-// is a weaker claim than it sounds: a pane can be free of an import and still be
-// unusable by anyone else — reading a global it happens to reach, assuming a
-// spec shaped like this one's, needing an extras slot it was never given.
+// The panes import nothing from this app — that used to be proved here by
+// `portable_seam_test.dart` walking `lib/gallery/`, and is now proved by the
+// panes living in another package, where an import of this one would not
+// resolve. Either way it is a weaker claim than it sounds: a pane can be free of
+// an import and still be unusable by anyone else — reading a global it happens
+// to reach, assuming a spec shaped like this one's, needing an extras slot it
+// was never given.
 //
-// This file is the other half. Nothing below names a single type from this
-// example: no PlaygroundSettings, no settingsSpec, no registry. If the panes can
-// be driven by a host built from scratch here, they can be driven by the next
-// package's, and the port is *sufficient* rather than merely present.
+// This file is the other half, and the extraction did not retire it — it turned
+// it around. Nothing below names a single type from this example: no
+// PlaygroundSettings, no settingsSpec, no registry. It was written to fail on
+// the day the panes needed something the port does not carry, so that the
+// failure did not arrive during the move. The move happened and it stayed green.
+// What it watches now is the other direction: `SettingsHost` belongs to a
+// dependency, so the change that breaks this is an upstream release narrowing
+// the port under a version range with `example/lib` untouched.
 //
 // It is also the cheapest description of what a consumer has to write, which is
 // why the fake is a plain class rather than a mock.

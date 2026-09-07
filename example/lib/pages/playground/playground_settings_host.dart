@@ -2,8 +2,8 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_example_template/flutter_example_template.dart';
 
-import '../../gallery/gallery.dart';
 import 'models/feature_switches.dart';
 import 'models/playground_settings.dart';
 import 'models/settings_presets.dart';
