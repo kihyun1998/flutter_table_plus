@@ -223,7 +223,7 @@ notes.
   A standalone-package probe compiled clean and passed a consumer suite with the
   font already missing: **compile-time portability is not portability**, and any
   future proof that consists only of compiling shares that blind spot.
-  Fetching the face was rejected rather than untried. `SourcePane.monoFallback`
+  Fetching the face was rejected rather than untried. `CodePane.monoFallback`
   had already recorded the argument for the Code pane — a pane whose job is to
   show bytes on disk should not need the network — and it is stronger for a
   package: offline evaluation, a fallback that reflows on first paint, and an
