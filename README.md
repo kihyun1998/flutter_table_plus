@@ -156,6 +156,31 @@ FlutterTablePlus<User>(
 )
 ```
 
+### 4. Tune or Turn Off Wheel Scrolling
+
+The mouse wheel animates by default, as `WheelMotion.spring()` (400ms, no bounce). `wheelMotion` changes it, and can change at runtime:
+
+```dart
+FlutterTablePlus<User>(
+  columns: columns.build(),
+  data: users,
+  rowId: (user) => user.id,
+
+  // Pick one:
+  wheelMotion: const WheelMotion.spring(
+    duration: Duration(milliseconds: 250),
+    bounce: 0.1,
+  ),
+  // wheelMotion: const WheelMotion.curve(curve: Curves.easeOut), // any Curve, your own too
+  // wheelMotion: const WheelMotion.lerp(
+  //   timeConstant: Duration(milliseconds: 80),
+  // ),
+  // wheelMotion: null, // no animation: every notch moves at once
+)
+```
+
+`WheelMotion` is exported by this package; there is no second import. See [Smooth Wheel Scrolling](docs/FEATURES.md#smooth-wheel-scrolling) for every option.
+
 ---
 
 ## 💡 Core Philosophy
@@ -198,7 +223,7 @@ onCellChanged: (row, columnKey, rowIndex, oldValue, newValue) {
 
 | Guide | Description |
 |-------|-------------|
-| [Features Guide](docs/FEATURES.md) | Sorting, Selection, Editing, Merged Rows, Hover Buttons, and more |
+| [Features Guide](docs/FEATURES.md) | Sorting, Selection, Editing, Merged Rows, Hover Buttons, Smooth Wheel Scrolling, and more |
 | [Theming Guide](docs/THEMING.md) | Every theme class, what each field reaches, and what `scaledBy` scales |
 | [Migration Guide](docs/MIGRATION.md) | Migrating from v1.x (`Map`) to v2.x (`Generic<T>`) |
 
