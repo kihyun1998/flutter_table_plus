@@ -66,46 +66,60 @@ void main() {
       final end = Offset(50, _rowCenterY(3));
 
       controller.down(
-          local: start, global: start, viewport: const Size(400, 300));
+        local: start,
+        global: start,
+        viewport: const Size(400, 300),
+      );
       controller.move(local: end, global: end);
       controller.up();
 
-      expect(ends, isNotEmpty,
-          reason: 'onEnd should fire after a real drag across rows');
+      expect(
+        ends,
+        isNotEmpty,
+        reason: 'onEnd should fire after a real drag across rows',
+      );
       expect(ends.last, equals(<String>{'0', '1', '2', '3'}));
     });
 
     test(
-        'drag started in empty space, then returned to empty space, clears the '
-        'selection', () {
-      // 3 rows (y: 0..120). Below 120 is empty space.
-      final locator = _FakeRowLocator(rowHeight: 40, rowCount: 3);
-      final updates = <Set<String>>[];
+      'drag started in empty space, then returned to empty space, clears the '
+      'selection',
+      () {
+        // 3 rows (y: 0..120). Below 120 is empty space.
+        final locator = _FakeRowLocator(rowHeight: 40, rowCount: 3);
+        final updates = <Set<String>>[];
 
-      final controller = DragSelectionController(
-        locator: () => locator,
-        verticalOffset: () => 0,
-        horizontalOffset: () => 0,
-        onUpdate: (ids) => updates.add(Set.of(ids)),
-      );
+        final controller = DragSelectionController(
+          locator: () => locator,
+          verticalOffset: () => 0,
+          horizontalOffset: () => 0,
+          onUpdate: (ids) => updates.add(Set.of(ids)),
+        );
 
-      const down = Offset(50, 200); // empty area below the 3 rows
-      const intoData = Offset(50, 20); // row 0, threshold crossed (200→20)
-      const backToEmpty = Offset(50, 200); // empty area again
+        const down = Offset(50, 200); // empty area below the 3 rows
+        const intoData = Offset(50, 20); // row 0, threshold crossed (200→20)
+        const backToEmpty = Offset(50, 200); // empty area again
 
-      controller.down(
-          local: down, global: down, viewport: const Size(400, 300));
-      controller.move(local: intoData, global: intoData);
-      controller.move(local: backToEmpty, global: backToEmpty);
+        controller.down(
+          local: down,
+          global: down,
+          viewport: const Size(400, 300),
+        );
+        controller.move(local: intoData, global: intoData);
+        controller.move(local: backToEmpty, global: backToEmpty);
 
-      expect(updates, isNotEmpty);
-      expect(updates.last, isEmpty,
-          reason: 'returning into the empty area below the data releases the '
-              'sticky selection that began from empty space');
-    });
+        expect(updates, isNotEmpty);
+        expect(
+          updates.last,
+          isEmpty,
+          reason:
+              'returning into the empty area below the data releases the '
+              'sticky selection that began from empty space',
+        );
+      },
+    );
 
-    test(
-        'drag started in empty space, moved up past the top, keeps the sticky '
+    test('drag started in empty space, moved up past the top, keeps the sticky '
         'selection (header area, absolute Y < 0)', () {
       final locator = _FakeRowLocator(rowHeight: 40, rowCount: 3);
       final updates = <Set<String>>[];
@@ -122,13 +136,20 @@ void main() {
       const aboveTop = Offset(50, -20); // header area: absolute Y < 0
 
       controller.down(
-          local: down, global: down, viewport: const Size(400, 300));
+        local: down,
+        global: down,
+        viewport: const Size(400, 300),
+      );
       controller.move(local: intoData, global: intoData);
       controller.move(local: aboveTop, global: aboveTop);
 
-      expect(updates.last, equals(<String>{'0'}),
-          reason: 'moving above the data into the header preserves the last '
-              'valid range instead of clearing it');
+      expect(
+        updates.last,
+        equals(<String>{'0'}),
+        reason:
+            'moving above the data into the header preserves the last '
+            'valid range instead of clearing it',
+      );
     });
 
     test('cancel ends the drag without emitting onEnd', () {
@@ -146,7 +167,10 @@ void main() {
       final mid = Offset(50, _rowCenterY(3));
 
       controller.down(
-          local: start, global: start, viewport: const Size(400, 300));
+        local: start,
+        global: start,
+        viewport: const Size(400, 300),
+      );
       controller.move(local: mid, global: mid);
       controller.cancel();
 
@@ -156,34 +180,40 @@ void main() {
 
   group('DragSelectionController — geometry', () {
     test(
-        'rubber band rect stays anchored to the drag origin as the view scrolls',
-        () {
-      final locator = _FakeRowLocator(rowHeight: 40, rowCount: 20);
-      double vOffset = 0;
-      double hOffset = 0;
+      'rubber band rect stays anchored to the drag origin as the view scrolls',
+      () {
+        final locator = _FakeRowLocator(rowHeight: 40, rowCount: 20);
+        double vOffset = 0;
+        double hOffset = 0;
 
-      final controller = DragSelectionController(
-        locator: () => locator,
-        verticalOffset: () => vOffset,
-        horizontalOffset: () => hOffset,
-      );
+        final controller = DragSelectionController(
+          locator: () => locator,
+          verticalOffset: () => vOffset,
+          horizontalOffset: () => hOffset,
+        );
 
-      const down = Offset(100, 100);
-      const current = Offset(200, 180); // dy delta 80 crosses the threshold
+        const down = Offset(100, 100);
+        const current = Offset(200, 180); // dy delta 80 crosses the threshold
 
-      controller.down(
-          local: down, global: down, viewport: const Size(400, 300));
-      controller.move(local: current, global: current);
+        controller.down(
+          local: down,
+          global: down,
+          viewport: const Size(400, 300),
+        );
+        controller.move(local: current, global: current);
 
-      // The view scrolls down 50 and right 30 while the pointer is held still.
-      vOffset = 50;
-      hOffset = 30;
+        // The view scrolls down 50 and right 30 while the pointer is held still.
+        vOffset = 50;
+        hOffset = 30;
 
-      // Origin slides opposite to the scroll delta so it stays pinned to the
-      // content cell where the drag began: (100-30, 100-50) = (70, 50).
-      expect(controller.rubberBandRect(),
-          equals(const Rect.fromLTRB(70, 50, 200, 180)));
-    });
+        // Origin slides opposite to the scroll delta so it stays pinned to the
+        // content cell where the drag began: (100-30, 100-50) = (70, 50).
+        expect(
+          controller.rubberBandRect(),
+          equals(const Rect.fromLTRB(70, 50, 200, 180)),
+        );
+      },
+    );
 
     test('rubber band origin is corrected by the delta, not the offset', () {
       // The test above starts at horizontalOffset 0, so the offset *since the
@@ -210,7 +240,10 @@ void main() {
       const current = Offset(200, 180);
 
       controller.down(
-          local: down, global: down, viewport: const Size(400, 300));
+        local: down,
+        global: down,
+        viewport: const Size(400, 300),
+      );
       controller.move(local: current, global: current);
 
       // Same 30 right / 50 down as the test above, but from 200 / 120 rather
@@ -218,10 +251,13 @@ void main() {
       hOffset = 230;
       vOffset = 170;
 
-      expect(controller.rubberBandRect(),
-          equals(const Rect.fromLTRB(70, 50, 200, 180)),
-          reason: 'the origin was corrected by the absolute scroll offset '
-              'instead of by the distance scrolled since the drag began');
+      expect(
+        controller.rubberBandRect(),
+        equals(const Rect.fromLTRB(70, 50, 200, 180)),
+        reason:
+            'the origin was corrected by the absolute scroll offset '
+            'instead of by the distance scrolled since the drag began',
+      );
     });
 
     test('rubber band rect is null before the drag threshold is crossed', () {
@@ -234,9 +270,14 @@ void main() {
 
       const down = Offset(100, 100);
       controller.down(
-          local: down, global: down, viewport: const Size(400, 300));
+        local: down,
+        global: down,
+        viewport: const Size(400, 300),
+      );
       controller.move(
-          local: const Offset(102, 104), global: const Offset(102, 104));
+        local: const Offset(102, 104),
+        global: const Offset(102, 104),
+      );
 
       expect(controller.rubberBandRect(), isNull);
     });
@@ -313,41 +354,52 @@ void main() {
   });
 
   group('DragSelectionController — auto-scroll loop', () {
-    test('holding the pointer in the bottom edge zone auto-scrolls on a timer',
-        () {
-      fakeAsync((async) {
-        final locator = _FakeRowLocator(rowHeight: 40, rowCount: 100);
-        final vAxis = _FakeAxis(maxExtent: 1000);
-        var ticks = 0;
+    test(
+      'holding the pointer in the bottom edge zone auto-scrolls on a timer',
+      () {
+        fakeAsync((async) {
+          final locator = _FakeRowLocator(rowHeight: 40, rowCount: 100);
+          final vAxis = _FakeAxis(maxExtent: 1000);
+          var ticks = 0;
 
-        final controller = DragSelectionController(
-          locator: () => locator,
-          verticalOffset: () => vAxis.offset,
-          horizontalOffset: () => 0,
-          scrollVerticalBy: vAxis.by,
-          onTick: () => ticks++,
-        );
+          final controller = DragSelectionController(
+            locator: () => locator,
+            verticalOffset: () => vAxis.offset,
+            horizontalOffset: () => 0,
+            scrollVerticalBy: vAxis.by,
+            onTick: () => ticks++,
+          );
 
-        const start = Offset(50, 20); // row 0
-        const bottomEdge = Offset(50, 290); // within the bottom 40px of 300
+          const start = Offset(50, 20); // row 0
+          const bottomEdge = Offset(50, 290); // within the bottom 40px of 300
 
-        controller.down(
-            local: start, global: start, viewport: const Size(400, 300));
-        controller.move(local: bottomEdge, global: bottomEdge);
+          controller.down(
+            local: start,
+            global: start,
+            viewport: const Size(400, 300),
+          );
+          controller.move(local: bottomEdge, global: bottomEdge);
 
-        expect(vAxis.offset, 0, reason: 'no scroll until the timer ticks');
+          expect(vAxis.offset, 0, reason: 'no scroll until the timer ticks');
 
-        async.elapse(const Duration(milliseconds: 16 * 4));
+          async.elapse(const Duration(milliseconds: 16 * 4));
 
-        expect(vAxis.offset, greaterThan(0),
+          expect(
+            vAxis.offset,
+            greaterThan(0),
             reason:
-                'auto-scroll advances while the pointer is held at the edge');
-        expect(ticks, greaterThan(0),
-            reason: 'onTick fires each auto-scroll tick');
+                'auto-scroll advances while the pointer is held at the edge',
+          );
+          expect(
+            ticks,
+            greaterThan(0),
+            reason: 'onTick fires each auto-scroll tick',
+          );
 
-        controller.dispose();
-      });
-    });
+          controller.dispose();
+        });
+      },
+    );
 
     test('moving the pointer out of the edge zone stops auto-scroll', () {
       fakeAsync((async) {
@@ -365,7 +417,10 @@ void main() {
         const middle = Offset(50, 150); // outside both edge zones
 
         controller.down(
-            local: start, global: start, viewport: const Size(400, 300));
+          local: start,
+          global: start,
+          viewport: const Size(400, 300),
+        );
         controller.move(local: bottomEdge, global: bottomEdge);
         async.elapse(const Duration(milliseconds: 16 * 3));
         final scrolledSoFar = vAxis.offset;
@@ -374,8 +429,11 @@ void main() {
         controller.move(local: middle, global: middle);
         async.elapse(const Duration(milliseconds: 16 * 5));
 
-        expect(vAxis.offset, scrolledSoFar,
-            reason: 'no further scroll after the pointer leaves the edge zone');
+        expect(
+          vAxis.offset,
+          scrolledSoFar,
+          reason: 'no further scroll after the pointer leaves the edge zone',
+        );
         controller.dispose();
       });
     });
@@ -395,7 +453,10 @@ void main() {
         const bottomEdge = Offset(50, 290);
 
         controller.down(
-            local: start, global: start, viewport: const Size(400, 300));
+          local: start,
+          global: start,
+          viewport: const Size(400, 300),
+        );
         controller.move(local: bottomEdge, global: bottomEdge);
         async.elapse(const Duration(milliseconds: 16 * 3));
         final scrolledSoFar = vAxis.offset;
@@ -404,8 +465,11 @@ void main() {
         controller.up();
         async.elapse(const Duration(milliseconds: 16 * 5));
 
-        expect(vAxis.offset, scrolledSoFar,
-            reason: 'the timer must be cancelled when the drag ends');
+        expect(
+          vAxis.offset,
+          scrolledSoFar,
+          reason: 'the timer must be cancelled when the drag ends',
+        );
       });
     });
 
@@ -424,7 +488,10 @@ void main() {
         const bottomEdge = Offset(50, 290);
 
         controller.down(
-            local: start, global: start, viewport: const Size(400, 300));
+          local: start,
+          global: start,
+          viewport: const Size(400, 300),
+        );
         controller.move(local: bottomEdge, global: bottomEdge);
         async.elapse(const Duration(milliseconds: 16 * 2));
         final scrolledSoFar = vAxis.offset;
@@ -433,8 +500,11 @@ void main() {
         controller.dispose();
         async.elapse(const Duration(milliseconds: 16 * 5));
 
-        expect(vAxis.offset, scrolledSoFar,
-            reason: 'dispose must cancel the timer (no ticks after disposal)');
+        expect(
+          vAxis.offset,
+          scrolledSoFar,
+          reason: 'dispose must cancel the timer (no ticks after disposal)',
+        );
       });
     });
   });

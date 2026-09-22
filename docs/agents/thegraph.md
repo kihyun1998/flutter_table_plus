@@ -10,7 +10,7 @@ manages or mutates the caller's data.
 
 | Source | Informs | Reached by | Binding |
 |---|---|---|---|
-| `../just_tooltip`, `../flutter_checkbox` | how it works | their source trees + CHANGELOGs at `../` — raw | **binding** — a wrong contract is fixed there, never worked around here |
+| `../just_tooltip`, `../flutter_checkbox`, `../flutter_smooth_wheel_scroll` | how it works | their source trees + CHANGELOGs at `../` — raw | **binding** — a wrong contract is fixed there, never worked around here |
 | Flutter SDK | how it works | the SDK source tree on `PATH` — raw | **binding** — coordinates, gestures, scroll physics; source plus a probe, never the doc comment |
 | `flutter/packages` → `two_dimensional_scrollables` · `bosskmk/pluto_grid` · `maxim-saplin/data_table_2` | where files go | `gh api repos/OWNER/REPO/git/trees/BRANCH?recursive=1` — raw | example — peer set confirmed by the maintainer 2026-08-31, deliberately excluding this author's own packages so shared habits surface as differences rather than as agreements |
 | the reporting consumer, found via `../*/pubspec.yaml` | how it works | that repo's own source — raw | example — a downstream claim is verified, never assumed |

@@ -165,8 +165,9 @@ void main() {
       expect(isSelected, true);
     });
 
-    testWidgets('renders with custom cell builder',
-        (WidgetTester tester) async {
+    testWidgets('renders with custom cell builder', (
+      WidgetTester tester,
+    ) async {
       final columns = <String, TablePlusColumn<Map<String, dynamic>>>{
         'status': TablePlusColumn<Map<String, dynamic>>(
           key: 'status',
@@ -456,10 +457,7 @@ void main() {
     test('throws on removing non-existent key', () {
       final builder = TableColumnsBuilder<Map<String, dynamic>>();
 
-      expect(
-        () => builder.removeColumn('nonexistent'),
-        throwsArgumentError,
-      );
+      expect(() => builder.removeColumn('nonexistent'), throwsArgumentError);
     });
   });
 
@@ -578,10 +576,7 @@ void main() {
           ),
         );
 
-      expect(
-        () => builder.reorderColumn('a', 0),
-        throwsArgumentError,
-      );
+      expect(() => builder.reorderColumn('a', 0), throwsArgumentError);
     });
   });
 
@@ -709,8 +704,9 @@ void main() {
       expect(column.hasCustomCellBuilder, true);
     });
 
-    testWidgets('buildCustomCell returns widget when builder set',
-        (WidgetTester tester) async {
+    testWidgets('buildCustomCell returns widget when builder set', (
+      WidgetTester tester,
+    ) async {
       final column = TablePlusColumn<Map<String, dynamic>>(
         key: 'test',
         label: 'Test',
@@ -724,10 +720,12 @@ void main() {
       late BuildContext capturedContext;
       await tester.pumpWidget(
         MaterialApp(
-          home: Builder(builder: (context) {
-            capturedContext = context;
-            return const SizedBox();
-          }),
+          home: Builder(
+            builder: (context) {
+              capturedContext = context;
+              return const SizedBox();
+            },
+          ),
         ),
       );
 
@@ -858,8 +856,10 @@ void main() {
         groupId: 'g1',
         rowKeys: ['1'],
         mergeConfig: {
-          'name':
-              MergeCellConfig(shouldMerge: true, mergedContent: customWidget),
+          'name': MergeCellConfig(
+            shouldMerge: true,
+            mergedContent: customWidget,
+          ),
           'age': MergeCellConfig(shouldMerge: true),
         },
       );
@@ -935,8 +935,11 @@ void main() {
         {'id': '1', 'name': 'Alice'},
       ];
 
-      final result =
-          group.getRowData(data, 'nonexistent', (r) => r['id'] as String);
+      final result = group.getRowData(
+        data,
+        'nonexistent',
+        (r) => r['id'] as String,
+      );
       expect(result, isNull);
     });
 

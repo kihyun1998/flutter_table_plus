@@ -18,10 +18,11 @@ BoxDecoration rowDecoration({
 }) {
   return BoxDecoration(
     color: selectionTransparent ? Colors.transparent : backgroundColor,
-    border: theme.shouldShowBottomBorder(
-      isLastRow: isLastRow,
-      needsVerticalScroll: needsVerticalScroll,
-    )
+    border:
+        theme.shouldShowBottomBorder(
+          isLastRow: isLastRow,
+          needsVerticalScroll: needsVerticalScroll,
+        )
         ? Border(
             bottom: BorderSide(
               color: theme.dividerColor,

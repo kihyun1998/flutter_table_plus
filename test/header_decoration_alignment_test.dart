@@ -13,46 +13,50 @@ import 'package:flutter_test/flutter_test.dart';
 // which nothing promises.
 
 Widget _table({Decoration? decoration, double viewport = 500}) => MaterialApp(
-      home: Scaffold(
-        body: SizedBox(
-          width: viewport,
-          child: FlutterTablePlus<Map<String, dynamic>>(
-            columns: {
-              'a': TablePlusColumn<Map<String, dynamic>>(
-                  key: 'a',
-                  label: 'AAA',
-                  order: 0,
-                  valueAccessor: (r) => r['a'],
-                  width: 300,
-                  minWidth: 300,
-                  maxWidth: 300),
-              'b': TablePlusColumn<Map<String, dynamic>>(
-                  key: 'b',
-                  label: 'BBB',
-                  order: 1,
-                  valueAccessor: (r) => r['b'],
-                  width: 300,
-                  minWidth: 300,
-                  maxWidth: 300),
-            },
-            data: const [
-              {'id': '1', 'a': 'a1', 'b': 'b1'}
-            ],
-            rowId: (r) => r['id'] as String,
-            theme: TablePlusTheme(
-                headerTheme: TablePlusHeaderTheme(decoration: decoration)),
+  home: Scaffold(
+    body: SizedBox(
+      width: viewport,
+      child: FlutterTablePlus<Map<String, dynamic>>(
+        columns: {
+          'a': TablePlusColumn<Map<String, dynamic>>(
+            key: 'a',
+            label: 'AAA',
+            order: 0,
+            valueAccessor: (r) => r['a'],
+            width: 300,
+            minWidth: 300,
+            maxWidth: 300,
           ),
+          'b': TablePlusColumn<Map<String, dynamic>>(
+            key: 'b',
+            label: 'BBB',
+            order: 1,
+            valueAccessor: (r) => r['b'],
+            width: 300,
+            minWidth: 300,
+            maxWidth: 300,
+          ),
+        },
+        data: const [
+          {'id': '1', 'a': 'a1', 'b': 'b1'},
+        ],
+        rowId: (r) => r['id'] as String,
+        theme: TablePlusTheme(
+          headerTheme: TablePlusHeaderTheme(decoration: decoration),
         ),
       ),
-    );
+    ),
+  ),
+);
 
 double _desync(WidgetTester tester) =>
     tester.getRect(find.text('BBB')).left -
     tester.getRect(find.text('b1')).left;
 
 void main() {
-  testWidgets('a caller decoration with a border does not slide the header',
-      (tester) async {
+  testWidgets('a caller decoration with a border does not slide the header', (
+    tester,
+  ) async {
     // Control first: without a decoration there is nothing to inset, so this
     // says the fixture can tell aligned from misaligned rather than always
     // reading zero.
@@ -61,10 +65,14 @@ void main() {
     expect(_desync(tester), 0.0);
 
     await tester.pumpWidget(
-        _table(decoration: BoxDecoration(border: Border.all(width: 2))));
+      _table(decoration: BoxDecoration(border: Border.all(width: 2))),
+    );
     await tester.pumpAndSettle();
-    expect(_desync(tester), 0.0,
-        reason: 'the header slid against the body by the left border');
+    expect(
+      _desync(tester),
+      0.0,
+      reason: 'the header slid against the body by the left border',
+    );
     expect(tester.takeException(), isNull);
   });
 
@@ -73,7 +81,8 @@ void main() {
     // where a header whose content is a different width than the body's would
     // come apart even if it looked right at rest.
     await tester.pumpWidget(
-        _table(decoration: BoxDecoration(border: Border.all(width: 2))));
+      _table(decoration: BoxDecoration(border: Border.all(width: 2))),
+    );
     await tester.pumpAndSettle();
 
     await tester.drag(find.text('b1'), const Offset(-400, 0));

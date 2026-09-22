@@ -13,12 +13,16 @@ void main() {
       const theme = TablePlusBodyTheme(showHorizontalDividers: false);
       expect(
         theme.shouldShowBottomBorder(
-            isLastRow: false, needsVerticalScroll: false),
+          isLastRow: false,
+          needsVerticalScroll: false,
+        ),
         isFalse,
       );
       expect(
         theme.shouldShowBottomBorder(
-            isLastRow: true, needsVerticalScroll: false),
+          isLastRow: true,
+          needsVerticalScroll: false,
+        ),
         isFalse,
       );
     });
@@ -29,7 +33,9 @@ void main() {
       );
       expect(
         theme.shouldShowBottomBorder(
-            isLastRow: false, needsVerticalScroll: true),
+          isLastRow: false,
+          needsVerticalScroll: true,
+        ),
         isTrue,
       );
     });
@@ -43,32 +49,42 @@ void main() {
       );
       expect(
         never.shouldShowBottomBorder(
-            isLastRow: true, needsVerticalScroll: false),
+          isLastRow: true,
+          needsVerticalScroll: false,
+        ),
         isFalse,
       );
       expect(
         always.shouldShowBottomBorder(
-            isLastRow: true, needsVerticalScroll: false),
+          isLastRow: true,
+          needsVerticalScroll: false,
+        ),
         isTrue,
       );
     });
 
-    test('smart shows the last border only when there is no vertical scroll',
-        () {
-      const smart = TablePlusBodyTheme(
-        lastRowBorderBehavior: LastRowBorderBehavior.smart,
-      );
-      expect(
-        smart.shouldShowBottomBorder(
-            isLastRow: true, needsVerticalScroll: false),
-        isTrue,
-      );
-      expect(
-        smart.shouldShowBottomBorder(
-            isLastRow: true, needsVerticalScroll: true),
-        isFalse,
-      );
-    });
+    test(
+      'smart shows the last border only when there is no vertical scroll',
+      () {
+        const smart = TablePlusBodyTheme(
+          lastRowBorderBehavior: LastRowBorderBehavior.smart,
+        );
+        expect(
+          smart.shouldShowBottomBorder(
+            isLastRow: true,
+            needsVerticalScroll: false,
+          ),
+          isTrue,
+        );
+        expect(
+          smart.shouldShowBottomBorder(
+            isLastRow: true,
+            needsVerticalScroll: true,
+          ),
+          isFalse,
+        );
+      },
+    );
   });
 
   group('effective interaction colors (selected > dim > normal)', () {

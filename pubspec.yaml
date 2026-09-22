@@ -1,6 +1,6 @@
 name: flutter_table_plus
 description: "A highly customizable and efficient table widget for Flutter, featuring synchronized scrolling, theming, sorting, selection, column reordering, hover buttons, and expandable rows."
-version: 2.17.0
+version: 2.18.0
 homepage: https://github.com/kihyun1998/flutter_table_plus
 repository: https://github.com/kihyun1998/flutter_table_plus
 topics:
@@ -10,12 +10,15 @@ topics:
   - grid
   - datagrid
 
-# The binding floor is the max of what our two bindings demand: flutter_checkbox
+# The binding floor is the max of what our dependencies demand: flutter_checkbox
 # 0.3.1 declares Flutter `>=3.27.0` / Dart `>=3.6.0` (its newest call is
-# `Color.withValues`, 3.27+; everything else needs only Dart 3.0), and
-# just_tooltip 0.4.4 declares Flutter `>=3.13.0` / Dart `>=3.1.0` (its
-# `RenderObject.parent` ancestor walk needs `describeApproximatePaintClip`, added
-# in 3.13). So the honest floor is `max(3.27, 3.13) = 3.27` / `max(3.6, 3.1) = 3.6`.
+# `Color.withValues`, 3.27+; everything else needs only Dart 3.0), just_tooltip
+# 0.4.4 declares Flutter `>=3.13.0` / Dart `>=3.1.0` (its `RenderObject.parent`
+# ancestor walk needs `describeApproximatePaintClip`, added in 3.13), and
+# flutter_smooth_wheel_scroll 0.1.1 declares Flutter `>=3.32.0` / Dart `^3.8.0`
+# (`SpringDescription.withDurationAndBounce`, flutter#164411, first stable in
+# 3.32.0). So the honest floor is `max(3.27, 3.13, 3.32) = 3.32` /
+# `max(3.6, 3.1, 3.8) = 3.8`.
 #
 # 0.3.0 had over-declared its floor as 3.35 — the SDK it was built with, not the
 # one its code needs — and taking `^0.3.0` made that 3.35 our transitive
@@ -25,8 +28,8 @@ topics:
 # the declared range must be a promise we can keep for every version the
 # constraint allows, the same honesty the 3.35 raise served, run in reverse.
 environment:
-  sdk: ">=3.6.0 <4.0.0"
-  flutter: ">=3.27.0"
+  sdk: ">=3.8.0 <4.0.0"
+  flutter: ">=3.32.0"
 
 dependencies:
   flutter:
@@ -37,6 +40,10 @@ dependencies:
   # building such a tooltip at all. That guard is gone, so 0.4.3 would reissue
   # the bug (#88) rather than merely miss the fix.
   just_tooltip: ^0.4.4
+  # 0.1.1 is a floor, not a preference: 0.1.0 declared Flutter `>=3.41.0`, the
+  # SDK it was built with, so `^0.1.0` would admit a version a 3.32 user cannot
+  # resolve. This dependency is what sets the environment floor above.
+  flutter_smooth_wheel_scroll: ^0.1.1
 
 dev_dependencies:
   flutter_test:

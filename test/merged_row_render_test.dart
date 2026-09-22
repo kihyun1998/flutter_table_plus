@@ -61,7 +61,7 @@ Future<void> _pump(
   Map<String, TablePlusColumn<Map<String, dynamic>>>? columns,
   bool editable = false,
   void Function(String groupId, String columnKey, dynamic newValue)?
-      onMergedCellChanged,
+  onMergedCellChanged,
 }) async {
   await tester.pumpWidget(
     MaterialApp(
@@ -81,8 +81,9 @@ Future<void> _pump(
 }
 
 void main() {
-  testWidgets('a merged column shows one spanning value; others stack',
-      (tester) async {
+  testWidgets('a merged column shows one spanning value; others stack', (
+    tester,
+  ) async {
     await _pump(tester, groups: [_group()]);
 
     // 'group' is merged (spanningRowIndex 0) -> shows GA only, not GB.
@@ -93,14 +94,22 @@ void main() {
     expect(find.text('V2'), findsOneWidget);
   });
 
-  testWidgets('a merged column with mergedContent renders that widget',
-      (tester) async {
-    await _pump(tester, groups: [
-      _group(config: const {
-        'group':
-            MergeCellConfig(shouldMerge: true, mergedContent: Text('CUSTOM')),
-      }),
-    ]);
+  testWidgets('a merged column with mergedContent renders that widget', (
+    tester,
+  ) async {
+    await _pump(
+      tester,
+      groups: [
+        _group(
+          config: const {
+            'group': MergeCellConfig(
+              shouldMerge: true,
+              mergedContent: Text('CUSTOM'),
+            ),
+          },
+        ),
+      ],
+    );
 
     expect(find.text('CUSTOM'), findsOneWidget);
     expect(find.text('GA'), findsNothing); // replaced by the custom content
@@ -122,8 +131,9 @@ void main() {
     expect(find.text('SUMMARY'), findsNothing);
   });
 
-  testWidgets('editing an editable merged cell fires onMergedCellChanged',
-      (tester) async {
+  testWidgets('editing an editable merged cell fires onMergedCellChanged', (
+    tester,
+  ) async {
     String? groupId;
     String? columnKey;
     dynamic newValue;
@@ -132,9 +142,11 @@ void main() {
       tester,
       columns: _columns(groupEditable: true),
       groups: [
-        _group(config: const {
-          'group': MergeCellConfig(shouldMerge: true, isEditable: true),
-        }),
+        _group(
+          config: const {
+            'group': MergeCellConfig(shouldMerge: true, isEditable: true),
+          },
+        ),
       ],
       editable: true,
       onMergedCellChanged: (g, c, v) {

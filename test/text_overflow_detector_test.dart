@@ -15,12 +15,14 @@ bool _overflows(
   TextScaler scaler = TextScaler.noScaling,
   TextStyle style = _style,
 }) {
-  return TextOverflowDetector.willTextOverflow(TextMeasurement(
-    text: text,
-    style: style,
-    maxWidth: maxWidth,
-    textScaler: scaler,
-  ));
+  return TextOverflowDetector.willTextOverflow(
+    TextMeasurement(
+      text: text,
+      style: style,
+      maxWidth: maxWidth,
+      textScaler: scaler,
+    ),
+  );
 }
 
 /// The width [text] needs on one unbounded line — measured, never written as a
@@ -71,19 +73,23 @@ void main() {
   // by a test that reddens — nothing could reach it — so the premise that made
   // it dead is asserted instead. If a Flutter release changes it, this fails and
   // someone re-reads that removal.
-  test('a laid-out painter never reports a width above the one it was given',
-      () {
-    for (final w in [1.0, 10.0, 50.0, 500.0]) {
-      final p = TextPainter(
-        text: const TextSpan(
-            text: 'a string far wider than any of these', style: _style),
-        maxLines: 1,
-        textDirection: TextDirection.ltr,
-      )..layout(maxWidth: w);
-      expect(p.size.width, lessThanOrEqualTo(w), reason: 'at maxWidth $w');
-      p.dispose();
-    }
-  });
+  test(
+    'a laid-out painter never reports a width above the one it was given',
+    () {
+      for (final w in [1.0, 10.0, 50.0, 500.0]) {
+        final p = TextPainter(
+          text: const TextSpan(
+            text: 'a string far wider than any of these',
+            style: _style,
+          ),
+          maxLines: 1,
+          textDirection: TextDirection.ltr,
+        )..layout(maxWidth: w);
+        expect(p.size.width, lessThanOrEqualTo(w), reason: 'at maxWidth $w');
+        p.dispose();
+      }
+    },
+  );
 
   group('the text scaler participates in the measurement', () {
     const text = 'Scaled';

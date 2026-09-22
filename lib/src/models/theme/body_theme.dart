@@ -22,10 +22,7 @@ class TablePlusBodyTheme {
     this.backgroundColor = Colors.white,
     this.alternateRowColor,
     this.summaryRowBackgroundColor,
-    this.textStyle = const TextStyle(
-      fontSize: 14,
-      color: Color(0xFF212121),
-    ),
+    this.textStyle = const TextStyle(fontSize: 14, color: Color(0xFF212121)),
     // Selection styling
     this.selectedRowColor = const Color(0xFFE3F2FD),
     this.selectedRowTextStyle,
@@ -261,9 +258,9 @@ class TablePlusBodyTheme {
   /// *row* is the table's last. That question governs this group's own outer
   /// edge through [rowDecoration] and nothing inside it (#157).
   BorderSide get memberDividerSide => BorderSide(
-        color: memberDividerColor ?? dividerColor.withValues(alpha: 0.3),
-        width: dividerThickness,
-      );
+    color: memberDividerColor ?? dividerColor.withValues(alpha: 0.3),
+    width: dividerThickness,
+  );
 
   /// The resolved style for the empty-data placeholder.
   ///

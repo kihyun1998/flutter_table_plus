@@ -119,9 +119,9 @@ class _TablePlusHeaderState<T> extends State<TablePlusHeader<T>> {
 
   /// Determine the state of the select-all checkbox.
   bool? _getSelectAllState() => selectAllState(
-        total: widget.totalRowCount,
-        selectedCount: widget.selectedRows.length,
-      );
+    total: widget.totalRowCount,
+    selectedCount: widget.selectedRows.length,
+  );
 
   /// Handle column reorder
   void _handleColumnReorder(int oldIndex, int newIndex) {
@@ -195,8 +195,9 @@ class _TablePlusHeaderState<T> extends State<TablePlusHeader<T>> {
   @override
   Widget build(BuildContext context) {
     // Count reorderable columns (non-selection) for trailing drop target
-    final reorderableCount =
-        widget.columns.where((col) => col.key != '__selection__').length;
+    final reorderableCount = widget.columns
+        .where((col) => col.key != '__selection__')
+        .length;
 
     Widget content = Row(
       children: [
@@ -234,7 +235,8 @@ class _TablePlusHeaderState<T> extends State<TablePlusHeader<T>> {
                   ? widget.sortDirection
                   : SortDirection.none,
               isReordering: _isReordering,
-              onSortClick: column.sortable &&
+              onSortClick:
+                  column.sortable &&
                       widget.onSort != null &&
                       widget.totalRowCount > 0
                   ? () => _handleSortClick(column.key)
@@ -262,10 +264,7 @@ class _TablePlusHeaderState<T> extends State<TablePlusHeader<T>> {
                     showDivider: false,
                   ),
                 ),
-                childWhenDragging: Opacity(
-                  opacity: 0.3,
-                  child: headerCell,
-                ),
+                childWhenDragging: Opacity(opacity: 0.3, child: headerCell),
                 child: DragTarget<int>(
                   onAcceptWithDetails: (details) {
                     _handleColumnReorder(details.data, currentReorderIndex);
@@ -353,13 +352,7 @@ class _TablePlusHeaderState<T> extends State<TablePlusHeader<T>> {
         );
       }
 
-      content = Stack(
-        clipBehavior: Clip.none,
-        children: [
-          content,
-          ...handles,
-        ],
-      );
+      content = Stack(clipBehavior: Clip.none, children: [content, ...handles]);
     }
 
     // `SizedBox` + `DecoratedBox`, never `Container(decoration:)`.
@@ -385,10 +378,7 @@ class _TablePlusHeaderState<T> extends State<TablePlusHeader<T>> {
     return SizedBox(
       height: widget.theme.height,
       width: widget.totalWidth,
-      child: DecoratedBox(
-        decoration: _buildHeaderDecoration(),
-        child: content,
-      ),
+      child: DecoratedBox(decoration: _buildHeaderDecoration(), child: content),
     );
   }
 }

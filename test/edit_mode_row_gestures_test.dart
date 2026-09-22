@@ -40,7 +40,7 @@ Future<void> _pump(
   WidgetTester tester, {
   void Function(String id)? onRowDoubleTap,
   void Function(String id, TapDownDetails d, RenderBox box, bool sel)?
-      onRowSecondaryTapDown,
+  onRowSecondaryTapDown,
 }) async {
   await tester.pumpWidget(
     MaterialApp(
@@ -65,8 +65,9 @@ Future<void> _pump(
 }
 
 void main() {
-  testWidgets('double-tapping a row still fires onRowDoubleTap in edit mode',
-      (tester) async {
+  testWidgets('double-tapping a row still fires onRowDoubleTap in edit mode', (
+    tester,
+  ) async {
     String? doubleTapped;
     await _pump(tester, onRowDoubleTap: (id) => doubleTapped = id);
 
@@ -81,25 +82,29 @@ void main() {
   });
 
   testWidgets(
-      'right-clicking a row still fires onRowSecondaryTapDown in edit mode',
-      (tester) async {
-    String? secondary;
-    await _pump(tester,
-        onRowSecondaryTapDown: (id, _, __, ___) => secondary = id);
+    'right-clicking a row still fires onRowSecondaryTapDown in edit mode',
+    (tester) async {
+      String? secondary;
+      await _pump(
+        tester,
+        onRowSecondaryTapDown: (id, _, __, ___) => secondary = id,
+      );
 
-    final gesture = await tester.startGesture(
-      tester.getCenter(find.text('T2')),
-      kind: PointerDeviceKind.mouse,
-      buttons: kSecondaryMouseButton,
-    );
-    await gesture.up();
-    await tester.pumpAndSettle();
+      final gesture = await tester.startGesture(
+        tester.getCenter(find.text('T2')),
+        kind: PointerDeviceKind.mouse,
+        buttons: kSecondaryMouseButton,
+      );
+      await gesture.up();
+      await tester.pumpAndSettle();
 
-    expect(secondary, '2');
-  });
+      expect(secondary, '2');
+    },
+  );
 
-  testWidgets('tapping an editable cell still starts editing (guard)',
-      (tester) async {
+  testWidgets('tapping an editable cell still starts editing (guard)', (
+    tester,
+  ) async {
     await _pump(tester);
 
     await tester.tap(find.text('Alpha'));

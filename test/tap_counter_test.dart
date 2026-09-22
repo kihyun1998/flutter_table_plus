@@ -41,10 +41,10 @@ void main() {
       var taps = 0, doubles = 0;
       final c = TapCounter();
       void tap() => c.handleTap(
-            doubleTapTimeout: _timeout,
-            onTap: () => taps++,
-            onDoubleTap: () => doubles++,
-          );
+        doubleTapTimeout: _timeout,
+        onTap: () => taps++,
+        onDoubleTap: () => doubles++,
+      );
       tap();
       async.elapse(const Duration(milliseconds: 100));
       tap();
@@ -59,10 +59,10 @@ void main() {
       var taps = 0, doubles = 0;
       final c = TapCounter();
       void tap() => c.handleTap(
-            doubleTapTimeout: _timeout,
-            onTap: () => taps++,
-            onDoubleTap: () => doubles++,
-          );
+        doubleTapTimeout: _timeout,
+        onTap: () => taps++,
+        onDoubleTap: () => doubles++,
+      );
       tap();
       async.elapse(_timeout + const Duration(milliseconds: 1)); // count resets
       tap();
@@ -77,10 +77,10 @@ void main() {
       var taps = 0, doubles = 0;
       final c = TapCounter();
       void tap() => c.handleTap(
-            doubleTapTimeout: _timeout,
-            onTap: () => taps++,
-            onDoubleTap: () => doubles++,
-          );
+        doubleTapTimeout: _timeout,
+        onTap: () => taps++,
+        onDoubleTap: () => doubles++,
+      );
       tap(); // 1st -> onTap
       tap(); // 2nd -> onDoubleTap (resets)
       tap(); // 3rd -> onTap again

@@ -25,14 +25,14 @@ SortDirection nextSortDirection({
 
   return switch (cycle) {
     SortCycleOrder.ascendingFirst => switch (current) {
-        SortDirection.none => SortDirection.ascending,
-        SortDirection.ascending => SortDirection.descending,
-        SortDirection.descending => SortDirection.none,
-      },
+      SortDirection.none => SortDirection.ascending,
+      SortDirection.ascending => SortDirection.descending,
+      SortDirection.descending => SortDirection.none,
+    },
     SortCycleOrder.descendingFirst => switch (current) {
-        SortDirection.none => SortDirection.descending,
-        SortDirection.descending => SortDirection.ascending,
-        SortDirection.ascending => SortDirection.none,
-      },
+      SortDirection.none => SortDirection.descending,
+      SortDirection.descending => SortDirection.ascending,
+      SortDirection.ascending => SortDirection.none,
+    },
   };
 }

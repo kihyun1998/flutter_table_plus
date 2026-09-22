@@ -30,7 +30,7 @@ Widget _table({
       ),
     },
     data: const [
-      {'id': '1', 'name': 'A'}
+      {'id': '1', 'name': 'A'},
     ],
     rowId: (r) => r['id'] as String,
     isSelectable: true,
@@ -56,13 +56,15 @@ void main() {
     expect(
       tester.takeException(),
       isNull,
-      reason: 'the table must not require a Material ancestor for its '
+      reason:
+          'the table must not require a Material ancestor for its '
           'checkboxes (#3)',
     );
   });
 
-  testWidgets('tapping a row checkbox selects the row, with no Scaffold',
-      (tester) async {
+  testWidgets('tapping a row checkbox selects the row, with no Scaffold', (
+    tester,
+  ) async {
     final toggled = <String>[];
     await tester.pumpWidget(
       MaterialApp(
@@ -82,34 +84,36 @@ void main() {
   });
 
   testWidgets(
-      'tapping the selection cell toggles the checkbox, with no Scaffold',
-      (tester) async {
-    final toggled = <String>[];
-    await tester.pumpWidget(
-      MaterialApp(
-        home: _table(
-          cellTapTogglesCheckbox: true,
-          onRowSelectionChanged: (id, _) => toggled.add(id),
+    'tapping the selection cell toggles the checkbox, with no Scaffold',
+    (tester) async {
+      final toggled = <String>[];
+      await tester.pumpWidget(
+        MaterialApp(
+          home: _table(
+            cellTapTogglesCheckbox: true,
+            onRowSelectionChanged: (id, _) => toggled.add(id),
+          ),
         ),
-      ),
-    );
+      );
 
-    // Just inside the cell's left edge — clear of the centred checkbox, so the
-    // cell's own InkWell handles the tap rather than the checkbox's.
-    final cell = tester.getRect(find.byType(TablePlusSelectionCell));
-    await tester.tapAt(Offset(cell.left + 2, cell.center.dy));
-    await tester.pumpAndSettle();
+      // Just inside the cell's left edge — clear of the centred checkbox, so the
+      // cell's own InkWell handles the tap rather than the checkbox's.
+      final cell = tester.getRect(find.byType(TablePlusSelectionCell));
+      await tester.tapAt(Offset(cell.left + 2, cell.center.dy));
+      await tester.pumpAndSettle();
 
-    expect(
-      tester.takeException(),
-      isNull,
-      reason: "the cell-tap InkWell's splash needs a Material ancestor (#3)",
-    );
-    expect(toggled, ['1']);
-  });
+      expect(
+        tester.takeException(),
+        isNull,
+        reason: "the cell-tap InkWell's splash needs a Material ancestor (#3)",
+      );
+      expect(toggled, ['1']);
+    },
+  );
 
-  testWidgets('hovering a row checkbox does not throw, with no Scaffold',
-      (tester) async {
+  testWidgets('hovering a row checkbox does not throw, with no Scaffold', (
+    tester,
+  ) async {
     await tester.pumpWidget(MaterialApp(home: _table()));
 
     // Hover resolves `Material.of` through `updateHighlight`, a different code

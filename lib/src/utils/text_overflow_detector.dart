@@ -145,12 +145,14 @@ class TextOverflowDetector {
     required TextStyle style,
     TextAlign textAlign = TextAlign.start,
   }) {
-    return willTextOverflow(measurementFor(
-      context: context,
-      text: text,
-      maxWidth: maxWidth,
-      style: style,
-      textAlign: textAlign,
-    ));
+    return willTextOverflow(
+      measurementFor(
+        context: context,
+        text: text,
+        maxWidth: maxWidth,
+        style: style,
+        textAlign: textAlign,
+      ),
+    );
   }
 }

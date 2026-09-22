@@ -58,63 +58,76 @@ void main() {
       return reported;
     }
 
-    testWidgets('ascendingFirst: ascending -> descending -> none',
-        (tester) async {
+    testWidgets('ascendingFirst: ascending -> descending -> none', (
+      tester,
+    ) async {
       expect(
-        await tapSort(tester,
-            cycle: SortCycleOrder.ascendingFirst,
-            current: SortDirection.ascending),
+        await tapSort(
+          tester,
+          cycle: SortCycleOrder.ascendingFirst,
+          current: SortDirection.ascending,
+        ),
         SortDirection.descending,
       );
       expect(
-        await tapSort(tester,
-            cycle: SortCycleOrder.ascendingFirst,
-            current: SortDirection.descending),
+        await tapSort(
+          tester,
+          cycle: SortCycleOrder.ascendingFirst,
+          current: SortDirection.descending,
+        ),
         SortDirection.none,
       );
     });
 
-    testWidgets('descendingFirst: none -> descending, descending -> ascending',
-        (tester) async {
-      expect(
-        await tapSort(tester,
-            cycle: SortCycleOrder.descendingFirst, current: SortDirection.none),
-        SortDirection.descending,
-      );
-      expect(
-        await tapSort(tester,
+    testWidgets(
+      'descendingFirst: none -> descending, descending -> ascending',
+      (tester) async {
+        expect(
+          await tapSort(
+            tester,
             cycle: SortCycleOrder.descendingFirst,
-            current: SortDirection.descending),
-        SortDirection.ascending,
-      );
-    });
+            current: SortDirection.none,
+          ),
+          SortDirection.descending,
+        );
+        expect(
+          await tapSort(
+            tester,
+            cycle: SortCycleOrder.descendingFirst,
+            current: SortDirection.descending,
+          ),
+          SortDirection.ascending,
+        );
+      },
+    );
   });
 
   group('selection surface', () {
     testWidgets(
-        'multiple mode: the header select-all checkbox fires onSelectAll',
-        (tester) async {
-      bool? selectAll;
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: FlutterTablePlus<Map<String, dynamic>>(
-              columns: _columns(),
-              data: _data,
-              rowId: (r) => r['id'] as String,
-              isSelectable: true,
-              selectionMode: SelectionMode.multiple,
-              onSelectAll: (v) => selectAll = v,
+      'multiple mode: the header select-all checkbox fires onSelectAll',
+      (tester) async {
+        bool? selectAll;
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: FlutterTablePlus<Map<String, dynamic>>(
+                columns: _columns(),
+                data: _data,
+                rowId: (r) => r['id'] as String,
+                isSelectable: true,
+                selectionMode: SelectionMode.multiple,
+                onSelectAll: (v) => selectAll = v,
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      // The header select-all checkbox renders before the row checkboxes.
-      await tester.tap(find.byType(FlutterCheckbox).first);
-      await tester.pumpAndSettle();
-      expect(selectAll, isTrue);
-    });
+        // The header select-all checkbox renders before the row checkboxes.
+        await tester.tap(find.byType(FlutterCheckbox).first);
+        await tester.pumpAndSettle();
+        expect(selectAll, isTrue);
+      },
+    );
 
     testWidgets('tapping a row reports its selection', (tester) async {
       final selected = <String, bool>{};
@@ -143,8 +156,13 @@ void main() {
     Future<void> pumpEditable(
       WidgetTester tester, {
       required void Function(
-              Map<String, dynamic>, String, int, dynamic, dynamic)
-          onCellChanged,
+        Map<String, dynamic>,
+        String,
+        int,
+        dynamic,
+        dynamic,
+      )
+      onCellChanged,
     }) async {
       await tester.pumpWidget(
         MaterialApp(
@@ -164,10 +182,13 @@ void main() {
 
     testWidgets('Enter commits the new value', (tester) async {
       dynamic oldValue, newValue;
-      await pumpEditable(tester, onCellChanged: (r, k, i, o, n) {
-        oldValue = o;
-        newValue = n;
-      });
+      await pumpEditable(
+        tester,
+        onCellChanged: (r, k, i, o, n) {
+          oldValue = o;
+          newValue = n;
+        },
+      );
 
       await tester.tap(find.text('Alice'));
       await tester.pump();
@@ -181,9 +202,12 @@ void main() {
 
     testWidgets('Escape cancels without committing', (tester) async {
       var committed = false;
-      await pumpEditable(tester, onCellChanged: (r, k, i, o, n) {
-        committed = true;
-      });
+      await pumpEditable(
+        tester,
+        onCellChanged: (r, k, i, o, n) {
+          committed = true;
+        },
+      );
 
       await tester.tap(find.text('Alice'));
       await tester.pump();
@@ -216,7 +240,7 @@ void main() {
                 child: FlutterTablePlus<Map<String, dynamic>>(
                   columns: columns,
                   data: const [
-                    {'id': '0', 'c0': 'a', 'c1': 'b', 'c2': 'c', 'c3': 'd'}
+                    {'id': '0', 'c0': 'a', 'c1': 'b', 'c2': 'c', 'c3': 'd'},
                   ],
                   rowId: (r) => r['id'] as String,
                   resizable: true,
@@ -230,44 +254,51 @@ void main() {
       final tableLeft = tester
           .getTopLeft(find.byType(FlutterTablePlus<Map<String, dynamic>>))
           .dx;
-      final handleX =
-          tester.getCenter(find.byKey(const ValueKey('resize_c0'))).dx;
+      final handleX = tester
+          .getCenter(find.byKey(const ValueKey('resize_c0')))
+          .dx;
       return handleX - tableLeft;
     }
 
-    TablePlusColumn<Map<String, dynamic>> col(String key,
-            {required double width, double minWidth = 50, double? maxWidth}) =>
-        TablePlusColumn<Map<String, dynamic>>(
-          key: key,
-          label: key.toUpperCase(),
-          order: 0,
-          valueAccessor: (r) => r[key],
-          width: width,
-          minWidth: minWidth,
-          maxWidth: maxWidth,
-        );
+    TablePlusColumn<Map<String, dynamic>> col(
+      String key, {
+      required double width,
+      double minWidth = 50,
+      double? maxWidth,
+    }) => TablePlusColumn<Map<String, dynamic>>(
+      key: key,
+      label: key.toUpperCase(),
+      order: 0,
+      valueAccessor: (r) => r[key],
+      width: width,
+      minWidth: minWidth,
+      maxWidth: maxWidth,
+    );
 
     testWidgets('a column wider than maxWidth is clamped down', (tester) async {
-      final columns = (TableColumnsBuilder<Map<String, dynamic>>()
-            ..addColumn('c0', col('c0', width: 200, maxWidth: 150))
-            ..addColumn('c1', col('c1', width: 200)))
-          .build();
+      final columns =
+          (TableColumnsBuilder<Map<String, dynamic>>()
+                ..addColumn('c0', col('c0', width: 200, maxWidth: 150))
+                ..addColumn('c1', col('c1', width: 200)))
+              .build();
 
       final width = await renderedFirstColumnWidth(tester, columns);
       expect(width, lessThan(200), reason: 'the requested 200 must be capped');
       expect(width, closeTo(150, 8), reason: 'clamped to maxWidth');
     });
 
-    testWidgets('a column narrower than minWidth is clamped up',
-        (tester) async {
+    testWidgets('a column narrower than minWidth is clamped up', (
+      tester,
+    ) async {
       // Four wide columns overflow the 300px viewport, forcing the
       // preferred-width fallback that clamps each column to its own bounds.
-      final columns = (TableColumnsBuilder<Map<String, dynamic>>()
-            ..addColumn('c0', col('c0', width: 40, minWidth: 90))
-            ..addColumn('c1', col('c1', width: 200))
-            ..addColumn('c2', col('c2', width: 200))
-            ..addColumn('c3', col('c3', width: 200)))
-          .build();
+      final columns =
+          (TableColumnsBuilder<Map<String, dynamic>>()
+                ..addColumn('c0', col('c0', width: 40, minWidth: 90))
+                ..addColumn('c1', col('c1', width: 200))
+                ..addColumn('c2', col('c2', width: 200))
+                ..addColumn('c3', col('c3', width: 200)))
+              .build();
 
       final width = await renderedFirstColumnWidth(tester, columns);
       expect(width, greaterThan(40), reason: 'the requested 40 must be raised');

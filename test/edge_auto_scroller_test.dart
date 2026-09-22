@@ -94,8 +94,11 @@ void main() {
         async.elapse(const Duration(milliseconds: 16 * 4));
 
         expect(axis.offset, greaterThan(0));
-        expect(scrolledCallbacks, greaterThan(0),
-            reason: 'onScrolled fires for each tick that moved the view');
+        expect(
+          scrolledCallbacks,
+          greaterThan(0),
+          reason: 'onScrolled fires for each tick that moved the view',
+        );
 
         scroller.dispose();
       });
@@ -118,8 +121,11 @@ void main() {
         scroller.update(axisPos: 150, viewportExtent: 300); // out of the zone
         async.elapse(const Duration(milliseconds: 16 * 5));
 
-        expect(axis.offset, moved,
-            reason: 'no further scroll after leaving the zone');
+        expect(
+          axis.offset,
+          moved,
+          reason: 'no further scroll after leaving the zone',
+        );
         scroller.dispose();
       });
     });

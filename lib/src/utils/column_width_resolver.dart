@@ -71,8 +71,10 @@ List<double> computeColumnWidths<T>({
     for (int i = 0; i < columns.length; i++) {
       if (widths[i] == null) {
         final col = columns[i];
-        widths[i] =
-            col.width.clamp(col.minWidth, col.maxWidth ?? double.infinity);
+        widths[i] = col.width.clamp(
+          col.minWidth,
+          col.maxWidth ?? double.infinity,
+        );
       }
     }
   } else {
@@ -86,11 +88,15 @@ List<double> computeColumnWidths<T>({
     double remainingSpace = spaceForFlexible;
     double remainingPreferred = flexiblePreferredTotal;
 
-    final cappable = <int>[
-      for (int i = 0; i < columns.length; i++)
-        if (widths[i] == null && columns[i].maxWidth != null) i,
-    ]..sort((a, b) => (columns[a].maxWidth! / columns[a].width)
-        .compareTo(columns[b].maxWidth! / columns[b].width));
+    final cappable =
+        <int>[
+          for (int i = 0; i < columns.length; i++)
+            if (widths[i] == null && columns[i].maxWidth != null) i,
+        ]..sort(
+          (a, b) => (columns[a].maxWidth! / columns[a].width).compareTo(
+            columns[b].maxWidth! / columns[b].width,
+          ),
+        );
 
     for (final i in cappable) {
       if (remainingPreferred <= 0 || remainingSpace <= 0) break;
@@ -112,8 +118,10 @@ List<double> computeColumnWidths<T>({
       for (int i = 0; i < columns.length; i++) {
         if (widths[i] == null) {
           final col = columns[i];
-          widths[i] =
-              col.width.clamp(col.minWidth, col.maxWidth ?? double.infinity);
+          widths[i] = col.width.clamp(
+            col.minWidth,
+            col.maxWidth ?? double.infinity,
+          );
         }
       }
     } else {
@@ -122,8 +130,10 @@ List<double> computeColumnWidths<T>({
         if (widths[i] != null) continue;
         final column = columns[i];
         final proportion = column.width / remainingPreferred;
-        widths[i] = (remainingSpace * proportion)
-            .clamp(column.minWidth, column.maxWidth ?? double.infinity);
+        widths[i] = (remainingSpace * proportion).clamp(
+          column.minWidth,
+          column.maxWidth ?? double.infinity,
+        );
       }
     }
   }

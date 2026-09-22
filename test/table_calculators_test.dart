@@ -18,7 +18,7 @@ TablePlusColumn<Map<String, dynamic>> _col({
   TextOverflow overflow = TextOverflow.visible,
   double width = 200,
   Widget Function(BuildContext, Map<String, dynamic>, bool, bool)?
-      statefulCellBuilder,
+  statefulCellBuilder,
   dynamic Function(Map<String, dynamic>)? valueAccessor,
 }) {
   return TablePlusColumn<Map<String, dynamic>>(
@@ -97,7 +97,8 @@ void main() {
       double? maxWidth,
     }) {
       return TableColumnWidthCalculator.calculateColumnWidth<
-          Map<String, dynamic>>(
+        Map<String, dynamic>
+      >(
         headerLabel: header,
         headerTextStyle: _style,
         data: data,
@@ -117,19 +118,28 @@ void main() {
     });
 
     test('a longer body value widens the column (measured across rows)', () {
-      final short = widthOf(minWidth: 0, data: [
-        {'v': 'a'},
-      ]);
-      final long = widthOf(minWidth: 0, data: [
-        {'v': 'aaaaaaaaaaaaaaaaaaaa'},
-      ]);
+      final short = widthOf(
+        minWidth: 0,
+        data: [
+          {'v': 'a'},
+        ],
+      );
+      final long = widthOf(
+        minWidth: 0,
+        data: [
+          {'v': 'aaaaaaaaaaaaaaaaaaaa'},
+        ],
+      );
       expect(long, greaterThan(short));
     });
 
     test('the result is an integer number of pixels (ceil)', () {
-      final w = widthOf(minWidth: 0, data: [
-        {'v': 'abc'},
-      ]);
+      final w = widthOf(
+        minWidth: 0,
+        data: [
+          {'v': 'abc'},
+        ],
+      );
       expect(w, w.ceilToDouble());
     });
   });
@@ -185,8 +195,10 @@ void main() {
   });
 
   group('calculateRowHeight skip rules', () {
-    double heightOf(List<TablePlusColumn<Map<String, dynamic>>> columns,
-        Map<String, dynamic> row) {
+    double heightOf(
+      List<TablePlusColumn<Map<String, dynamic>>> columns,
+      Map<String, dynamic> row,
+    ) {
       return TableRowHeightCalculator.calculateRowHeight<Map<String, dynamic>>(
         rowData: row,
         columns: columns,
@@ -201,11 +213,11 @@ void main() {
     });
 
     test('a column that is not TextOverflow.visible is skipped', () {
-      final columns = [
-        _col(key: 'v', overflow: TextOverflow.ellipsis),
-      ];
+      final columns = [_col(key: 'v', overflow: TextOverflow.ellipsis)];
       expect(
-          heightOf(columns, {'v': 'a very very very long value indeed'}), 48.0);
+        heightOf(columns, {'v': 'a very very very long value indeed'}),
+        48.0,
+      );
     });
 
     test('a column with a custom cell builder is skipped', () {
@@ -216,7 +228,9 @@ void main() {
         ),
       ];
       expect(
-          heightOf(columns, {'v': 'a very very very long value indeed'}), 48.0);
+        heightOf(columns, {'v': 'a very very very long value indeed'}),
+        48.0,
+      );
     });
 
     test('a null cell value is skipped', () {
@@ -226,10 +240,9 @@ void main() {
 
     test('a visible-overflow column with real text can exceed minHeight', () {
       final columns = [_col(key: 'v', width: 40)];
-      final h = heightOf(
-        columns,
-        {'v': 'the quick brown fox jumps over the lazy dog many times over'},
-      );
+      final h = heightOf(columns, {
+        'v': 'the quick brown fox jumps over the lazy dog many times over',
+      });
       expect(h, greaterThan(48.0));
     });
   });

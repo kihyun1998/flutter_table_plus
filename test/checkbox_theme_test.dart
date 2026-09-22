@@ -61,18 +61,24 @@ void main() {
 
   group('buildCheckbox', () {
     test('is disabled when onChanged is null', () {
-      final widget = const TablePlusCheckboxTheme()
-          .buildCheckbox(value: true, onChanged: null) as FlutterCheckbox;
+      final widget =
+          const TablePlusCheckboxTheme().buildCheckbox(
+                value: true,
+                onChanged: null,
+              )
+              as FlutterCheckbox;
       expect(widget.enabled, isFalse);
       expect(widget.value, isTrue);
     });
 
     test('is enabled and can be tristate when a handler is given', () {
-      final widget = const TablePlusCheckboxTheme().buildCheckbox(
-        value: null,
-        onChanged: (_) {},
-        tristate: true,
-      ) as FlutterCheckbox;
+      final widget =
+          const TablePlusCheckboxTheme().buildCheckbox(
+                value: null,
+                onChanged: (_) {},
+                tristate: true,
+              )
+              as FlutterCheckbox;
       expect(widget.enabled, isTrue);
       expect(widget.tristate, isTrue);
     });
@@ -89,19 +95,20 @@ void main() {
     // `checkScale` is the field to read: it is a plain double with a
     // non-default value, it was one of the five that were being dropped, and
     // `scaledBy` does not touch it — so at scale 2.0 it must still be 0.42.
-    testWidgets('a table at scale 2.0 renders the style the caller asked for',
-        (tester) async {
-      final columns = (TableColumnsBuilder<Map<String, dynamic>>()
-            ..addColumn(
-              'name',
-              TablePlusColumn<Map<String, dynamic>>(
-                key: 'name',
-                label: 'Name',
-                order: 0,
-                valueAccessor: (r) => r['name'],
-              ),
-            ))
-          .build();
+    testWidgets('a table at scale 2.0 renders the style the caller asked for', (
+      tester,
+    ) async {
+      final columns =
+          (TableColumnsBuilder<Map<String, dynamic>>()..addColumn(
+                'name',
+                TablePlusColumn<Map<String, dynamic>>(
+                  key: 'name',
+                  label: 'Name',
+                  order: 0,
+                  valueAccessor: (r) => r['name'],
+                ),
+              ))
+              .build();
 
       await tester.pumpWidget(
         MaterialApp(
@@ -109,7 +116,7 @@ void main() {
             body: FlutterTablePlus<Map<String, dynamic>>(
               columns: columns,
               data: const [
-                {'id': '1', 'name': 'a'}
+                {'id': '1', 'name': 'a'},
               ],
               rowId: (r) => r['id'] as String,
               isSelectable: true,
@@ -137,8 +144,11 @@ void main() {
       final boxes = tester
           .widgetList<FlutterCheckbox>(find.byType(FlutterCheckbox))
           .toList();
-      expect(boxes, isNotEmpty,
-          reason: 'no checkbox rendered — the test proves nothing');
+      expect(
+        boxes,
+        isNotEmpty,
+        reason: 'no checkbox rendered — the test proves nothing',
+      );
 
       for (final box in boxes) {
         expect(box.style.checkScale, 0.42);

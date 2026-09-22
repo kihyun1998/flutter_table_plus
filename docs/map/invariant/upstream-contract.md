@@ -2,7 +2,8 @@
 
 ## The fact
 
-When behaviour from `just_tooltip` or `flutter_checkbox` is wrong or surprising,
+When behaviour from `just_tooltip`, `flutter_checkbox` or
+`flutter_smooth_wheel_scroll` is wrong or surprising,
 the fix belongs **in that package**, not in a local guard here. And the seam
 leaks the other way too: when one of them raises its own floor, that floor
 becomes this package's requirement and a **breaking change for its users**, with
@@ -13,13 +14,15 @@ first well is what makes skipping the second feel safe.
 
 ## Why it is cross-cutting
 
-The two sibling packages are consumed in four unrelated places — tooltip
-wrapping, the checkbox cell, the theme's checkbox factory, and the barrel's
-re-export list — and their floors are consumed in a fifth, the manifest. None of
-those call each other. What they share is a *dependency*, which no call graph
+The sibling packages are consumed in unrelated places — tooltip wrapping, the
+checkbox cell, the theme's checkbox factory, and the barrel's re-export list —
+and their floors are consumed in one more, the manifest. None of those call each
+other. `flutter_smooth_wheel_scroll` entered through the manifest alone: it sets
+the SDK floor (#180) before any source imports it (#181). What they share is a *dependency*, which no call graph
 shows and no territory owns.
 
-The sibling sources sit at `../just_tooltip` and `../flutter_checkbox`. They are
+The sibling sources sit at `../just_tooltip`, `../flutter_checkbox` and
+`../flutter_smooth_wheel_scroll`. They are
 not strangers' code and each has its own tracker.
 
 ## Territories it holds in

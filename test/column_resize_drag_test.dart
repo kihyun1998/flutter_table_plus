@@ -86,7 +86,7 @@ Future<List<double>> _dragResize(
             child: FlutterTablePlus<Map<String, dynamic>>(
               columns: columns ?? _columns(),
               data: const [
-                {'id': '1', 'c0': 'a', 'c1': 'b', 'c2': 'c'}
+                {'id': '1', 'c0': 'a', 'c1': 'b', 'c2': 'c'},
               ],
               rowId: (r) => r['id'] as String,
               resizable: true,
@@ -106,14 +106,16 @@ Future<List<double>> _dragResize(
 }
 
 void main() {
-  testWidgets('dragging right widens the column and fires onColumnResized once',
-      (tester) async {
-    final resized = await _dragResize(tester, 40);
+  testWidgets(
+    'dragging right widens the column and fires onColumnResized once',
+    (tester) async {
+      final resized = await _dragResize(tester, 40);
 
-    expect(resized.length, 1);
-    expect(resized.single, greaterThan(200)); // widened from 200
-    expect(resized.single, lessThanOrEqualTo(240)); // at most +40
-  });
+      expect(resized.length, 1);
+      expect(resized.single, greaterThan(200)); // widened from 200
+      expect(resized.single, lessThanOrEqualTo(240)); // at most +40
+    },
+  );
 
   testWidgets('dragging past maxWidth clamps to maxWidth', (tester) async {
     final resized = await _dragResize(tester, 500);
@@ -129,8 +131,9 @@ void main() {
     expect(resized.single, 80); // clamped to minWidth
   });
 
-  testWidgets('the boundary lands where the pointer left it, at scale 2.0',
-      (tester) async {
+  testWidgets('the boundary lands where the pointer left it, at scale 2.0', (
+    tester,
+  ) async {
     // Every other test in this file asserts the *reported* number. That number
     // can be right while the column is wrong: deleting the `/ scale` in
     // `_handleColumnResize` — the live path, not the report path — leaves the
@@ -150,7 +153,7 @@ void main() {
               child: FlutterTablePlus<Map<String, dynamic>>(
                 columns: _columns(),
                 data: const [
-                  {'id': '1', 'c0': 'a', 'c1': 'b', 'c2': 'c'}
+                  {'id': '1', 'c0': 'a', 'c1': 'b', 'c2': 'c'},
                 ],
                 rowId: (r) => r['id'] as String,
                 resizable: true,
@@ -173,7 +176,8 @@ void main() {
     expect(
       tester.getTopLeft(handle).dx - before,
       closeTo(80, 0.001),
-      reason: 'the boundary must track the pointer 1:1 in screen pixels — '
+      reason:
+          'the boundary must track the pointer 1:1 in screen pixels — '
           'a scale applied to the live width moves it by 2.5x instead',
     );
   });
@@ -184,25 +188,32 @@ void main() {
     // renders 400 wide and one screen pixel is half a logical one, so these
     // three assertions are the same three above with the conversion done.
 
-    testWidgets('dragging past maxWidth clamps to maxWidth at scale 2.0',
-        (tester) async {
+    testWidgets('dragging past maxWidth clamps to maxWidth at scale 2.0', (
+      tester,
+    ) async {
       final resized = await _dragResize(tester, 500, scale: 2.0, viewport: 600);
 
       expect(resized.length, 1);
       expect(resized.single, 300);
     });
 
-    testWidgets('dragging past minWidth clamps to minWidth at scale 2.0',
-        (tester) async {
-      final resized =
-          await _dragResize(tester, -500, scale: 2.0, viewport: 600);
+    testWidgets('dragging past minWidth clamps to minWidth at scale 2.0', (
+      tester,
+    ) async {
+      final resized = await _dragResize(
+        tester,
+        -500,
+        scale: 2.0,
+        viewport: 600,
+      );
 
       expect(resized.length, 1);
       expect(resized.single, 80);
     });
 
-    testWidgets('touching the handle does not jump the column at scale 2.0',
-        (tester) async {
+    testWidgets('touching the handle does not jump the column at scale 2.0', (
+      tester,
+    ) async {
       // 40 screen px, of which the first `kDragSlopDefault` (20) is spent
       // getting the gesture recognized and never reaches the handle. The
       // remaining 20 screen px are 10 logical ones: 200 -> 210, nowhere near
@@ -218,8 +229,9 @@ void main() {
       expect(resized.single, closeTo(210, 0.001));
     });
 
-    testWidgets('a column that declares no maxWidth still has no ceiling',
-        (tester) async {
+    testWidgets('a column that declares no maxWidth still has no ceiling', (
+      tester,
+    ) async {
       // These columns declare neither bound, so they take the defaults:
       // minWidth 50 and maxWidth null. The null is a separate branch of the
       // conversion and nothing else in this file enters it — without this test, turning that branch

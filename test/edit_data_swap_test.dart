@@ -57,70 +57,84 @@ class _EditHarnessState extends State<_EditHarness> {
 
 void main() {
   testWidgets(
-      'committing after the edited row is reordered writes to the same row',
-      (tester) async {
-    Map<String, dynamic>? committed;
-    final key = GlobalKey<_EditHarnessState>();
+    'committing after the edited row is reordered writes to the same row',
+    (tester) async {
+      Map<String, dynamic>? committed;
+      final key = GlobalKey<_EditHarnessState>();
 
-    await tester.pumpWidget(
-      _EditHarness(key: key, onCommitted: (row) => committed = row),
-    );
-    await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        _EditHarness(key: key, onCommitted: (row) => committed = row),
+      );
+      await tester.pumpAndSettle();
 
-    // Enter edit mode on row 'b' (index 1) and change its value.
-    await tester.tap(find.text('Bravo'));
-    await tester.pump();
-    await tester.enterText(find.byType(EditableText), 'B-EDITED');
-    await tester.pump();
+      // Enter edit mode on row 'b' (index 1) and change its value.
+      await tester.tap(find.text('Bravo'));
+      await tester.pump();
+      await tester.enterText(find.byType(EditableText), 'B-EDITED');
+      await tester.pump();
 
-    // The parent reorders the data: 'b' moves from index 1 to index 2.
-    key.currentState!.setData([
-      {'id': 'a', 'name': 'Alpha'},
-      {'id': 'c', 'name': 'Charlie'},
-      {'id': 'b', 'name': 'Bravo'},
-    ]);
-    await tester.pump();
+      // The parent reorders the data: 'b' moves from index 1 to index 2.
+      key.currentState!.setData([
+        {'id': 'a', 'name': 'Alpha'},
+        {'id': 'c', 'name': 'Charlie'},
+        {'id': 'b', 'name': 'Bravo'},
+      ]);
+      await tester.pump();
 
-    // Commit the pending edit by tapping another editable cell.
-    await tester.tap(find.text('Alpha'));
-    await tester.pumpAndSettle();
+      // Commit the pending edit by tapping another editable cell.
+      await tester.tap(find.text('Alpha'));
+      await tester.pumpAndSettle();
 
-    expect(committed, isNotNull,
-        reason: 'the pending edit should have committed');
-    expect(committed!['id'], 'b',
-        reason: 'the edit must commit to row "b" (its id), not to whatever row '
-            'now sits at the stale index');
-  });
+      expect(
+        committed,
+        isNotNull,
+        reason: 'the pending edit should have committed',
+      );
+      expect(
+        committed!['id'],
+        'b',
+        reason:
+            'the edit must commit to row "b" (its id), not to whatever row '
+            'now sits at the stale index',
+      );
+    },
+  );
 
-  testWidgets('the edit is cancelled (not misapplied) when its row is removed',
-      (tester) async {
-    Map<String, dynamic>? committed;
-    final key = GlobalKey<_EditHarnessState>();
+  testWidgets(
+    'the edit is cancelled (not misapplied) when its row is removed',
+    (tester) async {
+      Map<String, dynamic>? committed;
+      final key = GlobalKey<_EditHarnessState>();
 
-    await tester.pumpWidget(
-      _EditHarness(key: key, onCommitted: (row) => committed = row),
-    );
-    await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        _EditHarness(key: key, onCommitted: (row) => committed = row),
+      );
+      await tester.pumpAndSettle();
 
-    // Edit the last row ('c', index 2), then remove it from the data.
-    await tester.tap(find.text('Charlie'));
-    await tester.pump();
-    await tester.enterText(find.byType(EditableText), 'C-EDITED');
-    await tester.pump();
+      // Edit the last row ('c', index 2), then remove it from the data.
+      await tester.tap(find.text('Charlie'));
+      await tester.pump();
+      await tester.enterText(find.byType(EditableText), 'C-EDITED');
+      await tester.pump();
 
-    key.currentState!.setData([
-      {'id': 'a', 'name': 'Alpha'},
-      {'id': 'b', 'name': 'Bravo'},
-    ]);
-    await tester.pump();
+      key.currentState!.setData([
+        {'id': 'a', 'name': 'Alpha'},
+        {'id': 'b', 'name': 'Bravo'},
+      ]);
+      await tester.pump();
 
-    // Committing now must not fire onCellChanged for a stale/removed row (and
-    // must not throw RangeError indexing the shrunk list).
-    await tester.tap(find.text('Alpha'));
-    await tester.pumpAndSettle();
+      // Committing now must not fire onCellChanged for a stale/removed row (and
+      // must not throw RangeError indexing the shrunk list).
+      await tester.tap(find.text('Alpha'));
+      await tester.pumpAndSettle();
 
-    expect(committed, isNull,
-        reason: 'an edit whose row was removed is cancelled, not committed to '
-            'a stale index');
-  });
+      expect(
+        committed,
+        isNull,
+        reason:
+            'an edit whose row was removed is cancelled, not committed to '
+            'a stale index',
+      );
+    },
+  );
 }

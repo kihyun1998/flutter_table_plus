@@ -18,7 +18,7 @@ class CustomInkWell extends StatefulWidget {
   /// Called when the user performs a secondary tap down (e.g., right-click on desktop)
   /// on this [CustomInkWell]. Provides TapDownDetails and RenderBox for position calculations.
   final void Function(TapDownDetails details, RenderBox renderBox)?
-      onSecondaryTapDown;
+  onSecondaryTapDown;
 
   /// The maximum duration between two taps for them to be considered a double-tap.
   /// Defaults to 300 milliseconds.
@@ -61,10 +61,10 @@ class _CustomInkWellState extends State<CustomInkWell> {
   final TapCounter _tapCounter = TapCounter();
 
   void _handleTap() => _tapCounter.handleTap(
-        doubleTapTimeout: widget.doubleClickTime,
-        onTap: widget.onTap,
-        onDoubleTap: widget.onDoubleTap,
-      );
+    doubleTapTimeout: widget.doubleClickTime,
+    onTap: widget.onTap,
+    onDoubleTap: widget.onDoubleTap,
+  );
 
   @override
   void dispose() {

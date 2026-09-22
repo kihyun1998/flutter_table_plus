@@ -30,10 +30,7 @@ Map<String, TablePlusColumn<Map<String, dynamic>>> _buildColumns({
 
 List<Map<String, dynamic>> _buildData(int rowCount, {int colCount = 4}) {
   return List.generate(rowCount, (i) {
-    return {
-      'id': '$i',
-      for (int j = 0; j < colCount; j++) 'c$j': 'r${i}c$j',
-    };
+    return {'id': '$i', for (int j = 0; j < colCount; j++) 'c$j': 'r${i}c$j'};
   });
 }
 
@@ -49,60 +46,66 @@ Future<void> _pumpFrames(
 
 void main() {
   testWidgets(
-      'holding a resize handle in the right edge zone auto-scrolls the header',
-      (tester) async {
-    tester.view.physicalSize = const Size(800, 600);
-    tester.view.devicePixelRatio = 1.0;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
+    'holding a resize handle in the right edge zone auto-scrolls the header',
+    (tester) async {
+      tester.view.physicalSize = const Size(800, 600);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: Center(
-            child: SizedBox(
-              // 4 * 200 = 800 content, 300 viewport -> ~500 of horizontal room.
-              width: 300,
-              height: 300,
-              child: FlutterTablePlus<Map<String, dynamic>>(
-                columns: _buildColumns(count: 4, width: 200),
-                data: _buildData(3),
-                rowId: (r) => r['id'] as String,
-                resizable: true,
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: SizedBox(
+                // 4 * 200 = 800 content, 300 viewport -> ~500 of horizontal room.
+                width: 300,
+                height: 300,
+                child: FlutterTablePlus<Map<String, dynamic>>(
+                  columns: _buildColumns(count: 4, width: 200),
+                  data: _buildData(3),
+                  rowId: (r) => r['id'] as String,
+                  resizable: true,
+                ),
               ),
             ),
           ),
         ),
-      ),
-    );
-    await tester.pumpAndSettle();
+      );
+      await tester.pumpAndSettle();
 
-    final handle = find.byKey(const ValueKey('resize_c0'));
-    expect(handle, findsOneWidget);
+      final handle = find.byKey(const ValueKey('resize_c0'));
+      expect(handle, findsOneWidget);
 
-    final handleCenter = tester.getCenter(handle);
-    final tableRect =
-        tester.getRect(find.byType(FlutterTablePlus<Map<String, dynamic>>));
+      final handleCenter = tester.getCenter(handle);
+      final tableRect = tester.getRect(
+        find.byType(FlutterTablePlus<Map<String, dynamic>>),
+      );
 
-    // 'C0' is the leftmost header label; horizontal scroll moves it left.
-    final initialC0X = tester.getTopLeft(find.text('C0')).dx;
+      // 'C0' is the leftmost header label; horizontal scroll moves it left.
+      final initialC0X = tester.getTopLeft(find.text('C0')).dx;
 
-    final gesture = await tester.startGesture(handleCenter);
-    await tester.pump();
-    // Cross the drag slop so the horizontal-drag recognizer activates, then
-    // hold inside the right edge zone (viewport right minus ~10px) at the
-    // handle's vertical position (inside the header row).
-    await gesture.moveBy(const Offset(20, 0));
-    await tester.pump();
-    final rightEdge = Offset(tableRect.right - 10, handleCenter.dy);
-    await gesture.moveTo(rightEdge);
-    await _pumpFrames(tester, frames: 60);
-    final laterC0X = tester.getTopLeft(find.text('C0')).dx;
-    await gesture.up();
-    await tester.pump();
+      final gesture = await tester.startGesture(handleCenter);
+      await tester.pump();
+      // Cross the drag slop so the horizontal-drag recognizer activates, then
+      // hold inside the right edge zone (viewport right minus ~10px) at the
+      // handle's vertical position (inside the header row).
+      await gesture.moveBy(const Offset(20, 0));
+      await tester.pump();
+      final rightEdge = Offset(tableRect.right - 10, handleCenter.dy);
+      await gesture.moveTo(rightEdge);
+      await _pumpFrames(tester, frames: 60);
+      final laterC0X = tester.getTopLeft(find.text('C0')).dx;
+      await gesture.up();
+      await tester.pump();
 
-    expect(initialC0X - laterC0X, greaterThan(50),
-        reason: 'resize auto-scroll should keep advancing the header while the '
-            'handle is held inside the edge zone');
-  });
+      expect(
+        initialC0X - laterC0X,
+        greaterThan(50),
+        reason:
+            'resize auto-scroll should keep advancing the header while the '
+            'handle is held inside the edge zone',
+      );
+    },
+  );
 }

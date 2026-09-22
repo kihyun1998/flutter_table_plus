@@ -36,14 +36,18 @@ class TableColumnsBuilder<T> {
   ///
   /// Returns this builder for method chaining.
   TableColumnsBuilder<T> insertColumn(
-      String key, TablePlusColumn<T> column, int targetOrder) {
+    String key,
+    TablePlusColumn<T> column,
+    int targetOrder,
+  ) {
     if (_columns.containsKey(key)) {
       throw ArgumentError('Column with key "$key" already exists');
     }
 
     if (targetOrder < 1) {
       throw ArgumentError(
-          'Order must be >= 1 (order 0 and negative values are reserved)');
+        'Order must be >= 1 (order 0 and negative values are reserved)',
+      );
     }
 
     // Shift existing columns that have order >= targetOrder
@@ -88,7 +92,8 @@ class TableColumnsBuilder<T> {
 
     if (newOrder < 1) {
       throw ArgumentError(
-          'Order must be >= 1 (order 0 and negative values are reserved)');
+        'Order must be >= 1 (order 0 and negative values are reserved)',
+      );
     }
 
     final currentColumn = _columns[key]!;
@@ -191,7 +196,8 @@ class TableColumnsBuilder<T> {
     for (int i = 0; i < orders.length; i++) {
       if (orders[i] != i + 1) {
         throw StateError(
-            'Internal error: Orders are not consecutive starting from 1');
+          'Internal error: Orders are not consecutive starting from 1',
+        );
       }
     }
   }

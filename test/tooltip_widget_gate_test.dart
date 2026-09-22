@@ -15,7 +15,7 @@ const _cardText = 'CARD';
 Widget _table({
   required TablePlusColumn<Map<String, dynamic>> column,
   List<Map<String, dynamic>> data = const [
-    {'id': '1', 'name': 'Alpha'}
+    {'id': '1', 'name': 'Alpha'},
   ],
 }) {
   return MaterialApp(
@@ -46,8 +46,9 @@ Future<void> _hover(WidgetTester tester, Finder finder) =>
     _hoverAt(tester, tester.getCenter(finder));
 
 void main() {
-  testWidgets('a widget tooltip shows on a column that does not ellipsize',
-      (tester) async {
+  testWidgets('a widget tooltip shows on a column that does not ellipsize', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       _table(
         column: TablePlusColumn<Map<String, dynamic>>(
@@ -67,12 +68,13 @@ void main() {
     expect(find.text(_cardText), findsOneWidget);
   });
 
-  testWidgets('a widget tooltip shows on a cell whose text is empty',
-      (tester) async {
+  testWidgets('a widget tooltip shows on a cell whose text is empty', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       _table(
         data: const [
-          {'id': '1', 'name': ''}
+          {'id': '1', 'name': ''},
         ],
         column: TablePlusColumn<Map<String, dynamic>>(
           key: 'name',
@@ -90,8 +92,9 @@ void main() {
     expect(find.text(_cardText), findsOneWidget);
   });
 
-  testWidgets('a widget tooltip shows on a statefulCellBuilder column',
-      (tester) async {
+  testWidgets('a widget tooltip shows on a statefulCellBuilder column', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       _table(
         column: TablePlusColumn<Map<String, dynamic>>(
@@ -112,8 +115,9 @@ void main() {
     expect(find.text(_cardText), findsOneWidget);
   });
 
-  testWidgets('TooltipBehavior.never still suppresses a widget tooltip',
-      (tester) async {
+  testWidgets('TooltipBehavior.never still suppresses a widget tooltip', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       _table(
         column: TablePlusColumn<Map<String, dynamic>>(
@@ -133,8 +137,9 @@ void main() {
     expect(find.text(_cardText), findsNothing);
   });
 
-  testWidgets('a text tooltip still shows on an ellipsized column',
-      (tester) async {
+  testWidgets('a text tooltip still shows on an ellipsized column', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       _table(
         column: TablePlusColumn<Map<String, dynamic>>(
@@ -153,8 +158,9 @@ void main() {
     expect(find.text('FULL'), findsOneWidget);
   });
 
-  testWidgets('a text tooltip still ignores the blank part of its cell',
-      (tester) async {
+  testWidgets('a text tooltip still ignores the blank part of its cell', (
+    tester,
+  ) async {
     // The text tooltip belongs to the glyphs. Widening its hover area to the
     // whole cell would be an observable change for existing users.
     await tester.pumpWidget(

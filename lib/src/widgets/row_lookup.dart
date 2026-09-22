@@ -30,8 +30,11 @@ class RowLookup<T> {
     required List<MergedRowGroup<T>> mergedGroups,
     required String Function(T) rowId,
   }) {
-    final ids = List<String>.generate(data.length, (i) => rowId(data[i]),
-        growable: false);
+    final ids = List<String>.generate(
+      data.length,
+      (i) => rowId(data[i]),
+      growable: false,
+    );
 
     final idToIndex = <String, int>{};
     for (int i = 0; i < ids.length; i++) {

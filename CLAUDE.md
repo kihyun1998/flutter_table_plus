@@ -87,8 +87,9 @@ merged rows. It does **not** manage or mutate your data.
   draw*. `^0.4.4` is a **floor, not a preference** — the old local
   empty-message guard is gone (#96). A row tooltip uses `TooltipAnchor.pointer` as
   a **correctness requirement** (a row is `contentWidth` wide, so hover region ≠
-  anchor), not a workaround. `just_tooltip` / `flutter_checkbox` sources sit at
-  `../` — read them, don't guess from pub docs.
+  anchor), not a workaround. `just_tooltip` / `flutter_checkbox` /
+  `flutter_smooth_wheel_scroll` sources sit at `../` — read them, don't guess
+  from pub docs.
 
 ### The seams, and which side owns what
 
@@ -102,9 +103,10 @@ merged rows. It does **not** manage or mutate your data.
   identity is a `(data, rowId)` snapshot contract this package deliberately does
   **not** assert (#132, #135).
 - **Two seams, and both leak in both directions.** The published package, and the
-  `../just_tooltip` / `../flutter_checkbox` membrane. When upstream raises a
-  floor it lands on us with `lib/` untouched (#69, 2.16.0); when we change a
-  contract, the *rationale* a consumer already wrote can quietly go false.
+  `../just_tooltip` / `../flutter_checkbox` / `../flutter_smooth_wheel_scroll`
+  membrane. When upstream raises a floor it lands on us with `lib/` untouched
+  (#69, 2.16.0); when we change a contract, the *rationale* a consumer already
+  wrote can quietly go false.
 
 **Do not misdiagnose a contract as a defect.** When a consumer brings a "bug",
 the first question is *whose invariant broke* — a report against behaviour this

@@ -79,12 +79,12 @@ class EdgeAutoScroller {
   }
 
   double _delta() => axisScrollDelta(
-        localPos: _axisPos,
-        viewportExtent: _viewportExtent,
-        edgeZone: edgeZone,
-        maxSpeed: maxSpeed,
-        clampProximity: clampProximity,
-      );
+    localPos: _axisPos,
+    viewportExtent: _viewportExtent,
+    edgeZone: edgeZone,
+    maxSpeed: maxSpeed,
+    clampProximity: clampProximity,
+  );
 
   void _start() {
     if (_timer != null) return;

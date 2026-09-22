@@ -9,14 +9,14 @@ import 'package:flutter_test/flutter_test.dart';
 // onScaleChanged, and scroll blocking while the scale modifier is held.
 
 Map<String, TablePlusColumn<Map<String, dynamic>>> _columns() => {
-      'name': TablePlusColumn<Map<String, dynamic>>(
-        key: 'name',
-        label: 'Name',
-        order: 0,
-        valueAccessor: (r) => r['name'],
-        width: 200,
-      ),
-    };
+  'name': TablePlusColumn<Map<String, dynamic>>(
+    key: 'name',
+    label: 'Name',
+    order: 0,
+    valueAccessor: (r) => r['name'],
+    width: 200,
+  ),
+};
 
 Future<void> _pump(
   WidgetTester tester, {
@@ -30,7 +30,7 @@ Future<void> _pump(
         body: FlutterTablePlus<Map<String, dynamic>>(
           columns: _columns(),
           data: [
-            for (int i = 0; i < rows; i++) {'id': '$i', 'name': 'R$i'}
+            for (int i = 0; i < rows; i++) {'id': '$i', 'name': 'R$i'},
           ],
           rowId: (r) => r['id'] as String,
           scale: scale,
@@ -47,8 +47,9 @@ double _rowSpacing(WidgetTester tester) =>
 
 Future<void> _ctrlWheel(WidgetTester tester, double dy) async {
   await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
-  final loc =
-      tester.getCenter(find.byType(FlutterTablePlus<Map<String, dynamic>>));
+  final loc = tester.getCenter(
+    find.byType(FlutterTablePlus<Map<String, dynamic>>),
+  );
   final pointer = TestPointer(1, PointerDeviceKind.mouse);
   await tester.sendEventToBinding(pointer.hover(loc));
   await tester.sendEventToBinding(pointer.scroll(Offset(0, dy)));
@@ -67,8 +68,9 @@ void main() {
     expect(at2, closeTo(at1 * 2, 0.5));
   });
 
-  testWidgets('Ctrl+wheel up requests a larger scale (scale + step)',
-      (tester) async {
+  testWidgets('Ctrl+wheel up requests a larger scale (scale + step)', (
+    tester,
+  ) async {
     debugDefaultTargetPlatformOverride = TargetPlatform.windows;
     try {
       double? requested;
@@ -80,8 +82,9 @@ void main() {
     }
   });
 
-  testWidgets('Ctrl+wheel down requests a smaller scale (scale - step)',
-      (tester) async {
+  testWidgets('Ctrl+wheel down requests a smaller scale (scale - step)', (
+    tester,
+  ) async {
     debugDefaultTargetPlatformOverride = TargetPlatform.windows;
     try {
       double? requested;
@@ -93,8 +96,9 @@ void main() {
     }
   });
 
-  testWidgets('Ctrl+wheel zooms instead of scrolling; a plain wheel scrolls',
-      (tester) async {
+  testWidgets('Ctrl+wheel zooms instead of scrolling; a plain wheel scrolls', (
+    tester,
+  ) async {
     debugDefaultTargetPlatformOverride = TargetPlatform.windows;
     try {
       await _pump(tester, onScaleChanged: (_) {}, rows: 40); // scrollable
@@ -105,18 +109,25 @@ void main() {
       // Ctrl+wheel is consumed for zoom -> the body must NOT scroll.
       await _ctrlWheel(tester, 100);
       await tester.pumpAndSettle();
-      expect(tester.getCenter(find.text('R5')).dy, start,
-          reason: 'Ctrl+wheel zooms, it does not scroll');
+      expect(
+        tester.getCenter(find.text('R5')).dy,
+        start,
+        reason: 'Ctrl+wheel zooms, it does not scroll',
+      );
 
       // A plain wheel (no modifier) scrolls the body.
-      final loc =
-          tester.getCenter(find.byType(FlutterTablePlus<Map<String, dynamic>>));
+      final loc = tester.getCenter(
+        find.byType(FlutterTablePlus<Map<String, dynamic>>),
+      );
       final pointer = TestPointer(1, PointerDeviceKind.mouse);
       await tester.sendEventToBinding(pointer.hover(loc));
       await tester.sendEventToBinding(pointer.scroll(const Offset(0, 100)));
       await tester.pumpAndSettle();
-      expect(tester.getCenter(find.text('R5')).dy, lessThan(start),
-          reason: 'a plain wheel scrolls');
+      expect(
+        tester.getCenter(find.text('R5')).dy,
+        lessThan(start),
+        reason: 'a plain wheel scrolls',
+      );
     } finally {
       debugDefaultTargetPlatformOverride = null;
     }

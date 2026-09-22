@@ -12,9 +12,11 @@ import 'package:flutter_test/flutter_test.dart';
 // long enough to ellipsize and fill a wide column; otherwise its rect is narrow
 // and both anchors land in the same place.
 
-const _long = 'a value long enough that it cannot possibly fit inside the '
+const _long =
+    'a value long enough that it cannot possibly fit inside the '
     'column and must therefore be truncated with an ellipsis';
-const _longHeader = 'a column heading long enough to be truncated as well, '
+const _longHeader =
+    'a column heading long enough to be truncated as well, '
     'and distinct from the value beneath it';
 const _full = 'FULL';
 
@@ -60,8 +62,10 @@ Rect _tooltipRectFor(WidgetTester tester, String label, Rect before) {
   expect(found, findsNWidgets(2), reason: 'the header label and its tooltip');
 
   final rects = [tester.getRect(found.at(0)), tester.getRect(found.at(1))];
-  final tip = rects.firstWhere((r) => r != before,
-      orElse: () => fail('the tooltip rect coincides with the header label'));
+  final tip = rects.firstWhere(
+    (r) => r != before,
+    orElse: () => fail('the tooltip rect coincides with the header label'),
+  );
   return tip;
 }
 
@@ -72,10 +76,14 @@ Widget _table({
   return MaterialApp(
     home: Scaffold(
       body: FlutterTablePlus<Map<String, dynamic>>(
-        columns: columns ??
+        columns:
+            columns ??
             {
-              'note': _col('note',
-                  width: 600, behavior: TooltipBehavior.onlyTextOverflow),
+              'note': _col(
+                'note',
+                width: 600,
+                behavior: TooltipBehavior.onlyTextOverflow,
+              ),
               'name': _col('name', width: 400),
             },
         data: const [
@@ -97,27 +105,34 @@ Future<void> _pumpHeaderTable(WidgetTester tester, TablePlusTheme theme) async {
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.reset);
 
-  await tester.pumpWidget(_table(
-    theme: theme,
-    columns: {
-      'name': _col('name', width: 800, order: 1),
-      'note': _col('note',
+  await tester.pumpWidget(
+    _table(
+      theme: theme,
+      columns: {
+        'name': _col('name', width: 800, order: 1),
+        'note': _col(
+          'note',
           width: 600,
           order: 2,
           label: _longHeader,
-          headerBehavior: TooltipBehavior.always),
-    },
-  ));
+          headerBehavior: TooltipBehavior.always,
+        ),
+      },
+    ),
+  );
 }
 
 void main() {
-  testWidgets('a cell text tooltip anchors at the pointer when asked',
-      (tester) async {
-    await tester.pumpWidget(_table(
-      theme: const TablePlusTheme(
-        tooltipTheme: TablePlusTooltipTheme(anchor: TooltipAnchor.pointer),
+  testWidgets('a cell text tooltip anchors at the pointer when asked', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _table(
+        theme: const TablePlusTheme(
+          tooltipTheme: TablePlusTooltipTheme(anchor: TooltipAnchor.pointer),
+        ),
       ),
-    ));
+    );
 
     final text = tester.getRect(find.text(_long));
     final pointer = Offset(text.left + 40, text.center.dy);
@@ -128,25 +143,33 @@ void main() {
     expect(
       (tip.center.dx - pointer.dx).abs(),
       lessThan(80),
-      reason: 'the tooltip should sit beside the cursor, not at the centre of '
+      reason:
+          'the tooltip should sit beside the cursor, not at the centre of '
           'the ellipsized Text (x≈${text.center.dx.round()})',
     );
   });
 
-  testWidgets('a cell widget tooltip anchors at the pointer when asked',
-      (tester) async {
+  testWidgets('a cell widget tooltip anchors at the pointer when asked', (
+    tester,
+  ) async {
     // A widget tooltip's hover target is the whole cell, not just the Text, so
     // this exercises the tooltipBuilder branch of the cell path.
-    await tester.pumpWidget(_table(
-      theme: const TablePlusTheme(
-        tooltipTheme: TablePlusTooltipTheme(anchor: TooltipAnchor.pointer),
+    await tester.pumpWidget(
+      _table(
+        theme: const TablePlusTheme(
+          tooltipTheme: TablePlusTooltipTheme(anchor: TooltipAnchor.pointer),
+        ),
+        columns: {
+          'note': _col(
+            'note',
+            width: 600,
+            behavior: TooltipBehavior.always,
+            widgetTooltip: true,
+          ),
+          'name': _col('name', width: 400),
+        },
       ),
-      columns: {
-        'note': _col('note',
-            width: 600, behavior: TooltipBehavior.always, widgetTooltip: true),
-        'name': _col('name', width: 400),
-      },
-    ));
+    );
 
     final cell = tester.getRect(find.text(_long));
     final pointer = Offset(cell.left + 40, cell.center.dy);
@@ -156,19 +179,24 @@ void main() {
     expect(
       (tip.center.dx - pointer.dx).abs(),
       lessThan(80),
-      reason: 'the widget tooltip should sit beside the cursor, not at the '
+      reason:
+          'the widget tooltip should sit beside the cursor, not at the '
           'centre of the cell (x≈${cell.center.dx.round()})',
     );
   });
 
-  testWidgets('a cell tooltip is not dragged along by the header anchor',
-      (tester) async {
-    await tester.pumpWidget(_table(
-      theme: const TablePlusTheme(
-        headerTooltipTheme:
-            TablePlusTooltipTheme(anchor: TooltipAnchor.pointer),
+  testWidgets('a cell tooltip is not dragged along by the header anchor', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _table(
+        theme: const TablePlusTheme(
+          headerTooltipTheme: TablePlusTooltipTheme(
+            anchor: TooltipAnchor.pointer,
+          ),
+        ),
       ),
-    ));
+    );
 
     final text = tester.getRect(find.text(_long));
     final pointer = Offset(text.left + 40, text.center.dy);
@@ -178,13 +206,15 @@ void main() {
     expect(
       (tip.center.dx - text.center.dx).abs(),
       lessThan(40),
-      reason: 'cells keep tooltipTheme\'s default child anchor; the header '
+      reason:
+          'cells keep tooltipTheme\'s default child anchor; the header '
           'theme must not reach them',
     );
   });
 
-  testWidgets('a header tooltip anchors at the pointer when asked',
-      (tester) async {
+  testWidgets('a header tooltip anchors at the pointer when asked', (
+    tester,
+  ) async {
     await _pumpHeaderTable(
       tester,
       const TablePlusTheme(
@@ -200,18 +230,21 @@ void main() {
     expect(
       (tip.center.dx - pointer.dx).abs(),
       lessThan(80),
-      reason: 'the tooltip should sit beside the cursor, not at the centre of '
+      reason:
+          'the tooltip should sit beside the cursor, not at the centre of '
           'the header label (x≈${header.center.dx.round()})',
     );
   });
 
-  testWidgets('a header tooltip reads its own theme, not the cell one',
-      (tester) async {
+  testWidgets('a header tooltip reads its own theme, not the cell one', (
+    tester,
+  ) async {
     await _pumpHeaderTable(
       tester,
       const TablePlusTheme(
-        headerTooltipTheme:
-            TablePlusTooltipTheme(anchor: TooltipAnchor.pointer),
+        headerTooltipTheme: TablePlusTooltipTheme(
+          anchor: TooltipAnchor.pointer,
+        ),
       ),
     );
 
@@ -223,13 +256,15 @@ void main() {
     expect(
       (tip.center.dx - pointer.dx).abs(),
       lessThan(80),
-      reason: 'headerTooltipTheme alone should move the header tooltip, with '
+      reason:
+          'headerTooltipTheme alone should move the header tooltip, with '
           'tooltipTheme left at its default child anchor',
     );
   });
 
-  testWidgets('a header tooltip is not dragged along by the cell anchor',
-      (tester) async {
+  testWidgets('a header tooltip is not dragged along by the cell anchor', (
+    tester,
+  ) async {
     await _pumpHeaderTable(
       tester,
       const TablePlusTheme(
@@ -246,7 +281,8 @@ void main() {
     expect(
       (tip.center.dx - header.center.dx).abs(),
       lessThan(40),
-      reason: 'the header asked for the child anchor, so it stays on the label '
+      reason:
+          'the header asked for the child anchor, so it stays on the label '
           'even though cells were sent to the pointer',
     );
   });

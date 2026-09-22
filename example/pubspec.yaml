@@ -4,12 +4,12 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.6.1
-  # Named rather than inherited, because a dependency below sets it. The shell
-  # declares `>=3.27.0`, measured at both ends by its own CI rather than by the
-  # SDK that happened to build it; the root package already declares the same
-  # floor, so this costs a consumer nothing and states what was already true.
-  flutter: ">=3.27.0"
+  sdk: ^3.8.0
+  # Named rather than inherited, because the dependencies below set it. The
+  # shell declares `>=3.27.0`, measured at both ends by its own CI rather than by
+  # the SDK that happened to build it; the root package declares `>=3.32.0`, so
+  # the higher of the two is what this app can actually be built with.
+  flutter: ">=3.32.0"
 
 
 dependencies:

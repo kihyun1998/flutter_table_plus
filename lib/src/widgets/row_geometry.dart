@@ -9,9 +9,9 @@
 /// extents) and hands this object a pure snapshot.
 class RowGeometry {
   RowGeometry({required List<double> heights, required List<String> ids})
-      : assert(heights.length == ids.length),
-        _heights = heights,
-        _ids = ids;
+    : assert(heights.length == ids.length),
+      _heights = heights,
+      _ids = ids;
 
   final List<double> _heights;
   final List<String> _ids;

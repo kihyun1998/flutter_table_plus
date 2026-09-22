@@ -11,14 +11,13 @@ TextMeasurement _m(
   TextStyle style = _style,
   TextScaler scaler = TextScaler.noScaling,
   TextDirection direction = TextDirection.ltr,
-}) =>
-    TextMeasurement(
-      text: text,
-      maxWidth: width,
-      style: style,
-      textScaler: scaler,
-      textDirection: direction,
-    );
+}) => TextMeasurement(
+  text: text,
+  maxWidth: width,
+  style: style,
+  textScaler: scaler,
+  textDirection: direction,
+);
 
 void main() {
   group('OverflowCache', () {
@@ -37,9 +36,9 @@ void main() {
       final cache = OverflowCache();
       var calls = 0;
       bool run() => cache.resolve(_m('hello', 100), () {
-            calls++;
-            return true;
-          });
+        calls++;
+        return true;
+      });
       run();
       run();
       expect(calls, 1); // measured only once
@@ -86,8 +85,11 @@ void main() {
         return false;
       });
       cache.resolve(
-        _m('a', 100,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+        _m(
+          'a',
+          100,
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+        ),
         () {
           calls++;
           return true;
@@ -128,9 +130,9 @@ void main() {
       final cache = OverflowCache();
       var calls = 0;
       bool run() => cache.resolve(_m('a', 100), () {
-            calls++;
-            return false;
-          });
+        calls++;
+        return false;
+      });
       expect(run(), isFalse);
       expect(run(), isFalse);
       expect(calls, 1);

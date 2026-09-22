@@ -38,8 +38,9 @@ Widget _table(void Function(Map<String, dynamic> row) onCommit) {
 }
 
 void main() {
-  testWidgets('tapping an editable cell enters edit mode (focus on tap)',
-      (tester) async {
+  testWidgets('tapping an editable cell enters edit mode (focus on tap)', (
+    tester,
+  ) async {
     await tester.pumpWidget(_table((_) {}));
     await tester.pumpAndSettle();
 
@@ -49,8 +50,9 @@ void main() {
     expect(find.byType(EditableText), findsOneWidget);
   });
 
-  testWidgets('editing auto-saves on blur (the cell FocusNode listener)',
-      (tester) async {
+  testWidgets('editing auto-saves on blur (the cell FocusNode listener)', (
+    tester,
+  ) async {
     Map<String, dynamic>? committed;
     await tester.pumpWidget(_table((row) => committed = row));
     await tester.pumpAndSettle();

@@ -147,12 +147,15 @@ class MergedRowGroup<T> {
     final requested = getSpanningRowIndex(columnKey);
     if (rowKeys.isEmpty) return requested;
     final index = requested.clamp(0, rowKeys.length - 1);
-    assert(requested == index ||
-        _warnOnce(
+    assert(
+      requested == index ||
+          _warnOnce(
             '$groupId|$columnKey|range',
             'spanningRowIndex $requested is past the end of rowKeys '
                 '(${rowKeys.length}) for group "$groupId" column "$columnKey". '
-                'Clamped to $index.'));
+                'Clamped to $index.',
+          ),
+    );
     return index;
   }
 
@@ -188,18 +191,24 @@ class MergedRowGroup<T> {
     for (var offset = 0; offset < rowKeys.length; offset++) {
       final key = rowKeys[(startIndex + offset) % rowKeys.length];
       if (getRowData(allData, key, rowId) == null) continue;
-      assert(offset == 0 ||
-          _warnOnce(
+      assert(
+        offset == 0 ||
+            _warnOnce(
               '$groupId|$columnKey|absent',
               'spanningRowIndex names "$start" for group "$groupId" column '
-                  '"$columnKey", which data does not hold. Using "$key".'));
+                  '"$columnKey", which data does not hold. Using "$key".',
+            ),
+      );
       return key;
     }
 
-    assert(_warnOnce(
+    assert(
+      _warnOnce(
         '$groupId|$columnKey|none',
         'group "$groupId" has no member that data holds, so its merged cell '
-            'for column "$columnKey" is empty.'));
+            'for column "$columnKey" is empty.',
+      ),
+    );
     return null;
   }
 

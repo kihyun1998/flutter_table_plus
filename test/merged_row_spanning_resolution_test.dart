@@ -48,19 +48,21 @@ Map<String, TablePlusColumn<Row>> _columns() {
 /// the warning, and the second one reads as silent. The first version of this
 /// file did share it, and the two capture cases below failed against a fix that
 /// works: the earlier case had already spent the warning.
-MergedRowGroup<Row> _group(List<String> rowKeys, int spanIndex,
-        {String groupId = 'g'}) =>
-    MergedRowGroup<Row>(
-      groupId: groupId,
-      rowKeys: rowKeys,
-      mergeConfig: {
-        'name': MergeCellConfig(shouldMerge: true, spanningRowIndex: spanIndex),
-      },
-    );
+MergedRowGroup<Row> _group(
+  List<String> rowKeys,
+  int spanIndex, {
+  String groupId = 'g',
+}) => MergedRowGroup<Row>(
+  groupId: groupId,
+  rowKeys: rowKeys,
+  mergeConfig: {
+    'name': MergeCellConfig(shouldMerge: true, spanningRowIndex: spanIndex),
+  },
+);
 
 List<Row> _rows(List<String> ids) => [
-      for (final id in ids) {'id': id, 'name': 'VAL-$id'}
-    ];
+  for (final id in ids) {'id': id, 'name': 'VAL-$id'},
+];
 
 Future<void> _pump(
   WidgetTester tester, {
@@ -124,60 +126,87 @@ Future<List<String>> _printsWhile(Future<void> Function() body) async {
 
 void main() {
   group('the index is a position in rowKeys (#173)', () {
-    testWidgets('rowKeys out of data order: the caller\'s list wins',
-        (tester) async {
+    testWidgets('rowKeys out of data order: the caller\'s list wins', (
+      tester,
+    ) async {
       // The discriminating case, and the only shape that separates the two
       // readings. Positionally `rowKeys[1]` is 'a'; among the members in
       // `data` order it would be 'b'. An ordered fixture answers 'b' either
       // way and could not tell them apart.
       await _pump(tester, data: ['a', 'b'], rowKeys: ['b', 'a'], spanIndex: 1);
 
-      expect(_shown(tester), ['VAL-a'],
-          reason: 'sorting data must not move which row a merged cell shows — '
-              'rowKeys order is the caller\'s and stays put');
+      expect(
+        _shown(tester),
+        ['VAL-a'],
+        reason:
+            'sorting data must not move which row a merged cell shows — '
+            'rowKeys order is the caller\'s and stays put',
+      );
     });
 
-    testWidgets('the control: written in data order, both readings agree',
-        (tester) async {
+    testWidgets('the control: written in data order, both readings agree', (
+      tester,
+    ) async {
       await _pump(tester, data: ['a', 'b'], rowKeys: ['a', 'b'], spanIndex: 1);
 
-      expect(_shown(tester), ['VAL-b'],
-          reason: 'here the two readings coincide, which is why this case is '
-              'the control and not the proof');
+      expect(
+        _shown(tester),
+        ['VAL-b'],
+        reason:
+            'here the two readings coincide, which is why this case is '
+            'the control and not the proof',
+      );
     });
   });
 
   group('an out-of-range index clamps instead of throwing (#173)', () {
-    testWidgets('no exception escapes the build, and the last member shows',
-        (tester) async {
+    testWidgets('no exception escapes the build, and the last member shows', (
+      tester,
+    ) async {
       await _pump(tester, data: ['a', 'b'], rowKeys: ['a', 'b'], spanIndex: 5);
 
-      expect(tester.takeException(), isNull,
-          reason: 'it threw RangeError from inside _buildMergedCell, which is '
-              'a red screen in release rather than a caught error');
+      expect(
+        tester.takeException(),
+        isNull,
+        reason:
+            'it threw RangeError from inside _buildMergedCell, which is '
+            'a red screen in release rather than a caught error',
+      );
       expect(_shown(tester), ['VAL-b']);
     });
 
     testWidgets('and debug says so once, naming both numbers', (tester) async {
-      final lines = await _printsWhile(() => _pump(tester,
+      final lines = await _printsWhile(
+        () => _pump(
+          tester,
           data: ['a', 'b'],
           rowKeys: ['a', 'b'],
           spanIndex: 5,
-          groupId: 'range-warning'));
+          groupId: 'range-warning',
+        ),
+      );
 
-      final warnings =
-          lines.where((l) => l.contains('spanningRowIndex 5')).toList();
-      expect(warnings, hasLength(1),
-          reason: 'once per (group, column), not once per build — these fire '
-              'from inside build, so an unguarded print is one line per frame');
+      final warnings = lines
+          .where((l) => l.contains('spanningRowIndex 5'))
+          .toList();
+      expect(
+        warnings,
+        hasLength(1),
+        reason:
+            'once per (group, column), not once per build — these fire '
+            'from inside build, so an unguarded print is one line per frame',
+      );
       expect(warnings.single, contains('past the end of rowKeys (2)'));
       expect(warnings.single, contains('Clamped to 1'));
     });
 
     test('the model clamps on its own, with no widget in sight', () {
       expect(_group(['a', 'b', 'c'], 9).getSpanningRowKey('name'), 'c');
-      expect(_group(['a', 'b', 'c'], 1).getSpanningRowKey('name'), 'b',
-          reason: 'an in-range index is untouched by the clamp');
+      expect(
+        _group(['a', 'b', 'c'], 1).getSpanningRowKey('name'),
+        'b',
+        reason: 'an in-range index is untouched by the clamp',
+      );
     });
 
     test('a duplicated key cannot desync the clamp from the walk', () {
@@ -188,7 +217,10 @@ void main() {
       final group = _group(['a', 'b', 'a'], 2);
       expect(
         group.resolveSpanningRowKey(
-            'name', _rows(['a', 'b']), (r) => r['id'] as String),
+          'name',
+          _rows(['a', 'b']),
+          (r) => r['id'] as String,
+        ),
         'a',
       );
       expect(group.getSpanningRowKey('name'), 'a');
@@ -199,22 +231,35 @@ void main() {
     testWidgets('the value stays on screen', (tester) async {
       // Before: rowKeys[1] is 'ghost', getRowData returns null, and the merged
       // cell renders empty — so VAL-a leaves the screen with no signal at all.
-      await _pump(tester,
-          data: ['a', 'b'], rowKeys: ['a', 'ghost'], spanIndex: 1);
+      await _pump(
+        tester,
+        data: ['a', 'b'],
+        rowKeys: ['a', 'ghost'],
+        spanIndex: 1,
+      );
 
-      expect(_shown(tester), contains('VAL-a'),
-          reason: 'the walk continues forward through rowKeys, wrapping once, '
-              'to the first member data actually holds');
+      expect(
+        _shown(tester),
+        contains('VAL-a'),
+        reason:
+            'the walk continues forward through rowKeys, wrapping once, '
+            'to the first member data actually holds',
+      );
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('and debug names the key it wanted and the one it used',
-        (tester) async {
-      final lines = await _printsWhile(() => _pump(tester,
+    testWidgets('and debug names the key it wanted and the one it used', (
+      tester,
+    ) async {
+      final lines = await _printsWhile(
+        () => _pump(
+          tester,
           data: ['a', 'b'],
           rowKeys: ['a', 'ghost'],
           spanIndex: 1,
-          groupId: 'absent-warning'));
+          groupId: 'absent-warning',
+        ),
+      );
 
       final warnings = lines.where((l) => l.contains('ghost')).toList();
       expect(warnings, hasLength(1));
@@ -226,16 +271,26 @@ void main() {
       // The discriminating control for the fallback. Without it, "shows VAL-a"
       // passes for an implementation that always returns the first present
       // member and ignores the index entirely.
-      final lines = await _printsWhile(() => _pump(tester,
+      final lines = await _printsWhile(
+        () => _pump(
+          tester,
           data: ['a', 'b', 'c'],
           rowKeys: ['a', 'b', 'c'],
           spanIndex: 2,
-          groupId: 'no-warning'));
+          groupId: 'no-warning',
+        ),
+      );
 
-      expect(_shown(tester), ['VAL-c'],
-          reason: 'every member is present, so the index is the whole answer');
-      expect(lines.where((l) => l.contains('does not hold')), isEmpty,
-          reason: 'and nothing is warned about, because nothing moved');
+      expect(
+        _shown(tester),
+        ['VAL-c'],
+        reason: 'every member is present, so the index is the whole answer',
+      );
+      expect(
+        lines.where((l) => l.contains('does not hold')),
+        isEmpty,
+        reason: 'and nothing is warned about, because nothing moved',
+      );
     });
 
     test('the walk wraps forward, it does not search backwards', () {
@@ -245,7 +300,10 @@ void main() {
       final group = _group(['a', 'b', 'ghost'], 2);
       expect(
         group.resolveSpanningRowKey(
-            'name', _rows(['a', 'b']), (r) => r['id'] as String),
+          'name',
+          _rows(['a', 'b']),
+          (r) => r['id'] as String,
+        ),
         'a',
       );
     });
@@ -254,9 +312,13 @@ void main() {
       final group = _group(['x', 'y'], 0);
       expect(
         group.resolveSpanningRowKey(
-            'name', _rows(['a', 'b']), (r) => r['id'] as String),
+          'name',
+          _rows(['a', 'b']),
+          (r) => r['id'] as String,
+        ),
         isNull,
-        reason: 'an empty merged cell is the right answer only here — where '
+        reason:
+            'an empty merged cell is the right answer only here — where '
             'there is no value that went missing',
       );
     });
@@ -268,7 +330,10 @@ void main() {
       final group = _group([], 0);
       expect(
         group.resolveSpanningRowKey(
-            'name', _rows(['a']), (r) => r['id'] as String),
+          'name',
+          _rows(['a']),
+          (r) => r['id'] as String,
+        ),
         isNull,
       );
     });

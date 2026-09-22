@@ -48,7 +48,7 @@ Widget _table({
                 ),
               },
               data: const [
-                {'id': '1', 'note': _value}
+                {'id': '1', 'note': _value},
               ],
               rowId: (r) => r['id'] as String,
             ),
@@ -109,8 +109,11 @@ void main() {
       await tester.pumpWidget(_table(columnWidth: needs + padding + 0.25));
       await tester.pumpAndSettle();
 
-      expect(_isClipped(tester, needs), isTrue,
-          reason: 'the case is only meaningful if the text is actually cut');
+      expect(
+        _isClipped(tester, needs),
+        isTrue,
+        reason: 'the case is only meaningful if the text is actually cut',
+      );
 
       await _hoverText(tester);
       // The value appears twice: once in the cell, once in the tooltip.
@@ -118,33 +121,35 @@ void main() {
     },
   );
 
-  testWidgets(
-    'the same cell at a non-default text scale offers a tooltip',
-    (tester) async {
-      const scaler = TextScaler.linear(1.25);
+  testWidgets('the same cell at a non-default text scale offers a tooltip', (
+    tester,
+  ) async {
+    const scaler = TextScaler.linear(1.25);
 
-      await tester.pumpWidget(_table(columnWidth: 200, scaler: scaler));
-      await tester.pumpAndSettle();
-      final style = _paintedStyle(tester);
+    await tester.pumpWidget(_table(columnWidth: 200, scaler: scaler));
+    await tester.pumpAndSettle();
+    final style = _paintedStyle(tester);
 
-      // A width that fits the *unscaled* string with room to spare, so nothing
-      // but the scaler can clip it. A test left at TextScaler.noScaling cannot
-      // fail for this — the default is the value at which the defect is
-      // invisible.
-      final width = _needs(style) + padding + 2;
-      final scaledNeeds = _needs(style, scaler: scaler);
-      expect(scaledNeeds, greaterThan(width - padding),
-          reason: 'the scaled string must not fit, or the case tests nothing');
+    // A width that fits the *unscaled* string with room to spare, so nothing
+    // but the scaler can clip it. A test left at TextScaler.noScaling cannot
+    // fail for this — the default is the value at which the defect is
+    // invisible.
+    final width = _needs(style) + padding + 2;
+    final scaledNeeds = _needs(style, scaler: scaler);
+    expect(
+      scaledNeeds,
+      greaterThan(width - padding),
+      reason: 'the scaled string must not fit, or the case tests nothing',
+    );
 
-      await tester.pumpWidget(_table(columnWidth: width, scaler: scaler));
-      await tester.pumpAndSettle();
+    await tester.pumpWidget(_table(columnWidth: width, scaler: scaler));
+    await tester.pumpAndSettle();
 
-      expect(_isClipped(tester, scaledNeeds), isTrue);
+    expect(_isClipped(tester, scaledNeeds), isTrue);
 
-      await _hoverText(tester);
-      expect(find.text(_value), findsNWidgets(2));
-    },
-  );
+    await _hoverText(tester);
+    expect(find.text(_value), findsNWidgets(2));
+  });
 
   // The third call site. #155 routed a group's *member* cells through the
   // ordinary cell, so they inherit whatever it does; the **spanning** cell kept
@@ -155,43 +160,43 @@ void main() {
     'a merged group\'s spanning cell offers a tooltip when its text is cut',
     (tester) async {
       Widget table(double columnWidth) => MaterialApp(
-            home: Scaffold(
-              body: SizedBox(
-                width: 60,
-                child: FlutterTablePlus<Map<String, dynamic>>(
-                  columns: {
-                    'note': TablePlusColumn<Map<String, dynamic>>(
-                      key: 'note',
-                      label: 'note',
-                      order: 0,
-                      valueAccessor: (r) => r['note'],
-                      width: columnWidth,
-                      minWidth: columnWidth,
-                      maxWidth: columnWidth,
-                      tooltipBehavior: TooltipBehavior.onlyTextOverflow,
+        home: Scaffold(
+          body: SizedBox(
+            width: 60,
+            child: FlutterTablePlus<Map<String, dynamic>>(
+              columns: {
+                'note': TablePlusColumn<Map<String, dynamic>>(
+                  key: 'note',
+                  label: 'note',
+                  order: 0,
+                  valueAccessor: (r) => r['note'],
+                  width: columnWidth,
+                  minWidth: columnWidth,
+                  maxWidth: columnWidth,
+                  tooltipBehavior: TooltipBehavior.onlyTextOverflow,
+                ),
+              },
+              data: const [
+                {'id': '1', 'note': _value},
+                {'id': '2', 'note': _value},
+              ],
+              rowId: (r) => r['id'] as String,
+              mergedGroups: const [
+                MergedRowGroup<Map<String, dynamic>>(
+                  groupId: 'g',
+                  rowKeys: ['1', '2'],
+                  mergeConfig: {
+                    'note': MergeCellConfig(
+                      shouldMerge: true,
+                      spanningRowIndex: 0,
                     ),
                   },
-                  data: const [
-                    {'id': '1', 'note': _value},
-                    {'id': '2', 'note': _value},
-                  ],
-                  rowId: (r) => r['id'] as String,
-                  mergedGroups: const [
-                    MergedRowGroup<Map<String, dynamic>>(
-                      groupId: 'g',
-                      rowKeys: ['1', '2'],
-                      mergeConfig: {
-                        'note': MergeCellConfig(
-                          shouldMerge: true,
-                          spanningRowIndex: 0,
-                        ),
-                      },
-                    ),
-                  ],
                 ),
-              ),
+              ],
             ),
-          );
+          ),
+        ),
+      );
 
       await tester.pumpWidget(table(200));
       await tester.pumpAndSettle();
@@ -202,8 +207,11 @@ void main() {
       await tester.pumpWidget(table(needs + padding + 0.25));
       await tester.pumpAndSettle();
 
-      expect(_isClipped(tester, needs), isTrue,
-          reason: 'the case is only meaningful if the text is actually cut');
+      expect(
+        _isClipped(tester, needs),
+        isTrue,
+        reason: 'the case is only meaningful if the text is actually cut',
+      );
 
       await _hoverText(tester);
       expect(find.text(_value), findsNWidgets(2));
@@ -225,36 +233,38 @@ void main() {
       const bare = TextStyle(fontSize: 14, fontWeight: FontWeight.w600);
 
       Widget header(double columnWidth) => MaterialApp(
-            home: Scaffold(
-              body: SizedBox(
-                width: 60,
-                child: FlutterTablePlus<Map<String, dynamic>>(
-                  columns: {
-                    'note': TablePlusColumn<Map<String, dynamic>>(
-                      key: 'note',
-                      label: label,
-                      order: 0,
-                      valueAccessor: (r) => r['note'],
-                      width: columnWidth,
-                      minWidth: columnWidth,
-                      maxWidth: columnWidth,
-                      headerTooltipBehavior: TooltipBehavior.onlyTextOverflow,
-                    ),
-                  },
-                  data: const [
-                    {'id': '1', 'note': 'x'}
-                  ],
-                  rowId: (r) => r['id'] as String,
+        home: Scaffold(
+          body: SizedBox(
+            width: 60,
+            child: FlutterTablePlus<Map<String, dynamic>>(
+              columns: {
+                'note': TablePlusColumn<Map<String, dynamic>>(
+                  key: 'note',
+                  label: label,
+                  order: 0,
+                  valueAccessor: (r) => r['note'],
+                  width: columnWidth,
+                  minWidth: columnWidth,
+                  maxWidth: columnWidth,
+                  headerTooltipBehavior: TooltipBehavior.onlyTextOverflow,
                 ),
-              ),
+              },
+              data: const [
+                {'id': '1', 'note': 'x'},
+              ],
+              rowId: (r) => r['id'] as String,
             ),
-          );
+          ),
+        ),
+      );
 
       await tester.pumpWidget(header(400));
       await tester.pumpAndSettle();
 
-      final painted =
-          tester.renderObject<RenderParagraph>(find.text(label)).text.style!;
+      final painted = tester
+          .renderObject<RenderParagraph>(find.text(label))
+          .text
+          .style!;
       double needs(TextStyle s) {
         final p = TextPainter(
           text: TextSpan(text: label, style: s),
@@ -272,8 +282,11 @@ void main() {
       // letter-spacing it never named.
       final bareNeeds = needs(bare);
       final paintedNeeds = needs(painted);
-      expect(paintedNeeds, greaterThan(bareNeeds),
-          reason: 'no band means this case cannot observe the merge');
+      expect(
+        paintedNeeds,
+        greaterThan(bareNeeds),
+        reason: 'no band means this case cannot observe the merge',
+      );
 
       const padding = 32.0; // TablePlusHeaderTheme default symmetric(h: 16)
       final width = (bareNeeds + paintedNeeds) / 2 + padding;
