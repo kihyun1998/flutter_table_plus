@@ -1,5 +1,9 @@
 ## 2.18.0
 
+*   **EXAMPLE**: a *Smooth wheel* recipe, and the same switch in the playground ([#184](https://github.com/kihyun1998/flutter_table_plus/issues/184))
+    *   **The recipe is one argument.** `wheelMotion` on a table with room to scroll on both axes, with `WheelMotion` imported through this package's re-export, so the file pastes with no second dependency
+    *   **The playground lists it under Interaction**, with a switch and a *Motion* choice of spring, curve or lerp at the package's defaults. The *Everything* preset turns it on with the rest
+
 *   **FEAT**: opt-in smooth mouse wheel scrolling through `wheelMotion` ([#181](https://github.com/kihyun1998/flutter_table_plus/issues/181))
     *   **What a consumer sees differently.** Nothing unless `wheelMotion` is set; `null`, the default, moves the body at once on a wheel notch exactly as before. With `wheelMotion: const WheelMotion.spring()` (or `.curve` / `.lerp`) the body animates to where the notch points, vertically and with Shift+wheel horizontally, and notches during the motion add to its target
     *   **The header and scrollbars follow the body on every frame**, through the same master/slave sync as before. The body is still the only input surface, so only its two controllers changed. `WheelMotion` is re-exported, so no import of `flutter_smooth_wheel_scroll` is needed

@@ -16,6 +16,7 @@ import '../recipes/merged_rows_recipe.dart';
 import '../recipes/row_card_recipe.dart';
 import '../recipes/selection_recipe.dart';
 import '../recipes/sorting_recipe.dart';
+import '../recipes/smooth_wheel_recipe.dart';
 import '../recipes/tooltips_recipe.dart';
 import '../recipes/zoom_recipe.dart';
 
@@ -127,6 +128,13 @@ final List<Recipe> recipeCatalog = [
     build: (settings) => ZoomRecipe(
       scale: settings.scale,
       blockModifierScroll: settings.blockModifierScroll,
+    ),
+  ),
+  Recipe(
+    featureId: 'smoothWheel',
+    source: 'lib/recipes/smooth_wheel_recipe.dart',
+    build: (settings) => SmoothWheelRecipe(
+      wheelMotion: settings.wheelMotion,
     ),
   ),
   Recipe(

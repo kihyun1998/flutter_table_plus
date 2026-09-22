@@ -23,7 +23,7 @@ void main() {
     final described = _describedIds();
     final drawn = settingsRegistry.keys.toSet();
 
-    expect(described, hasLength(58),
+    expect(described, hasLength(60),
         reason: 'the description still covers every field');
 
     expect(described.difference(drawn), isEmpty,

@@ -22,6 +22,19 @@ enum InkColorOption {
   final Color? color;
 }
 
+/// Which [WheelMotion] the playground hands the table while smooth wheel
+/// scrolling is on, each at the package's defaults.
+enum WheelMotionKind {
+  spring('Spring', WheelMotion.spring()),
+  curve('Curve', WheelMotion.curve()),
+  lerp('Lerp', WheelMotion.lerp());
+
+  const WheelMotionKind(this.label, this.motion);
+
+  final String label;
+  final WheelMotion motion;
+}
+
 /// Playground settings configuration
 /// Where header tooltips anchor, as the settings panel offers it.
 ///
@@ -118,6 +131,14 @@ class PlaygroundSettings {
   final double scale;
   final bool blockModifierScroll;
 
+  // Smooth wheel scrolling
+  final bool smoothWheelEnabled;
+  final WheelMotionKind wheelMotionKind;
+
+  /// What the table's `wheelMotion` is: `null` while the switch is off.
+  WheelMotion? get wheelMotion =>
+      smoothWheelEnabled ? wheelMotionKind.motion : null;
+
   const PlaygroundSettings({
     this.rowCount = 100,
     this.columnMinWidth = 50.0,
@@ -177,6 +198,8 @@ class PlaygroundSettings {
     this.resizeHandleEndIndent = 0.0,
     this.scale = 1.0,
     this.blockModifierScroll = true,
+    this.smoothWheelEnabled = false,
+    this.wheelMotionKind = WheelMotionKind.spring,
   });
 
   PlaygroundSettings copyWith({
@@ -238,6 +261,8 @@ class PlaygroundSettings {
     double? resizeHandleEndIndent,
     double? scale,
     bool? blockModifierScroll,
+    bool? smoothWheelEnabled,
+    WheelMotionKind? wheelMotionKind,
   }) {
     return PlaygroundSettings(
       rowCount: rowCount ?? this.rowCount,
@@ -312,6 +337,8 @@ class PlaygroundSettings {
           resizeHandleEndIndent ?? this.resizeHandleEndIndent,
       scale: scale ?? this.scale,
       blockModifierScroll: blockModifierScroll ?? this.blockModifierScroll,
+      smoothWheelEnabled: smoothWheelEnabled ?? this.smoothWheelEnabled,
+      wheelMotionKind: wheelMotionKind ?? this.wheelMotionKind,
     );
   }
 }

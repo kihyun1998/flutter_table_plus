@@ -28,7 +28,7 @@ FeatureMatch _match(String query, String featureId) =>
 void main() {
   test('a blank query is not a search', () {
     final all = searchFeatures('', _bare);
-    expect(all, hasLength(20));
+    expect(all, hasLength(21));
     expect(all.every((m) => m.matchedLabels.isEmpty), isTrue,
         reason: 'nothing matched, because nothing was asked');
   });

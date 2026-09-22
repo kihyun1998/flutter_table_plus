@@ -257,6 +257,26 @@ final Map<String, ControlBuilder> settingsRegistry = {
         },
       ),
 
+  // interaction > smooth wheel
+  'smoothWheelEnabled': (s, onChanged) => buildSwitchTile(
+        id: 'smoothWheelEnabled',
+        label: 'Smooth Wheel',
+        value: s.smoothWheelEnabled,
+        onChanged: (value) {
+          onChanged(s.copyWith(smoothWheelEnabled: value));
+        },
+      ),
+  'wheelMotionKind': (s, onChanged) => buildDropdownRow<WheelMotionKind>(
+        id: 'wheelMotionKind',
+        label: 'Motion',
+        value: s.wheelMotionKind,
+        items: WheelMotionKind.values,
+        itemLabel: (kind) => kind.label,
+        onChanged: (value) {
+          onChanged(s.copyWith(wheelMotionKind: value));
+        },
+      ),
+
   // content > tooltips
   'tooltipEnabled': (s, onChanged) => _withNote(
         buildSwitchTile(
