@@ -3,8 +3,9 @@
 ## What it is
 
 `lib/flutter_table_plus.dart` — the single file that decides what a consumer can
-import. It exports this package's own types and **re-exports seven types from two
-sibling packages** so callers do not have to depend on them directly.
+import. It exports this package's own types and **re-exports a `show`-listed set
+of types from its sibling packages** so callers do not have to depend on them
+directly.
 
 One of the areas the maintainer names as never touched and expensive to get
 wrong: nothing in this repository fails when it is wrong. The failure appears in
@@ -22,10 +23,10 @@ The list is currently maintained by hand, and neither a test nor a gate reads it
 
 - **The barrel is the public surface.** Anything not exported here is private by
   convention, regardless of whether Dart can reach it — `src/` is the marker.
-- **Re-exports are `show`-listed, never blanket.** Four `just_tooltip` types
-  (`TooltipAnchor`, `TooltipDirection`, `TooltipAlignment`, `TooltipAnimation`)
-  and three `flutter_checkbox` types (`FlutterCheckbox`, `CheckboxStyle`,
-  `CheckboxShape`) are named explicitly.
+- **Re-exports are `show`-listed, never blanket.** Every sibling type is named
+  explicitly in the barrel, one `show` clause per sibling. The names are read
+  there, not copied here: this bullet listed seven by hand and would have gone
+  stale on the first one added (`WheelMotion`, #181).
 - **A `show` list is a compatibility promise in both directions.** Dropping a
   name breaks callers who imported it from here; failing to add one that a
   sibling introduced makes callers depend on the sibling directly, which is what
@@ -47,7 +48,7 @@ wrong.
 
 ## Reference behaviour
 
-**None.** Whether the two siblings' current exports still match this `show` list
+**None.** Whether the siblings' current exports still match this `show` list
 has never been checked against their sources — only assumed to hold.
 
 ## Cross-cutting invariants

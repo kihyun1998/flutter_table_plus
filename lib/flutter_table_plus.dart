@@ -53,6 +53,10 @@ export 'package:flutter_checkbox/flutter_checkbox.dart'
 export 'package:just_tooltip/just_tooltip.dart'
     show TooltipAnchor, TooltipDirection, TooltipAlignment, TooltipAnimation;
 
+/// Re-export flutter_smooth_wheel_scroll types for convenience
+export 'package:flutter_smooth_wheel_scroll/flutter_smooth_wheel_scroll.dart'
+    show WheelMotion;
+
 /// Widgets
 export 'src/widgets/custom_ink_well.dart';
 export 'src/widgets/flutter_table_plus.dart';

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_smooth_wheel_scroll/flutter_smooth_wheel_scroll.dart';
 
 import '../utils/no_cascade_guard.dart';
 
@@ -41,6 +42,7 @@ class SyncedScrollControllers extends StatefulWidget {
     this.horizontalScrollbarController,
     this.horizontalScrollController,
     this.horizontalHeaderController,
+    this.wheelMotion,
   });
 
   final ScrollController? scrollController;
@@ -48,6 +50,11 @@ class SyncedScrollControllers extends StatefulWidget {
   final ScrollController? horizontalScrollController;
   final ScrollController? horizontalHeaderController;
   final ScrollController? horizontalScrollbarController;
+
+  /// How the two body controllers this widget creates move on mouse wheel
+  /// input; `null` moves them at once. A controller passed in is left as it
+  /// is.
+  final WheelMotion? wheelMotion;
 
   /// A builder function that provides the synchronized [ScrollController]s.
   ///
@@ -105,6 +112,21 @@ class _SyncedScrollControllersState extends State<SyncedScrollControllers> {
             oldWidget.horizontalScrollbarController) {
       _disposeOrUnsubscribe();
       _initControllers();
+    } else if (widget.wheelMotion != oldWidget.wheelMotion) {
+      _applyWheelMotion();
+    }
+  }
+
+  /// A zero duration takes `ScrollController`'s own wheel path.
+  static const WheelMotion _instant = WheelMotion.spring(
+    duration: Duration.zero,
+  );
+
+  WheelMotion get _motion => widget.wheelMotion ?? _instant;
+
+  void _applyWheelMotion() {
+    for (final controller in [_sc11, _sc21]) {
+      if (controller is SmoothScrollController) controller.motion = _motion;
     }
   }
 
@@ -118,10 +140,12 @@ class _SyncedScrollControllersState extends State<SyncedScrollControllers> {
     _guard.reset();
 
     // 수직 스크롤 컨트롤러 (메인, Scrollable Area 용)
-    _sc11 = widget.scrollController ?? ScrollController();
+    _sc11 = widget.scrollController ?? SmoothScrollController(motion: _motion);
 
     // 수평 스크롤 컨트롤러 (body — master input source for horizontal scroll)
-    _sc21 = widget.horizontalScrollController ?? ScrollController();
+    _sc21 =
+        widget.horizontalScrollController ??
+        SmoothScrollController(motion: _motion);
 
     // 수직 스크롤바 컨트롤러
     _sc12 =

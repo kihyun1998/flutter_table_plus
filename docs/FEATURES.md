@@ -21,6 +21,7 @@ Complete guide to all Flutter Table Plus features.
 - [Empty State](#empty-state)
 - [Context Menu (Right-Click)](#context-menu)
 - [Scale / Zoom](#scale--zoom)
+- [Smooth Wheel Scrolling](#smooth-wheel-scrolling)
 
 ---
 
@@ -1003,3 +1004,36 @@ FlutterTablePlus<User>(
 - No min/max is enforced by the library — the caller clamps in `onScaleChanged`
 - The checkbox scales visually through `CheckboxStyle.scale`. Every other `CheckboxStyle` field is carried through untouched — this bullet used to say the opposite, describing the Material `Checkbox` that 2.10.0 replaced
 - Custom sort icons are automatically scaled via `FittedBox` to match the scaled `sortIconWidth`
+
+---
+
+## Smooth Wheel Scrolling
+
+By default a mouse wheel notch moves the table at once. Pass a `wheelMotion` and the body animates instead, vertically and with Shift+wheel horizontally. The header and scrollbars follow it on every frame.
+
+```dart
+FlutterTablePlus<Employee>(
+  columns: columns,
+  data: employees,
+  rowId: (e) => e.id,
+  wheelMotion: const WheelMotion.spring(),
+)
+```
+
+`WheelMotion` comes from [`flutter_smooth_wheel_scroll`](https://pub.dev/packages/flutter_smooth_wheel_scroll) and is re-exported here, so no extra import is needed.
+
+| Motion | Feel |
+|---|---|
+| `WheelMotion.spring({duration, bounce})` | Keeps its speed when you keep scrolling |
+| `WheelMotion.curve({duration, curve})` | Plays a `Curve`, starting over on every notch |
+| `WheelMotion.lerp({timeConstant})` | Fast at first, slowing as it arrives |
+
+### Notes
+
+- Notches during a motion add to its target, so fast consecutive notches travel the full distance
+- `wheelMotion` can change at runtime; the next notch uses it, and the scroll position is kept
+- Only the wheel is animated. Dragging a scrollbar, drag-selection auto-scroll and scale correction move the body at once, and stop a motion in progress
+- A wheel turned over a scrollbar moves it at once
+- Inside a page that scrolls too, the page takes the wheel once the table's motion has reached the end and settled; a notch sent while the motion is still heading there is used up by the table
+- Ctrl/Cmd+wheel zoom is unaffected: with `onScaleChanged` set it still changes scale and does not scroll
+- How far one notch travels is app-wide, not per table: install `SmoothWheelBinding` from `flutter_smooth_wheel_scroll` in `main()`

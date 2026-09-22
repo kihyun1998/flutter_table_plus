@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_smooth_wheel_scroll/flutter_smooth_wheel_scroll.dart'
+    show WheelMotion;
 
 import '../models/hover_button_position.dart';
 import '../models/merged_row_group.dart';
@@ -71,6 +73,7 @@ class FlutterTablePlus<T> extends StatefulWidget {
     this.onScaleChanged,
     this.scaleStep = 0.05,
     this.blockModifierScroll,
+    this.wheelMotion,
   }) : assert(scale > 0, 'scale must be greater than zero');
 
   /// The column definitions for the table.
@@ -450,6 +453,25 @@ class FlutterTablePlus<T> extends StatefulWidget {
   /// Defaults to `null`, which follows [onScaleChanged]: blocking is enabled
   /// when [onScaleChanged] is non-null, and disabled otherwise.
   final bool? blockModifierScroll;
+
+  /// How the body moves on mouse wheel input, horizontally and vertically.
+  ///
+  /// Defaults to `null`, where a wheel notch moves the body at once. With a
+  /// [WheelMotion], the body animates to where the notch points, and notches
+  /// during the motion add to its target. The header and scrollbars follow
+  /// the body on every frame.
+  ///
+  /// ```dart
+  /// wheelMotion: const WheelMotion.spring(),
+  /// ```
+  ///
+  /// Only the wheel is animated: dragging a scrollbar, drag-selection
+  /// auto-scroll and scale correction move the body at once, and stop a
+  /// motion in progress. A wheel turned over a scrollbar moves it at once too.
+  ///
+  /// How far a notch travels is not set here; that is app-wide, through
+  /// `SmoothWheelBinding` in `flutter_smooth_wheel_scroll`.
+  final WheelMotion? wheelMotion;
 
   @override
   State<FlutterTablePlus<T>> createState() => _FlutterTablePlusState<T>();
@@ -1173,6 +1195,7 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
             theme.headerTheme.height + tableDataHeight;
 
         return SyncedScrollControllers(
+          wheelMotion: widget.wheelMotion,
           builder:
               (
                 context,
