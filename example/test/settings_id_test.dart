@@ -86,7 +86,7 @@ void main() {
     _tallView(tester);
 
     final fields = _settingsFields();
-    expect(fields, hasLength(60),
+    expect(fields, hasLength(63),
         reason: 'the source reader still finds the fields it used to');
 
     final ids = (await _renderedIds(tester)).toSet();

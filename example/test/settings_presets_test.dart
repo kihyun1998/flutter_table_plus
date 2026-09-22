@@ -23,7 +23,7 @@ void main() {
   test('every feature switch the description declares can be read and written',
       () {
     final declared = _specSwitchIds();
-    expect(declared, hasLength(17));
+    expect(declared, hasLength(16));
     expect(featureSwitches.keys.toSet(), declared,
         reason: 'a switch nobody can read is a feature that is always on');
   });

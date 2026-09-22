@@ -111,7 +111,7 @@ packages:
     source: hosted
     version: "5.0.0"
   flutter_smooth_wheel_scroll:
-    dependency: transitive
+    dependency: "direct dev"
     description:
       name: flutter_smooth_wheel_scroll
       sha256: "3f211ea771fc8012a147d997d73678b3405bf7655eee88897f60cd491531e612"

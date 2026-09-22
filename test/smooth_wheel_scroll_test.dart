@@ -34,10 +34,16 @@ final List<Map<String, dynamic>> _rows = [
 
 final GlobalKey _tableKey = GlobalKey();
 
+/// Stands for an argument left out, as opposed to one passed as `null`.
+const Object _omitted = Object();
+
 /// A 400x300 table of 100 rows by 8 columns, so both axes scroll.
+///
+/// [wheelMotion] left out builds the table without the argument, so its
+/// default is what runs.
 Future<void> _pump(
   WidgetTester tester, {
-  WheelMotion? wheelMotion,
+  Object? wheelMotion = _omitted,
   ValueChanged<double>? onScaleChanged,
 }) async {
   tester.view.physicalSize = const Size(800, 600);
@@ -51,14 +57,22 @@ Future<void> _pump(
           child: SizedBox(
             width: 400,
             height: 300,
-            child: FlutterTablePlus<Map<String, dynamic>>(
-              key: _tableKey,
-              columns: _columns(),
-              data: _rows,
-              rowId: (r) => r['id'] as String,
-              wheelMotion: wheelMotion,
-              onScaleChanged: onScaleChanged,
-            ),
+            child: identical(wheelMotion, _omitted)
+                ? FlutterTablePlus<Map<String, dynamic>>(
+                    key: _tableKey,
+                    columns: _columns(),
+                    data: _rows,
+                    rowId: (r) => r['id'] as String,
+                    onScaleChanged: onScaleChanged,
+                  )
+                : FlutterTablePlus<Map<String, dynamic>>(
+                    key: _tableKey,
+                    columns: _columns(),
+                    data: _rows,
+                    rowId: (r) => r['id'] as String,
+                    wheelMotion: wheelMotion as WheelMotion?,
+                    onScaleChanged: onScaleChanged,
+                  ),
           ),
         ),
       ),
@@ -110,9 +124,20 @@ Future<List<double>> _followFrames(WidgetTester tester, Axis axis) async {
 }
 
 void main() {
+  group('wheelMotion left out', () {
+    testWidgets('a wheel notch animates the body by default', (tester) async {
+      await _pump(tester);
+      await _wheel(tester, 120);
+
+      final seen = await _followFrames(tester, Axis.vertical);
+      expect(seen, anyElement(inExclusiveRange(0.0, 120.0)));
+      expect(seen.last, 120.0);
+    });
+  });
+
   group('wheelMotion: null', () {
     testWidgets('a wheel notch moves the body at once', (tester) async {
-      await _pump(tester);
+      await _pump(tester, wheelMotion: null);
       await _wheel(tester, 120);
 
       expect(_offsets(tester, Axis.vertical), everyElement(120.0));
@@ -186,7 +211,7 @@ void main() {
     testWidgets('applies from the next notch and keeps the offset', (
       tester,
     ) async {
-      await _pump(tester);
+      await _pump(tester, wheelMotion: null);
       await _wheel(tester, 120);
       expect(_offsets(tester, Axis.vertical), everyElement(120.0));
 
@@ -201,7 +226,7 @@ void main() {
       expect(seen, anyElement(inExclusiveRange(120.0, 240.0)));
       expect(seen.last, 240.0);
 
-      await _pump(tester);
+      await _pump(tester, wheelMotion: null);
       await _wheel(tester, 120);
       expect(
         _offsets(tester, Axis.vertical),

@@ -50,10 +50,6 @@ final Map<String, FeatureSwitch> featureSwitches = {
     read: (s) => s.rowCardTooltip,
     write: (s, v) => s.copyWith(rowCardTooltip: v),
   ),
-  'smoothWheelEnabled': FeatureSwitch(
-    read: (s) => s.smoothWheelEnabled,
-    write: (s, v) => s.copyWith(smoothWheelEnabled: v),
-  ),
   'mergedRowsEnabled': FeatureSwitch(
     read: (s) => s.mergedRowsEnabled,
     write: (s, v) => s.copyWith(mergedRowsEnabled: v),
