@@ -132,6 +132,21 @@ const settingsSpec = <SettingGroup>[
         title: 'Zoom',
         options: ['scale', 'blockModifierScroll'],
       ),
+      SettingFeature(
+        id: 'smoothWheel',
+        title: 'Smooth wheel',
+        switchId: 'smoothWheelEnabled',
+        options: ['wheelMotionKind'],
+        interactions: [
+          Interaction(
+            otherFeatureId: 'zoom',
+            effect: 'Ctrl/Cmd+wheel still zooms and does not scroll; only a '
+                'plain wheel is animated.',
+            evidence: "test/smooth_wheel_scroll_test.dart: 'Ctrl+wheel still "
+                "changes scale without scrolling'",
+          ),
+        ],
+      ),
     ],
   ),
   SettingGroup(

@@ -821,6 +821,7 @@ class _PlaygroundPageState extends State<PlaygroundPage> {
             : const <MergedRowGroup<Employee>>[],
         scale: _settings.scale,
         blockModifierScroll: _settings.blockModifierScroll,
+        wheelMotion: _settings.wheelMotion,
         onScaleChanged: (newScale) {
           setState(() {
             _settings = _settings.copyWith(

@@ -90,10 +90,10 @@ void main() {
       sliders += find.byType(Slider).evaluate().length;
     }
 
-    expect(switches, 25, reason: '16 feature switches + 9 boolean options');
-    expect(dropdowns, 12);
+    expect(switches, 26, reason: '17 feature switches + 9 boolean options');
+    expect(dropdowns, 13);
     expect(sliders, 21);
-    expect(switches + dropdowns + sliders, 58, reason: 'one per field');
+    expect(switches + dropdowns + sliders, 60, reason: 'one per field');
   });
 
   testWidgets('the tooltip anchors are reachable', (tester) async {
