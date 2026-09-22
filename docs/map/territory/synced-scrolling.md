@@ -51,10 +51,15 @@ master, so the next author is free to reverse it without knowing what breaks.
 are forced by the framework and which are this package's choice.
 
 The wheel path was read against the SDK (3.41.9) and
-`../flutter_smooth_wheel_scroll` 0.1.1, both raw, for #181.
-`Scrollable._receivedPointerSignal` decides whether to claim a wheel event from
-`position.pixels`, not from where a motion is heading, and the smooth position
-overrides `pointerScroll` alone.
+`../flutter_smooth_wheel_scroll` 0.1.1, both raw, for #181, and 0.1.2 again
+for its fix. `Scrollable._receivedPointerSignal` decides whether to claim a
+wheel event from `position.pixels`, not from where a motion is heading, and
+the smooth position overrides `pointerScroll` alone. Since 0.1.2 a notch the
+motion cannot use is handed to the nearest enclosing scroll view on the same
+axis that can move (`_passToAncestor`). The body's vertical `Scrollable` sits
+inside its horizontal one, so that walk skips the horizontal one on its way
+to a page; `test/smooth_wheel_scroll_test.dart` pins this layout, which
+upstream's own tests do not have.
 
 ## Cross-cutting invariants
 
@@ -75,13 +80,12 @@ overrides `pointerScroll` alone.
   `Scrollable` with its own plain controller; the wheel jumps it, the slave
   listener jumps the body, and a motion in progress stops. Upstream documents
   the same limit.
-- **Near an end, a notch during a motion is swallowed instead of passing
-  outward.** Because the claim is decided from `position.pixels`, the body
-  claims a notch while it is still short of its extent even when the motion is
-  already heading there, and the notch then adds nothing. An enclosing scroll
-  view takes the wheel only once the motion has settled. Measured 2026-09-22
-  with the table inside a page `SingleChildScrollView`: one notch to the end,
-  a second 60px notch two frames later — the page moved 60 with `wheelMotion`
-  null and 0 with a spring, then 60 on the next notch after settling. This is
-  the SDK's decision rule meeting upstream's target, and neither is this
-  package's.
+
+**Closed: a notch during a motion near an end no longer disappears.** On
+0.1.1 the body claimed the notch, because it was still short of its extent,
+and then used none of it. Measured 2026-09-22 with the table inside a page
+`SingleChildScrollView`: one notch to the end, then a second 60px notch two
+frames later. The page moved 60 with `wheelMotion` null, 0 with a spring on
+0.1.1, and 60 with a spring on 0.1.2. It was reported upstream rather than
+worked around here (upstream #7) and fixed there. The constraint is `^0.1.2`
+so that 0.1.1 cannot be resolved.

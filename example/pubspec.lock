@@ -114,10 +114,10 @@ packages:
     dependency: transitive
     description:
       name: flutter_smooth_wheel_scroll
-      sha256: b18bad6a7b64e75637413d84a6e955c50b990f3a5e36b287e15c7a64cf30d52e
+      sha256: "3f211ea771fc8012a147d997d73678b3405bf7655eee88897f60cd491531e612"
       url: "https://pub.dev"
     source: hosted
-    version: "0.1.1"
+    version: "0.1.2"
   flutter_svg:
     dependency: "direct main"
     description:
