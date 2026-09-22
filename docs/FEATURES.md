@@ -1034,6 +1034,6 @@ FlutterTablePlus<Employee>(
 - `wheelMotion` can change at runtime; the next notch uses it, and the scroll position is kept
 - Only the wheel is animated. Dragging a scrollbar, drag-selection auto-scroll and scale correction move the body at once, and stop a motion in progress
 - A wheel turned over a scrollbar moves it at once
-- Inside a page that scrolls too, the page takes the wheel once the table's motion has reached the end and settled; a notch sent while the motion is still heading there is used up by the table
+- Inside a page that scrolls too, a notch the table cannot use goes to the page, even while a motion is still heading for the table's end
 - Ctrl/Cmd+wheel zoom is unaffected: with `onScaleChanged` set it still changes scale and does not scroll
 - How far one notch travels is app-wide, not per table: install `SmoothWheelBinding` from `flutter_smooth_wheel_scroll` in `main()`

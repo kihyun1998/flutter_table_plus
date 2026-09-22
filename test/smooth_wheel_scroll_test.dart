@@ -210,4 +210,66 @@ void main() {
       );
     });
   });
+
+  group('inside a page that scrolls too', () {
+    // The body's vertical Scrollable sits inside its horizontal one, so a
+    // notch it cannot use has to skip that axis on the way to the page.
+    testWidgets('a notch the motion cannot use reaches the page', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(800, 600);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final page = ScrollController();
+      addTearDown(page.dispose);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              controller: page,
+              child: Column(
+                children: [
+                  SizedBox(
+                    width: 400,
+                    height: 300,
+                    child: FlutterTablePlus<Map<String, dynamic>>(
+                      key: _tableKey,
+                      columns: _columns(),
+                      data: _rows.take(12).toList(),
+                      rowId: (r) => r['id'] as String,
+                      wheelMotion: const WheelMotion.spring(),
+                    ),
+                  ),
+                  const SizedBox(height: 2000),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final body = tester
+          .stateList<ScrollableState>(find.byType(Scrollable))
+          .map((s) => s.position)
+          .firstWhere(
+            (p) => p.axis == Axis.vertical && p.maxScrollExtent < 1000,
+          );
+      await _wheel(tester, body.maxScrollExtent);
+      await tester.pump(_frame);
+      await tester.pump(_frame);
+      expect(
+        body.pixels,
+        inExclusiveRange(0.0, body.maxScrollExtent),
+        reason: 'the second notch has to arrive while the motion runs',
+      );
+
+      await _wheel(tester, 60);
+      await tester.pumpAndSettle();
+
+      expect(body.pixels, body.maxScrollExtent);
+      expect(page.offset, 60.0);
+    });
+  });
 }

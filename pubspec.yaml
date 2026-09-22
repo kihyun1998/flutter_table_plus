@@ -40,10 +40,12 @@ dependencies:
   # building such a tooltip at all. That guard is gone, so 0.4.3 would reissue
   # the bug (#88) rather than merely miss the fix.
   just_tooltip: ^0.4.4
-  # 0.1.1 is a floor, not a preference: 0.1.0 declared Flutter `>=3.41.0`, the
-  # SDK it was built with, so `^0.1.0` would admit a version a 3.32 user cannot
-  # resolve. This dependency is what sets the environment floor above.
-  flutter_smooth_wheel_scroll: ^0.1.1
+  # 0.1.2 is a floor, not a preference. 0.1.0 declared Flutter `>=3.41.0`, the
+  # SDK it was built with, so a 3.32 user could not resolve it; and 0.1.1
+  # dropped a wheel notch sent while a motion was already heading for the end,
+  # instead of passing it to the enclosing scroll view (upstream #7, fixed in
+  # 0.1.2). This dependency is what sets the environment floor above.
+  flutter_smooth_wheel_scroll: ^0.1.2
 
 dev_dependencies:
   flutter_test:
