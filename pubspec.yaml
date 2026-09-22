@@ -15,7 +15,7 @@ topics:
 # `Color.withValues`, 3.27+; everything else needs only Dart 3.0), just_tooltip
 # 0.4.4 declares Flutter `>=3.13.0` / Dart `>=3.1.0` (its `RenderObject.parent`
 # ancestor walk needs `describeApproximatePaintClip`, added in 3.13), and
-# flutter_smooth_wheel_scroll 0.1.1 declares Flutter `>=3.32.0` / Dart `^3.8.0`
+# flutter_smooth_wheel_scroll 0.1.2 declares Flutter `>=3.32.0` / Dart `^3.8.0`
 # (`SpringDescription.withDurationAndBounce`, flutter#164411, first stable in
 # 3.32.0). So the honest floor is `max(3.27, 3.13, 3.32) = 3.32` /
 # `max(3.6, 3.1, 3.8) = 3.8`.

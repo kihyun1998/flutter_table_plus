@@ -1,8 +1,10 @@
 ## 2.18.0
 
-*   **EXAMPLE**: a *Smooth wheel* recipe, and the same switch in the playground ([#184](https://github.com/kihyun1998/flutter_table_plus/issues/184))
-    *   **The recipe is one argument.** `wheelMotion` on a table with room to scroll on both axes, with `WheelMotion` imported through this package's re-export, so the file pastes with no second dependency
-    *   **The playground lists it under Interaction**, with a switch and a *Motion* choice of spring, curve or lerp at the package's defaults. The *Everything* preset turns it on with the rest
+*   **BREAKING**: minimum Flutter is now `3.32.0` (Dart `3.8.0`), up from `3.27.0` (Dart `3.6.0`) ([#180](https://github.com/kihyun1998/flutter_table_plus/issues/180))
+    *   **What a consumer sees differently.** On Flutter 3.27–3.31 this version no longer resolves, and `pub` stays on 2.17.0. No class, method or field changed; the *floor* did
+    *   **Why.** This package now depends on [`flutter_smooth_wheel_scroll`](https://pub.dev/packages/flutter_smooth_wheel_scroll) `^0.1.2`, which declares Flutter `>=3.32.0` / Dart `^3.8.0`. It uses `SpringDescription.withDurationAndBounce`, added in flutter#164411, and 3.32.0 is the first stable release to carry it. So 3.32 is its real floor rather than the SDK it happened to be built with. The floor is still the max of what the dependencies demand, now `max(3.27, 3.13, 3.32)`
+    *   **The constraint is `^0.1.2`, not anything lower, for two reasons.** 0.1.0 declared Flutter `>=3.41.0`, so a 3.32 user could not resolve it; that is the same reasoning that took `flutter_checkbox` to `^0.3.1`. And 0.1.1 dropped a wheel notch sent while a motion was already heading for the end, instead of passing it to an enclosing scroll view. That was reported upstream and fixed in 0.1.2 rather than worked around here
+    *   **The source was reformatted, with no behaviour change.** `dart format` picks its style from the package's language version, and from Dart 3.7 that is the tall style, so raising the SDK bound past 3.6 reformats the tree on its own. That reformat is a separate, mechanical commit
 
 *   **FEAT**: opt-in smooth mouse wheel scrolling through `wheelMotion` ([#181](https://github.com/kihyun1998/flutter_table_plus/issues/181))
     *   **What a consumer sees differently.** Nothing unless `wheelMotion` is set; `null`, the default, moves the body at once on a wheel notch exactly as before. With `wheelMotion: const WheelMotion.spring()` (or `.curve` / `.lerp`) the body animates to where the notch points, vertically and with Shift+wheel horizontally, and notches during the motion add to its target
@@ -12,12 +14,9 @@
     *   **Inside a page that scrolls too, a notch the table cannot use goes to the page**, even while a motion is still heading for the table's end. The body's vertical scroll view sits inside its horizontal one, and a test pins that this layout still reaches the page
     *   **How far a notch travels is not a table setting.** It is app-wide, through `SmoothWheelBinding` in `flutter_smooth_wheel_scroll`, and this package does not install it
 
-*   **BREAKING**: minimum Flutter is now `3.32.0` (Dart `3.8.0`), up from `3.27.0` (Dart `3.6.0`) ([#180](https://github.com/kihyun1998/flutter_table_plus/issues/180))
-    *   **What a consumer sees differently.** On Flutter 3.27–3.31 this version no longer resolves, and `pub` stays on 2.17.0. No class, method or field changed; the *floor* did
-    *   **Why.** This package now depends on [`flutter_smooth_wheel_scroll`](https://pub.dev/packages/flutter_smooth_wheel_scroll) `^0.1.2`, which declares Flutter `>=3.32.0` / Dart `^3.8.0`. It uses `SpringDescription.withDurationAndBounce`, added in flutter#164411, and 3.32.0 is the first stable release to carry it. So 3.32 is its real floor rather than the SDK it happened to be built with. The floor is still the max of what the dependencies demand, now `max(3.27, 3.13, 3.32)`
-    *   **The constraint is `^0.1.2`, not anything lower, for two reasons.** 0.1.0 declared Flutter `>=3.41.0`, so a 3.32 user could not resolve it; that is the same reasoning that took `flutter_checkbox` to `^0.3.1`. And 0.1.1 dropped a wheel notch sent while a motion was already heading for the end, instead of passing it to an enclosing scroll view. That was reported upstream and fixed in 0.1.2 rather than worked around here
-    *   **The dependency lands before the code that uses it**, so the floor and the reason for it are never in the tree apart. Opt-in smooth wheel scrolling is [#181](https://github.com/kihyun1998/flutter_table_plus/issues/181)
-    *   **The source was reformatted, with no behaviour change.** `dart format` picks its style from the package's language version, and from Dart 3.7 that is the tall style, so raising the SDK bound past 3.6 reformats the tree on its own. That reformat is a separate, mechanical commit
+*   **EXAMPLE**: a *Smooth wheel* recipe, and the same switch in the playground ([#184](https://github.com/kihyun1998/flutter_table_plus/issues/184))
+    *   **The recipe is one argument.** `wheelMotion` on a table with room to scroll on both axes, with `WheelMotion` imported through this package's re-export, so the file pastes with no second dependency
+    *   **The playground lists it under Interaction**, with a switch and a *Motion* choice of spring, curve or lerp at the package's defaults. The *Everything* preset turns it on with the rest
 
 ## 2.17.0
 
