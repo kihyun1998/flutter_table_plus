@@ -28,19 +28,33 @@ master, so the next author is free to reverse it without knowing what breaks.
 - **Every jump is clamped into the slave's own range** before it is applied —
   the slave's extent is not the master's, so an unclamped mirror of the master's
   offset is out of range whenever the two differ.
+- **Wheel input is animated on the master only** (#181). The two body
+  controllers `SyncedScrollControllers` creates are `SmoothScrollController`s;
+  with `wheelMotion` null they carry a zero-duration motion, which is
+  `ScrollController`'s own wheel path rather than an imitation of it. A slave
+  still moves by `jumpTo`, now once per frame of a motion — the guard re-arms
+  on every master notification, so it holds at that rate (measured: zero
+  misaligned frames on either axis). Changing `wheelMotion` swaps the motion
+  and keeps the controllers, because re-creating them resets the offset.
 
 ## Code
 
 `widgets/synced_scroll_controllers.dart` — `SyncedScrollControllers`
 `utils/no_cascade_guard.dart` — `NoCascadeGuard`, `resolveJump`, `reset`
 `utils/clamped_scroll_delta.dart` — `clampedScrollDelta`
+`test/smooth_wheel_scroll_test.dart` — per-frame alignment under `wheelMotion`
 
 ## Reference behaviour
 
-**None.** This area has never been compared against the Flutter SDK's own
-two-axis scrolling (`TwoDimensionalScrollView` and friends), so it is not known
-which of its rules are forced by the framework and which are this package's
-choice.
+**Not compared against the Flutter SDK's own two-axis scrolling**
+(`TwoDimensionalScrollView` and friends), so it is not known which of its rules
+are forced by the framework and which are this package's choice.
+
+The wheel path was read against the SDK (3.41.9) and
+`../flutter_smooth_wheel_scroll` 0.1.1, both raw, for #181.
+`Scrollable._receivedPointerSignal` decides whether to claim a wheel event from
+`position.pixels`, not from where a motion is heading, and the smooth position
+overrides `pointerScroll` alone.
 
 ## Cross-cutting invariants
 
@@ -57,4 +71,17 @@ choice.
 
 ## Known holes / open
 
-**None.**
+- **A wheel turned over a scrollbar is not animated.** The scrollbar is its own
+  `Scrollable` with its own plain controller; the wheel jumps it, the slave
+  listener jumps the body, and a motion in progress stops. Upstream documents
+  the same limit.
+- **Near an end, a notch during a motion is swallowed instead of passing
+  outward.** Because the claim is decided from `position.pixels`, the body
+  claims a notch while it is still short of its extent even when the motion is
+  already heading there, and the notch then adds nothing. An enclosing scroll
+  view takes the wheel only once the motion has settled. Measured 2026-09-22
+  with the table inside a page `SingleChildScrollView`: one notch to the end,
+  a second 60px notch two frames later — the page moved 60 with `wheelMotion`
+  null and 0 with a spring, then 60 on the next notch after settling. This is
+  the SDK's decision rule meeting upstream's target, and neither is this
+  package's.

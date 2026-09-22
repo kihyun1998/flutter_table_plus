@@ -1,5 +1,12 @@
 ## 2.18.0
 
+*   **FEAT**: opt-in smooth mouse wheel scrolling through `wheelMotion` ([#181](https://github.com/kihyun1998/flutter_table_plus/issues/181))
+    *   **What a consumer sees differently.** Nothing unless `wheelMotion` is set; `null`, the default, moves the body at once on a wheel notch exactly as before. With `wheelMotion: const WheelMotion.spring()` (or `.curve` / `.lerp`) the body animates to where the notch points, vertically and with Shift+wheel horizontally, and notches during the motion add to its target
+    *   **The header and scrollbars follow the body on every frame**, through the same master/slave sync as before. The body is still the only input surface, so only its two controllers changed. `WheelMotion` is re-exported, so no import of `flutter_smooth_wheel_scroll` is needed
+    *   **`null` is the same code path, not an imitation of it.** The body controllers are always `SmoothScrollController`s now. With no motion they carry a zero-duration one, which hands the wheel to `ScrollController`'s own `pointerScroll`. That is also why changing `wheelMotion` at runtime only swaps the motion: the controllers are kept, and so is the scroll position
+    *   **Only the wheel is animated.** Scrollbar drags, drag-selection auto-scroll and scale correction still jump, and stop a motion in progress. A wheel turned over a scrollbar also jumps, because the scrollbar is its own scroll view. Ctrl/Cmd+wheel zoom is unaffected
+    *   **How far a notch travels is not a table setting.** It is app-wide, through `SmoothWheelBinding` in `flutter_smooth_wheel_scroll`, and this package does not install it
+
 *   **BREAKING**: minimum Flutter is now `3.32.0` (Dart `3.8.0`), up from `3.27.0` (Dart `3.6.0`) ([#180](https://github.com/kihyun1998/flutter_table_plus/issues/180))
     *   **What a consumer sees differently.** On Flutter 3.27–3.31 this version no longer resolves, and `pub` stays on 2.17.0. No class, method or field changed; the *floor* did
     *   **Why.** This package now depends on [`flutter_smooth_wheel_scroll`](https://pub.dev/packages/flutter_smooth_wheel_scroll) `^0.1.1`, which declares Flutter `>=3.32.0` / Dart `^3.8.0`. It uses `SpringDescription.withDurationAndBounce`, added in flutter#164411, and 3.32.0 is the first stable release to carry it. So 3.32 is its real floor rather than the SDK it happened to be built with. The floor is still the max of what the dependencies demand, now `max(3.27, 3.13, 3.32)`

@@ -30,7 +30,7 @@ not strangers' code and each has its own tracker.
 → [Tooltips](../territory/tooltips.md) — where it was learned, twice, and where the removed local guard must not return
 → [Row selection](../territory/row-selection.md) — the checkbox is the sibling's widget
 → [Theme system](../territory/theme-system.md) — the checkbox sub-theme and its `colored()` factory sit on the seam
-→ [Public barrel and re-exports](../territory/public-barrel.md) — seven sibling type names are re-exported by hand
+→ [Public barrel and re-exports](../territory/public-barrel.md) — sibling type names are re-exported by hand
 → [Publishing and release](../territory/publishing.md) — the floor half: a sibling's floor becomes ours the moment the constraint is raised
 
 ## What a violation looks like
