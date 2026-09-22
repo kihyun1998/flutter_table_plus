@@ -52,7 +52,7 @@ class RowInteractionShell extends StatelessWidget {
   final VoidCallback? onTap;
   final VoidCallback? onDoubleTap;
   final void Function(TapDownDetails details, RenderBox renderBox)?
-      onSecondaryTapDown;
+  onSecondaryTapDown;
   final Duration doubleClickTime;
   final Color backgroundColor;
   final Color? hoverColor;
@@ -62,10 +62,7 @@ class RowInteractionShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final content = Stack(
-      children: [
-        rowContent,
-        if (hoverButtons != null) hoverButtons!,
-      ],
+      children: [rowContent, if (hoverButtons != null) hoverButtons!],
     );
 
     // Only track hover when a consumer needs it (i.e. there are hover buttons).

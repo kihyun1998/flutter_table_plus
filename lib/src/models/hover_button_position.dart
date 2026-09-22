@@ -26,9 +26,7 @@ enum HoverButtonPosition {
           child: Center(child: child),
         );
       case HoverButtonPosition.center:
-        return Positioned.fill(
-          child: Center(child: child),
-        );
+        return Positioned.fill(child: Center(child: child));
       case HoverButtonPosition.right:
         return Positioned(
           right: horizontalOffset,

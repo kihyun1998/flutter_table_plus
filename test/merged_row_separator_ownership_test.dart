@@ -48,8 +48,8 @@ Map<String, TablePlusColumn<Row>> _columns() {
 }
 
 List<Row> _rows(List<String> ids) => [
-      for (final id in ids) {'id': id, 'c0': 'r$id'}
-    ];
+  for (final id in ids) {'id': id, 'c0': 'r$id'},
+];
 
 Future<void> _pump(
   WidgetTester tester, {
@@ -103,11 +103,16 @@ Future<void> _pump(
 /// A member cell is the only cell in the package handed a `bottomSide`, so this
 /// is the member half of the ownership rule.
 BorderSide? _cellBottom(WidgetTester tester, String label) {
-  final cell = find
-      .ancestor(of: find.text(label), matching: find.byType(TablePlusCell<Row>))
-      .evaluate()
-      .first
-      .widget as TablePlusCell<Row>;
+  final cell =
+      find
+              .ancestor(
+                of: find.text(label),
+                matching: find.byType(TablePlusCell<Row>),
+              )
+              .evaluate()
+              .first
+              .widget
+          as TablePlusCell<Row>;
   final side = cell.bottomSide;
   return side == null || side.style == BorderStyle.none ? null : side;
 }
@@ -115,9 +120,10 @@ BorderSide? _cellBottom(WidgetTester tester, String label) {
 /// The top side the cell showing [label] paints, or null. Only the summary cell
 /// ever had one.
 BorderSide? _cellTop(WidgetTester tester, String label) {
-  for (final element in find
-      .ancestor(of: find.text(label), matching: find.byType(Container))
-      .evaluate()) {
+  for (final element
+      in find
+          .ancestor(of: find.text(label), matching: find.byType(Container))
+          .evaluate()) {
     final decoration = (element.widget as Container).decoration;
     if (decoration is! BoxDecoration) continue;
     final border = decoration.border;
@@ -132,9 +138,10 @@ BorderSide? _cellTop(WidgetTester tester, String label) {
 /// row or group container, which owns the boundary between rows.
 BorderSide? _rowBottom(WidgetTester tester, String label) {
   BorderSide? outermost;
-  for (final element in find
-      .ancestor(of: find.text(label), matching: find.byType(Container))
-      .evaluate()) {
+  for (final element
+      in find
+          .ancestor(of: find.text(label), matching: find.byType(Container))
+          .evaluate()) {
     final decoration = (element.widget as Container).decoration;
     if (decoration is! BoxDecoration) continue;
     final border = decoration.border;
@@ -149,80 +156,122 @@ void main() {
   const themed = TablePlusBodyTheme(dividerThickness: kT);
 
   group('one owner per boundary (#157)', () {
-    testWidgets('a group that is not last draws one line at its bottom edge',
-        (tester) async {
-      await _pump(tester,
-          data: ['a', 'b', 'c', 'd'], groupKeys: ['a', 'b', 'c']);
+    testWidgets('a group that is not last draws one line at its bottom edge', (
+      tester,
+    ) async {
+      await _pump(
+        tester,
+        data: ['a', 'b', 'c', 'd'],
+        groupKeys: ['a', 'b', 'c'],
+      );
 
-      expect(_cellBottom(tester, 'rc'), isNull,
-          reason: 'the last member used to draw here too, so the edge was the '
-              'member separator at alpha 0.3 with the group border at full '
-              'dividerColor immediately below it');
+      expect(
+        _cellBottom(tester, 'rc'),
+        isNull,
+        reason:
+            'the last member used to draw here too, so the edge was the '
+            'member separator at alpha 0.3 with the group border at full '
+            'dividerColor immediately below it',
+      );
       final edge = _rowBottom(tester, 'rc');
       expect(edge, isNotNull);
-      expect(edge!.color, const TablePlusBodyTheme().dividerColor,
-          reason: 'the surviving line is the group boundary, and a group '
-              'boundary is a row boundary — it is drawn like every other one');
+      expect(
+        edge!.color,
+        const TablePlusBodyTheme().dividerColor,
+        reason:
+            'the surviving line is the group boundary, and a group '
+            'boundary is a row boundary — it is drawn like every other one',
+      );
       expect(edge.width, kT);
     });
 
-    testWidgets('the control: a plain row boundary has one owner too',
-        (tester) async {
+    testWidgets('the control: a plain row boundary has one owner too', (
+      tester,
+    ) async {
       await _pump(tester, data: ['a', 'b', 'c', 'd']);
 
-      expect(_cellBottom(tester, 'rc'), isNull,
-          reason: 'a plain cell is never handed a bottomSide — the row owns '
-              'that edge, which is the arrangement the group now matches');
+      expect(
+        _cellBottom(tester, 'rc'),
+        isNull,
+        reason:
+            'a plain cell is never handed a bottomSide — the row owns '
+            'that edge, which is the arrangement the group now matches',
+      );
       final edge = _rowBottom(tester, 'rc');
       expect(edge, isNotNull);
       expect(edge!.color, const TablePlusBodyTheme().dividerColor);
       expect(edge.width, kT);
     });
 
-    testWidgets('a group that IS the last row still separates its members',
-        (tester) async {
+    testWidgets('a group that IS the last row still separates its members', (
+      tester,
+    ) async {
       await _pump(tester, data: ['a', 'b', 'c'], groupKeys: ['a', 'b', 'c']);
 
       final between = _cellBottom(tester, 'ra');
-      expect(between, isNotNull,
-          reason: 'at the default LastRowBorderBehavior.never the old gate '
-              'returned false for EVERY member, so the whole group rendered as '
-              'one undivided block');
+      expect(
+        between,
+        isNotNull,
+        reason:
+            'at the default LastRowBorderBehavior.never the old gate '
+            'returned false for EVERY member, so the whole group rendered as '
+            'one undivided block',
+      );
       expect(between!.width, themed.memberDividerSide.width);
       expect(between.color, themed.memberDividerSide.color);
 
-      expect(_cellBottom(tester, 'rc'), isNull,
-          reason: 'and the last member still draws nothing — nothing follows '
-              'it, exactly as for a plain last row');
-      expect(_rowBottom(tester, 'rc'), isNull,
-          reason: 'nor does the group, because LastRowBorderBehavior.never '
-              'still governs its own outer edge');
+      expect(
+        _cellBottom(tester, 'rc'),
+        isNull,
+        reason:
+            'and the last member still draws nothing — nothing follows '
+            'it, exactly as for a plain last row',
+      );
+      expect(
+        _rowBottom(tester, 'rc'),
+        isNull,
+        reason:
+            'nor does the group, because LastRowBorderBehavior.never '
+            'still governs its own outer edge',
+      );
     });
 
     testWidgets('the summary boundary draws one line, not two', (tester) async {
-      await _pump(tester,
-          data: ['a', 'b', 'c', 'd'],
-          groupKeys: ['a', 'b', 'c'],
-          summary: true);
+      await _pump(
+        tester,
+        data: ['a', 'b', 'c', 'd'],
+        groupKeys: ['a', 'b', 'c'],
+        summary: true,
+      );
 
       final above = _cellBottom(tester, 'rc');
-      expect(above, isNotNull,
-          reason: 'the summary follows the last member, so the member draws');
+      expect(
+        above,
+        isNotNull,
+        reason: 'the summary follows the last member, so the member draws',
+      );
       expect(above!.width, kT);
 
-      expect(_cellTop(tester, 'sum'), isNull,
-          reason: 'and the summary does not draw the same boundary a second '
-              'time. It used to, hardcoded at 0.5px and ungated, so this one '
-              'boundary painted 4px + 0.5px where every other member boundary '
-              'painted 4px');
+      expect(
+        _cellTop(tester, 'sum'),
+        isNull,
+        reason:
+            'and the summary does not draw the same boundary a second '
+            'time. It used to, hardcoded at 0.5px and ungated, so this one '
+            'boundary painted 4px + 0.5px where every other member boundary '
+            'painted 4px',
+      );
     });
 
-    testWidgets('showHorizontalDividers still silences every member',
-        (tester) async {
-      await _pump(tester,
-          data: ['a', 'b', 'c', 'd'],
-          groupKeys: ['a', 'b', 'c'],
-          horizontalDividers: false);
+    testWidgets('showHorizontalDividers still silences every member', (
+      tester,
+    ) async {
+      await _pump(
+        tester,
+        data: ['a', 'b', 'c', 'd'],
+        groupKeys: ['a', 'b', 'c'],
+        horizontalDividers: false,
+      );
 
       expect(_cellBottom(tester, 'ra'), isNull);
       expect(_cellBottom(tester, 'rb'), isNull);

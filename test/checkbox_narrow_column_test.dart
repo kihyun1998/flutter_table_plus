@@ -26,7 +26,7 @@ Future<void> _pump(
             ),
           },
           data: const [
-            {'id': '1', 'name': 'A'}
+            {'id': '1', 'name': 'A'},
           ],
           rowId: (r) => r['id'] as String,
           isSelectable: true,
@@ -46,8 +46,9 @@ Future<void> _pump(
 }
 
 void main() {
-  testWidgets('the row selection checkbox does not shrink in a narrow column',
-      (tester) async {
+  testWidgets('the row selection checkbox does not shrink in a narrow column', (
+    tester,
+  ) async {
     // Only the row checkbox renders (select-all off) -> find.first is the row.
     await _pump(tester, columnWidth: 200, showSelectAll: false);
     final roomy = tester.getSize(find.byType(FlutterCheckbox).first).width;
@@ -55,22 +56,30 @@ void main() {
     await _pump(tester, columnWidth: 30, showSelectAll: false);
     final narrow = tester.getSize(find.byType(FlutterCheckbox).first).width;
 
-    expect(narrow, closeTo(roomy, 0.5),
-        reason: 'the checkbox size must not depend on the column width (#4)');
+    expect(
+      narrow,
+      closeTo(roomy, 0.5),
+      reason: 'the checkbox size must not depend on the column width (#4)',
+    );
   });
 
   testWidgets(
-      'the header select-all checkbox does not shrink in a narrow column',
-      (tester) async {
-    // The header renders before the body, so find.first is the select-all box.
-    await _pump(tester, columnWidth: 200, showSelectAll: true);
-    final roomy = tester.getSize(find.byType(FlutterCheckbox).first).width;
+    'the header select-all checkbox does not shrink in a narrow column',
+    (tester) async {
+      // The header renders before the body, so find.first is the select-all box.
+      await _pump(tester, columnWidth: 200, showSelectAll: true);
+      final roomy = tester.getSize(find.byType(FlutterCheckbox).first).width;
 
-    await _pump(tester, columnWidth: 30, showSelectAll: true);
-    final narrow = tester.getSize(find.byType(FlutterCheckbox).first).width;
+      await _pump(tester, columnWidth: 30, showSelectAll: true);
+      final narrow = tester.getSize(find.byType(FlutterCheckbox).first).width;
 
-    expect(narrow, closeTo(roomy, 0.5),
-        reason: 'the select-all checkbox size must not depend on the column '
-            'width (#4)');
-  });
+      expect(
+        narrow,
+        closeTo(roomy, 0.5),
+        reason:
+            'the select-all checkbox size must not depend on the column '
+            'width (#4)',
+      );
+    },
+  );
 }

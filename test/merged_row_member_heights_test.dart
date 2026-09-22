@@ -39,8 +39,8 @@ Map<String, TablePlusColumn<Row>> _columns() {
 }
 
 List<Row> _rows(List<String> ids) => [
-      for (final id in ids) {'id': id, 'c0': 'r$id'}
-    ];
+  for (final id in ids) {'id': id, 'c0': 'r$id'},
+];
 
 Future<void> _pump(
   WidgetTester tester, {
@@ -72,8 +72,10 @@ Future<void> _pump(
                 // member is short by exactly `dividerThickness` and its centred
                 // text sits half that high. Leave it to the default and the
                 // assertions read as if they had slack.
-                bodyTheme:
-                    TablePlusBodyTheme(rowHeight: 40, dividerThickness: kT),
+                bodyTheme: TablePlusBodyTheme(
+                  rowHeight: 40,
+                  dividerThickness: kT,
+                ),
                 headerTheme: TablePlusHeaderTheme(height: 40),
               ),
             ),
@@ -95,10 +97,14 @@ Future<void> _pump(
 /// and once the last member stopped drawing a separator the gaps diverged by
 /// exactly that inset while the boxes stayed equal. Measure the boxes.
 double _memberCellHeight(WidgetTester tester, String id) => tester
-    .getRect(find
-        .ancestor(
-            of: find.text('r$id'), matching: find.byType(TablePlusCell<Row>))
-        .first)
+    .getRect(
+      find
+          .ancestor(
+            of: find.text('r$id'),
+            matching: find.byType(TablePlusCell<Row>),
+          )
+          .first,
+    )
     .height;
 
 Map<String, double> _tops(WidgetTester tester, List<String> ids) {
@@ -131,9 +137,13 @@ void expectMembersMatchUngrouped(
   List<String> members,
 ) {
   for (final id in members) {
-    expect(grouped[id], closeTo(ungrouped[id]!, 0.05),
-        reason: 'member $id is drawn exactly where an ungrouped row of the '
-            'same measured height is drawn');
+    expect(
+      grouped[id],
+      closeTo(ungrouped[id]!, 0.05),
+      reason:
+          'member $id is drawn exactly where an ungrouped row of the '
+          'same measured height is drawn',
+    );
   }
 }
 
@@ -147,22 +157,29 @@ MergedRowGroup<Row> _group(List<String> keys, {bool expanded = false}) =>
 
 void main() {
   group('a merged group draws its members at their own measured heights', () {
-    testWidgets('differing heights: grouped matches ungrouped, cell for cell',
-        (tester) async {
+    testWidgets('differing heights: grouped matches ungrouped, cell for cell', (
+      tester,
+    ) async {
       final data = _rows(['a', 'b', 'c', 'z']);
       const h = {'a': 48.0, 'b': 96.0, 'c': 48.0, 'z': 48.0};
       double? height(int i, Row r) => h[r['id']];
 
-      await _pump(tester,
-          data: data, groups: const [], calculateRowHeight: height);
+      await _pump(
+        tester,
+        data: data,
+        groups: const [],
+        calculateRowHeight: height,
+      );
       final ungrouped = _tops(tester, ['a', 'b', 'c', 'z']);
 
-      await _pump(tester,
-          data: data,
-          groups: [
-            _group(['a', 'b', 'c'])
-          ],
-          calculateRowHeight: height);
+      await _pump(
+        tester,
+        data: data,
+        groups: [
+          _group(['a', 'b', 'c']),
+        ],
+        calculateRowHeight: height,
+      );
       final grouped = _tops(tester, ['a', 'b', 'c', 'z']);
 
       expectMembersMatchUngrouped(grouped, ungrouped, ['a', 'b', 'c']);
@@ -181,63 +198,89 @@ void main() {
     // `_getMergedGroupExtent` returning `total + 10` DOES redden it: `rz` moves
     // 206.0 -> 216.0. So this guards the derivation that actually owns the
     // total, which is the one a differently-shaped fix would have reached for.
-    testWidgets('the group total is unchanged — the row after it does not move',
-        (tester) async {
-      final data = _rows(['a', 'b', 'c', 'z']);
-      const h = {'a': 48.0, 'b': 96.0, 'c': 48.0, 'z': 48.0};
-      double? height(int i, Row r) => h[r['id']];
+    testWidgets(
+      'the group total is unchanged — the row after it does not move',
+      (tester) async {
+        final data = _rows(['a', 'b', 'c', 'z']);
+        const h = {'a': 48.0, 'b': 96.0, 'c': 48.0, 'z': 48.0};
+        double? height(int i, Row r) => h[r['id']];
 
-      await _pump(tester,
-          data: data, groups: const [], calculateRowHeight: height);
-      final ungrouped = _tops(tester, ['z']);
+        await _pump(
+          tester,
+          data: data,
+          groups: const [],
+          calculateRowHeight: height,
+        );
+        final ungrouped = _tops(tester, ['z']);
 
-      await _pump(tester,
+        await _pump(
+          tester,
           data: data,
           groups: [
-            _group(['a', 'b', 'c'])
+            _group(['a', 'b', 'c']),
           ],
-          calculateRowHeight: height);
-      final grouped = _tops(tester, ['z']);
+          calculateRowHeight: height,
+        );
+        final grouped = _tops(tester, ['z']);
 
-      expect(grouped['z'], closeTo(ungrouped['z']!, 0.05),
-          reason: 'the total was already correct; only the distribution moves');
-    });
+        expect(
+          grouped['z'],
+          closeTo(ungrouped['z']!, 0.05),
+          reason: 'the total was already correct; only the distribution moves',
+        );
+      },
+    );
 
-    testWidgets('a member `data` does not hold: the present ones still align',
-        (tester) async {
+    testWidgets('a member `data` does not hold: the present ones still align', (
+      tester,
+    ) async {
       // #135's equivalence, which this fix must not silently re-break: the
       // height list and the cell list skip the same keys.
       final data = _rows(['a', 'c', 'z']); // 'b' is named by the group, absent
       const h = {'a': 48.0, 'c': 96.0, 'z': 48.0};
       double? height(int i, Row r) => h[r['id']];
 
-      await _pump(tester,
-          data: data, groups: const [], calculateRowHeight: height);
+      await _pump(
+        tester,
+        data: data,
+        groups: const [],
+        calculateRowHeight: height,
+      );
       final ungrouped = _tops(tester, ['a', 'c', 'z']);
 
-      await _pump(tester,
-          data: data,
-          groups: [
-            _group(['a', 'b', 'c'])
-          ],
-          calculateRowHeight: height);
+      await _pump(
+        tester,
+        data: data,
+        groups: [
+          _group(['a', 'b', 'c']),
+        ],
+        calculateRowHeight: height,
+      );
       final grouped = _tops(tester, ['a', 'c', 'z']);
 
       expectMembersMatchUngrouped(grouped, ungrouped, ['a', 'c']);
-      expect(grouped['z'], closeTo(ungrouped['z']!, 0.05),
-          reason: 'the row after the group is outside it and moves not at all');
+      expect(
+        grouped['z'],
+        closeTo(ungrouped['z']!, 0.05),
+        reason: 'the row after the group is outside it and moves not at all',
+      );
     });
 
-    testWidgets('no height callback: unchanged, and the equal split is correct',
-        (tester) async {
+    testWidgets('no height callback: unchanged, and the equal split is correct', (
+      tester,
+    ) async {
       final data = _rows(['a', 'b', 'c', 'z']);
 
       await _pump(tester, data: data, groups: const []);
       final ungrouped = _tops(tester, ['a', 'b', 'c', 'z']);
 
-      await _pump(tester, data: data, groups: [
-        _group(['a', 'b', 'c'])
-      ]);
+      await _pump(
+        tester,
+        data: data,
+        groups: [
+          _group(['a', 'b', 'c']),
+        ],
+      );
       final grouped = _tops(tester, ['a', 'b', 'c', 'z']);
 
       // No heights are known, so every cell is flexible and the group is
@@ -260,17 +303,30 @@ void main() {
       // boxes stayed equal and the text gaps moved by exactly that inset,
       // which is what a proxy does when the thing it stood for changes.
       final ha = _memberCellHeight(tester, 'a');
-      expect(_memberCellHeight(tester, 'b'), closeTo(ha, 0.05),
-          reason: 'the three members are divided equally');
-      expect(_memberCellHeight(tester, 'c'), closeTo(ha, 0.05),
-          reason: 'the three members are divided equally');
+      expect(
+        _memberCellHeight(tester, 'b'),
+        closeTo(ha, 0.05),
+        reason: 'the three members are divided equally',
+      );
+      expect(
+        _memberCellHeight(tester, 'c'),
+        closeTo(ha, 0.05),
+        reason: 'the three members are divided equally',
+      );
       for (final id in ['a', 'b', 'c']) {
-        expect((ungrouped[id]! - grouped[id]!).abs(), lessThanOrEqualTo(kT),
-            reason: 'and no member is off its ungrouped twin by more than the '
-                'group border, which is the whole of what the split absorbs');
+        expect(
+          (ungrouped[id]! - grouped[id]!).abs(),
+          lessThanOrEqualTo(kT),
+          reason:
+              'and no member is off its ungrouped twin by more than the '
+              'group border, which is the whole of what the split absorbs',
+        );
       }
-      expect(grouped['z'], closeTo(ungrouped['z']!, 0.05),
-          reason: 'the total is untouched');
+      expect(
+        grouped['z'],
+        closeTo(ungrouped['z']!, 0.05),
+        reason: 'the total is untouched',
+      );
     });
 
     // The refuting pass found this uncovered across all 57 test files, and it
@@ -279,31 +335,43 @@ void main() {
     // expanded group of equal members changes even though an unexpanded one
     // does not. Before this fix all four cells were one quarter of the total.
     testWidgets(
-        'an expanded group: members keep their heights, the summary row '
-        'takes theme.rowHeight', (tester) async {
-      final data = _rows(['a', 'b', 'z']);
-      const h = {'a': 96.0, 'b': 96.0, 'z': 48.0};
-      double? height(int i, Row r) => h[r['id']];
+      'an expanded group: members keep their heights, the summary row '
+      'takes theme.rowHeight',
+      (tester) async {
+        final data = _rows(['a', 'b', 'z']);
+        const h = {'a': 96.0, 'b': 96.0, 'z': 48.0};
+        double? height(int i, Row r) => h[r['id']];
 
-      await _pump(tester,
-          data: data, groups: const [], calculateRowHeight: height);
-      final ungrouped = _tops(tester, ['a', 'b']);
+        await _pump(
+          tester,
+          data: data,
+          groups: const [],
+          calculateRowHeight: height,
+        );
+        final ungrouped = _tops(tester, ['a', 'b']);
 
-      await _pump(tester,
+        await _pump(
+          tester,
           data: data,
           groups: [
-            _group(['a', 'b'], expanded: true)
+            _group(['a', 'b'], expanded: true),
           ],
-          calculateRowHeight: height);
-      final grouped = _tops(tester, ['a', 'b']);
+          calculateRowHeight: height,
+        );
+        final grouped = _tops(tester, ['a', 'b']);
 
-      // Both members are non-last here — the summary row is the last cell, so
-      // it is the one that absorbs the border, and both members land exactly.
-      for (final id in ['a', 'b']) {
-        expect(grouped[id], closeTo(ungrouped[id]!, 0.05),
-            reason: 'member $id keeps its own 96, and does not become '
-                '(96+96+40)/3 as an equal split would make it');
-      }
-    });
+        // Both members are non-last here — the summary row is the last cell, so
+        // it is the one that absorbs the border, and both members land exactly.
+        for (final id in ['a', 'b']) {
+          expect(
+            grouped[id],
+            closeTo(ungrouped[id]!, 0.05),
+            reason:
+                'member $id keeps its own 96, and does not become '
+                '(96+96+40)/3 as an equal split would make it',
+          );
+        }
+      },
+    );
   });
 }

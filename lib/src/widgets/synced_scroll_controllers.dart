@@ -64,7 +64,8 @@ class SyncedScrollControllers extends StatefulWidget {
     ScrollController horizontalBodyController,
     ScrollController horizontalScrollbarController,
     ScrollController horizontalHeaderController,
-  ) builder;
+  )
+  builder;
 
   @override
   State<SyncedScrollControllers> createState() =>
@@ -123,7 +124,8 @@ class _SyncedScrollControllersState extends State<SyncedScrollControllers> {
     _sc21 = widget.horizontalScrollController ?? ScrollController();
 
     // 수직 스크롤바 컨트롤러
-    _sc12 = widget.verticalScrollbarController ??
+    _sc12 =
+        widget.verticalScrollbarController ??
         ScrollController(
           initialScrollOffset: _sc11!.hasClients && _sc11!.positions.isNotEmpty
               ? _sc11!.offset
@@ -131,7 +133,8 @@ class _SyncedScrollControllersState extends State<SyncedScrollControllers> {
         );
 
     // 수평 스크롤바 컨트롤러
-    _sc22 = widget.horizontalScrollbarController ??
+    _sc22 =
+        widget.horizontalScrollbarController ??
         ScrollController(
           initialScrollOffset: _sc21!.hasClients && _sc21!.positions.isNotEmpty
               ? _sc21!.offset
@@ -139,7 +142,8 @@ class _SyncedScrollControllersState extends State<SyncedScrollControllers> {
         );
 
     // 수평 헤더 컨트롤러 (slave — body의 master 위치를 따라감)
-    _sc23 = widget.horizontalHeaderController ??
+    _sc23 =
+        widget.horizontalHeaderController ??
         ScrollController(
           initialScrollOffset: _sc21!.hasClients && _sc21!.positions.isNotEmpty
               ? _sc21!.offset
@@ -200,12 +204,6 @@ class _SyncedScrollControllersState extends State<SyncedScrollControllers> {
   }
 
   @override
-  Widget build(BuildContext context) => widget.builder(
-        context,
-        _sc11!,
-        _sc12,
-        _sc21!,
-        _sc22,
-        _sc23,
-      );
+  Widget build(BuildContext context) =>
+      widget.builder(context, _sc11!, _sc12, _sc21!, _sc22, _sc23);
 }

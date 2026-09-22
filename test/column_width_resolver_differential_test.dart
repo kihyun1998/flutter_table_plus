@@ -51,8 +51,10 @@ List<double> _referenceComputeColumnWidths<T>({
     for (int i = 0; i < columns.length; i++) {
       if (widths[i] == null) {
         final col = columns[i];
-        widths[i] =
-            col.width.clamp(col.minWidth, col.maxWidth ?? double.infinity);
+        widths[i] = col.width.clamp(
+          col.minWidth,
+          col.maxWidth ?? double.infinity,
+        );
       }
     }
   } else {
@@ -71,8 +73,10 @@ List<double> _referenceComputeColumnWidths<T>({
         for (int i = 0; i < columns.length; i++) {
           if (!isFlexible[i]) continue;
           final col = columns[i];
-          widths[i] =
-              col.width.clamp(col.minWidth, col.maxWidth ?? double.infinity);
+          widths[i] = col.width.clamp(
+            col.minWidth,
+            col.maxWidth ?? double.infinity,
+          );
         }
         break;
       }
@@ -98,8 +102,10 @@ List<double> _referenceComputeColumnWidths<T>({
       if (widths[i] != null) continue;
       final column = columns[i];
       final proportion = column.width / remainingPreferred;
-      widths[i] = (remainingSpace * proportion)
-          .clamp(column.minWidth, column.maxWidth ?? double.infinity);
+      widths[i] = (remainingSpace * proportion).clamp(
+        column.minWidth,
+        column.maxWidth ?? double.infinity,
+      );
     }
   }
 
@@ -127,8 +133,9 @@ List<TablePlusColumn<Map<String, dynamic>>> _randomColumns(Random rng) {
   final n = 2 + rng.nextInt(30); // 2..31 columns
   return List.generate(n, (i) {
     final w = 50.0 + rng.nextInt(250); // 50..299
-    final double? maxW =
-        rng.nextInt(3) == 0 ? null : w * (0.5 + rng.nextDouble() * 1.5);
+    final double? maxW = rng.nextInt(3) == 0
+        ? null
+        : w * (0.5 + rng.nextDouble() * 1.5);
     // minWidth <= maxWidth is required by clamp; keep it in range.
     final minW = maxW != null ? rng.nextDouble() * maxW : rng.nextDouble() * w;
     return TablePlusColumn<Map<String, dynamic>>(
@@ -144,43 +151,46 @@ List<TablePlusColumn<Map<String, dynamic>>> _randomColumns(Random rng) {
 }
 
 void main() {
-  test('optimized computeColumnWidths matches the reference on random inputs',
-      () {
-    final rng = Random(20240702);
+  test(
+    'optimized computeColumnWidths matches the reference on random inputs',
+    () {
+      final rng = Random(20240702);
 
-    for (int trial = 0; trial < 500; trial++) {
-      final columns = _randomColumns(rng);
-      final preferred = columns.fold<double>(0, (s, c) => s + c.width);
-      final available = preferred * (0.3 + rng.nextDouble() * 2.0);
+      for (int trial = 0; trial < 500; trial++) {
+        final columns = _randomColumns(rng);
+        final preferred = columns.fold<double>(0, (s, c) => s + c.width);
+        final available = preferred * (0.3 + rng.nextDouble() * 2.0);
 
-      final resized = <String, double>{};
-      if (rng.nextBool()) {
-        resized['c${rng.nextInt(columns.length)}'] = 50.0 + rng.nextInt(300);
-      }
-      final stretch = rng.nextBool();
+        final resized = <String, double>{};
+        if (rng.nextBool()) {
+          resized['c${rng.nextInt(columns.length)}'] = 50.0 + rng.nextInt(300);
+        }
+        final stretch = rng.nextBool();
 
-      final got = computeColumnWidths<Map<String, dynamic>>(
-        availableWidth: available,
-        columns: columns,
-        resizedWidths: resized,
-        stretchLastColumn: stretch,
-      );
-      final want = _referenceComputeColumnWidths<Map<String, dynamic>>(
-        availableWidth: available,
-        columns: columns,
-        resizedWidths: resized,
-        stretchLastColumn: stretch,
-      );
-
-      expect(got.length, want.length);
-      for (int i = 0; i < got.length; i++) {
-        expect(
-          got[i],
-          closeTo(want[i], 1e-6),
-          reason: 'trial $trial, column $i '
-              '(n=${columns.length}, available=$available, stretch=$stretch)',
+        final got = computeColumnWidths<Map<String, dynamic>>(
+          availableWidth: available,
+          columns: columns,
+          resizedWidths: resized,
+          stretchLastColumn: stretch,
         );
+        final want = _referenceComputeColumnWidths<Map<String, dynamic>>(
+          availableWidth: available,
+          columns: columns,
+          resizedWidths: resized,
+          stretchLastColumn: stretch,
+        );
+
+        expect(got.length, want.length);
+        for (int i = 0; i < got.length; i++) {
+          expect(
+            got[i],
+            closeTo(want[i], 1e-6),
+            reason:
+                'trial $trial, column $i '
+                '(n=${columns.length}, available=$available, stretch=$stretch)',
+          );
+        }
       }
-    }
-  });
+    },
+  );
 }

@@ -29,14 +29,14 @@ import 'package:flutter_test/flutter_test.dart';
 // of that change.
 
 Map<String, TablePlusColumn<Map<String, dynamic>>> _columns() => {
-      'name': TablePlusColumn<Map<String, dynamic>>(
-        key: 'name',
-        label: 'Name',
-        order: 0,
-        valueAccessor: (r) => r['name'],
-        width: 200,
-      ),
-    };
+  'name': TablePlusColumn<Map<String, dynamic>>(
+    key: 'name',
+    label: 'Name',
+    order: 0,
+    valueAccessor: (r) => r['name'],
+    width: 200,
+  ),
+};
 
 Future<void> _pump(
   WidgetTester tester, {
@@ -51,7 +51,7 @@ Future<void> _pump(
         body: FlutterTablePlus<Map<String, dynamic>>(
           columns: _columns(),
           data: [
-            for (int i = 0; i < rows; i++) {'id': '$i', 'name': 'R$i'}
+            for (int i = 0; i < rows; i++) {'id': '$i', 'name': 'R$i'},
           ],
           rowId: (r) => r['id'] as String,
           isSelectable: true,
@@ -77,8 +77,9 @@ int _checkedRows(WidgetTester tester, {required bool hasHeaderCheckbox}) =>
 
 void main() {
   group('single mode does not clamp the set', () {
-    testWidgets('two selected rows in single mode both render selected',
-        (tester) async {
+    testWidgets('two selected rows in single mode both render selected', (
+      tester,
+    ) async {
       await _pump(
         tester,
         selectionMode: SelectionMode.single,
@@ -87,13 +88,18 @@ void main() {
 
       // Three rows, no header checkbox (no `onSelectAll` was given).
       expect(find.byType(FlutterCheckbox), findsNWidgets(3));
-      expect(_checkedRows(tester, hasHeaderCheckbox: false), 2,
-          reason: 'the package clamped a set it does not own — selection is '
-              'the caller\'s state in both modes');
+      expect(
+        _checkedRows(tester, hasHeaderCheckbox: false),
+        2,
+        reason:
+            'the package clamped a set it does not own — selection is '
+            'the caller\'s state in both modes',
+      );
     });
 
-    testWidgets('and multiple mode renders the identical set identically',
-        (tester) async {
+    testWidgets('and multiple mode renders the identical set identically', (
+      tester,
+    ) async {
       // The side condition. Without it, a package that rendered *nothing*
       // selected would also pass the test above by another route.
       await _pump(
@@ -108,8 +114,9 @@ void main() {
   });
 
   group('select-all does not consult the mode', () {
-    testWidgets('a single-mode table still draws a working select-all',
-        (tester) async {
+    testWidgets('a single-mode table still draws a working select-all', (
+      tester,
+    ) async {
       final calls = <bool>[];
 
       await _pump(
@@ -124,9 +131,13 @@ void main() {
       await tester.tap(find.byType(FlutterCheckbox).first);
       await tester.pumpAndSettle();
 
-      expect(calls, [true],
-          reason: 'the header checkbox is drawn in single mode but inert, '
-              'which is neither of the two documented behaviours');
+      expect(
+        calls,
+        [true],
+        reason:
+            'the header checkbox is drawn in single mode but inert, '
+            'which is neither of the two documented behaviours',
+      );
     });
 
     testWidgets('withholding onSelectAll is what removes it', (tester) async {

@@ -7,8 +7,8 @@ import 'package:flutter_test/flutter_test.dart';
 // hand-computed expectations so both call sites can share it without drift.
 
 List<Map<String, dynamic>> _rows(List<String> ids) => [
-      for (final id in ids) {'id': id}
-    ];
+  for (final id in ids) {'id': id},
+];
 
 String _idOf(Map<String, dynamic> r) => r['id'] as String;
 
@@ -16,11 +16,7 @@ RowLookup<Map<String, dynamic>> _lookup(
   List<String> ids, {
   List<MergedRowGroup<Map<String, dynamic>>> groups = const [],
 }) {
-  return RowLookup.build(
-    data: _rows(ids),
-    mergedGroups: groups,
-    rowId: _idOf,
-  );
+  return RowLookup.build(data: _rows(ids), mergedGroups: groups, rowId: _idOf);
 }
 
 MergedRowGroup<Map<String, dynamic>> _group(
@@ -53,12 +49,12 @@ void main() {
     });
 
     test('groupOf returns null when the row is not in any group', () {
-      final lookup = _lookup([
-        'a',
-        'b'
-      ], groups: [
-        _group('g1', ['a']),
-      ]);
+      final lookup = _lookup(
+        ['a', 'b'],
+        groups: [
+          _group('g1', ['a']),
+        ],
+      );
       expect(lookup.groupOf('b'), isNull);
     });
 

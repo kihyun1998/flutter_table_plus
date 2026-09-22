@@ -8,8 +8,9 @@ import 'package:flutter_test/flutter_test.dart';
 // public interface by counting cell builds via a statefulCellBuilder.
 
 void main() {
-  testWidgets('no hover buttons: hovering a row does not rebuild its cells',
-      (tester) async {
+  testWidgets('no hover buttons: hovering a row does not rebuild its cells', (
+    tester,
+  ) async {
     var cellBuilds = 0;
     final columns = {
       'name': TablePlusColumn<Map<String, dynamic>>(
@@ -18,11 +19,12 @@ void main() {
         order: 0,
         valueAccessor: (r) => r['name'],
         width: 200,
-        statefulCellBuilder: (context, row, isSelected, isDim) =>
-            Builder(builder: (_) {
-          cellBuilds++;
-          return Text(row['name'] as String);
-        }),
+        statefulCellBuilder: (context, row, isSelected, isDim) => Builder(
+          builder: (_) {
+            cellBuilds++;
+            return Text(row['name'] as String);
+          },
+        ),
       ),
     };
 
@@ -55,13 +57,16 @@ void main() {
     await gesture.moveTo(tester.getCenter(find.text('R1')));
     await tester.pump();
 
-    expect(cellBuilds, before,
-        reason:
-            'rows must not rebuild on hover when there are no hover buttons');
+    expect(
+      cellBuilds,
+      before,
+      reason: 'rows must not rebuild on hover when there are no hover buttons',
+    );
   });
 
-  testWidgets('with hover buttons: hovering a row reveals its hover button',
-      (tester) async {
+  testWidgets('with hover buttons: hovering a row reveals its hover button', (
+    tester,
+  ) async {
     final columns = {
       'name': TablePlusColumn<Map<String, dynamic>>(
         key: 'name',

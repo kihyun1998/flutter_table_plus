@@ -9,67 +9,69 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   testWidgets(
-      'double-tapping a resize handle auto-fits within the column bounds',
-      (tester) async {
-    String? resizedKey;
-    double? resizedWidth;
+    'double-tapping a resize handle auto-fits within the column bounds',
+    (tester) async {
+      String? resizedKey;
+      double? resizedWidth;
 
-    final columns = (TableColumnsBuilder<Map<String, dynamic>>()
-          ..addColumn(
-            'name',
-            TablePlusColumn<Map<String, dynamic>>(
-              key: 'name',
-              label: 'Name',
-              order: 0,
-              valueAccessor: (r) => r['name'],
-              width: 300,
-              minWidth: 80,
-              maxWidth: 200,
+      final columns =
+          (TableColumnsBuilder<Map<String, dynamic>>()..addColumn(
+                'name',
+                TablePlusColumn<Map<String, dynamic>>(
+                  key: 'name',
+                  label: 'Name',
+                  order: 0,
+                  valueAccessor: (r) => r['name'],
+                  width: 300,
+                  minWidth: 80,
+                  maxWidth: 200,
+                ),
+              ))
+              .build();
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: FlutterTablePlus<Map<String, dynamic>>(
+              columns: columns,
+              data: const [
+                {
+                  'id': '1',
+                  'name': 'A very long value that exceeds the max width',
+                },
+              ],
+              rowId: (r) => r['id'] as String,
+              resizable: true,
+              onColumnResized: (key, width) {
+                resizedKey = key;
+                resizedWidth = width;
+              },
             ),
-          ))
-        .build();
-
-    await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: FlutterTablePlus<Map<String, dynamic>>(
-            columns: columns,
-            data: const [
-              {
-                'id': '1',
-                'name': 'A very long value that exceeds the max width'
-              }
-            ],
-            rowId: (r) => r['id'] as String,
-            resizable: true,
-            onColumnResized: (key, width) {
-              resizedKey = key;
-              resizedWidth = width;
-            },
           ),
         ),
-      ),
-    );
-    await tester.pumpAndSettle();
+      );
+      await tester.pumpAndSettle();
 
-    final handle = find.byKey(const ValueKey('resize_name'));
-    expect(handle, findsOneWidget);
+      final handle = find.byKey(const ValueKey('resize_name'));
+      expect(handle, findsOneWidget);
 
-    // Double-tap the handle to trigger auto-fit.
-    await tester.tap(handle);
-    await tester.pump(const Duration(milliseconds: 50));
-    await tester.tap(handle);
-    await tester.pumpAndSettle();
+      // Double-tap the handle to trigger auto-fit.
+      await tester.tap(handle);
+      await tester.pump(const Duration(milliseconds: 50));
+      await tester.tap(handle);
+      await tester.pumpAndSettle();
 
-    expect(resizedKey, 'name');
-    expect(resizedWidth, isNotNull);
-    // The content wants more than maxWidth, so auto-fit clamps to maxWidth.
-    expect(resizedWidth, lessThanOrEqualTo(200));
-    expect(resizedWidth, greaterThanOrEqualTo(80));
-  });
+      expect(resizedKey, 'name');
+      expect(resizedWidth, isNotNull);
+      // The content wants more than maxWidth, so auto-fit clamps to maxWidth.
+      expect(resizedWidth, lessThanOrEqualTo(200));
+      expect(resizedWidth, greaterThanOrEqualTo(80));
+    },
+  );
 
-  testWidgets('auto-fit clamps to the declared maxWidth at scale 2.0',
-      (tester) async {
+  testWidgets('auto-fit clamps to the declared maxWidth at scale 2.0', (
+    tester,
+  ) async {
     // This file named no scale until #114, and that is the whole point of the
     // test. `_handleColumnAutoFit` measures in rendered space and converts the
     // bounds to match (`column.maxWidth! * scale`); at `scale: 1.0` that
@@ -81,20 +83,20 @@ void main() {
     // is not a precedent.
     double? resized;
 
-    final columns = (TableColumnsBuilder<Map<String, dynamic>>()
-          ..addColumn(
-            'name',
-            TablePlusColumn<Map<String, dynamic>>(
-              key: 'name',
-              label: 'Name',
-              order: 0,
-              valueAccessor: (r) => r['name'],
-              width: 300,
-              minWidth: 80,
-              maxWidth: 200,
-            ),
-          ))
-        .build();
+    final columns =
+        (TableColumnsBuilder<Map<String, dynamic>>()..addColumn(
+              'name',
+              TablePlusColumn<Map<String, dynamic>>(
+                key: 'name',
+                label: 'Name',
+                order: 0,
+                valueAccessor: (r) => r['name'],
+                width: 300,
+                minWidth: 80,
+                maxWidth: 200,
+              ),
+            ))
+            .build();
 
     await tester.pumpWidget(
       MaterialApp(
@@ -104,8 +106,8 @@ void main() {
             data: const [
               {
                 'id': '1',
-                'name': 'A very long value that exceeds the max width'
-              }
+                'name': 'A very long value that exceeds the max width',
+              },
             ],
             rowId: (r) => r['id'] as String,
             resizable: true,
@@ -129,8 +131,9 @@ void main() {
     expect(resized, closeTo(200, 0.001));
   });
 
-  testWidgets('an autoFitColumnWidth override is clamped in logical units',
-      (tester) async {
+  testWidgets('an autoFitColumnWidth override is clamped in logical units', (
+    tester,
+  ) async {
     // The third path into a bound clamp, and the one that must NOT convert:
     // this callback is documented to return logical pixels, so it is clamped
     // logical-against-logical. That makes it look like an inconsistency beside
@@ -142,20 +145,20 @@ void main() {
     // theirs gives 400.
     double? resized;
 
-    final columns = (TableColumnsBuilder<Map<String, dynamic>>()
-          ..addColumn(
-            'name',
-            TablePlusColumn<Map<String, dynamic>>(
-              key: 'name',
-              label: 'Name',
-              order: 0,
-              valueAccessor: (r) => r['name'],
-              width: 300,
-              minWidth: 80,
-              maxWidth: 200,
-            ),
-          ))
-        .build();
+    final columns =
+        (TableColumnsBuilder<Map<String, dynamic>>()..addColumn(
+              'name',
+              TablePlusColumn<Map<String, dynamic>>(
+                key: 'name',
+                label: 'Name',
+                order: 0,
+                valueAccessor: (r) => r['name'],
+                width: 300,
+                minWidth: 80,
+                maxWidth: 200,
+              ),
+            ))
+            .build();
 
     await tester.pumpWidget(
       MaterialApp(
@@ -163,7 +166,7 @@ void main() {
           body: FlutterTablePlus<Map<String, dynamic>>(
             columns: columns,
             data: const [
-              {'id': '1', 'name': 'short'}
+              {'id': '1', 'name': 'short'},
             ],
             rowId: (r) => r['id'] as String,
             resizable: true,

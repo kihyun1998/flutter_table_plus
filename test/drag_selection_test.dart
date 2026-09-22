@@ -40,10 +40,7 @@ Map<String, TablePlusColumn<Map<String, dynamic>>> _buildColumns({
 /// Builds [rowCount] rows. Each row has 'id' and c0..c{colCount-1} string cells.
 List<Map<String, dynamic>> _buildData(int rowCount, {int colCount = 4}) {
   return List.generate(rowCount, (i) {
-    return {
-      'id': '$i',
-      for (int j = 0; j < colCount; j++) 'c$j': 'r${i}c$j',
-    };
+    return {'id': '$i', for (int j = 0; j < colCount; j++) 'c$j': 'r${i}c$j'};
   });
 }
 
@@ -100,9 +97,10 @@ Future<_DragHarness> _pumpDragTable(
   // `rowCount` is ignored entirely when `data` is supplied, so the two can
   // disagree in silence and a reader would believe the wrong one.
   assert(
-      data == null || data.length == rowCount,
-      'rowCount ($rowCount) is ignored because data was supplied '
-      '(${data.length} rows) — keep them in agreement or drop one');
+    data == null || data.length == rowCount,
+    'rowCount ($rowCount) is ignored because data was supplied '
+    '(${data.length} rows) — keep them in agreement or drop one',
+  );
   tester.view.physicalSize = const Size(_surfaceWidth, _surfaceHeight);
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.resetPhysicalSize);
@@ -112,10 +110,11 @@ Future<_DragHarness> _pumpDragTable(
   // callback closures below.
   final h = harness ?? _DragHarness();
   assert(
-      !requireSameData || (h.lastData != null && identical(h.lastData, data)),
-      'requireSameData: this pump must reuse the previous pump\'s data list. '
-      'A fresh list rebuilds every cache through the structure branch, which '
-      'is not the branch under test.');
+    !requireSameData || (h.lastData != null && identical(h.lastData, data)),
+    'requireSameData: this pump must reuse the previous pump\'s data list. '
+    'A fresh list rebuilds every cache through the structure branch, which '
+    'is not the branch under test.',
+  );
   h.lastData = data;
 
   await tester.pumpWidget(
@@ -183,8 +182,9 @@ Future<void> _pumpFrames(
 
 void main() {
   group('Drag selection — basic flow', () {
-    testWidgets('drag within data area selects rows in continuous range',
-        (tester) async {
+    testWidgets('drag within data area selects rows in continuous range', (
+      tester,
+    ) async {
       final h = await _pumpDragTable(
         tester,
         rowCount: 8,
@@ -201,13 +201,17 @@ void main() {
       await gesture.up();
       await tester.pump();
 
-      expect(h.ends, isNotEmpty,
-          reason: 'onDragSelectionEnd should fire after a real drag');
+      expect(
+        h.ends,
+        isNotEmpty,
+        reason: 'onDragSelectionEnd should fire after a real drag',
+      );
       expect(h.ends.last, equals(<String>{'0', '1', '2', '3'}));
     });
 
-    testWidgets('movement below activation threshold does not start a drag',
-        (tester) async {
+    testWidgets('movement below activation threshold does not start a drag', (
+      tester,
+    ) async {
       final h = await _pumpDragTable(tester, rowCount: 5, tableHeight: 400);
 
       final start = _bodyPoint(tester, h.tableKey, x: 50, row: 1.5);
@@ -221,50 +225,62 @@ void main() {
       await gesture.up();
       await tester.pump();
 
-      expect(h.updates, isEmpty,
-          reason: 'no drag-selection update fires below threshold');
-      expect(h.ends, isEmpty,
-          reason: 'no drag-selection end fires when drag never activates');
+      expect(
+        h.updates,
+        isEmpty,
+        reason: 'no drag-selection update fires below threshold',
+      );
+      expect(
+        h.ends,
+        isEmpty,
+        reason: 'no drag-selection end fires when drag never activates',
+      );
     });
   });
 
   group('Drag selection — sticky range at boundaries', () {
     testWidgets(
-        'dragging from data into empty space below keeps selection sticky',
-        (tester) async {
-      // 3 rows, table tall enough to leave empty space below them.
-      final h = await _pumpDragTable(
-        tester,
-        rowCount: 3,
-        tableHeight: 300, // header(40) + 3*40 = 160; 140px empty below
-      );
+      'dragging from data into empty space below keeps selection sticky',
+      (tester) async {
+        // 3 rows, table tall enough to leave empty space below them.
+        final h = await _pumpDragTable(
+          tester,
+          rowCount: 3,
+          tableHeight: 300, // header(40) + 3*40 = 160; 140px empty below
+        );
 
-      final start = _bodyPoint(tester, h.tableKey, x: 50, row: 0.5);
-      // Step through row 2 to give the renderIndex tracker a valid sample
-      // before crossing into empty space — gesture.moveTo does not
-      // interpolate, so a direct jump skips intermediate rows.
-      final lastRow = _bodyPoint(tester, h.tableKey, x: 50, row: 2.5);
-      // y = headerHeight + 6.0 * rowHeight = 40 + 240 = 280 → well past row 2's
-      // bottom (40 + 3*40 = 160 from table top), inside the empty area.
-      final emptyBelow = _bodyPoint(tester, h.tableKey, x: 50, row: 6.0);
+        final start = _bodyPoint(tester, h.tableKey, x: 50, row: 0.5);
+        // Step through row 2 to give the renderIndex tracker a valid sample
+        // before crossing into empty space — gesture.moveTo does not
+        // interpolate, so a direct jump skips intermediate rows.
+        final lastRow = _bodyPoint(tester, h.tableKey, x: 50, row: 2.5);
+        // y = headerHeight + 6.0 * rowHeight = 40 + 240 = 280 → well past row 2's
+        // bottom (40 + 3*40 = 160 from table top), inside the empty area.
+        final emptyBelow = _bodyPoint(tester, h.tableKey, x: 50, row: 6.0);
 
-      final gesture = await tester.startGesture(start);
-      await tester.pump();
-      await gesture.moveTo(lastRow);
-      await tester.pump();
-      await gesture.moveTo(emptyBelow);
-      await tester.pump();
-      await gesture.up();
-      await tester.pump();
+        final gesture = await tester.startGesture(start);
+        await tester.pump();
+        await gesture.moveTo(lastRow);
+        await tester.pump();
+        await gesture.moveTo(emptyBelow);
+        await tester.pump();
+        await gesture.up();
+        await tester.pump();
 
-      expect(h.ends, isNotEmpty);
-      expect(h.ends.last, equals(<String>{'0', '1', '2'}),
-          reason: 'selection should stick to last valid row (2) when '
-              'pointer leaves data area downward');
-    });
+        expect(h.ends, isNotEmpty);
+        expect(
+          h.ends.last,
+          equals(<String>{'0', '1', '2'}),
+          reason:
+              'selection should stick to last valid row (2) when '
+              'pointer leaves data area downward',
+        );
+      },
+    );
 
-    testWidgets('dragging upward into header area keeps selection sticky',
-        (tester) async {
+    testWidgets('dragging upward into header area keeps selection sticky', (
+      tester,
+    ) async {
       final h = await _pumpDragTable(tester, rowCount: 5, tableHeight: 400);
 
       final start = _bodyPoint(tester, h.tableKey, x: 50, row: 2.5);
@@ -285,85 +301,99 @@ void main() {
       await tester.pump();
 
       expect(h.ends, isNotEmpty);
-      expect(h.ends.last, equals(<String>{'0', '1', '2'}),
-          reason: 'sticky behavior preserves the topmost reached row when '
-              'pointer crosses into header');
+      expect(
+        h.ends.last,
+        equals(<String>{'0', '1', '2'}),
+        reason:
+            'sticky behavior preserves the topmost reached row when '
+            'pointer crosses into header',
+      );
     });
   });
 
   group('Drag selection — auto-scroll', () {
     testWidgets(
-        'vertical auto-scroll extends selection beyond initial viewport',
-        (tester) async {
-      // Many rows, short viewport — only ~5 rows visible initially.
-      final h = await _pumpDragTable(
-        tester,
-        rowCount: 50,
-        tableHeight: 200, // header(40) + visible body(160) ≈ 4 rows visible
-      );
+      'vertical auto-scroll extends selection beyond initial viewport',
+      (tester) async {
+        // Many rows, short viewport — only ~5 rows visible initially.
+        final h = await _pumpDragTable(
+          tester,
+          rowCount: 50,
+          tableHeight: 200, // header(40) + visible body(160) ≈ 4 rows visible
+        );
 
-      final r = tester.getRect(find.byKey(h.tableKey));
-      // Start in row 0; move pointer to within bottom edge zone (last 40px).
-      final start = _bodyPoint(tester, h.tableKey, x: 50, row: 0.5);
-      final bottomEdge = r.bottomLeft + const Offset(50, -10);
+        final r = tester.getRect(find.byKey(h.tableKey));
+        // Start in row 0; move pointer to within bottom edge zone (last 40px).
+        final start = _bodyPoint(tester, h.tableKey, x: 50, row: 0.5);
+        final bottomEdge = r.bottomLeft + const Offset(50, -10);
 
-      final gesture = await tester.startGesture(start);
-      await tester.pump();
-      await gesture.moveTo(bottomEdge);
-      await _pumpFrames(tester, frames: 100); // ~1.6s of auto-scroll
-      await gesture.up();
-      await tester.pump();
+        final gesture = await tester.startGesture(start);
+        await tester.pump();
+        await gesture.moveTo(bottomEdge);
+        await _pumpFrames(tester, frames: 100); // ~1.6s of auto-scroll
+        await gesture.up();
+        await tester.pump();
 
-      expect(h.ends, isNotEmpty);
-      // After auto-scrolling for ~1.6s at maxSpeed 10px/16ms ≈ up to ~600px,
-      // many more rows than the initial ~4 should be in the selection.
-      expect(h.ends.last.length, greaterThan(8),
+        expect(h.ends, isNotEmpty);
+        // After auto-scrolling for ~1.6s at maxSpeed 10px/16ms ≈ up to ~600px,
+        // many more rows than the initial ~4 should be in the selection.
+        expect(
+          h.ends.last.length,
+          greaterThan(8),
           reason:
-              'vertical auto-scroll should extend selection past initial viewport');
-      expect(h.ends.last.contains('0'), isTrue);
-    });
+              'vertical auto-scroll should extend selection past initial viewport',
+        );
+        expect(h.ends.last.contains('0'), isTrue);
+      },
+    );
 
     testWidgets(
-        'horizontal auto-scroll continues progressing while pointer is held at edge',
-        (tester) async {
-      // contentWidth = 4 * 250 = 1000; tableWidth = 400 → maxScrollExtent ≈ 600.
-      final h = await _pumpDragTable(
-        tester,
-        rowCount: 5,
-        colCount: 4,
-        colWidth: 250,
-        tableWidth: 400,
-        tableHeight: 400,
-      );
+      'horizontal auto-scroll continues progressing while pointer is held at edge',
+      (tester) async {
+        // contentWidth = 4 * 250 = 1000; tableWidth = 400 → maxScrollExtent ≈ 600.
+        final h = await _pumpDragTable(
+          tester,
+          rowCount: 5,
+          colCount: 4,
+          colWidth: 250,
+          tableWidth: 400,
+          tableHeight: 400,
+        );
 
-      final r = tester.getRect(find.byKey(h.tableKey));
-      // Capture r0c0 X before drag — its movement reveals horizontal scroll.
-      final initialR0C0X = tester.getTopLeft(find.text('r0c0')).dx;
+        final r = tester.getRect(find.byKey(h.tableKey));
+        // Capture r0c0 X before drag — its movement reveals horizontal scroll.
+        final initialR0C0X = tester.getTopLeft(find.text('r0c0')).dx;
 
-      final start = _bodyPoint(tester, h.tableKey, x: 30, row: 1.5);
-      // Hold pointer near right edge of viewport (within edge zone of 40px).
-      final rightEdge = r.centerRight + const Offset(-20, 0);
+        final start = _bodyPoint(tester, h.tableKey, x: 30, row: 1.5);
+        // Hold pointer near right edge of viewport (within edge zone of 40px).
+        final rightEdge = r.centerRight + const Offset(-20, 0);
 
-      final gesture = await tester.startGesture(start);
-      await tester.pump();
-      await gesture.moveTo(rightEdge);
-      await _pumpFrames(tester, frames: 120);
-      final laterR0C0X = tester.getTopLeft(find.text('r0c0')).dx;
-      await gesture.up();
-      await tester.pump();
+        final gesture = await tester.startGesture(start);
+        await tester.pump();
+        await gesture.moveTo(rightEdge);
+        await _pumpFrames(tester, frames: 120);
+        final laterR0C0X = tester.getTopLeft(find.text('r0c0')).dx;
+        await gesture.up();
+        await tester.pump();
 
-      final scrolled = initialR0C0X - laterR0C0X;
-      // With the fix, scrolled should be ~470px (approaching maxScrollExtent
-      // 600). With the current bug, scrolled stops near ~20px because the
-      // edge-detection viewportX drifts by hDelta.
-      expect(scrolled, greaterThan(100),
-          reason: 'horizontal auto-scroll must continue progressing while '
+        final scrolled = initialR0C0X - laterR0C0X;
+        // With the fix, scrolled should be ~470px (approaching maxScrollExtent
+        // 600). With the current bug, scrolled stops near ~20px because the
+        // edge-detection viewportX drifts by hDelta.
+        expect(
+          scrolled,
+          greaterThan(100),
+          reason:
+              'horizontal auto-scroll must continue progressing while '
               'pointer is held inside the right edge zone — current code '
-              'stops prematurely due to stale _bodyGlobalLeft');
-    });
+              'stops prematurely due to stale _bodyGlobalLeft',
+        );
+      },
+    );
 
-    testWidgets('simultaneous dual-axis auto-scroll progresses on both axes',
-        (tester) async {
+    testWidgets('simultaneous dual-axis auto-scroll progresses on both axes', (
+      tester,
+    ) async {
       final h = await _pumpDragTable(
         tester,
         rowCount: 50,
@@ -392,55 +422,67 @@ void main() {
       await tester.pump();
 
       final scrolledX = initialC0X - laterC0X;
-      expect(scrolledX, greaterThan(100),
-          reason: 'horizontal auto-scroll should progress in dual-axis drag');
+      expect(
+        scrolledX,
+        greaterThan(100),
+        reason: 'horizontal auto-scroll should progress in dual-axis drag',
+      );
       // Vertical progression: row 0 should have scrolled out of view far
       // enough that the lazy ListView disposed its widget. (Asserting an
       // exact visible row would be fragile because the unmount window
       // depends on viewport size and exact scroll position.)
-      expect(find.text('r0c0'), findsNothing,
-          reason: 'vertical auto-scroll should advance past the initial '
-              'viewport in a dual-axis drag');
+      expect(
+        find.text('r0c0'),
+        findsNothing,
+        reason:
+            'vertical auto-scroll should advance past the initial '
+            'viewport in a dual-axis drag',
+      );
     });
   });
 
   group('Drag selection — merged groups', () {
     testWidgets(
-        'dragging across a merged group adds the group ID, not individual rows',
-        (tester) async {
-      // 5 rows; merge rows 1..3 into one group.
-      final mergedGroups = <MergedRowGroup<Map<String, dynamic>>>[
-        const MergedRowGroup<Map<String, dynamic>>(
-          groupId: 'g1',
-          rowKeys: ['1', '2', '3'],
-          mergeConfig: {},
-        ),
-      ];
+      'dragging across a merged group adds the group ID, not individual rows',
+      (tester) async {
+        // 5 rows; merge rows 1..3 into one group.
+        final mergedGroups = <MergedRowGroup<Map<String, dynamic>>>[
+          const MergedRowGroup<Map<String, dynamic>>(
+            groupId: 'g1',
+            rowKeys: ['1', '2', '3'],
+            mergeConfig: {},
+          ),
+        ];
 
-      final h = await _pumpDragTable(
-        tester,
-        rowCount: 5,
-        tableHeight: 400,
-        mergedGroups: mergedGroups,
-      );
+        final h = await _pumpDragTable(
+          tester,
+          rowCount: 5,
+          tableHeight: 400,
+          mergedGroups: mergedGroups,
+        );
 
-      // Renderable rows (after merging) are: row 0, group g1, row 4.
-      // That maps render-index 0 → row 0, 1 → group, 2 → row 4 in body.
-      final start = _bodyPoint(tester, h.tableKey, x: 50, row: 0.5);
-      final end = _bodyPoint(tester, h.tableKey, x: 50, row: 4.5);
+        // Renderable rows (after merging) are: row 0, group g1, row 4.
+        // That maps render-index 0 → row 0, 1 → group, 2 → row 4 in body.
+        final start = _bodyPoint(tester, h.tableKey, x: 50, row: 0.5);
+        final end = _bodyPoint(tester, h.tableKey, x: 50, row: 4.5);
 
-      final gesture = await tester.startGesture(start);
-      await tester.pump();
-      await gesture.moveTo(end);
-      await tester.pump();
-      await gesture.up();
-      await tester.pump();
+        final gesture = await tester.startGesture(start);
+        await tester.pump();
+        await gesture.moveTo(end);
+        await tester.pump();
+        await gesture.up();
+        await tester.pump();
 
-      expect(h.ends, isNotEmpty);
-      expect(h.ends.last, equals(<String>{'0', 'g1', '4'}),
-          reason: 'merged group should appear as its groupId in the drag '
-              'set, replacing the individual member row IDs');
-    });
+        expect(h.ends, isNotEmpty);
+        expect(
+          h.ends.last,
+          equals(<String>{'0', 'g1', '4'}),
+          reason:
+              'merged group should appear as its groupId in the drag '
+              'set, replacing the individual member row IDs',
+        );
+      },
+    );
   });
 
   group('Drag selection — starting from a non-zero horizontal offset', () {
@@ -484,8 +526,9 @@ void main() {
           );
     }
 
-    testWidgets('selects the same rows it would have selected at offset zero',
-        (tester) async {
+    testWidgets('selects the same rows it would have selected at offset zero', (
+      tester,
+    ) async {
       // contentWidth = 4 * 250 = 1000 against a 400 viewport, so there is 600px
       // of offset available to be wrong by.
       final h = await _pumpDragTable(
@@ -500,8 +543,11 @@ void main() {
       final pos = horizontalBody(tester);
       pos.jumpTo(pos.maxScrollExtent);
       await tester.pumpAndSettle();
-      expect(pos.pixels, greaterThan(0),
-          reason: 'the scroll did not take, so this test proves nothing');
+      expect(
+        pos.pixels,
+        greaterThan(0),
+        reason: 'the scroll did not take, so this test proves nothing',
+      );
 
       final start = _bodyPoint(tester, h.tableKey, x: 50, row: 0.5);
       final end = _bodyPoint(tester, h.tableKey, x: 50, row: 3.5);
@@ -514,13 +560,18 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(h.ends, hasLength(1));
-      expect(h.ends.single, {'0', '1', '2', '3'},
-          reason: 'a pre-existing horizontal offset changed which rows a '
-              'vertical drag covers');
+      expect(
+        h.ends.single,
+        {'0', '1', '2', '3'},
+        reason:
+            'a pre-existing horizontal offset changed which rows a '
+            'vertical drag covers',
+      );
     });
 
-    testWidgets('a drag confined to one row still selects exactly that row',
-        (tester) async {
+    testWidgets('a drag confined to one row still selects exactly that row', (
+      tester,
+    ) async {
       // The side condition. The set above could be right by accident if the
       // drag had selected everything it crossed and more.
       final h = await _pumpDragTable(
@@ -548,8 +599,11 @@ void main() {
       await gesture.up();
       await tester.pumpAndSettle();
 
-      expect(h.updates, isNotEmpty,
-          reason: 'no drag was delivered, so the assertion below is vacuous');
+      expect(
+        h.updates,
+        isNotEmpty,
+        reason: 'no drag was delivered, so the assertion below is vacuous',
+      );
       expect(h.ends.single, {'2'});
     });
   });
@@ -601,15 +655,11 @@ void main() {
     /// its comment claimed 40 to 120, and got the right answer by coincidence:
     /// both pairs land on rows 0 and 1.
     Offset at(WidgetTester tester, GlobalKey key, double y) => Offset(
-          tester.getRect(find.byKey(key)).left + 50,
-          tester.getRect(find.byType(ListView)).top + y,
-        );
+      tester.getRect(find.byKey(key)).left + 50,
+      tester.getRect(find.byType(ListView)).top + y,
+    );
 
-    Future<void> dragFromTo(
-      WidgetTester tester,
-      Offset from,
-      Offset to,
-    ) async {
+    Future<void> dragFromTo(WidgetTester tester, Offset from, Offset to) async {
       final gesture = await tester.startGesture(from);
       await tester.pump();
       await gesture.moveTo(to);
@@ -618,8 +668,9 @@ void main() {
       await tester.pump();
     }
 
-    testWidgets('a new calculateRowHeight re-resolves the pointer',
-        (tester) async {
+    testWidgets('a new calculateRowHeight re-resolves the pointer', (
+      tester,
+    ) async {
       final rows = sharedRows;
 
       // Tall rows first: 6 x 80 = 480, plus a 40px header, inside 560.
@@ -634,12 +685,22 @@ void main() {
       // Load-bearing: builds the snapshot at 80px. Without it the snapshot is
       // still null after the second pump and the test cannot fail.
       await dragFromTo(
-          tester, at(tester, h.tableKey, 40), at(tester, h.tableKey, 120));
-      expect(h.ends, hasLength(1),
-          reason: 'the priming drag did not emit, so the snapshot this test '
-              'depends on was never built');
-      expect(h.ends.last, equals(<String>{'0', '1'}),
-          reason: 'the priming drag did not resolve against 80px rows');
+        tester,
+        at(tester, h.tableKey, 40),
+        at(tester, h.tableKey, 120),
+      );
+      expect(
+        h.ends,
+        hasLength(1),
+        reason:
+            'the priming drag did not emit, so the snapshot this test '
+            'depends on was never built',
+      );
+      expect(
+        h.ends.last,
+        equals(<String>{'0', '1'}),
+        reason: 'the priming drag did not resolve against 80px rows',
+      );
 
       // Same list object, new height function — the measurement branch.
       await _pumpDragTable(
@@ -654,20 +715,28 @@ void main() {
       // y=20 is row 0 and y=140 is row 3, at 40px. Against a stale 80px
       // snapshot the same two points are rows 0 and 1.
       await dragFromTo(
-          tester, at(tester, h.tableKey, 20), at(tester, h.tableKey, 140));
+        tester,
+        at(tester, h.tableKey, 20),
+        at(tester, h.tableKey, 140),
+      );
 
       // The witness matters: a second drag that silently did not emit leaves
       // `ends.last` holding the priming drag's `{0, 1}` — the same value a
       // stale snapshot produces, so a red would not say which happened.
       expect(h.ends, hasLength(2), reason: 'the second drag did not emit');
-      expect(h.ends.last, equals(<String>{'0', '1', '2', '3'}),
-          reason: 'the pointer was resolved against the previous heights: the '
-              'rows are drawn at 40px but the drag answered as if they were '
-              'still 80px');
+      expect(
+        h.ends.last,
+        equals(<String>{'0', '1', '2', '3'}),
+        reason:
+            'the pointer was resolved against the previous heights: the '
+            'rows are drawn at 40px but the drag answered as if they were '
+            'still 80px',
+      );
     });
 
-    testWidgets('a new theme rowHeight re-resolves the pointer',
-        (tester) async {
+    testWidgets('a new theme rowHeight re-resolves the pointer', (
+      tester,
+    ) async {
       // The third input, and the one that was in neither widget's list until
       // #128. It is also the most reachable: changing row height through the
       // theme needs no new list and no height callback at all — this repo's own
@@ -688,10 +757,16 @@ void main() {
       );
 
       await dragFromTo(
-          tester, at(tester, h.tableKey, 40), at(tester, h.tableKey, 120));
+        tester,
+        at(tester, h.tableKey, 40),
+        at(tester, h.tableKey, 120),
+      );
       expect(h.ends, hasLength(1), reason: 'the priming drag did not emit');
-      expect(h.ends.last, equals(<String>{'0', '1'}),
-          reason: 'the priming drag did not resolve against 80px rows');
+      expect(
+        h.ends.last,
+        equals(<String>{'0', '1'}),
+        reason: 'the priming drag did not resolve against 80px rows',
+      );
 
       await _pumpDragTable(
         tester,
@@ -703,11 +778,17 @@ void main() {
       );
 
       await dragFromTo(
-          tester, at(tester, h.tableKey, 20), at(tester, h.tableKey, 140));
+        tester,
+        at(tester, h.tableKey, 20),
+        at(tester, h.tableKey, 140),
+      );
 
       expect(h.ends, hasLength(2), reason: 'the second drag did not emit');
-      expect(h.ends.last, equals(<String>{'0', '1', '2', '3'}),
-          reason: 'the pointer was resolved against the previous theme height');
+      expect(
+        h.ends.last,
+        equals(<String>{'0', '1', '2', '3'}),
+        reason: 'the pointer was resolved against the previous theme height',
+      );
     });
 
     testWidgets('a scale change re-resolves the pointer', (tester) async {
@@ -730,11 +811,18 @@ void main() {
       );
 
       await dragFromTo(
-          tester, at(tester, h.tableKey, 40), at(tester, h.tableKey, 120));
+        tester,
+        at(tester, h.tableKey, 40),
+        at(tester, h.tableKey, 120),
+      );
       expect(h.ends, hasLength(1), reason: 'the priming drag did not emit');
-      expect(h.ends.last, equals(<String>{'0', '1'}),
-          reason: 'the priming drag did not resolve against 80px rows — at '
-              'scale 2.0 a 40px height renders at 80');
+      expect(
+        h.ends.last,
+        equals(<String>{'0', '1'}),
+        reason:
+            'the priming drag did not resolve against 80px rows — at '
+            'scale 2.0 a 40px height renders at 80',
+      );
 
       await _pumpDragTable(
         tester,
@@ -747,16 +835,21 @@ void main() {
       );
 
       await dragFromTo(
-          tester, at(tester, h.tableKey, 20), at(tester, h.tableKey, 140));
+        tester,
+        at(tester, h.tableKey, 20),
+        at(tester, h.tableKey, 140),
+      );
 
       expect(h.ends, hasLength(2), reason: 'the second drag did not emit');
-      expect(h.ends.last, equals(<String>{'0', '1', '2', '3'}),
-          reason: 'the pointer was resolved against the previous scale');
+      expect(
+        h.ends.last,
+        equals(<String>{'0', '1', '2', '3'}),
+        reason: 'the pointer was resolved against the previous scale',
+      );
     });
   });
 
-  group('Drag selection — a new snapshot refreshes what a pointer resolves to',
-      () {
+  group('Drag selection — a new snapshot refreshes what a pointer resolves to', () {
     // #132. `data` and `rowId` are one snapshot: every id-keyed derivation —
     // `RowLookup`, the renderable-index list, and the `ids` the geometry
     // answers `idsBetween` from — is built from the pair and dropped when the
@@ -780,15 +873,11 @@ void main() {
     // `_rebuildCaches`, both of these go red and the unprimed variants do not.
 
     Offset at(WidgetTester tester, GlobalKey key, double y) => Offset(
-          tester.getRect(find.byKey(key)).left + 50,
-          tester.getRect(find.byType(ListView)).top + y,
-        );
+      tester.getRect(find.byKey(key)).left + 50,
+      tester.getRect(find.byType(ListView)).top + y,
+    );
 
-    Future<void> dragFromTo(
-      WidgetTester tester,
-      Offset from,
-      Offset to,
-    ) async {
+    Future<void> dragFromTo(WidgetTester tester, Offset from, Offset to) async {
       final gesture = await tester.startGesture(from);
       await tester.pump();
       await gesture.moveTo(to);
@@ -798,41 +887,51 @@ void main() {
     }
 
     testWidgets(
-        'a new data list carries a new rowId into the hit-test geometry',
-        (tester) async {
-      final h = await _pumpDragTable(
-        tester,
-        rowCount: 6,
-        tableHeight: 400,
-        data: _buildData(6),
-      );
+      'a new data list carries a new rowId into the hit-test geometry',
+      (tester) async {
+        final h = await _pumpDragTable(
+          tester,
+          rowCount: 6,
+          tableHeight: 400,
+          data: _buildData(6),
+        );
 
-      await dragFromTo(
-          tester, at(tester, h.tableKey, 10), at(tester, h.tableKey, 130));
-      expect(h.ends, hasLength(1), reason: 'the priming drag did not emit');
-      expect(h.ends.last, equals(<String>{'0', '1', '2', '3'}));
+        await dragFromTo(
+          tester,
+          at(tester, h.tableKey, 10),
+          at(tester, h.tableKey, 130),
+        );
+        expect(h.ends, hasLength(1), reason: 'the priming drag did not emit');
+        expect(h.ends.last, equals(<String>{'0', '1', '2', '3'}));
 
-      // A new list *and* a new id space — the supported way to change identity.
-      await _pumpDragTable(
-        tester,
-        rowCount: 6,
-        harness: h,
-        tableHeight: 400,
-        data: _buildData(6),
-        rowId: (r) => 'X${r['id']}',
-      );
+        // A new list *and* a new id space — the supported way to change identity.
+        await _pumpDragTable(
+          tester,
+          rowCount: 6,
+          harness: h,
+          tableHeight: 400,
+          data: _buildData(6),
+          rowId: (r) => 'X${r['id']}',
+        );
 
-      await dragFromTo(
-          tester, at(tester, h.tableKey, 10), at(tester, h.tableKey, 130));
+        await dragFromTo(
+          tester,
+          at(tester, h.tableKey, 10),
+          at(tester, h.tableKey, 130),
+        );
 
-      expect(h.ends, hasLength(2), reason: 'the second drag did not emit');
-      expect(h.ends.last, equals(<String>{'X0', 'X1', 'X2', 'X3'}),
-          reason:
-              'the geometry answered from the ids of the previous snapshot');
-    });
+        expect(h.ends, hasLength(2), reason: 'the second drag did not emit');
+        expect(
+          h.ends.last,
+          equals(<String>{'X0', 'X1', 'X2', 'X3'}),
+          reason: 'the geometry answered from the ids of the previous snapshot',
+        );
+      },
+    );
 
-    testWidgets('a new mergedGroups list changes what a pointer lands on',
-        (tester) async {
+    testWidgets('a new mergedGroups list changes what a pointer lands on', (
+      tester,
+    ) async {
       final rows = _buildData(6);
 
       final h = await _pumpDragTable(
@@ -850,7 +949,10 @@ void main() {
       );
 
       await dragFromTo(
-          tester, at(tester, h.tableKey, 10), at(tester, h.tableKey, 100));
+        tester,
+        at(tester, h.tableKey, 10),
+        at(tester, h.tableKey, 100),
+      );
       expect(h.ends, hasLength(1), reason: 'the priming drag did not emit');
       expect(h.ends.last, equals(<String>{'g0', '2'}));
 
@@ -876,11 +978,17 @@ void main() {
       );
 
       await dragFromTo(
-          tester, at(tester, h.tableKey, 10), at(tester, h.tableKey, 100));
+        tester,
+        at(tester, h.tableKey, 10),
+        at(tester, h.tableKey, 100),
+      );
 
       expect(h.ends, hasLength(2), reason: 'the second drag did not emit');
-      expect(h.ends.last, equals(<String>{'g0'}),
-          reason: 'the pointer was resolved against the collapsed extent');
+      expect(
+        h.ends.last,
+        equals(<String>{'g0'}),
+        reason: 'the pointer was resolved against the collapsed extent',
+      );
     });
   });
 
@@ -920,9 +1028,9 @@ void main() {
     // stayed that way for as long as the drag was held.
 
     Offset at(WidgetTester tester, GlobalKey key, double y) => Offset(
-          tester.getRect(find.byKey(key)).left + 50,
-          tester.getRect(find.byType(ListView)).top + y,
-        );
+      tester.getRect(find.byKey(key)).left + 50,
+      tester.getRect(find.byType(ListView)).top + y,
+    );
 
     /// Presses at [from] and drags to [to] **without lifting**, leaving the
     /// gesture live so the caller can re-pump under it.
@@ -959,10 +1067,17 @@ void main() {
       // y=200 at 80px is row 2 (160..240); the 15px move crosses the 8px
       // activation threshold without leaving it.
       final g = await pressAndDragTo(
-          tester, at(tester, h.tableKey, 200), at(tester, h.tableKey, 215));
-      expect(h.updates.last, equals(<String>{'2'}),
-          reason: 'the anchor was not taken against the 80px rows, so the '
-              'rest of this test measures nothing');
+        tester,
+        at(tester, h.tableKey, 200),
+        at(tester, h.tableKey, 215),
+      );
+      expect(
+        h.updates.last,
+        equals(<String>{'2'}),
+        reason:
+            'the anchor was not taken against the 80px rows, so the '
+            'rest of this test measures nothing',
+      );
 
       await _pumpDragTable(
         tester,
@@ -980,13 +1095,18 @@ void main() {
       await g.up();
       await tester.pump();
 
-      expect(h.ends.last, equals(<String>{'2', '3', '4', '5'}),
-          reason: 'the anchor moved with the layout instead of holding the '
-              'row that was pressed');
+      expect(
+        h.ends.last,
+        equals(<String>{'2', '3', '4', '5'}),
+        reason:
+            'the anchor moved with the layout instead of holding the '
+            'row that was pressed',
+      );
     });
 
-    testWidgets('lifting without moving reports the row now under the pointer',
-        (tester) async {
+    testWidgets('lifting without moving reports the row now under the pointer', (
+      tester,
+    ) async {
       final rows = _buildData(6);
       final h = await _pumpDragTable(
         tester,
@@ -997,9 +1117,15 @@ void main() {
       );
 
       final g = await pressAndDragTo(
-          tester, at(tester, h.tableKey, 200), at(tester, h.tableKey, 215));
-      expect(h.updates.last, equals(<String>{'2'}),
-          reason: 'the priming drag did not resolve against 80px rows');
+        tester,
+        at(tester, h.tableKey, 200),
+        at(tester, h.tableKey, 215),
+      );
+      expect(
+        h.updates.last,
+        equals(<String>{'2'}),
+        reason: 'the priming drag did not resolve against 80px rows',
+      );
 
       await _pumpDragTable(
         tester,
@@ -1016,67 +1142,84 @@ void main() {
       await g.up();
       await tester.pump();
 
-      expect(h.ends.last, equals(<String>{'2', '3', '4', '5'}),
-          reason: 'the drag ended on the range it had before the rebuild: the '
-              'rows are drawn at 40px but the pointer was still resolved '
-              'against 80px');
+      expect(
+        h.ends.last,
+        equals(<String>{'2', '3', '4', '5'}),
+        reason:
+            'the drag ended on the range it had before the rebuild: the '
+            'rows are drawn at 40px but the pointer was still resolved '
+            'against 80px',
+      );
     });
 
     testWidgets(
-        'auto-scroll at the extent re-resolves when the rows shrink under it',
-        (tester) async {
-      // The one that never recovers on its own. 30 rows at 80px is 2400 over a
-      // 360px viewport; at 40px it is 1200, so `maxScrollExtent` falls from
-      // 2040 to 840 and an offset above 840 is clamped onto it.
-      // `scrollVerticalBy` then returns false, `_tick` stops the timer, and
-      // the `refresh()` it gates behind that scroll never runs.
-      final rows = _buildData(30);
-      final h = await _pumpDragTable(
-        tester,
-        rowCount: 30,
-        data: rows,
-        tableHeight: 400,
-        calculateRowHeight: (i, r) => 80,
-      );
+      'auto-scroll at the extent re-resolves when the rows shrink under it',
+      (tester) async {
+        // The one that never recovers on its own. 30 rows at 80px is 2400 over a
+        // 360px viewport; at 40px it is 1200, so `maxScrollExtent` falls from
+        // 2040 to 840 and an offset above 840 is clamped onto it.
+        // `scrollVerticalBy` then returns false, `_tick` stops the timer, and
+        // the `refresh()` it gates behind that scroll never runs.
+        final rows = _buildData(30);
+        final h = await _pumpDragTable(
+          tester,
+          rowCount: 30,
+          data: rows,
+          tableHeight: 400,
+          calculateRowHeight: (i, r) => 80,
+        );
 
-      // y=100 at 80px is row 1; y=345 is inside the 40px bottom edge zone of
-      // the 360px viewport, so auto-scroll engages.
-      final g = await pressAndDragTo(
-          tester, at(tester, h.tableKey, 100), at(tester, h.tableKey, 345));
-      await _pumpFrames(tester, frames: 100);
-      // Measured 2026-09-04: 100 ticks put the offset at 925, which is the
-      // premise of the whole test — it must land *above* the 840 the extent
-      // falls to at 40px, or nothing is clamped and the timer keeps ticking
-      // its own correction. Asserting the ids asserts the offset: row 15 at
-      // 80px spans absolute 1200..1280, and the pointer sits at 345 + 925.
-      expect(h.updates.last, equals({for (int i = 1; i <= 15; i++) '$i'}),
-          reason: 'auto-scroll did not run to the offset this test is '
-              'measured against');
+        // y=100 at 80px is row 1; y=345 is inside the 40px bottom edge zone of
+        // the 360px viewport, so auto-scroll engages.
+        final g = await pressAndDragTo(
+          tester,
+          at(tester, h.tableKey, 100),
+          at(tester, h.tableKey, 345),
+        );
+        await _pumpFrames(tester, frames: 100);
+        // Measured 2026-09-04: 100 ticks put the offset at 925, which is the
+        // premise of the whole test — it must land *above* the 840 the extent
+        // falls to at 40px, or nothing is clamped and the timer keeps ticking
+        // its own correction. Asserting the ids asserts the offset: row 15 at
+        // 80px spans absolute 1200..1280, and the pointer sits at 345 + 925.
+        expect(
+          h.updates.last,
+          equals({for (int i = 1; i <= 15; i++) '$i'}),
+          reason:
+              'auto-scroll did not run to the offset this test is '
+              'measured against',
+        );
 
-      await _pumpDragTable(
-        tester,
-        rowCount: 30,
-        data: rows,
-        harness: h,
-        requireSameData: true,
-        tableHeight: 400,
-        calculateRowHeight: (i, r) => 40,
-        settle: false,
-      );
-      await _pumpFrames(tester, frames: 20);
-      await g.up();
-      await tester.pump();
+        await _pumpDragTable(
+          tester,
+          rowCount: 30,
+          data: rows,
+          harness: h,
+          requireSameData: true,
+          tableHeight: 400,
+          calculateRowHeight: (i, r) => 40,
+          settle: false,
+        );
+        await _pumpFrames(tester, frames: 20);
+        await g.up();
+        await tester.pump();
 
-      // Offset clamps 925 -> 840, so the pointer's absolute Y is 1185 —
-      // inside row 29 (1160..1200), the last one.
-      expect(h.ends.last, equals({for (int i = 1; i <= 29; i++) '$i'}),
-          reason: 'the drag ended 14 rows short: the timer stopped on the '
+        // Offset clamps 925 -> 840, so the pointer's absolute Y is 1185 —
+        // inside row 29 (1160..1200), the last one.
+        expect(
+          h.ends.last,
+          equals({for (int i = 1; i <= 29; i++) '$i'}),
+          reason:
+              'the drag ended 14 rows short: the timer stopped on the '
               'tick that could not scroll, and that is the same tick that '
-              'would have re-resolved the pointer');
-    });
+              'would have re-resolved the pointer',
+        );
+      },
+    );
 
-    testWidgets('a new data list under the pointer emits nothing by itself',
-        (tester) async {
+    testWidgets('a new data list under the pointer emits nothing by itself', (
+      tester,
+    ) async {
       // The refresh is scheduled on **either** non-`none` answer, so it fires
       // on a structural change too — the case this territory declares
       // undefined. What that costs is worth pinning rather than assuming: the
@@ -1099,9 +1242,15 @@ void main() {
       // y=100 at the default 40px is row 2; the 15px move crosses the
       // threshold without leaving it.
       final g = await pressAndDragTo(
-          tester, at(tester, h.tableKey, 100), at(tester, h.tableKey, 115));
-      expect(h.updates, hasLength(1),
-          reason: 'the drag did not start, so the rest measures nothing');
+        tester,
+        at(tester, h.tableKey, 100),
+        at(tester, h.tableKey, 115),
+      );
+      expect(
+        h.updates,
+        hasLength(1),
+        reason: 'the drag did not start, so the rest measures nothing',
+      );
 
       // A different list object — the structural branch — with the same six
       // heights, so every render index still sits where it did.
@@ -1113,10 +1262,14 @@ void main() {
         tableHeight: 400,
       );
 
-      expect(h.updates, hasLength(1),
-          reason: 'the rebuild emitted on its own: a structural change with '
-              'no height change moves no render index, so the re-resolve had '
-              'nothing to report and should have stayed quiet');
+      expect(
+        h.updates,
+        hasLength(1),
+        reason:
+            'the rebuild emitted on its own: a structural change with '
+            'no height change moves no render index, so the re-resolve had '
+            'nothing to report and should have stayed quiet',
+      );
 
       // The witness. Without it a gesture that died on the rebuild would leave
       // the count at 1 and pass the assertion above for the wrong reason.
@@ -1124,13 +1277,18 @@ void main() {
       await tester.pump();
       await g.up();
       await tester.pump();
-      expect(h.updates.length, greaterThan(1),
-          reason: 'the drag stopped responding to the pointer after the '
-              'rebuild, so the silence above proves nothing');
+      expect(
+        h.updates.length,
+        greaterThan(1),
+        reason:
+            'the drag stopped responding to the pointer after the '
+            'rebuild, so the silence above proves nothing',
+      );
     });
 
-    testWidgets('a growing row height re-resolves before the next tick',
-        (tester) async {
+    testWidgets('a growing row height re-resolves before the next tick', (
+      tester,
+    ) async {
       // The other arm. Auto-scroll keeps moving here, so a later tick would
       // have corrected it anyway — what this pins is that the correction does
       // not wait for one. The window is small and it is the window the user
@@ -1145,14 +1303,21 @@ void main() {
       );
 
       final g = await pressAndDragTo(
-          tester, at(tester, h.tableKey, 50), at(tester, h.tableKey, 345));
+        tester,
+        at(tester, h.tableKey, 50),
+        at(tester, h.tableKey, 345),
+      );
       await _pumpFrames(tester, frames: 60);
       // Measured 2026-09-04: 60 ticks put the offset at 555, and unlike the
       // test above it stays there — growing the rows grows the extent, so
       // nothing is clamped and auto-scroll goes on running.
-      expect(h.updates.last, equals({for (int i = 1; i <= 22; i++) '$i'}),
-          reason: 'auto-scroll did not run to the offset this test is '
-              'measured against');
+      expect(
+        h.updates.last,
+        equals({for (int i = 1; i <= 22; i++) '$i'}),
+        reason:
+            'auto-scroll did not run to the offset this test is '
+            'measured against',
+      );
 
       await _pumpDragTable(
         tester,
@@ -1169,9 +1334,13 @@ void main() {
       // row 11 at 80px (880..960). Asserted here, before any further tick, and
       // the frames are not pumped afterwards because auto-scroll would carry
       // it past this value and the assertion would stop meaning anything.
-      expect(h.updates.last, equals({for (int i = 1; i <= 11; i++) '$i'}),
-          reason: 'the selection still answered against the 40px rows until '
-              'the next tick that happened to scroll');
+      expect(
+        h.updates.last,
+        equals({for (int i = 1; i <= 11; i++) '$i'}),
+        reason:
+            'the selection still answered against the 40px rows until '
+            'the next tick that happened to scroll',
+      );
 
       await g.up();
       await tester.pump();

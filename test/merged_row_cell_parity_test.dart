@@ -42,8 +42,8 @@ Map<String, TablePlusColumn<Row>> _columns() {
 }
 
 List<Row> _rows(List<String> ids) => [
-      for (final id in ids) {'id': id, 'c0': 'r$id'}
-    ];
+  for (final id in ids) {'id': id, 'c0': 'r$id'},
+];
 
 Future<void> _pump(
   WidgetTester tester, {
@@ -84,7 +84,8 @@ Future<void> _pump(
                 ),
                 headerTheme: const TablePlusHeaderTheme(height: 40),
                 checkboxTheme: TablePlusCheckboxTheme(
-                    showCheckboxColumn: showCheckboxColumn),
+                  showCheckboxColumn: showCheckboxColumn,
+                ),
               ),
             ),
           ),
@@ -98,12 +99,8 @@ Future<void> _pump(
 /// A group over every id in [ids], merging nothing — so every column renders
 /// through the STACKED branch, which is the branch under test.
 List<MergedRowGroup<Row>> _groupOf(List<String> ids) => [
-      MergedRowGroup<Row>(
-        groupId: 'g',
-        rowKeys: ids,
-        mergeConfig: const {},
-      ),
-    ];
+  MergedRowGroup<Row>(groupId: 'g', rowKeys: ids, mergeConfig: const {}),
+];
 
 /// The border the cell itself paints around the glyphs of [label].
 ///
@@ -125,8 +122,11 @@ List<MergedRowGroup<Row>> _groupOf(List<String> ids) => [
 /// was tried and abandoned: the grouped and ungrouped trees produce different
 /// counts for reasons this run did not chase, and a guard whose expected value
 /// nobody can explain is a guard that gets edited until it passes.
-Border? _cellBorder(WidgetTester tester, String label,
-    {bool expectRight = true}) {
+Border? _cellBorder(
+  WidgetTester tester,
+  String label, {
+  bool expectRight = true,
+}) {
   final borders = tester
       .widgetList<Container>(
         find.ancestor(of: find.text(label), matching: find.byType(Container)),
@@ -135,34 +135,45 @@ Border? _cellBorder(WidgetTester tester, String label,
       .whereType<BoxDecoration>()
       .map((d) => d.border)
       .whereType<Border>()
-      .where((b) =>
-          b.right.style != BorderStyle.none ||
-          b.bottom.style != BorderStyle.none ||
-          b.top.style != BorderStyle.none)
+      .where(
+        (b) =>
+            b.right.style != BorderStyle.none ||
+            b.bottom.style != BorderStyle.none ||
+            b.top.style != BorderStyle.none,
+      )
       .toList();
   if (borders.isEmpty) return null;
   final innermost = borders.first;
   if (expectRight) {
-    expect(innermost.right.style, isNot(BorderStyle.none),
-        reason: 'the innermost side-drawing ancestor of "$label" has no right '
-            'side, so it is not the cell — `rowDecoration` composes a bottom '
-            'and never a right. Every assertion below would be reading the '
-            'wrong box');
+    expect(
+      innermost.right.style,
+      isNot(BorderStyle.none),
+      reason:
+          'the innermost side-drawing ancestor of "$label" has no right '
+          'side, so it is not the cell — `rowDecoration` composes a bottom '
+          'and never a right. Every assertion below would be reading the '
+          'wrong box',
+    );
   }
   return innermost;
 }
 
 void main() {
   group('a member cell is decorated like the same row outside a group', () {
-    testWidgets('the vertical divider is the theme\'s, not a literal',
-        (tester) async {
+    testWidgets('the vertical divider is the theme\'s, not a literal', (
+      tester,
+    ) async {
       // Ungrouped control first: whatever the ordinary cell draws is the
       // expected value, and this test never writes that number down.
       await _pump(tester, data: _rows(['a', 'b', 'c']), groups: const []);
       final ungrouped = _cellBorder(tester, 'ra');
-      expect(ungrouped, isNotNull,
-          reason: 'the control found no decorated cell — the harness is wrong, '
-              'not the code');
+      expect(
+        ungrouped,
+        isNotNull,
+        reason:
+            'the control found no decorated cell — the harness is wrong, '
+            'not the code',
+      );
 
       await _pump(
         tester,
@@ -188,14 +199,17 @@ void main() {
       expect(
         grouped!.right.width,
         expected.verticalDividerSide.width,
-        reason: 'a member cell hand-built its right divider at width 1 while '
+        reason:
+            'a member cell hand-built its right divider at width 1 while '
             'theme.verticalDividerSide is 0.5 — twice as thick, at the '
             'DEFAULT theme',
       );
       // The alpha is written HERE, not read back off the same getter: an
       // expectation derived by the code under test cannot fail with it.
-      expect(grouped.right.color,
-          const TablePlusBodyTheme().dividerColor.withValues(alpha: 0.5));
+      expect(
+        grouped.right.color,
+        const TablePlusBodyTheme().dividerColor.withValues(alpha: 0.5),
+      );
 
       // Kept as a weaker second assertion: it can no longer catch a shared
       // error, but it still catches the two paths DIVERGING again, which is
@@ -204,8 +218,9 @@ void main() {
       expect(grouped.right.color, ungrouped.right.color);
     });
 
-    testWidgets('the member separator follows theme.dividerThickness',
-        (tester) async {
+    testWidgets('the member separator follows theme.dividerThickness', (
+      tester,
+    ) async {
       // **The group covers every row, and that is the point.** Written this
       // way first, it measured 0.0 rather than the width it names — because a
       // member's separator was gated on the GROUP's `isLastRow`, so at the
@@ -229,18 +244,22 @@ void main() {
       expect(
         grouped!.bottom.width,
         expected.memberDividerSide.width,
-        reason: 'the separator between two members hardcoded width: 1 while '
+        reason:
+            'the separator between two members hardcoded width: 1 while '
             'every other row divider reads theme.dividerThickness. At the '
             'default 1.0 those are the same number and this cannot fail, '
             'which is why kT is 4.0',
       );
       // Width alone left the colour unpinned: alpha 0.3 -> 1.0 was green.
-      expect(grouped.bottom.color,
-          const TablePlusBodyTheme().dividerColor.withValues(alpha: 0.3));
+      expect(
+        grouped.bottom.color,
+        const TablePlusBodyTheme().dividerColor.withValues(alpha: 0.3),
+      );
     });
 
-    testWidgets('the summary cell is decorated like the members beside it',
-        (tester) async {
+    testWidgets('the summary cell is decorated like the members beside it', (
+      tester,
+    ) async {
       // Written because both adversarial passes reached it independently: the
       // first version of this change converted the member cells and left
       // `_buildSummaryRowCell` on its literals, so the members drew 0.5 and the
@@ -264,9 +283,13 @@ void main() {
       final lastMember = _cellBorder(tester, 'rc');
       final summary = _cellBorder(tester, 'sum');
       expect(member, isNotNull);
-      expect(summary, isNotNull,
-          reason: 'the summary row did not render — the control is broken, not '
-              'the code');
+      expect(
+        summary,
+        isNotNull,
+        reason:
+            'the summary row did not render — the control is broken, not '
+            'the code',
+      );
 
       expect(summary!.right.width, member!.right.width);
       expect(summary.right.color, member.right.color);
@@ -285,20 +308,33 @@ void main() {
       // the last member's themed bottom, so that one boundary drew 4px + 0.5px
       // where every other member boundary drew 4px.
       expect(lastMember, isNotNull);
-      expect(lastMember!.bottom.width, member.bottom.width,
-          reason: 'the last member is followed by the summary, so it draws the '
-              'same separator every other member draws');
+      expect(
+        lastMember!.bottom.width,
+        member.bottom.width,
+        reason:
+            'the last member is followed by the summary, so it draws the '
+            'same separator every other member draws',
+      );
       expect(lastMember.bottom.color, member.bottom.color);
-      expect(summary.bottom.style, BorderStyle.none,
-          reason: 'nothing follows the summary cell, so the edge below it '
-              'belongs to the group decoration and is not a second line');
-      expect(summary.top.style, BorderStyle.none,
-          reason: 'the boundary above the summary belongs to the last '
-              'member, and it is drawn once');
+      expect(
+        summary.bottom.style,
+        BorderStyle.none,
+        reason:
+            'nothing follows the summary cell, so the edge below it '
+            'belongs to the group decoration and is not a second line',
+      );
+      expect(
+        summary.top.style,
+        BorderStyle.none,
+        reason:
+            'the boundary above the summary belongs to the last '
+            'member, and it is drawn once',
+      );
     });
 
-    testWidgets('turning horizontal dividers off removes the member separator',
-        (tester) async {
+    testWidgets('turning horizontal dividers off removes the member separator', (
+      tester,
+    ) async {
       // Protects the gate itself. Without this, deleting `_memberBottomSide`'s
       // call and passing `theme.memberDividerSide` unconditionally left every
       // other test green — measured. That gate is the one carrying a known
@@ -314,8 +350,9 @@ void main() {
       expect(b?.bottom.style ?? BorderStyle.none, BorderStyle.none);
     });
 
-    testWidgets('turning vertical dividers off leaves the cell undecorated',
-        (tester) async {
+    testWidgets('turning vertical dividers off leaves the cell undecorated', (
+      tester,
+    ) async {
       // Pins `_composeBorder`'s null return. Replacing its body with an
       // unconditional `Border(...)` was green everywhere before this existed.
       await _pump(
@@ -331,22 +368,32 @@ void main() {
       final decorations = tester
           .widgetList<Container>(
             find.ancestor(
-                of: find.text('ra'), matching: find.byType(Container)),
+              of: find.text('ra'),
+              matching: find.byType(Container),
+            ),
           )
           .map((c) => c.decoration)
           .whereType<BoxDecoration>()
           .toList();
-      expect(decorations, isNotEmpty,
-          reason: 'no decorated ancestor at all — the harness is wrong');
-      expect(decorations.first.border, isNull,
-          reason: '_composeBorder must return null when it has nothing to '
-              'draw, rather than a Border whose every side is none');
+      expect(
+        decorations,
+        isNotEmpty,
+        reason: 'no decorated ancestor at all — the harness is wrong',
+      );
+      expect(
+        decorations.first.border,
+        isNull,
+        reason:
+            '_composeBorder must return null when it has nothing to '
+            'draw, rather than a Border whose every side is none',
+      );
     });
   });
 
   group('a merged row builds the cells the table has columns for', () {
-    testWidgets('no selection cell when there is no selection column',
-        (tester) async {
+    testWidgets('no selection cell when there is no selection column', (
+      tester,
+    ) async {
       // The plain row gates on the COLUMN (`column.key == '__selection__'`);
       // the merged row gated on `isSelectable` alone. The column is injected
       // only when `isSelectable && checkboxTheme.showCheckboxColumn`, and
@@ -369,14 +416,19 @@ void main() {
 
       final member = tester.getTopLeft(find.text('ra')).dx;
       final plain = tester.getTopLeft(find.text('rd')).dx;
-      expect(member, plain,
-          reason: 'the group cells start a whole column right of a plain '
-              'row, so the group is pushed off the viewport and renders '
-              'blank');
+      expect(
+        member,
+        plain,
+        reason:
+            'the group cells start a whole column right of a plain '
+            'row, so the group is pushed off the viewport and renders '
+            'blank',
+      );
     });
 
-    testWidgets('the selection cell is still built when the column exists',
-        (tester) async {
+    testWidgets('the selection cell is still built when the column exists', (
+      tester,
+    ) async {
       // The control. Without it the assertion above is satisfied by never
       // building a selection cell at all, which would break selection.
       await _pump(
@@ -385,17 +437,24 @@ void main() {
         groups: _groupOf(['a', 'b', 'c']),
         isSelectable: true,
       );
-      expect(tester.getTopLeft(find.text('ra')).dx,
-          tester.getTopLeft(find.text('rd')).dx);
-      expect(find.byType(FlutterCheckbox), findsWidgets,
-          reason: 'the checkbox column is on, so the group must still draw a '
-              'checkbox — otherwise the fix above just deleted selection');
+      expect(
+        tester.getTopLeft(find.text('ra')).dx,
+        tester.getTopLeft(find.text('rd')).dx,
+      );
+      expect(
+        find.byType(FlutterCheckbox),
+        findsWidgets,
+        reason:
+            'the checkbox column is on, so the group must still draw a '
+            'checkbox — otherwise the fix above just deleted selection',
+      );
     });
   });
 
   group('editing does not remove the divider', () {
-    testWidgets('an ordinary cell keeps its vertical divider while editing',
-        (tester) async {
+    testWidgets('an ordinary cell keeps its vertical divider while editing', (
+      tester,
+    ) async {
       // The maintainer's call, 2026-09-03: the line must not disappear.
       // pluto_grid agrees — it branches on isCurrentCell, never on isEditing.
       await _pump(
@@ -414,9 +473,13 @@ void main() {
       // The side condition, asserted rather than assumed. If editing never
       // started there is no editor to find an ancestor of, and the assertion
       // below would report "no bordered container" while measuring nothing.
-      expect(find.byType(EditableText), findsOneWidget,
-          reason: 'the tap did not start editing — the assertion below would '
-              'be vacuous');
+      expect(
+        find.byType(EditableText),
+        findsOneWidget,
+        reason:
+            'the tap did not start editing — the assertion below would '
+            'be vacuous',
+      );
 
       // The glyphs move into a TextField but the cell is still decorated.
       final editing = tester
@@ -436,7 +499,8 @@ void main() {
       expect(
         editing,
         isNotEmpty,
-        reason: 'the ordinary cell clears its border while isCellEditing, so '
+        reason:
+            'the ordinary cell clears its border while isCellEditing, so '
             'the divider vanishes mid-edit. The maintainer ruled that a '
             'defect, not a contract',
       );

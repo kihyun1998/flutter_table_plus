@@ -238,8 +238,13 @@ class FlutterTablePlus<T> extends StatefulWidget {
   final void Function(String rowId)? onRowDoubleTap;
 
   /// Callback when a row is right-clicked.
-  final void Function(String rowId, TapDownDetails details, RenderBox renderBox,
-      bool isSelected)? onRowSecondaryTapDown;
+  final void Function(
+    String rowId,
+    TapDownDetails details,
+    RenderBox renderBox,
+    bool isSelected,
+  )?
+  onRowSecondaryTapDown;
 
   /// The key of the currently sorted column.
   final String? sortColumnKey;
@@ -292,7 +297,7 @@ class FlutterTablePlus<T> extends StatefulWidget {
 
   /// Callback when a merged cell value is changed.
   final void Function(String groupId, String columnKey, dynamic newValue)?
-      onMergedCellChanged;
+  onMergedCellChanged;
 
   /// Callback when a merged row group's expand/collapse state should be toggled.
 
@@ -585,7 +590,9 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
       _resizedWidths.removeWhere((key, _) => !widget.columns.containsKey(key));
     }
     if (!mapEquals(
-        widget.initialResizedWidths, oldWidget.initialResizedWidths)) {
+      widget.initialResizedWidths,
+      oldWidget.initialResizedWidths,
+    )) {
       _resizedWidths.clear();
       if (widget.initialResizedWidths != null) {
         _resizedWidths.addAll(widget.initialResizedWidths!);
@@ -646,17 +653,21 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
         if (!mounted) return;
         if (_verticalScrollController?.hasClients == true) {
           final baseOffset = savedV ?? _verticalScrollController!.offset;
-          _verticalScrollController!.jumpTo((baseOffset * ratio).clamp(
-            0.0,
-            _verticalScrollController!.position.maxScrollExtent,
-          ));
+          _verticalScrollController!.jumpTo(
+            (baseOffset * ratio).clamp(
+              0.0,
+              _verticalScrollController!.position.maxScrollExtent,
+            ),
+          );
         }
         if (_horizontalScrollController?.hasClients == true) {
           final baseOffset = savedH ?? _horizontalScrollController!.offset;
-          _horizontalScrollController!.jumpTo((baseOffset * ratio).clamp(
-            0.0,
-            _horizontalScrollController!.position.maxScrollExtent,
-          ));
+          _horizontalScrollController!.jumpTo(
+            (baseOffset * ratio).clamp(
+              0.0,
+              _horizontalScrollController!.position.maxScrollExtent,
+            ),
+          );
         }
       });
     }
@@ -723,8 +734,10 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
     for (final row in widget.data) {
       final id = widget.rowId(row);
       if (ids.contains(id)) {
-        debugPrint('⚠️ FlutterTablePlus: Duplicate row ID found: "$id". '
-            'Each row must have a unique ID for selection features to work correctly.');
+        debugPrint(
+          '⚠️ FlutterTablePlus: Duplicate row ID found: "$id". '
+          'Each row must have a unique ID for selection features to work correctly.',
+        );
         return;
       }
       ids.add(id);
@@ -771,12 +784,12 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
   bool _warnInlineRowHeightCallback(FlutterTablePlus<T> oldWidget) {
     final onlyTheCallbackMoved =
         widget.calculateRowHeight != oldWidget.calculateRowHeight &&
-            widget.scale == oldWidget.scale &&
-            widget.theme.bodyTheme.rowHeight ==
-                oldWidget.theme.bodyTheme.rowHeight &&
-            identical(widget.data, oldWidget.data) &&
-            identical(widget.mergedGroups, oldWidget.mergedGroups) &&
-            identical(widget.columns, oldWidget.columns);
+        widget.scale == oldWidget.scale &&
+        widget.theme.bodyTheme.rowHeight ==
+            oldWidget.theme.bodyTheme.rowHeight &&
+        identical(widget.data, oldWidget.data) &&
+        identical(widget.mergedGroups, oldWidget.mergedGroups) &&
+        identical(widget.columns, oldWidget.columns);
 
     if (!onlyTheCallbackMoved) {
       _inlineHeightStreak = 0;
@@ -835,7 +848,7 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
   double _getRowHeight(int index) {
     final baseHeight =
         widget.calculateRowHeight?.call(index, widget.data[index]) ??
-            widget.theme.bodyTheme.rowHeight;
+        widget.theme.bodyTheme.rowHeight;
     return baseHeight * widget.scale;
   }
 
@@ -961,17 +974,19 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
 
   /// Get ordered columns, with optional selection column prepended.
   List<TablePlusColumn<T>> _getOrderedColumns() => orderVisibleColumns<T>(
-        columns: widget.columns,
-        isSelectable: widget.isSelectable,
-        checkboxTheme: widget.theme.checkboxTheme,
-      );
+    columns: widget.columns,
+    isSelectable: widget.isSelectable,
+    checkboxTheme: widget.theme.checkboxTheme,
+  );
 
   /// Calculate column widths based on available space.
   ///
   /// Thin adapter over the pure [computeColumnWidths] algorithm, supplying the
   /// current user-resized widths and the stretch flag.
   List<double> _calculateColumnWidths(
-      double availableWidth, List<TablePlusColumn<T>> orderedColumns) {
+    double availableWidth,
+    List<TablePlusColumn<T>> orderedColumns,
+  ) {
     return computeColumnWidths<T>(
       availableWidth: availableWidth,
       columns: orderedColumns,
@@ -1091,12 +1106,8 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
         child: Theme(
           data: Theme.of(context).copyWith(
             scrollbarTheme: ScrollbarThemeData(
-              thumbColor: WidgetStateProperty.all(
-                scrollbarTheme.thumbColor,
-              ),
-              trackColor: WidgetStateProperty.all(
-                Colors.transparent,
-              ),
+              thumbColor: WidgetStateProperty.all(scrollbarTheme.thumbColor),
+              trackColor: WidgetStateProperty.all(Colors.transparent),
               radius: Radius.circular(scrollbarTheme.radius ?? trackWidth / 2),
               thickness: WidgetStateProperty.all(
                 scrollbarTheme.thickness ?? trackWidth * 0.7,
@@ -1140,12 +1151,16 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
 
         // Calculate column widths in logical space, then scale to pixels.
         // This preserves the proportional distribution logic unchanged.
-        final logicalWidths =
-            _calculateColumnWidths(availableWidth / scale, orderedColumns);
+        final logicalWidths = _calculateColumnWidths(
+          availableWidth / scale,
+          orderedColumns,
+        );
         final columnWidths = logicalWidths.map((w) => w * scale).toList();
 
-        final totalColumnWidth =
-            columnWidths.fold(0.0, (sum, width) => sum + width);
+        final totalColumnWidth = columnWidths.fold(
+          0.0,
+          (sum, width) => sum + width,
+        );
 
         // Actual content width (can be wider than available space for horizontal scroll)
         final double contentWidth = max(totalColumnWidth, availableWidth);
@@ -1158,225 +1173,237 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
             theme.headerTheme.height + tableDataHeight;
 
         return SyncedScrollControllers(
-          builder: (
-            context,
-            verticalScrollController,
-            verticalScrollbarController,
-            horizontalScrollController,
-            horizontalScrollbarController,
-            horizontalHeaderController,
-          ) {
-            // Capture controller references for scale-change scroll correction
-            _verticalScrollController = verticalScrollController;
-            _horizontalScrollController = horizontalScrollController;
+          builder:
+              (
+                context,
+                verticalScrollController,
+                verticalScrollbarController,
+                horizontalScrollController,
+                horizontalScrollbarController,
+                horizontalHeaderController,
+              ) {
+                // Capture controller references for scale-change scroll correction
+                _verticalScrollController = verticalScrollController;
+                _horizontalScrollController = horizontalScrollController;
 
-            // Determine if scrolling is needed
-            final bool needsVerticalScroll =
-                totalContentHeight > availableHeight;
-            final bool needsHorizontalScroll = contentWidth > availableWidth;
+                // Determine if scrolling is needed
+                final bool needsVerticalScroll =
+                    totalContentHeight > availableHeight;
+                final bool needsHorizontalScroll =
+                    contentWidth > availableWidth;
 
-            // Header and body live in independent horizontal Scrollables —
-            // the body controller is the user-input master, the header is
-            // slaved via NeverScrollableScrollPhysics + position sync.
-            // This keeps the body widget stationary horizontally inside its
-            // own viewport so future drag-selection coordinate work can
-            // operate in a single (viewport) reference frame.
-            final headerSliver = SingleChildScrollView(
-              controller: horizontalHeaderController,
-              scrollDirection: Axis.horizontal,
-              physics: const NeverScrollableScrollPhysics(),
-              child: SizedBox(
-                width: contentWidth,
-                child: TablePlusHeader<T>(
-                  columns: orderedColumns,
-                  columnWidths: columnWidths,
-                  totalWidth: contentWidth,
-                  theme: theme.headerTheme,
-                  tooltipTheme: theme.headerTooltipTheme ?? theme.tooltipTheme,
-                  checkboxTheme: theme.checkboxTheme,
-                  isSelectable: widget.isSelectable,
-                  selectionMode: widget.selectionMode,
-                  selectedRows: widget.selectedRows,
-                  sortCycleOrder: widget.sortCycleOrder,
-                  totalRowCount: _cachedTotalRowCount,
-                  onSelectAll: widget.onSelectAll,
-                  onColumnReorder: widget.onColumnReorder,
-                  resizable: widget.resizable,
-                  scale: scale,
-                  onColumnResize: _handleColumnResize,
-                  onColumnResizeEnd: _handleColumnResizeEnd,
-                  onColumnAutoFit: _handleColumnAutoFit,
-                  sortColumnKey: widget.sortColumnKey,
-                  sortDirection: widget.sortDirection,
-                  onSort: widget.onSort,
-                ),
-              ),
-            );
-
-            final bodyContent = widget.data.isEmpty &&
-                    widget.noDataWidget != null
-                ? widget.noDataWidget!
-                : LayoutBuilder(
-                    builder: (context, bodyConstraints) {
-                      return SizedBox(
-                        height: max(bodyConstraints.maxHeight, tableDataHeight),
-                        child: TablePlusBody<T>(
-                          key: _bodyKey,
-                          rowTooltipBuilder: widget.rowTooltipBuilder,
-                          rowTooltipTheme:
-                              theme.rowTooltipTheme ?? theme.tooltipTheme,
-                          columns: orderedColumns,
-                          data: widget.data,
-                          columnWidths: columnWidths,
-                          theme: theme.bodyTheme,
-                          editableTheme: theme.editableTheme,
-                          tooltipTheme: theme.tooltipTheme,
-                          checkboxTheme: theme.checkboxTheme,
-                          verticalController: verticalScrollController,
-                          rowId: widget.rowId,
-                          mergedGroups: widget.mergedGroups,
-                          isDimRow: widget.isDimRow,
-                          isSelectable: widget.isSelectable,
-                          selectionMode: widget.selectionMode,
-                          selectedRows: widget.selectedRows,
-                          onRowSelectionChanged: widget.onRowSelectionChanged,
-                          onCheckboxChanged: widget.onCheckboxChanged,
-                          onRowDoubleTap: widget.onRowDoubleTap,
-                          onRowSecondaryTapDown: widget.onRowSecondaryTapDown,
-                          isEditable: widget.isEditable,
-                          isCellEditing: _isCellEditing,
-                          getCellController: _getCellController,
-                          onCellTap: _handleCellTap,
-                          onStopEditing: _stopEditing,
-                          onMergedCellChanged: widget.onMergedCellChanged,
-                          calculateRowHeight: widget.calculateRowHeight,
-                          scale: scale,
-                          scrollPhysics: widget.onScaleChanged != null
-                              ? const _ScaleBlockingScrollPhysics()
-                              : const ClampingScrollPhysics(),
-                          needsVerticalScroll: needsVerticalScroll,
-                          hoverButtonBuilder: widget.hoverButtonBuilder,
-                          hoverButtonPosition: widget.hoverButtonPosition,
-                          hoverButtonTheme: theme.hoverButtonTheme,
-                        ),
-                      );
-                    },
-                  );
-
-            final bodyScrollable = SingleChildScrollView(
-              controller: horizontalScrollController,
-              scrollDirection: Axis.horizontal,
-              physics: _blockModifierScroll
-                  ? const _ScaleBlockingScrollPhysics()
-                  : const ClampingScrollPhysics(),
-              child: SizedBox(
-                width: contentWidth,
-                child: bodyContent,
-              ),
-            );
-
-            // Drag selection lives at the table level — the Listener wraps
-            // the body's horizontal Scrollable so its RenderBox is
-            // stationary in screen on both axes (the body scrolls *inside*
-            // it). Rubber band paint also uses this RenderBox's local
-            // coords, so origin/end stay in a single reference frame.
-            final bodySliver = Builder(
-              builder: (innerCtx) {
-                _viewportContext = innerCtx;
-                final rubberBand = _buildRubberBand();
-                return Listener(
-                  behavior: HitTestBehavior.translucent,
-                  onPointerDown:
-                      _isDragSelectionEnabled ? _onDragPointerDown : null,
-                  onPointerMove:
-                      _isDragSelectionEnabled ? _onDragPointerMove : null,
-                  onPointerUp:
-                      _isDragSelectionEnabled ? _onDragPointerUp : null,
-                  onPointerCancel:
-                      _isDragSelectionEnabled ? _onDragPointerCancel : null,
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      bodyScrollable,
-                      if (rubberBand != null) IgnorePointer(child: rubberBand),
-                    ],
+                // Header and body live in independent horizontal Scrollables —
+                // the body controller is the user-input master, the header is
+                // slaved via NeverScrollableScrollPhysics + position sync.
+                // This keeps the body widget stationary horizontally inside its
+                // own viewport so future drag-selection coordinate work can
+                // operate in a single (viewport) reference frame.
+                final headerSliver = SingleChildScrollView(
+                  controller: horizontalHeaderController,
+                  scrollDirection: Axis.horizontal,
+                  physics: const NeverScrollableScrollPhysics(),
+                  child: SizedBox(
+                    width: contentWidth,
+                    child: TablePlusHeader<T>(
+                      columns: orderedColumns,
+                      columnWidths: columnWidths,
+                      totalWidth: contentWidth,
+                      theme: theme.headerTheme,
+                      tooltipTheme:
+                          theme.headerTooltipTheme ?? theme.tooltipTheme,
+                      checkboxTheme: theme.checkboxTheme,
+                      isSelectable: widget.isSelectable,
+                      selectionMode: widget.selectionMode,
+                      selectedRows: widget.selectedRows,
+                      sortCycleOrder: widget.sortCycleOrder,
+                      totalRowCount: _cachedTotalRowCount,
+                      onSelectAll: widget.onSelectAll,
+                      onColumnReorder: widget.onColumnReorder,
+                      resizable: widget.resizable,
+                      scale: scale,
+                      onColumnResize: _handleColumnResize,
+                      onColumnResizeEnd: _handleColumnResizeEnd,
+                      onColumnAutoFit: _handleColumnAutoFit,
+                      sortColumnKey: widget.sortColumnKey,
+                      sortDirection: widget.sortDirection,
+                      onSort: widget.onSort,
+                    ),
                   ),
                 );
-              },
-            );
 
-            return Listener(
-              onPointerSignal:
-                  _blockModifierScroll ? _handlePointerSignalForScale : null,
-              child: MouseRegion(
-                onEnter: (_) => _isHovered.value = true,
-                onExit: (_) => _isHovered.value = false,
-                child: ScrollConfiguration(
-                  // Hide default Flutter scrollbars
-                  behavior: ScrollConfiguration.of(context).copyWith(
-                    scrollbars: false,
-                  ),
-                  child: Stack(
-                    children: [
-                      Column(
+                final bodyContent =
+                    widget.data.isEmpty && widget.noDataWidget != null
+                    ? widget.noDataWidget!
+                    : LayoutBuilder(
+                        builder: (context, bodyConstraints) {
+                          return SizedBox(
+                            height: max(
+                              bodyConstraints.maxHeight,
+                              tableDataHeight,
+                            ),
+                            child: TablePlusBody<T>(
+                              key: _bodyKey,
+                              rowTooltipBuilder: widget.rowTooltipBuilder,
+                              rowTooltipTheme:
+                                  theme.rowTooltipTheme ?? theme.tooltipTheme,
+                              columns: orderedColumns,
+                              data: widget.data,
+                              columnWidths: columnWidths,
+                              theme: theme.bodyTheme,
+                              editableTheme: theme.editableTheme,
+                              tooltipTheme: theme.tooltipTheme,
+                              checkboxTheme: theme.checkboxTheme,
+                              verticalController: verticalScrollController,
+                              rowId: widget.rowId,
+                              mergedGroups: widget.mergedGroups,
+                              isDimRow: widget.isDimRow,
+                              isSelectable: widget.isSelectable,
+                              selectionMode: widget.selectionMode,
+                              selectedRows: widget.selectedRows,
+                              onRowSelectionChanged:
+                                  widget.onRowSelectionChanged,
+                              onCheckboxChanged: widget.onCheckboxChanged,
+                              onRowDoubleTap: widget.onRowDoubleTap,
+                              onRowSecondaryTapDown:
+                                  widget.onRowSecondaryTapDown,
+                              isEditable: widget.isEditable,
+                              isCellEditing: _isCellEditing,
+                              getCellController: _getCellController,
+                              onCellTap: _handleCellTap,
+                              onStopEditing: _stopEditing,
+                              onMergedCellChanged: widget.onMergedCellChanged,
+                              calculateRowHeight: widget.calculateRowHeight,
+                              scale: scale,
+                              scrollPhysics: widget.onScaleChanged != null
+                                  ? const _ScaleBlockingScrollPhysics()
+                                  : const ClampingScrollPhysics(),
+                              needsVerticalScroll: needsVerticalScroll,
+                              hoverButtonBuilder: widget.hoverButtonBuilder,
+                              hoverButtonPosition: widget.hoverButtonPosition,
+                              hoverButtonTheme: theme.hoverButtonTheme,
+                            ),
+                          );
+                        },
+                      );
+
+                final bodyScrollable = SingleChildScrollView(
+                  controller: horizontalScrollController,
+                  scrollDirection: Axis.horizontal,
+                  physics: _blockModifierScroll
+                      ? const _ScaleBlockingScrollPhysics()
+                      : const ClampingScrollPhysics(),
+                  child: SizedBox(width: contentWidth, child: bodyContent),
+                );
+
+                // Drag selection lives at the table level — the Listener wraps
+                // the body's horizontal Scrollable so its RenderBox is
+                // stationary in screen on both axes (the body scrolls *inside*
+                // it). Rubber band paint also uses this RenderBox's local
+                // coords, so origin/end stay in a single reference frame.
+                final bodySliver = Builder(
+                  builder: (innerCtx) {
+                    _viewportContext = innerCtx;
+                    final rubberBand = _buildRubberBand();
+                    return Listener(
+                      behavior: HitTestBehavior.translucent,
+                      onPointerDown: _isDragSelectionEnabled
+                          ? _onDragPointerDown
+                          : null,
+                      onPointerMove: _isDragSelectionEnabled
+                          ? _onDragPointerMove
+                          : null,
+                      onPointerUp: _isDragSelectionEnabled
+                          ? _onDragPointerUp
+                          : null,
+                      onPointerCancel: _isDragSelectionEnabled
+                          ? _onDragPointerCancel
+                          : null,
+                      child: Stack(
+                        fit: StackFit.expand,
                         children: [
-                          headerSliver,
-                          Expanded(child: bodySliver),
-                          // Reserve space for the horizontal scrollbar
-                          // overlay (positioned at bottom). Sits outside
-                          // the horizontal scrollables so it doesn't
-                          // participate in horizontal scrolling.
+                          bodyScrollable,
+                          if (rubberBand != null)
+                            IgnorePointer(child: rubberBand),
+                        ],
+                      ),
+                    );
+                  },
+                );
+
+                return Listener(
+                  onPointerSignal: _blockModifierScroll
+                      ? _handlePointerSignalForScale
+                      : null,
+                  child: MouseRegion(
+                    onEnter: (_) => _isHovered.value = true,
+                    onExit: (_) => _isHovered.value = false,
+                    child: ScrollConfiguration(
+                      // Hide default Flutter scrollbars
+                      behavior: ScrollConfiguration.of(
+                        context,
+                      ).copyWith(scrollbars: false),
+                      child: Stack(
+                        children: [
+                          Column(
+                            children: [
+                              headerSliver,
+                              Expanded(child: bodySliver),
+                              // Reserve space for the horizontal scrollbar
+                              // overlay (positioned at bottom). Sits outside
+                              // the horizontal scrollables so it doesn't
+                              // participate in horizontal scrolling.
+                              if (theme.scrollbarTheme.showHorizontal &&
+                                  needsHorizontalScroll)
+                                SizedBox(
+                                  height: theme.scrollbarTheme.trackWidth,
+                                ),
+                            ],
+                          ),
+
+                          // Vertical Scrollbar (right overlay) - starts below header
+                          if (theme.scrollbarTheme.showVertical &&
+                              needsVerticalScroll)
+                            Positioned(
+                              top: theme.headerTheme.height,
+                              right: 0,
+                              bottom:
+                                  (theme.scrollbarTheme.showHorizontal &&
+                                      needsHorizontalScroll)
+                                  ? theme.scrollbarTheme.trackWidth
+                                  : 0,
+                              child: _buildScrollbarTrack(
+                                context: context,
+                                scrollbarTheme: theme.scrollbarTheme,
+                                controller: verticalScrollbarController,
+                                axis: Axis.vertical,
+                                contentExtent: needsHorizontalScroll
+                                    ? tableDataHeight -
+                                          theme.scrollbarTheme.trackWidth
+                                    : tableDataHeight,
+                              ),
+                            ),
+
+                          // Horizontal Scrollbar (bottom overlay)
                           if (theme.scrollbarTheme.showHorizontal &&
                               needsHorizontalScroll)
-                            SizedBox(
-                              height: theme.scrollbarTheme.trackWidth,
+                            Positioned(
+                              left: 0,
+                              right: 0,
+                              bottom: 0,
+                              child: _buildScrollbarTrack(
+                                context: context,
+                                scrollbarTheme: theme.scrollbarTheme,
+                                controller: horizontalScrollbarController,
+                                axis: Axis.horizontal,
+                                contentExtent: contentWidth,
+                              ),
                             ),
                         ],
                       ),
-
-                      // Vertical Scrollbar (right overlay) - starts below header
-                      if (theme.scrollbarTheme.showVertical &&
-                          needsVerticalScroll)
-                        Positioned(
-                          top: theme.headerTheme.height,
-                          right: 0,
-                          bottom: (theme.scrollbarTheme.showHorizontal &&
-                                  needsHorizontalScroll)
-                              ? theme.scrollbarTheme.trackWidth
-                              : 0,
-                          child: _buildScrollbarTrack(
-                            context: context,
-                            scrollbarTheme: theme.scrollbarTheme,
-                            controller: verticalScrollbarController,
-                            axis: Axis.vertical,
-                            contentExtent: needsHorizontalScroll
-                                ? tableDataHeight -
-                                    theme.scrollbarTheme.trackWidth
-                                : tableDataHeight,
-                          ),
-                        ),
-
-                      // Horizontal Scrollbar (bottom overlay)
-                      if (theme.scrollbarTheme.showHorizontal &&
-                          needsHorizontalScroll)
-                        Positioned(
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                          child: _buildScrollbarTrack(
-                            context: context,
-                            scrollbarTheme: theme.scrollbarTheme,
-                            controller: horizontalScrollbarController,
-                            axis: Axis.horizontal,
-                            contentExtent: contentWidth,
-                          ),
-                        ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
-            );
-          },
+                );
+              },
         );
       },
     );
@@ -1399,11 +1426,12 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
             : null;
         _preScaleHorizontalOffset =
             _horizontalScrollController?.hasClients == true
-                ? _horizontalScrollController!.offset
-                : null;
+            ? _horizontalScrollController!.offset
+            : null;
 
-        final delta =
-            event.scrollDelta.dy > 0 ? -widget.scaleStep : widget.scaleStep;
+        final delta = event.scrollDelta.dy > 0
+            ? -widget.scaleStep
+            : widget.scaleStep;
         widget.onScaleChanged!(widget.scale + delta);
       }
       // When onScaleChanged is null but blockModifierScroll is true,

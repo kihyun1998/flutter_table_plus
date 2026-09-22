@@ -33,7 +33,7 @@ Future<void> _pump(
         body: FlutterTablePlus<Map<String, dynamic>>(
           columns: _columns(),
           data: const [
-            {'id': '1', 'a': 'a1', 'b': 'b1', 'c': 'c1'}
+            {'id': '1', 'a': 'a1', 'b': 'b1', 'c': 'c1'},
           ],
           rowId: (r) => r['id'] as String,
           onColumnReorder: onColumnReorder,
@@ -45,41 +45,48 @@ Future<void> _pump(
 }
 
 void main() {
-  testWidgets('dragging a header onto another reorders with the right indices',
-      (tester) async {
-    int? oldIndex;
-    int? newIndex;
-    await _pump(tester, onColumnReorder: (o, n) {
-      oldIndex = o;
-      newIndex = n;
-    });
+  testWidgets(
+    'dragging a header onto another reorders with the right indices',
+    (tester) async {
+      int? oldIndex;
+      int? newIndex;
+      await _pump(
+        tester,
+        onColumnReorder: (o, n) {
+          oldIndex = o;
+          newIndex = n;
+        },
+      );
 
-    final from = tester.getCenter(find.text('A')); // reorder index 0
-    final to = tester.getCenter(find.text('C')); // reorder index 2
+      final from = tester.getCenter(find.text('A')); // reorder index 0
+      final to = tester.getCenter(find.text('C')); // reorder index 2
 
-    final gesture = await tester.startGesture(from);
-    await tester.pump(const Duration(milliseconds: 100));
-    await gesture.moveBy(const Offset(20, 0)); // cross the drag slop
-    await tester.pump();
-    await gesture.moveTo(to);
-    await tester.pump();
-    await gesture.up();
-    await tester.pumpAndSettle();
+      final gesture = await tester.startGesture(from);
+      await tester.pump(const Duration(milliseconds: 100));
+      await gesture.moveBy(const Offset(20, 0)); // cross the drag slop
+      await tester.pump();
+      await gesture.moveTo(to);
+      await tester.pump();
+      await gesture.up();
+      await tester.pumpAndSettle();
 
-    expect(oldIndex, 0);
-    expect(newIndex, 2);
-  });
+      expect(oldIndex, 0);
+      expect(newIndex, 2);
+    },
+  );
 
-  testWidgets('onColumnReorder: null disables reordering (no Draggable)',
-      (tester) async {
+  testWidgets('onColumnReorder: null disables reordering (no Draggable)', (
+    tester,
+  ) async {
     await _pump(tester, onColumnReorder: null);
     expect(find.byType(Draggable<int>), findsNothing);
   });
 
   testWidgets(
-      'onColumnReorder present builds a Draggable per reorderable column',
-      (tester) async {
-    await _pump(tester, onColumnReorder: (_, __) {});
-    expect(find.byType(Draggable<int>), findsNWidgets(3));
-  });
+    'onColumnReorder present builds a Draggable per reorderable column',
+    (tester) async {
+      await _pump(tester, onColumnReorder: (_, __) {});
+      expect(find.byType(Draggable<int>), findsNWidgets(3));
+    },
+  );
 }

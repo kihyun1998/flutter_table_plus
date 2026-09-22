@@ -69,8 +69,12 @@ void main() {
 
   group('HoverButtonPosition.buildPositioned', () {
     test('left anchors to the left with the offset', () {
-      final p = HoverButtonPosition.left.buildPositioned(
-          child: const SizedBox(), horizontalOffset: 12) as Positioned;
+      final p =
+          HoverButtonPosition.left.buildPositioned(
+                child: const SizedBox(),
+                horizontalOffset: 12,
+              )
+              as Positioned;
       expect(p.left, 12);
       expect(p.right, isNull);
       expect(p.top, 0);
@@ -78,15 +82,20 @@ void main() {
     });
 
     test('right anchors to the right with the offset', () {
-      final p = HoverButtonPosition.right.buildPositioned(
-          child: const SizedBox(), horizontalOffset: 12) as Positioned;
+      final p =
+          HoverButtonPosition.right.buildPositioned(
+                child: const SizedBox(),
+                horizontalOffset: 12,
+              )
+              as Positioned;
       expect(p.right, 12);
       expect(p.left, isNull);
     });
 
     test('center fills the row', () {
-      final p = HoverButtonPosition.center
-          .buildPositioned(child: const SizedBox()) as Positioned;
+      final p =
+          HoverButtonPosition.center.buildPositioned(child: const SizedBox())
+              as Positioned;
       expect(p.left, 0);
       expect(p.right, 0);
       expect(p.top, 0);

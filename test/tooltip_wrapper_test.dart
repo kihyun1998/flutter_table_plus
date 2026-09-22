@@ -34,15 +34,17 @@ void main() {
     });
 
     test('uses the builder when present and data is non-null', () {
-      final r = _wrap(shouldShow: true, builder: (c, d) => const Text('x'))
-          as FlutterTooltipPlus;
+      final r =
+          _wrap(shouldShow: true, builder: (c, d) => const Text('x'))
+              as FlutterTooltipPlus;
       expect(r.tooltipBuilder, isNotNull);
       expect(r.message, isNull);
     });
 
     test('uses the formatter string when there is no builder', () {
-      final r = _wrap(shouldShow: true, formatter: (d) => 'FMT-${d['id']}')
-          as FlutterTooltipPlus;
+      final r =
+          _wrap(shouldShow: true, formatter: (d) => 'FMT-${d['id']}')
+              as FlutterTooltipPlus;
       expect(r.message, 'FMT-1');
       expect(r.tooltipBuilder, isNull);
     });
@@ -52,23 +54,31 @@ void main() {
       expect(r.message, 'FALLBACK');
     });
 
-    test('falls back to the message when data is null even if a builder exists',
-        () {
-      final r = _wrap(
-          shouldShow: true,
-          builder: (c, d) => const Text('x'),
-          data: null) as FlutterTooltipPlus;
-      expect(r.message, 'FALLBACK');
-      expect(r.tooltipBuilder, isNull);
-    });
+    test(
+      'falls back to the message when data is null even if a builder exists',
+      () {
+        final r =
+            _wrap(
+                  shouldShow: true,
+                  builder: (c, d) => const Text('x'),
+                  data: null,
+                )
+                as FlutterTooltipPlus;
+        expect(r.message, 'FALLBACK');
+        expect(r.tooltipBuilder, isNull);
+      },
+    );
 
     test('overrides no anchor, leaving the theme to decide', () {
       const theme = TablePlusTooltipTheme(anchor: TooltipAnchor.pointer);
 
-      final builderPath = _wrap(
-          shouldShow: true,
-          builder: (c, d) => const Text('x'),
-          theme: theme) as FlutterTooltipPlus;
+      final builderPath =
+          _wrap(
+                shouldShow: true,
+                builder: (c, d) => const Text('x'),
+                theme: theme,
+              )
+              as FlutterTooltipPlus;
       final messagePath =
           _wrap(shouldShow: true, theme: theme) as FlutterTooltipPlus;
 

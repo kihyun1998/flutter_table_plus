@@ -28,8 +28,8 @@ import 'package:flutter_test/flutter_test.dart';
 typedef Row = Map<String, dynamic>;
 
 List<Row> _rows(int n) => [
-      for (int i = 0; i < n; i++) {'id': 'r$i'},
-    ];
+  for (int i = 0; i < n; i++) {'id': 'r$i'},
+];
 
 /// Every argument at its unchanged value, so each case can move exactly one.
 RowCacheInvalidation _classify({
@@ -79,8 +79,10 @@ void main() {
     });
 
     test('a new mergedGroups list', () {
-      expect(_classify(newGroups: <MergedRowGroup<Row>>[]),
-          RowCacheInvalidation.structural);
+      expect(
+        _classify(newGroups: <MergedRowGroup<Row>>[]),
+        RowCacheInvalidation.structural,
+      );
     });
 
     test('the ids no longer match, with nothing else changed', () {
@@ -101,18 +103,24 @@ void main() {
 
   group('classifyRowCacheInvalidation — measurementOnly', () {
     test('scale', () {
-      expect(_classify(oldScale: 1.0, newScale: 1.5),
-          RowCacheInvalidation.measurementOnly);
+      expect(
+        _classify(oldScale: 1.0, newScale: 1.5),
+        RowCacheInvalidation.measurementOnly,
+      );
     });
 
     test('theme row height', () {
-      expect(_classify(oldRowHeight: 40, newRowHeight: 56),
-          RowCacheInvalidation.measurementOnly);
+      expect(
+        _classify(oldRowHeight: 40, newRowHeight: 56),
+        RowCacheInvalidation.measurementOnly,
+      );
     });
 
     test('the height callback', () {
-      expect(_classify(oldHeightFn: _heightA, newHeightFn: _heightB),
-          RowCacheInvalidation.measurementOnly);
+      expect(
+        _classify(oldHeightFn: _heightA, newHeightFn: _heightB),
+        RowCacheInvalidation.measurementOnly,
+      );
     });
   });
 
@@ -124,8 +132,10 @@ void main() {
     test('the same height tear-off twice is not a change', () {
       // `==`, not `identical`: a tear-off of the same function compares equal,
       // which is what makes `calculateRowHeight` watchable at all (#137).
-      expect(_classify(oldHeightFn: _heightA, newHeightFn: _heightA),
-          RowCacheInvalidation.none);
+      expect(
+        _classify(oldHeightFn: _heightA, newHeightFn: _heightA),
+        RowCacheInvalidation.none,
+      );
     });
   });
 
@@ -139,16 +149,22 @@ void main() {
 
       checks = 0;
       _classify(
-          newGroups: <MergedRowGroup<Row>>[], onIdsChecked: () => checks++);
+        newGroups: <MergedRowGroup<Row>>[],
+        onIdsChecked: () => checks++,
+      );
       expect(checks, 0, reason: 'a new mergedGroups list settles it for free');
     });
 
     test('idsStillMatch is consulted exactly once when it is needed', () {
       int checks = 0;
       _classify(oldScale: 1.0, newScale: 2.0, onIdsChecked: () => checks++);
-      expect(checks, 1,
-          reason: 'the measurement moved, so structural must still be ruled '
-              'out — and the walk may not be paid twice');
+      expect(
+        checks,
+        1,
+        reason:
+            'the measurement moved, so structural must still be ruled '
+            'out — and the walk may not be paid twice',
+      );
 
       checks = 0;
       _classify(onIdsChecked: () => checks++);

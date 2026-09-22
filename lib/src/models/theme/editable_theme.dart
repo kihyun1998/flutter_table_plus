@@ -13,8 +13,10 @@ class TablePlusEditableTheme {
     this.editingBorderColor = const Color(0xFF2196F3),
     this.editingBorderWidth = 2.0,
     this.editingBorderRadius = const BorderRadius.all(Radius.circular(4.0)),
-    this.textFieldPadding =
-        const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+    this.textFieldPadding = const EdgeInsets.symmetric(
+      horizontal: 8.0,
+      vertical: 4.0,
+    ),
     this.cellContainerPadding = const EdgeInsets.all(8.0),
     this.cursorColor = const Color(0xFF2196F3),
     this.textAlignVertical = TextAlignVertical.center,

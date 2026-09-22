@@ -182,8 +182,10 @@ void main() {
       final s = theme.scaledBy(2.0);
       expect(s.editingTextStyle.fontSize, 28); // 14 * 2
       expect(s.editingBorderWidth, 4); // 2 * 2
-      expect(s.textFieldPadding,
-          const EdgeInsets.symmetric(horizontal: 16, vertical: 8));
+      expect(
+        s.textFieldPadding,
+        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      );
       expect(s.cellContainerPadding, const EdgeInsets.all(16));
       expect(s.editingCellColor, theme.editingCellColor);
       expect(s.editingBorderRadius, theme.editingBorderRadius);
@@ -217,16 +219,18 @@ void main() {
   });
 
   group('TablePlusScrollbarTheme', () {
-    test('scaledBy scales trackWidth and leaves null thickness/radius null',
-        () {
-      const theme = TablePlusScrollbarTheme();
-      final s = theme.scaledBy(2.0);
-      expect(s.trackWidth, 24); // 12 * 2
-      expect(s.thickness, isNull);
-      expect(s.radius, isNull);
-      expect(s.thumbColor, theme.thumbColor);
-      expect(s.opacity, theme.opacity);
-    });
+    test(
+      'scaledBy scales trackWidth and leaves null thickness/radius null',
+      () {
+        const theme = TablePlusScrollbarTheme();
+        final s = theme.scaledBy(2.0);
+        expect(s.trackWidth, 24); // 12 * 2
+        expect(s.thickness, isNull);
+        expect(s.radius, isNull);
+        expect(s.thumbColor, theme.thumbColor);
+        expect(s.opacity, theme.opacity);
+      },
+    );
 
     test('scaledBy scales explicit thickness and radius', () {
       const theme = TablePlusScrollbarTheme(thickness: 6, radius: 4);
@@ -316,8 +320,9 @@ void main() {
     });
 
     test('scaledBy carries the header tooltip theme through untouched', () {
-      const headerTooltip =
-          TablePlusTooltipTheme(anchor: TooltipAnchor.pointer);
+      const headerTooltip = TablePlusTooltipTheme(
+        anchor: TooltipAnchor.pointer,
+      );
       const scoped = TablePlusTheme(headerTooltipTheme: headerTooltip);
       expect(scoped.scaledBy(2.0).headerTooltipTheme, same(headerTooltip));
     });
@@ -327,8 +332,9 @@ void main() {
     });
 
     test('copyWith carries the header tooltip theme', () {
-      const headerTooltip =
-          TablePlusTooltipTheme(anchor: TooltipAnchor.pointer);
+      const headerTooltip = TablePlusTooltipTheme(
+        anchor: TooltipAnchor.pointer,
+      );
       final c = theme.copyWith(headerTooltipTheme: headerTooltip);
       expect(c.headerTooltipTheme, same(headerTooltip));
       expect(c.copyWith().headerTooltipTheme, same(headerTooltip));

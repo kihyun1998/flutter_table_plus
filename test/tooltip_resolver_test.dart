@@ -78,19 +78,21 @@ void main() {
       );
     });
 
-    test('onlyTextOverflow skips the overflow measurement when not ellipsized',
-        () {
-      expect(
-        TooltipResolver.shouldShow(
-          behavior: TooltipBehavior.onlyTextOverflow,
-          hasWidgetTooltip: false,
-          isEllipsis: false,
-          textIsEmpty: false,
-          willOverflow: never, // must not be called
-        ),
-        isFalse,
-      );
-    });
+    test(
+      'onlyTextOverflow skips the overflow measurement when not ellipsized',
+      () {
+        expect(
+          TooltipResolver.shouldShow(
+            behavior: TooltipBehavior.onlyTextOverflow,
+            hasWidgetTooltip: false,
+            isEllipsis: false,
+            textIsEmpty: false,
+            willOverflow: never, // must not be called
+          ),
+          isFalse,
+        );
+      },
+    );
   });
 
   group('TooltipResolver.shouldShow (widget tooltip)', () {
@@ -99,21 +101,23 @@ void main() {
     // A widget tooltip draws content of its own, so the text gates — ellipsis
     // and emptiness — say nothing about whether it should appear.
     bool show(TooltipBehavior behavior) => TooltipResolver.shouldShow(
-          behavior: behavior,
-          hasWidgetTooltip: true,
-          isEllipsis: false,
-          textIsEmpty: true,
-          willOverflow: never,
-        );
+      behavior: behavior,
+      hasWidgetTooltip: true,
+      isEllipsis: false,
+      textIsEmpty: true,
+      willOverflow: never,
+    );
 
     test('shows even when the text is neither ellipsized nor present', () {
       expect(show(TooltipBehavior.always), isTrue);
     });
 
-    test('onlyTextOverflow shows it too — overflow is undefined for a widget',
-        () {
-      expect(show(TooltipBehavior.onlyTextOverflow), isTrue);
-    });
+    test(
+      'onlyTextOverflow shows it too — overflow is undefined for a widget',
+      () {
+        expect(show(TooltipBehavior.onlyTextOverflow), isTrue);
+      },
+    );
 
     test('behavior never still suppresses it', () {
       expect(show(TooltipBehavior.never), isFalse);

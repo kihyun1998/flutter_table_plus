@@ -51,8 +51,8 @@ Map<String, TablePlusColumn<Row>> _columns() {
 }
 
 List<Row> _rows(List<String> ids) => [
-      for (final id in ids) {'id': id, 'c0': 'r$id', 'c1': 'x$id'}
-    ];
+  for (final id in ids) {'id': id, 'c0': 'r$id', 'c1': 'x$id'},
+];
 
 Future<void> _pump(
   WidgetTester tester, {
@@ -104,7 +104,9 @@ BorderSide? _cellRight(WidgetTester tester, String label) {
   final boxes = find
       .descendant(
         of: find.ancestor(
-            of: find.text(label), matching: find.byType(TablePlusCell<Row>)),
+          of: find.text(label),
+          matching: find.byType(TablePlusCell<Row>),
+        ),
         matching: find.byType(Container),
       )
       .evaluate();
@@ -121,11 +123,16 @@ BorderSide? _cellRight(WidgetTester tester, String label) {
 
 /// The bottom side the cell showing [label] is handed — the member rule.
 BorderSide? _cellBottom(WidgetTester tester, String label) {
-  final cell = find
-      .ancestor(of: find.text(label), matching: find.byType(TablePlusCell<Row>))
-      .evaluate()
-      .first
-      .widget as TablePlusCell<Row>;
+  final cell =
+      find
+              .ancestor(
+                of: find.text(label),
+                matching: find.byType(TablePlusCell<Row>),
+              )
+              .evaluate()
+              .first
+              .widget
+          as TablePlusCell<Row>;
   final side = cell.bottomSide;
   return side == null || side.style == BorderStyle.none ? null : side;
 }
@@ -170,16 +177,21 @@ void main() {
   const base = TablePlusBodyTheme(rowHeight: 60, dividerColor: kProbe2);
 
   group('the column divider is reachable (#171)', () {
-    testWidgets('the control: unset, it is dividerColor at alpha 0.5 and 0.5px',
-        (tester) async {
-      await _pump(tester, body: base);
+    testWidgets(
+      'the control: unset, it is dividerColor at alpha 0.5 and 0.5px',
+      (tester) async {
+        await _pump(tester, body: base);
 
-      final side = _cellRight(tester, 'ra');
-      expect(side, isNotNull);
-      expect(side!.color, kProbe2.withValues(alpha: 0.5),
-          reason: 'the default is the derivation, so it tracks dividerColor');
-      expect(side.width, 0.5);
-    });
+        final side = _cellRight(tester, 'ra');
+        expect(side, isNotNull);
+        expect(
+          side!.color,
+          kProbe2.withValues(alpha: 0.5),
+          reason: 'the default is the derivation, so it tracks dividerColor',
+        );
+        expect(side.width, 0.5);
+      },
+    );
 
     testWidgets('dividerThickness still does NOT reach it', (tester) async {
       // The measured defect from the issue, kept as an assertion rather than
@@ -204,8 +216,11 @@ void main() {
       );
 
       final side = _cellRight(tester, 'ra');
-      expect(side!.color, kProbe,
-          reason: 'set, it comes off the alpha derivation entirely');
+      expect(
+        side!.color,
+        kProbe,
+        reason: 'set, it comes off the alpha derivation entirely',
+      );
       expect(side.width, kThick);
     });
 
@@ -219,37 +234,51 @@ void main() {
         ),
       );
 
-      expect(_cellRight(tester, 'ra'), isNull,
-          reason: 'a new colour must not resurrect a line the caller turned '
-              'off — the gate is above the derivation, not inside it');
+      expect(
+        _cellRight(tester, 'ra'),
+        isNull,
+        reason:
+            'a new colour must not resurrect a line the caller turned '
+            'off — the gate is above the derivation, not inside it',
+      );
     });
   });
 
   group('the member divider colour is reachable (#171)', () {
-    testWidgets('the control: unset, it is dividerColor at alpha 0.3',
-        (tester) async {
-      await _pump(tester,
-          body: base.copyWith(dividerThickness: kThick),
-          data: ['a', 'b', 'c'],
-          groupKeys: ['a', 'b']);
+    testWidgets('the control: unset, it is dividerColor at alpha 0.3', (
+      tester,
+    ) async {
+      await _pump(
+        tester,
+        body: base.copyWith(dividerThickness: kThick),
+        data: ['a', 'b', 'c'],
+        groupKeys: ['a', 'b'],
+      );
 
       final side = _cellBottom(tester, 'ra');
       expect(side, isNotNull);
       expect(side!.color, kProbe2.withValues(alpha: 0.3));
-      expect(side.width, kThick,
-          reason: 'the width already followed dividerThickness (#155), and a '
-              'field for it is what would undo that');
+      expect(
+        side.width,
+        kThick,
+        reason:
+            'the width already followed dividerThickness (#155), and a '
+            'field for it is what would undo that',
+      );
     });
 
-    testWidgets('set, it replaces the colour and leaves the width alone',
-        (tester) async {
-      await _pump(tester,
-          body: base.copyWith(
-            dividerThickness: kThick,
-            memberDividerColor: kProbe,
-          ),
-          data: ['a', 'b', 'c'],
-          groupKeys: ['a', 'b']);
+    testWidgets('set, it replaces the colour and leaves the width alone', (
+      tester,
+    ) async {
+      await _pump(
+        tester,
+        body: base.copyWith(
+          dividerThickness: kThick,
+          memberDividerColor: kProbe,
+        ),
+        data: ['a', 'b', 'c'],
+        groupKeys: ['a', 'b'],
+      );
 
       final side = _cellBottom(tester, 'ra');
       expect(side!.color, kProbe);
@@ -258,32 +287,44 @@ void main() {
   });
 
   group('the two placeholder styles are reachable (#171)', () {
-    testWidgets('empty data: the control is textStyle, grey and italic',
-        (tester) async {
+    testWidgets('empty data: the control is textStyle, grey and italic', (
+      tester,
+    ) async {
       await _pump(tester, body: base, data: const []);
 
       final style = _styleOf(tester, 'No data available');
       expect(style!.color, const Color(0xFF757575));
       expect(style.fontStyle, FontStyle.italic);
-      expect(style.fontSize, base.textStyle.fontSize,
-          reason: 'derived from textStyle, so it follows a recoloured or '
-              'resized body without being restated');
+      expect(
+        style.fontSize,
+        base.textStyle.fontSize,
+        reason:
+            'derived from textStyle, so it follows a recoloured or '
+            'resized body without being restated',
+      );
     });
 
-    testWidgets('empty data: set, the derivation is replaced whole',
-        (tester) async {
-      await _pump(tester,
-          body: base.copyWith(
-            emptyStateTextStyle: const TextStyle(fontSize: 30, color: kProbe),
-          ),
-          data: const []);
+    testWidgets('empty data: set, the derivation is replaced whole', (
+      tester,
+    ) async {
+      await _pump(
+        tester,
+        body: base.copyWith(
+          emptyStateTextStyle: const TextStyle(fontSize: 30, color: kProbe),
+        ),
+        data: const [],
+      );
 
       final style = _styleOf(tester, 'No data available');
       expect(style!.color, kProbe);
       expect(style.fontSize, 30);
-      expect(style.fontStyle, isNot(FontStyle.italic),
-          reason: 'the field is the whole style, not a patch over the default '
-              '— otherwise italic could not be turned off');
+      expect(
+        style.fontStyle,
+        isNot(FontStyle.italic),
+        reason:
+            'the field is the whole style, not a patch over the default '
+            '— otherwise italic could not be turned off',
+      );
     });
 
     testWidgets('the N rows caption: control, then set', (tester) async {
@@ -296,23 +337,26 @@ void main() {
       // is the fixture asking for a size no caller would, not a defect the
       // change introduced.
       final tall = base.copyWith(rowHeight: 90);
-      await _pump(tester,
-          body: tall,
-          data: ['a', 'b', 'c'],
-          groupKeys: ['a', 'b'],
-          selectable: true);
+      await _pump(
+        tester,
+        body: tall,
+        data: ['a', 'b', 'c'],
+        groupKeys: ['a', 'b'],
+        selectable: true,
+      );
       final control = _styleOf(tester, '2 rows');
       expect(control!.color, const Color(0xFF757575));
       expect(control.fontSize, 10);
 
-      await _pump(tester,
-          body: tall.copyWith(
-            mergedRowCountTextStyle:
-                const TextStyle(fontSize: 22, color: kProbe),
-          ),
-          data: ['a', 'b', 'c'],
-          groupKeys: ['a', 'b'],
-          selectable: true);
+      await _pump(
+        tester,
+        body: tall.copyWith(
+          mergedRowCountTextStyle: const TextStyle(fontSize: 22, color: kProbe),
+        ),
+        data: ['a', 'b', 'c'],
+        groupKeys: ['a', 'b'],
+        selectable: true,
+      );
       final set = _styleOf(tester, '2 rows');
       expect(set!.color, kProbe);
       expect(set.fontSize, 22);
@@ -320,21 +364,29 @@ void main() {
   });
 
   group("the editor's error borders are reachable (#171)", () {
-    testWidgets('the control: Material red, and the resting border at 1px',
-        (tester) async {
+    testWidgets('the control: Material red, and the resting border at 1px', (
+      tester,
+    ) async {
       final d = await _editorDecoration(
-          tester, const TablePlusEditableTheme(editingBorderWidth: 5));
+        tester,
+        const TablePlusEditableTheme(editingBorderWidth: 5),
+      );
 
       expect(_side(d.errorBorder!).color, const Color(0xFFEF5350));
       expect(_side(d.focusedErrorBorder!).color, const Color(0xFFE53935));
-      expect(_side(d.enabledBorder!).width, 1.0,
-          reason: 'editingBorderWidth is 5 here and does not reach the resting '
-              'border — the half of that border that was never a field');
+      expect(
+        _side(d.enabledBorder!).width,
+        1.0,
+        reason:
+            'editingBorderWidth is 5 here and does not reach the resting '
+            'border — the half of that border that was never a field',
+      );
       expect(_side(d.errorBorder!).width, 1.0);
     });
 
-    testWidgets('set, all four are the caller of the package to choose',
-        (tester) async {
+    testWidgets('set, all four are the caller of the package to choose', (
+      tester,
+    ) async {
       final d = await _editorDecoration(
         tester,
         const TablePlusEditableTheme(
@@ -360,49 +412,67 @@ void main() {
     const editable = TablePlusEditableTheme();
 
     test('body copyWith carries each new field', () {
-      expect(body.copyWith(verticalDividerColor: kProbe).verticalDividerColor,
-          kProbe);
       expect(
-          body
-              .copyWith(verticalDividerThickness: kThick)
-              .verticalDividerThickness,
-          kThick);
+        body.copyWith(verticalDividerColor: kProbe).verticalDividerColor,
+        kProbe,
+      );
       expect(
-          body.copyWith(memberDividerColor: kProbe).memberDividerColor, kProbe);
+        body
+            .copyWith(verticalDividerThickness: kThick)
+            .verticalDividerThickness,
+        kThick,
+      );
       expect(
-          body
-              .copyWith(emptyStateTextStyle: const TextStyle(fontSize: 30))
-              .emptyStateTextStyle
-              ?.fontSize,
-          30);
+        body.copyWith(memberDividerColor: kProbe).memberDividerColor,
+        kProbe,
+      );
       expect(
-          body
-              .copyWith(mergedRowCountTextStyle: const TextStyle(fontSize: 31))
-              .mergedRowCountTextStyle
-              ?.fontSize,
-          31);
+        body
+            .copyWith(emptyStateTextStyle: const TextStyle(fontSize: 30))
+            .emptyStateTextStyle
+            ?.fontSize,
+        30,
+      );
+      expect(
+        body
+            .copyWith(mergedRowCountTextStyle: const TextStyle(fontSize: 31))
+            .mergedRowCountTextStyle
+            ?.fontSize,
+        31,
+      );
     });
 
     test('editable copyWith carries each new field', () {
       expect(
-          editable.copyWith(errorBorderColor: kProbe).errorBorderColor, kProbe);
+        editable.copyWith(errorBorderColor: kProbe).errorBorderColor,
+        kProbe,
+      );
       expect(
-          editable
-              .copyWith(focusedErrorBorderColor: kProbe)
-              .focusedErrorBorderColor,
-          kProbe);
-      expect(editable.copyWith(enabledBorderWidth: kThick).enabledBorderWidth,
-          kThick);
+        editable
+            .copyWith(focusedErrorBorderColor: kProbe)
+            .focusedErrorBorderColor,
+        kProbe,
+      );
       expect(
-          editable.copyWith(errorBorderWidth: kThick).errorBorderWidth, kThick);
+        editable.copyWith(enabledBorderWidth: kThick).enabledBorderWidth,
+        kThick,
+      );
+      expect(
+        editable.copyWith(errorBorderWidth: kThick).errorBorderWidth,
+        kThick,
+      );
     });
 
     test('body scaledBy: an unset empty-state style needs no help', () {
       final s = body.scaledBy(2.0);
       expect(s.emptyStateTextStyle, isNull);
-      expect(s.effectiveEmptyStateTextStyle.fontSize, 28,
-          reason: 'it derives from textStyle, which the same call scaled — '
-              'materialising it here would scale it twice');
+      expect(
+        s.effectiveEmptyStateTextStyle.fontSize,
+        28,
+        reason:
+            'it derives from textStyle, which the same call scaled — '
+            'materialising it here would scale it twice',
+      );
     });
 
     test('body scaledBy: a set empty-state style scales once', () {
@@ -414,35 +484,49 @@ void main() {
 
     test('body scaledBy: the caption is materialised, not skipped', () {
       final s = body.scaledBy(2.0);
-      expect(s.effectiveMergedRowCountTextStyle.fontSize, 20,
-          reason: 'its default derives from no scaled field, so leaving it '
-              'null would hold the caption at 10 while the table doubled');
+      expect(
+        s.effectiveMergedRowCountTextStyle.fontSize,
+        20,
+        reason:
+            'its default derives from no scaled field, so leaving it '
+            'null would hold the caption at 10 while the table doubled',
+      );
       expect(s.effectiveMergedRowCountTextStyle.color, const Color(0xFF757575));
     });
 
-    test('body scaledBy leaves the new colours and the divider width alone',
-        () {
-      final s = base
-          .copyWith(
-            verticalDividerColor: kProbe,
-            verticalDividerThickness: kThick,
-            memberDividerColor: kProbe2,
-          )
-          .scaledBy(2.0);
-      expect(s.verticalDividerColor, kProbe);
-      expect(s.memberDividerColor, kProbe2);
-      expect(s.verticalDividerThickness, kThick,
-          reason: 'divider thickness has never scaled and this one is not an '
-              'exception — the family scales content, not rules');
-    });
+    test(
+      'body scaledBy leaves the new colours and the divider width alone',
+      () {
+        final s = base
+            .copyWith(
+              verticalDividerColor: kProbe,
+              verticalDividerThickness: kThick,
+              memberDividerColor: kProbe2,
+            )
+            .scaledBy(2.0);
+        expect(s.verticalDividerColor, kProbe);
+        expect(s.memberDividerColor, kProbe2);
+        expect(
+          s.verticalDividerThickness,
+          kThick,
+          reason:
+              'divider thickness has never scaled and this one is not an '
+              'exception — the family scales content, not rules',
+        );
+      },
+    );
 
     test('editable scaledBy: unset border widths materialise and scale', () {
       final s = editable.scaledBy(2.0);
       expect(s.effectiveEnabledBorderWidth, 2.0);
       expect(s.effectiveErrorBorderWidth, 2.0);
-      expect(s.editingBorderWidth, 4.0,
-          reason: 'the sibling that already scaled — leaving the other two '
-              'null is what held the resting border at a hairline');
+      expect(
+        s.editingBorderWidth,
+        4.0,
+        reason:
+            'the sibling that already scaled — leaving the other two '
+            'null is what held the resting border at a hairline',
+      );
     });
 
     test('editable scaledBy leaves the error colours alone', () {
@@ -475,37 +559,38 @@ void main() {
       // x = 800 — off the right edge, where `tap` silently misses and the
       // callback never fires. The filler keeps the measured column's handle
       // inside the surface.
-      final columns = (TableColumnsBuilder<Row>()
-            ..addColumn(
-              'name',
-              TablePlusColumn<Row>(
-                key: 'name',
-                label: 'Name',
-                order: 0,
-                valueAccessor: (r) => r['c0'],
-                width: 250,
-                minWidth: 40,
-                maxWidth: 600,
-              ),
-            )
-            ..addColumn(
-              'filler',
-              TablePlusColumn<Row>(
-                key: 'filler',
-                label: 'Filler',
-                order: 0,
-                valueAccessor: (r) => r['c1'],
-                width: 250,
-              ),
-            ))
-          .build();
+      final columns =
+          (TableColumnsBuilder<Row>()
+                ..addColumn(
+                  'name',
+                  TablePlusColumn<Row>(
+                    key: 'name',
+                    label: 'Name',
+                    order: 0,
+                    valueAccessor: (r) => r['c0'],
+                    width: 250,
+                    minWidth: 40,
+                    maxWidth: 600,
+                  ),
+                )
+                ..addColumn(
+                  'filler',
+                  TablePlusColumn<Row>(
+                    key: 'filler',
+                    label: 'Filler',
+                    order: 0,
+                    valueAccessor: (r) => r['c1'],
+                    width: 250,
+                  ),
+                ))
+              .build();
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
             body: FlutterTablePlus<Row>(
               columns: columns,
               data: const [
-                {'id': '1', 'c0': 'a value long enough to measure', 'c1': 'x'}
+                {'id': '1', 'c0': 'a value long enough to measure', 'c1': 'x'},
               ],
               rowId: (r) => r['id'] as String,
               resizable: true,
@@ -524,35 +609,55 @@ void main() {
       return reported!;
     }
 
-    testWidgets('a thicker column divider widens the auto-fit by its own width',
-        (tester) async {
-      // 4 and 12 rather than the default and 8, because the calculator ceils:
-      // against the same fractional text width, two *integer* insets differ by
-      // exactly their difference, while 0.5 against 8 differs by 8.0 rather
-      // than 7.5 and the assertion would be pinning the rounding.
-      final thin = await autoFitWidth(
-          tester, const TablePlusBodyTheme(verticalDividerThickness: 4.0));
-      final thick = await autoFitWidth(
-          tester, const TablePlusBodyTheme(verticalDividerThickness: 12.0));
-
-      expect(thick - thin, closeTo(8.0, 0.001),
-          reason: 'the border grew by 8, so the column must grow by 8 to leave '
-              'the glyphs the same room. A measurement still saying 0.5 '
-              'reports the same width for both');
-    });
-
-    testWidgets('turning the divider off takes the whole width back',
-        (tester) async {
-      final on = await autoFitWidth(
-          tester, const TablePlusBodyTheme(verticalDividerThickness: 8.0));
-      final off = await autoFitWidth(
+    testWidgets(
+      'a thicker column divider widens the auto-fit by its own width',
+      (tester) async {
+        // 4 and 12 rather than the default and 8, because the calculator ceils:
+        // against the same fractional text width, two *integer* insets differ by
+        // exactly their difference, while 0.5 against 8 differs by 8.0 rather
+        // than 7.5 and the assertion would be pinning the rounding.
+        final thin = await autoFitWidth(
           tester,
-          const TablePlusBodyTheme(
-              verticalDividerThickness: 8.0, showVerticalDividers: false));
+          const TablePlusBodyTheme(verticalDividerThickness: 4.0),
+        );
+        final thick = await autoFitWidth(
+          tester,
+          const TablePlusBodyTheme(verticalDividerThickness: 12.0),
+        );
 
-      expect(on - off, closeTo(8.0, 0.001),
-          reason: 'no line, no inset — the gate is read on the same side as '
-              'the width');
+        expect(
+          thick - thin,
+          closeTo(8.0, 0.001),
+          reason:
+              'the border grew by 8, so the column must grow by 8 to leave '
+              'the glyphs the same room. A measurement still saying 0.5 '
+              'reports the same width for both',
+        );
+      },
+    );
+
+    testWidgets('turning the divider off takes the whole width back', (
+      tester,
+    ) async {
+      final on = await autoFitWidth(
+        tester,
+        const TablePlusBodyTheme(verticalDividerThickness: 8.0),
+      );
+      final off = await autoFitWidth(
+        tester,
+        const TablePlusBodyTheme(
+          verticalDividerThickness: 8.0,
+          showVerticalDividers: false,
+        ),
+      );
+
+      expect(
+        on - off,
+        closeTo(8.0, 0.001),
+        reason:
+            'no line, no inset — the gate is read on the same side as '
+            'the width',
+      );
     });
   });
 }

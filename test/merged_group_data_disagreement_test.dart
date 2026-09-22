@@ -37,14 +37,11 @@ Map<String, TablePlusColumn<Row>> _columns() {
 }
 
 List<Row> _rows(List<String> ids) => [
-      for (final id in ids) {'id': id, 'c0': 'r$id'}
-    ];
+  for (final id in ids) {'id': id, 'c0': 'r$id'},
+];
 
-MergedRowGroup<Row> _group(List<String> keys) => MergedRowGroup<Row>(
-      groupId: 'g0',
-      rowKeys: keys,
-      mergeConfig: const {},
-    );
+MergedRowGroup<Row> _group(List<String> keys) =>
+    MergedRowGroup<Row>(groupId: 'g0', rowKeys: keys, mergeConfig: const {});
 
 Future<void> _pump(
   WidgetTester tester, {
@@ -116,24 +113,31 @@ void main() {
         tester,
         data: _rows(['1', '2', '3']),
         groups: [
-          _group(const ['0', '1'])
+          _group(const ['0', '1']),
         ],
       );
 
-      expect(_visible(tester), ['r1', 'r2', 'r3'],
-          reason: 'r1 is in `data`, belongs to the group, and must be drawn');
+      expect(
+        _visible(tester),
+        ['r1', 'r2', 'r3'],
+        reason: 'r1 is in `data`, belongs to the group, and must be drawn',
+      );
 
       // **Text on screen is not enough**, and a first version of this test
       // stopped there. A group that renders as ungrouped rows draws exactly the
       // same strings — so the assertion passed while `_buildRowWidget` was
       // still anchoring on `rowKeys.first` and falling through to the plain-row
       // branch. Asserted by type, which is the only thing that separates them.
-      expect(find.byType(TablePlusMergedRow<Row>), findsOneWidget,
-          reason: 'the group rendered as loose rows rather than as a group');
+      expect(
+        find.byType(TablePlusMergedRow<Row>),
+        findsOneWidget,
+        reason: 'the group rendered as loose rows rather than as a group',
+      );
     });
 
-    testWidgets('renders as a group when rowKeys are out of data order',
-        (tester) async {
+    testWidgets('renders as a group when rowKeys are out of data order', (
+      tester,
+    ) async {
       // The same defect without anything missing: `rowKeys.first` is `1`, whose
       // index is 1, so the anchor test failed at index 0 and the group fell
       // through — while `computeRenderableIndices` had already marked index 1
@@ -142,7 +146,7 @@ void main() {
         tester,
         data: _rows(['0', '1', '2']),
         groups: [
-          _group(const ['1', '0'])
+          _group(const ['1', '0']),
         ],
       );
 
@@ -151,12 +155,16 @@ void main() {
       // so `['1','0']` draws r1 above r0. That is pre-existing and is #121's
       // territory (how a group distributes itself among its members); what #135
       // is about is that r1 is drawn *at all*.
-      expect(_visible(tester), ['r1', 'r0', 'r2'],
-          reason: 'r1 belongs to the group and was drawn by neither branch');
+      expect(
+        _visible(tester),
+        ['r1', 'r0', 'r2'],
+        reason: 'r1 belongs to the group and was drawn by neither branch',
+      );
     });
 
-    testWidgets('does not reserve height for the member it does not have',
-        (tester) async {
+    testWidgets('does not reserve height for the member it does not have', (
+      tester,
+    ) async {
       // The group names 0 and 1 and `data` holds only 1, so the group is one
       // row tall. Row 2 follows it at 40.
       //
@@ -170,7 +178,7 @@ void main() {
         tester,
         data: _rows(['1', '2']),
         groups: [
-          _group(const ['0', '1'])
+          _group(const ['0', '1']),
         ],
       );
 
@@ -182,21 +190,29 @@ void main() {
       // `effectiveRowCount` counts `rowKeys` — including the absent member — so
       // it asked for 80 in a 40 box and squeezed its own cells. Nothing threw;
       // the constraint just won.
-      expect(tester.getSize(find.byType(TablePlusMergedRow<Row>)).height, 40.0,
-          reason: 'the group is one present member tall');
+      expect(
+        tester.getSize(find.byType(TablePlusMergedRow<Row>)).height,
+        40.0,
+        reason: 'the group is one present member tall',
+      );
 
       final tops = _rowTops(tester);
       expect(tops, hasLength(2));
-      expect(tops[1] - tops[0], lessThan(60),
-          reason: 'the group reserved a phantom 40 for the member `data` does '
-              'not hold, so r2 sat a whole extra row lower and the body '
-              'disagreed with the parent by exactly one row height');
+      expect(
+        tops[1] - tops[0],
+        lessThan(60),
+        reason:
+            'the group reserved a phantom 40 for the member `data` does '
+            'not hold, so r2 sat a whole extra row lower and the body '
+            'disagreed with the parent by exactly one row height',
+      );
     });
   });
 
   group('the group is exactly as tall as the members it holds', () {
-    testWidgets('an absent member takes up no room in the group',
-        (tester) async {
+    testWidgets('an absent member takes up no room in the group', (
+      tester,
+    ) async {
       // The group draws one stacked cell per member. It walked `rowKeys`
       // unconditionally, so a key `data` does not hold got an **empty cell**
       // that still took space in the Column — and once #135 made the group's
@@ -210,15 +226,19 @@ void main() {
         tester,
         data: _rows(['1', '2']),
         groups: [
-          _group(const ['0', '1'])
+          _group(const ['0', '1']),
         ],
       );
 
       final tops = _rowTops(tester);
       expect(tops, hasLength(2));
-      expect(tops[0], lessThan(15.0),
-          reason: 'r1 is the only member the group has, so it sits at the top '
-              'of it — an empty cell for the absent member pushes it down');
+      expect(
+        tops[0],
+        lessThan(15.0),
+        reason:
+            'r1 is the only member the group has, so it sits at the top '
+            'of it — an empty cell for the absent member pushes it down',
+      );
     });
 
     // **One change in this issue deliberately has no test, and the reason is
@@ -255,7 +275,7 @@ void main() {
       // documenting the same obligation.
       final data = _rows(['0', '1', '2', '3', '4', '5']);
       final groups = [
-        _group(const ['0', '1'])
+        _group(const ['0', '1']),
       ];
 
       await _pump(tester, data: data, groups: groups);
@@ -264,31 +284,39 @@ void main() {
       data.removeWhere((r) => r['id'] == '5');
       await _pump(tester, data: data, groups: groups);
 
-      expect(tester.takeException(), isNull,
-          reason:
-              'RangeError: itemCount came from the cached indices while the '
-              'row build indexed the live, now-shorter list');
+      expect(
+        tester.takeException(),
+        isNull,
+        reason:
+            'RangeError: itemCount came from the cached indices while the '
+            'row build indexed the live, now-shorter list',
+      );
     });
 
-    testWidgets('and the rows it still holds are the rows on screen',
-        (tester) async {
+    testWidgets('and the rows it still holds are the rows on screen', (
+      tester,
+    ) async {
       // Not throwing is not the same as being right. Without this the fix could
       // be a swallowed exception.
       final data = _rows(['0', '1', '2', '3', '4', '5']);
       final groups = [
-        _group(const ['0', '1'])
+        _group(const ['0', '1']),
       ];
 
       await _pump(tester, data: data, groups: groups);
       data.removeWhere((r) => r['id'] == '4');
       await _pump(tester, data: data, groups: groups);
 
-      expect(_visible(tester), ['r0', 'r1', 'r2', 'r3', 'r5'],
-          reason: 'r4 is gone from `data` and everything else is still drawn');
+      expect(
+        _visible(tester),
+        ['r0', 'r1', 'r2', 'r3', 'r5'],
+        reason: 'r4 is gone from `data` and everything else is still drawn',
+      );
     });
 
-    testWidgets('sorting in place is seen, and the length never changes',
-        (tester) async {
+    testWidgets('sorting in place is seen, and the length never changes', (
+      tester,
+    ) async {
       // The guard compares the *ids*, not the list length, and every other case
       // here shrinks the list — so a guard comparing only `length` passed the
       // whole suite. Measured, and the reason this test exists.
@@ -300,25 +328,35 @@ void main() {
       // id -> index map, and a group is the thing that reads it.
       final data = _rows(['0', '1', '2', '3']);
       final groups = [
-        _group(const ['0', '1'])
+        _group(const ['0', '1']),
       ];
 
       await _pump(tester, data: data, groups: groups);
-      expect(_visible(tester), ['r0', 'r1', 'r2', 'r3'],
-          reason: 'the group is one render row and still draws both members');
+      expect(
+        _visible(tester),
+        ['r0', 'r1', 'r2', 'r3'],
+        reason: 'the group is one render row and still draws both members',
+      );
 
       data.sort((a, b) => (b['id'] as String).compareTo(a['id'] as String));
       await _pump(tester, data: data, groups: groups);
-      expect(tester.takeException(), isNull,
-          reason:
-              'a stale id -> index map after an in-place sort walks off the '
-              'end of the reordered list');
+      expect(
+        tester.takeException(),
+        isNull,
+        reason:
+            'a stale id -> index map after an in-place sort walks off the '
+            'end of the reordered list',
+      );
 
-      expect(_visible(tester), ['r3', 'r2', 'r0', 'r1'],
-          reason: 'after the reversal the group sits at the end, anchored at '
-              'r1(2), and stacks its members in rowKeys order. A stale '
-              'id -> index map anchors it where it used to be and renders a '
-              'different set entirely');
+      expect(
+        _visible(tester),
+        ['r3', 'r2', 'r0', 'r1'],
+        reason:
+            'after the reversal the group sits at the end, anchored at '
+            'r1(2), and stacks its members in rowKeys order. A stale '
+            'id -> index map anchors it where it used to be and renders a '
+            'different set entirely',
+      );
     });
   });
 
@@ -336,15 +374,23 @@ void main() {
 
     await _pump(tester, data: data, groups: const [], tableHeight: 200);
     final overflowing = tester.widgetList(find.byType(Scrollbar)).length;
-    expect(overflowing, greaterThan(0),
-        reason: '6 rows of 40 plus a 40 header do not fit 200 — at 0 the '
-            'fixture stopped overflowing and the assertion below is vacuous');
+    expect(
+      overflowing,
+      greaterThan(0),
+      reason:
+          '6 rows of 40 plus a 40 header do not fit 200 — at 0 the '
+          'fixture stopped overflowing and the assertion below is vacuous',
+    );
 
     data.removeWhere((r) => int.parse(r['id'] as String) > 1);
     await _pump(tester, data: data, groups: const [], tableHeight: 200);
 
-    expect(tester.widgetList(find.byType(Scrollbar)).length, overflowing - 1,
-        reason: 'the parent kept a total height computed from six rows, so the '
-            'table still believed it needed to scroll');
+    expect(
+      tester.widgetList(find.byType(Scrollbar)).length,
+      overflowing - 1,
+      reason:
+          'the parent kept a total height computed from six rows, so the '
+          'table still believed it needed to scroll',
+    );
   });
 }

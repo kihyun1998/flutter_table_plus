@@ -8,8 +8,8 @@ import 'package:flutter_test/flutter_test.dart';
 // are hand-traced against the loop rules.
 
 List<Map<String, dynamic>> _rows(List<String> ids) => [
-      for (final id in ids) {'id': id}
-    ];
+  for (final id in ids) {'id': id},
+];
 
 String _idOf(Map<String, dynamic> r) => r['id'] as String;
 
@@ -24,11 +24,7 @@ RowLookup<Map<String, dynamic>> _lookup(
   List<String> ids,
   List<MergedRowGroup<Map<String, dynamic>>> groups,
 ) {
-  return RowLookup.build(
-    data: _rows(ids),
-    mergedGroups: groups,
-    rowId: _idOf,
-  );
+  return RowLookup.build(data: _rows(ids), mergedGroups: groups, rowId: _idOf);
 }
 
 void main() {
@@ -119,8 +115,11 @@ void main() {
         mergedGroupHeightOf: (_) => 10,
       );
 
-      expect(rendered!.length, counted.totalCount,
-          reason: 'the body renders one row per thing the parent counted');
+      expect(
+        rendered!.length,
+        counted.totalCount,
+        reason: 'the body renders one row per thing the parent counted',
+      );
     });
   });
 
@@ -130,7 +129,7 @@ void main() {
       List<MergedRowGroup<Map<String, dynamic>>> groups, {
       double Function(int)? rowHeightOf,
       double Function(MergedRowGroup<Map<String, dynamic>>)?
-          mergedGroupHeightOf,
+      mergedGroupHeightOf,
     }) {
       return computeTableMetrics<Map<String, dynamic>>(
         data: _rows(ids),
@@ -148,14 +147,12 @@ void main() {
 
     test('a group counts once and uses the injected group height', () {
       // a(10) + group[b,c](25) + d(10) = 45; count a, group, d = 3.
-      final m = metrics([
-        'a',
-        'b',
-        'c',
-        'd'
-      ], [
-        _group('g1', ['b', 'c'])
-      ]);
+      final m = metrics(
+        ['a', 'b', 'c', 'd'],
+        [
+          _group('g1', ['b', 'c']),
+        ],
+      );
       expect(m.totalHeight, 45);
       expect(m.totalCount, 3);
     });
@@ -164,7 +161,7 @@ void main() {
       final m = metrics(
         ['a', 'b', 'c'],
         [
-          _group('g1', ['b', 'c'])
+          _group('g1', ['b', 'c']),
         ],
         mergedGroupHeightOf: (g) => g.rowKeys.length * 10,
       );

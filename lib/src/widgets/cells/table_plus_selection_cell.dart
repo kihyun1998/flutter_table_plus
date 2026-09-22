@@ -39,16 +39,18 @@ class TablePlusSelectionCell extends StatelessWidget {
       content = Center(
         child: checkboxTheme.buildCheckbox(
           value: isSelected,
-          onChanged:
-              rowId != null ? (value) => onSelectionChanged(rowId!) : null,
+          onChanged: rowId != null
+              ? (value) => onSelectionChanged(rowId!)
+              : null,
         ),
       );
 
       if (checkboxTheme.cellTapTogglesCheckbox) {
         content = InkWell(
           onTap: rowId != null ? () => onSelectionChanged(rowId!) : null,
-          mouseCursor:
-              rowId != null ? SystemMouseCursors.click : MouseCursor.defer,
+          mouseCursor: rowId != null
+              ? SystemMouseCursors.click
+              : MouseCursor.defer,
           child: content,
         );
       }
@@ -59,9 +61,7 @@ class TablePlusSelectionCell extends StatelessWidget {
     return Container(
       width: width,
       height: calculatedHeight ?? theme.rowHeight,
-      decoration: BoxDecoration(
-        border: theme.verticalDividerBorder,
-      ),
+      decoration: BoxDecoration(border: theme.verticalDividerBorder),
       child: content,
     );
   }

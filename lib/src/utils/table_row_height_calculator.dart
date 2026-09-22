@@ -84,8 +84,10 @@ class TableRowHeightCalculator {
     required List<TablePlusColumn<T>> columns,
     required List<double> columnWidths,
     required TextStyle defaultTextStyle,
-    EdgeInsets cellPadding =
-        const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+    EdgeInsets cellPadding = const EdgeInsets.symmetric(
+      horizontal: 16.0,
+      vertical: 8.0,
+    ),
     double minHeight = 48.0,
     TextScaler textScaler = TextScaler.noScaling,
     double extraWidth = 0.0,
@@ -107,8 +109,9 @@ class TableRowHeightCalculator {
       final text = cellValue.toString();
       if (text.isEmpty) continue;
 
-      final columnWidth =
-          columnWidths.isNotEmpty ? columnWidths[i] : column.width;
+      final columnWidth = columnWidths.isNotEmpty
+          ? columnWidths[i]
+          : column.width;
 
       // Account for cell padding when calculating available text width, and
       // for whatever the cell's own decoration takes on top of it: a body
@@ -178,8 +181,10 @@ class TableRowHeightCalculator {
     required List<TablePlusColumn<T>> columns,
     required List<double> columnWidths,
     required TextStyle defaultTextStyle,
-    EdgeInsets cellPadding =
-        const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+    EdgeInsets cellPadding = const EdgeInsets.symmetric(
+      horizontal: 16.0,
+      vertical: 8.0,
+    ),
     double minHeight = 48.0,
     TextScaler textScaler = TextScaler.noScaling,
     double extraWidth = 0.0,
@@ -190,8 +195,9 @@ class TableRowHeightCalculator {
     final resolvedStyle = context != null && defaultTextStyle.inherit
         ? DefaultTextStyle.of(context).style.merge(defaultTextStyle)
         : defaultTextStyle;
-    final resolvedScaler =
-        context != null ? MediaQuery.textScalerOf(context) : textScaler;
+    final resolvedScaler = context != null
+        ? MediaQuery.textScalerOf(context)
+        : textScaler;
 
     return (int rowIndex, T rowData) {
       return calculateRowHeight<T>(

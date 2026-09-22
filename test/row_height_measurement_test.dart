@@ -37,16 +37,18 @@ void main() {
   group('the text scaler participates', () {
     test('a scaled string needs a taller row', () {
       double at(TextScaler s) => TableRowHeightCalculator.calculateTextHeight(
-            text: _v,
-            textStyle: _bare,
-            maxWidth: 188,
-            textScaler: s,
-          );
+        text: _v,
+        textStyle: _bare,
+        maxWidth: 188,
+        textScaler: s,
+      );
 
       // Derived, never written: the unscaled height is whatever it is, and the
       // scaled one must exceed it.
-      expect(at(const TextScaler.linear(1.25)),
-          greaterThan(at(TextScaler.noScaling)));
+      expect(
+        at(const TextScaler.linear(1.25)),
+        greaterThan(at(TextScaler.noScaling)),
+      );
     });
   });
 
@@ -75,35 +77,39 @@ void main() {
     (tester) async {
       late double predicted;
 
-      await tester.pumpWidget(MaterialApp(
-        home: Scaffold(
-          body: Builder(
-            builder: (context) => SizedBox(
-              width: 200,
-              child: FlutterTablePlus<Map<String, dynamic>>(
-                columns: {'note': _col()},
-                data: const [
-                  {'id': '1', 'note': _v}
-                ],
-                rowId: (r) => r['id'] as String,
-                calculateRowHeight: (i, r) {
-                  predicted = TableRowHeightCalculator.createHeightCalculator<
-                      Map<String, dynamic>>(
-                    columns: [_col()],
-                    columnWidths: const [_colW],
-                    defaultTextStyle: _bare,
-                    cellPadding: _pad,
-                    // the two ambient inputs, resolved from the context the
-                    // Text will be built in
-                    context: context,
-                  )(i, r)!;
-                  return predicted;
-                },
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Builder(
+              builder: (context) => SizedBox(
+                width: 200,
+                child: FlutterTablePlus<Map<String, dynamic>>(
+                  columns: {'note': _col()},
+                  data: const [
+                    {'id': '1', 'note': _v},
+                  ],
+                  rowId: (r) => r['id'] as String,
+                  calculateRowHeight: (i, r) {
+                    predicted =
+                        TableRowHeightCalculator.createHeightCalculator<
+                          Map<String, dynamic>
+                        >(
+                          columns: [_col()],
+                          columnWidths: const [_colW],
+                          defaultTextStyle: _bare,
+                          cellPadding: _pad,
+                          // the two ambient inputs, resolved from the context the
+                          // Text will be built in
+                          context: context,
+                        )(i, r)!;
+                    return predicted;
+                  },
+                ),
               ),
             ),
           ),
         ),
-      ));
+      );
       await tester.pumpAndSettle();
 
       final para = tester.renderObject<RenderParagraph>(find.text(_v));
@@ -119,9 +125,13 @@ void main() {
       final needs = painter.height;
       painter.dispose();
 
-      expect(para.size.height, greaterThanOrEqualTo(needs),
-          reason: 'the paragraph is clipped: the row was sized from a '
-              'measurement the glyphs never got');
+      expect(
+        para.size.height,
+        greaterThanOrEqualTo(needs),
+        reason:
+            'the paragraph is clipped: the row was sized from a '
+            'measurement the glyphs never got',
+      );
       expect(predicted, greaterThanOrEqualTo(needs + _pad.vertical));
     },
   );

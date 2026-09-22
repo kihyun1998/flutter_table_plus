@@ -7,14 +7,14 @@ import 'package:flutter_test/flutter_test.dart';
 // colors, dynamic row heights, and the hover tooltip.
 
 Map<String, TablePlusColumn<Map<String, dynamic>>> _columns() => {
-      'name': TablePlusColumn<Map<String, dynamic>>(
-        key: 'name',
-        label: 'Name',
-        order: 0,
-        valueAccessor: (r) => r['name'],
-        width: 200,
-      ),
-    };
+  'name': TablePlusColumn<Map<String, dynamic>>(
+    key: 'name',
+    label: 'Name',
+    order: 0,
+    valueAccessor: (r) => r['name'],
+    width: 200,
+  ),
+};
 
 Future<void> _pump(
   WidgetTester tester, {
@@ -30,7 +30,7 @@ Future<void> _pump(
         body: FlutterTablePlus<Map<String, dynamic>>(
           columns: _columns(),
           data: [
-            for (int i = 0; i < rows; i++) {'id': '$i', 'name': 'R$i'}
+            for (int i = 0; i < rows; i++) {'id': '$i', 'name': 'R$i'},
           ],
           rowId: (r) => r['id'] as String,
           theme: theme,
@@ -54,8 +54,9 @@ bool _hasBoxColor(WidgetTester tester, Color color) {
 
 void main() {
   group('showRowCheckbox', () {
-    testWidgets('true (default) renders one row checkbox per row',
-        (tester) async {
+    testWidgets('true (default) renders one row checkbox per row', (
+      tester,
+    ) async {
       await _pump(
         tester,
         isSelectable: true,
@@ -110,16 +111,19 @@ void main() {
     });
   });
 
-  testWidgets('calculateRowHeight sets the rendered row height',
-      (tester) async {
+  testWidgets('calculateRowHeight sets the rendered row height', (
+    tester,
+  ) async {
     await _pump(tester, calculateRowHeight: (i, r) => 80, rows: 3);
-    final spacing = tester.getCenter(find.text('R1')).dy -
+    final spacing =
+        tester.getCenter(find.text('R1')).dy -
         tester.getCenter(find.text('R0')).dy;
     expect(spacing, closeTo(80, 0.5));
   });
 
-  testWidgets('and re-measures when only calculateRowHeight changes',
-      (tester) async {
+  testWidgets('and re-measures when only calculateRowHeight changes', (
+    tester,
+  ) async {
     // The list is built once and passed to both pumps **on purpose**.
     //
     // `_pump` builds a fresh one per call, and a fresh list makes
@@ -135,39 +139,45 @@ void main() {
     // static tear-off, which is what every other test here passes, can never
     // change identity and so can never expose it.
     final data = [
-      for (int i = 0; i < 3; i++) {'id': '$i', 'name': 'R$i'}
+      for (int i = 0; i < 3; i++) {'id': '$i', 'name': 'R$i'},
     ];
 
     Future<void> pumpWith(double height) => tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: FlutterTablePlus<Map<String, dynamic>>(
-                columns: _columns(),
-                data: data,
-                rowId: (r) => r['id'] as String,
-                calculateRowHeight: (i, r) => height,
-              ),
-            ),
+      MaterialApp(
+        home: Scaffold(
+          body: FlutterTablePlus<Map<String, dynamic>>(
+            columns: _columns(),
+            data: data,
+            rowId: (r) => r['id'] as String,
+            calculateRowHeight: (i, r) => height,
           ),
-        );
+        ),
+      ),
+    );
 
     await pumpWith(100);
     await tester.pumpAndSettle();
-    final before = tester.getCenter(find.text('R1')).dy -
+    final before =
+        tester.getCenter(find.text('R1')).dy -
         tester.getCenter(find.text('R0')).dy;
     expect(before, closeTo(100, 0.5));
 
     await pumpWith(40);
     await tester.pumpAndSettle();
-    final after = tester.getCenter(find.text('R1')).dy -
+    final after =
+        tester.getCenter(find.text('R1')).dy -
         tester.getCenter(find.text('R0')).dy;
 
-    expect(after, closeTo(40, 0.5),
-        reason: 'the body kept its cached heights — a new height function over '
-            'the same list changed nothing on screen. The parent watches '
-            'calculateRowHeight and re-measured; TablePlusBody.didUpdateWidget '
-            'did not, so its rows and the total height the parent reports were '
-            'measured by different functions');
+    expect(
+      after,
+      closeTo(40, 0.5),
+      reason:
+          'the body kept its cached heights — a new height function over '
+          'the same list changed nothing on screen. The parent watches '
+          'calculateRowHeight and re-measured; TablePlusBody.didUpdateWidget '
+          'did not, so its rows and the total height the parent reports were '
+          'measured by different functions',
+    );
 
     // The side condition, so the assertion above cannot be satisfied by a
     // table that simply stopped drawing rows at their measured height.
@@ -189,7 +199,7 @@ void main() {
     // without the invalidation a zoomed table draws its rows at the previous
     // zoom's heights — the same defect as above, in the clause next door.
     final data = [
-      for (int i = 0; i < 3; i++) {'id': '$i', 'name': 'R$i'}
+      for (int i = 0; i < 3; i++) {'id': '$i', 'name': 'R$i'},
     ];
 
     // One function object, reused, so `calculateRowHeight` identity cannot be
@@ -197,38 +207,44 @@ void main() {
     double? height(int i, Map<String, dynamic> r) => 50;
 
     Future<void> pumpAt(double scale) => tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: FlutterTablePlus<Map<String, dynamic>>(
-                columns: _columns(),
-                data: data,
-                rowId: (r) => r['id'] as String,
-                calculateRowHeight: height,
-                scale: scale,
-              ),
-            ),
+      MaterialApp(
+        home: Scaffold(
+          body: FlutterTablePlus<Map<String, dynamic>>(
+            columns: _columns(),
+            data: data,
+            rowId: (r) => r['id'] as String,
+            calculateRowHeight: height,
+            scale: scale,
           ),
-        );
+        ),
+      ),
+    );
 
     await pumpAt(1.0);
     await tester.pumpAndSettle();
-    final before = tester.getCenter(find.text('R1')).dy -
+    final before =
+        tester.getCenter(find.text('R1')).dy -
         tester.getCenter(find.text('R0')).dy;
     expect(before, closeTo(50, 0.5));
 
     await pumpAt(2.0);
     await tester.pumpAndSettle();
-    final after = tester.getCenter(find.text('R1')).dy -
+    final after =
+        tester.getCenter(find.text('R1')).dy -
         tester.getCenter(find.text('R0')).dy;
 
-    expect(after, closeTo(100, 0.5),
-        reason: 'the body kept heights measured at the previous scale');
+    expect(
+      after,
+      closeTo(100, 0.5),
+      reason: 'the body kept heights measured at the previous scale',
+    );
     expect(after, isNot(closeTo(before, 0.5)));
     expect(find.text('R2'), findsOneWidget);
   });
 
-  testWidgets('a theme rowHeight change re-decides whether the table scrolls',
-      (tester) async {
+  testWidgets('a theme rowHeight change re-decides whether the table scrolls', (
+    tester,
+  ) async {
     // The parent half of #128. `FlutterTablePlusState` caches a total data
     // height and that total decides `needsVerticalScroll` — which gates the
     // vertical scrollbar and feeds the last row's bottom border.
@@ -242,29 +258,29 @@ void main() {
     // rows fit and only the horizontal scrollbar is built; at 40px they do not
     // and a second one appears.
     final data = [
-      for (int i = 0; i < 6; i++) {'id': '$i', 'name': 'R$i'}
+      for (int i = 0; i < 6; i++) {'id': '$i', 'name': 'R$i'},
     ];
 
     Future<void> pumpAt(double rowHeight) => tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: Center(
-                child: SizedBox(
-                  width: 400,
-                  height: 200,
-                  child: FlutterTablePlus<Map<String, dynamic>>(
-                    columns: _columns(),
-                    data: data,
-                    rowId: (r) => r['id'] as String,
-                    theme: TablePlusTheme(
-                      bodyTheme: TablePlusBodyTheme(rowHeight: rowHeight),
-                    ),
-                  ),
+      MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: SizedBox(
+              width: 400,
+              height: 200,
+              child: FlutterTablePlus<Map<String, dynamic>>(
+                columns: _columns(),
+                data: data,
+                rowId: (r) => r['id'] as String,
+                theme: TablePlusTheme(
+                  bodyTheme: TablePlusBodyTheme(rowHeight: rowHeight),
                 ),
               ),
             ),
           ),
-        );
+        ),
+      ),
+    );
 
     await pumpAt(20);
     await tester.pumpAndSettle();
@@ -274,9 +290,13 @@ void main() {
     await tester.pumpAndSettle();
     final overflows = tester.widgetList(find.byType(Scrollbar)).length;
 
-    expect(overflows, greaterThan(fits),
-        reason: 'the table kept the total height it measured at 20px, so it '
-            'still believed six rows fit and drew no vertical scrollbar');
+    expect(
+      overflows,
+      greaterThan(fits),
+      reason:
+          'the table kept the total height it measured at 20px, so it '
+          'still believed six rows fit and drew no vertical scrollbar',
+    );
 
     // The side condition: a fresh list reaches the same answer, so the count
     // itself is right and only the invalidation was missing.
@@ -290,7 +310,7 @@ void main() {
               child: FlutterTablePlus<Map<String, dynamic>>(
                 columns: _columns(),
                 data: [
-                  for (int i = 0; i < 6; i++) {'id': '$i', 'name': 'R$i'}
+                  for (int i = 0; i < 6; i++) {'id': '$i', 'name': 'R$i'},
                 ],
                 rowId: (r) => r['id'] as String,
                 theme: const TablePlusTheme(
@@ -306,8 +326,9 @@ void main() {
     expect(tester.widgetList(find.byType(Scrollbar)).length, overflows);
   });
 
-  testWidgets('a scale change alone re-decides whether the table scrolls',
-      (tester) async {
+  testWidgets('a scale change alone re-decides whether the table scrolls', (
+    tester,
+  ) async {
     // The parent's scale path, and it exists because a mutation survived
     // without it.
     //
@@ -319,30 +340,30 @@ void main() {
     // scale term is redundant there — and does not move the parent's. For the
     // parent it is the only term that can notice, and nothing exercised it.
     final data = [
-      for (int i = 0; i < 6; i++) {'id': '$i', 'name': 'R$i'}
+      for (int i = 0; i < 6; i++) {'id': '$i', 'name': 'R$i'},
     ];
 
     Future<void> pumpAt(double scale) => tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: Center(
-                child: SizedBox(
-                  width: 400,
-                  height: 200,
-                  child: FlutterTablePlus<Map<String, dynamic>>(
-                    columns: _columns(),
-                    data: data,
-                    rowId: (r) => r['id'] as String,
-                    scale: scale,
-                    theme: const TablePlusTheme(
-                      bodyTheme: TablePlusBodyTheme(rowHeight: 40),
-                    ),
-                  ),
+      MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: SizedBox(
+              width: 400,
+              height: 200,
+              child: FlutterTablePlus<Map<String, dynamic>>(
+                columns: _columns(),
+                data: data,
+                rowId: (r) => r['id'] as String,
+                scale: scale,
+                theme: const TablePlusTheme(
+                  bodyTheme: TablePlusBodyTheme(rowHeight: 40),
                 ),
               ),
             ),
           ),
-        );
+        ),
+      ),
+    );
 
     await pumpAt(0.5);
     await tester.pumpAndSettle();
@@ -352,9 +373,13 @@ void main() {
     await tester.pumpAndSettle();
     final large = tester.widgetList(find.byType(Scrollbar)).length;
 
-    expect(large, greaterThan(small),
-        reason: 'the parent kept the total it measured at scale 0.5, so six '
-            'rows that no longer fit were still believed to');
+    expect(
+      large,
+      greaterThan(small),
+      reason:
+          'the parent kept the total it measured at scale 0.5, so six '
+          'rows that no longer fit were still believed to',
+    );
   });
 
   testWidgets('hovering a cell shows its tooltip', (tester) async {
@@ -371,8 +396,9 @@ void main() {
     expect(find.text('R0'), findsNWidgets(2));
   });
 
-  testWidgets('uniform table scrolls to the last row (fixed itemExtent path)',
-      (tester) async {
+  testWidgets('uniform table scrolls to the last row (fixed itemExtent path)', (
+    tester,
+  ) async {
     // No merged groups and no calculateRowHeight -> the fixed-itemExtent path.
     await _pump(tester, rows: 1000);
 

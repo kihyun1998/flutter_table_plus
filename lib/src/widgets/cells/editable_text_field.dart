@@ -89,7 +89,8 @@ class EditableTextField extends StatelessWidget {
             border: OutlineInputBorder(
               borderRadius: theme.borderRadius ?? theme.editingBorderRadius,
               borderSide: BorderSide(
-                color: theme.enabledBorderColor ??
+                color:
+                    theme.enabledBorderColor ??
                     theme.editingBorderColor.withValues(alpha: 0.5),
                 width: theme.effectiveEnabledBorderWidth,
               ),
@@ -97,7 +98,8 @@ class EditableTextField extends StatelessWidget {
             enabledBorder: OutlineInputBorder(
               borderRadius: theme.borderRadius ?? theme.editingBorderRadius,
               borderSide: BorderSide(
-                color: theme.enabledBorderColor ??
+                color:
+                    theme.enabledBorderColor ??
                     theme.editingBorderColor.withValues(alpha: 0.5),
                 width: theme.effectiveEnabledBorderWidth,
               ),

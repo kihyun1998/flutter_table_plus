@@ -56,13 +56,14 @@ enum SelectionMode {
 /// [rowIndex]: The index of the row that was edited.
 /// [oldValue]: The previous value of the cell.
 /// [newValue]: The new value of the cell.
-typedef CellChangedCallback<T> = void Function(
-  T row,
-  String columnKey,
-  int rowIndex,
-  dynamic oldValue,
-  dynamic newValue,
-);
+typedef CellChangedCallback<T> =
+    void Function(
+      T row,
+      String columnKey,
+      int rowIndex,
+      dynamic oldValue,
+      dynamic newValue,
+    );
 
 /// Configuration for sort icons in table headers.
 class SortIcons {
@@ -197,8 +198,12 @@ class TablePlusColumn<T> {
   /// Note: If [editable] is true and [statefulCellBuilder] is provided,
   /// the cell will not be editable unless the custom builder handles editing.
   final Widget Function(
-          BuildContext context, T rowData, bool isSelected, bool isDim)?
-      statefulCellBuilder;
+    BuildContext context,
+    T rowData,
+    bool isSelected,
+    bool isDim,
+  )?
+  statefulCellBuilder;
 
   /// Whether this column has a custom cell builder.
   bool get hasCustomCellBuilder => statefulCellBuilder != null;
@@ -206,7 +211,11 @@ class TablePlusColumn<T> {
   /// Builds a custom cell widget using [statefulCellBuilder].
   /// Returns null if no builder is set.
   Widget? buildCustomCell(
-      BuildContext context, T rowData, bool isSelected, bool isDim) {
+    BuildContext context,
+    T rowData,
+    bool isSelected,
+    bool isDim,
+  ) {
     if (statefulCellBuilder != null) {
       return statefulCellBuilder!(context, rowData, isSelected, isDim);
     }
@@ -269,8 +278,12 @@ class TablePlusColumn<T> {
     bool? editable,
     bool? visible,
     Widget Function(
-            BuildContext context, T rowData, bool isSelected, bool isDim)?
-        statefulCellBuilder,
+      BuildContext context,
+      T rowData,
+      bool isSelected,
+      bool isDim,
+    )?
+    statefulCellBuilder,
     String Function(T rowData)? tooltipFormatter,
     Widget Function(BuildContext context, T rowData)? tooltipBuilder,
     String? hintText,

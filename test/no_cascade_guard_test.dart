@@ -10,11 +10,12 @@ void main() {
       final g = NoCascadeGuard();
       expect(
         g.resolveJump(
-            master: 'A',
-            slave: 'B',
-            masterOffset: 50,
-            slaveMin: 0,
-            slaveMax: 100),
+          master: 'A',
+          slave: 'B',
+          masterOffset: 50,
+          slaveMin: 0,
+          slaveMax: 100,
+        ),
         50,
       );
     });
@@ -23,19 +24,21 @@ void main() {
       final g = NoCascadeGuard();
       // A moves -> we jump B (arms B's suppression).
       g.resolveJump(
-          master: 'A',
-          slave: 'B',
-          masterOffset: 50,
-          slaveMin: 0,
-          slaveMax: 100);
+        master: 'A',
+        slave: 'B',
+        masterOffset: 50,
+        slaveMin: 0,
+        slaveMax: 100,
+      );
       // B's echoing notification must NOT jump A back.
       expect(
         g.resolveJump(
-            master: 'B',
-            slave: 'A',
-            masterOffset: 50,
-            slaveMin: 0,
-            slaveMax: 100),
+          master: 'B',
+          slave: 'A',
+          masterOffset: 50,
+          slaveMin: 0,
+          slaveMax: 100,
+        ),
         isNull,
       );
     });
@@ -43,24 +46,27 @@ void main() {
     test('after the echo, a genuine master change jumps again (not stuck)', () {
       final g = NoCascadeGuard();
       g.resolveJump(
-          master: 'A',
-          slave: 'B',
-          masterOffset: 50,
-          slaveMin: 0,
-          slaveMax: 100);
+        master: 'A',
+        slave: 'B',
+        masterOffset: 50,
+        slaveMin: 0,
+        slaveMax: 100,
+      );
       g.resolveJump(
-          master: 'B',
-          slave: 'A',
-          masterOffset: 50,
-          slaveMin: 0,
-          slaveMax: 100);
+        master: 'B',
+        slave: 'A',
+        masterOffset: 50,
+        slaveMin: 0,
+        slaveMax: 100,
+      );
       expect(
         g.resolveJump(
-            master: 'A',
-            slave: 'B',
-            masterOffset: 70,
-            slaveMin: 0,
-            slaveMax: 100),
+          master: 'A',
+          slave: 'B',
+          masterOffset: 70,
+          slaveMin: 0,
+          slaveMax: 100,
+        ),
         70,
       );
     });
@@ -68,20 +74,22 @@ void main() {
     test('clamps the offset to the slave extents', () {
       expect(
         NoCascadeGuard().resolveJump(
-            master: 'A',
-            slave: 'B',
-            masterOffset: 150,
-            slaveMin: 0,
-            slaveMax: 100),
+          master: 'A',
+          slave: 'B',
+          masterOffset: 150,
+          slaveMin: 0,
+          slaveMax: 100,
+        ),
         100,
       );
       expect(
         NoCascadeGuard().resolveJump(
-            master: 'A',
-            slave: 'B',
-            masterOffset: -10,
-            slaveMin: 0,
-            slaveMax: 100),
+          master: 'A',
+          slave: 'B',
+          masterOffset: -10,
+          slaveMin: 0,
+          slaveMax: 100,
+        ),
         0,
       );
     });
@@ -89,20 +97,22 @@ void main() {
     test('reset clears armed suppression', () {
       final g = NoCascadeGuard();
       g.resolveJump(
-          master: 'A',
-          slave: 'B',
-          masterOffset: 50,
-          slaveMin: 0,
-          slaveMax: 100);
+        master: 'A',
+        slave: 'B',
+        masterOffset: 50,
+        slaveMin: 0,
+        slaveMax: 100,
+      );
       g.reset();
       // B is no longer suppressed, so a B change now jumps A normally.
       expect(
         g.resolveJump(
-            master: 'B',
-            slave: 'A',
-            masterOffset: 30,
-            slaveMin: 0,
-            slaveMax: 100),
+          master: 'B',
+          slave: 'A',
+          masterOffset: 30,
+          slaveMin: 0,
+          slaveMax: 100,
+        ),
         30,
       );
     });

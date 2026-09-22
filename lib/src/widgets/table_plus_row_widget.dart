@@ -75,8 +75,13 @@ abstract class TablePlusRowWidget<T> extends StatefulWidget {
   void Function(String id)? get onRowDoubleTap;
 
   /// Invoked (with [selectionId]) when the row is right-clicked.
-  void Function(String id, TapDownDetails details, RenderBox renderBox,
-      bool isSelected)? get onRowSecondaryTapDown;
+  void Function(
+    String id,
+    TapDownDetails details,
+    RenderBox renderBox,
+    bool isSelected,
+  )?
+  get onRowSecondaryTapDown;
 
   /// Shared row-tap selection gating for every row type. A tap selects only
   /// when selection is enabled and the row has an id — otherwise it is a no-op.
@@ -136,7 +141,8 @@ abstract class TablePlusRowStateBase<W extends TablePlusRowWidget<T>, T>
     // gestures (double-tap / secondary-tap) are available whenever a handler is
     // provided, even while editing — so the layer must wrap the row for either.
     final tapSelect = widget.enableSelectionInk;
-    final wantsRowGesture = id != null &&
+    final wantsRowGesture =
+        id != null &&
         (widget.onRowDoubleTap != null || widget.onRowSecondaryTapDown != null);
 
     return RowInteractionShell(
@@ -159,7 +165,11 @@ abstract class TablePlusRowStateBase<W extends TablePlusRowWidget<T>, T>
           : null,
       onSecondaryTapDown: (id != null && widget.onRowSecondaryTapDown != null)
           ? (details, renderBox) => widget.onRowSecondaryTapDown!(
-              id, details, renderBox, widget.isSelected)
+              id,
+              details,
+              renderBox,
+              widget.isSelected,
+            )
           : null,
       doubleClickTime: theme.doubleClickTime,
       backgroundColor: widget.backgroundColor,
@@ -169,10 +179,14 @@ abstract class TablePlusRowStateBase<W extends TablePlusRowWidget<T>, T>
       // Passing `null` here would not suppress ink — it selects the framework's
       // default color (see TablePlusBodyTheme.splashColor).
       hoverColor: theme.getEffectiveHoverColor(widget.isSelected, widget.isDim),
-      splashColor:
-          theme.getEffectiveSplashColor(widget.isSelected, widget.isDim),
-      highlightColor:
-          theme.getEffectiveHighlightColor(widget.isSelected, widget.isDim),
+      splashColor: theme.getEffectiveSplashColor(
+        widget.isSelected,
+        widget.isDim,
+      ),
+      highlightColor: theme.getEffectiveHighlightColor(
+        widget.isSelected,
+        widget.isDim,
+      ),
     );
   }
 }

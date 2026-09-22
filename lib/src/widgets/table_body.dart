@@ -103,8 +103,13 @@ class TablePlusBody<T> extends StatefulWidget {
   final void Function(String rowId)? onRowDoubleTap;
 
   /// Callback when a row is right-clicked.
-  final void Function(String rowId, TapDownDetails details, RenderBox renderBox,
-      bool isSelected)? onRowSecondaryTapDown;
+  final void Function(
+    String rowId,
+    TapDownDetails details,
+    RenderBox renderBox,
+    bool isSelected,
+  )?
+  onRowSecondaryTapDown;
 
   /// Whether the table supports cell editing.
   final bool isEditable;
@@ -127,7 +132,7 @@ class TablePlusBody<T> extends StatefulWidget {
 
   /// Function to get the TextEditingController for a cell.
   final TextEditingController? Function(int rowIndex, String columnKey)?
-      getCellController;
+  getCellController;
 
   /// Callback when a cell is tapped for editing.
   final void Function(int rowIndex, String columnKey)? onCellTap;
@@ -137,7 +142,7 @@ class TablePlusBody<T> extends StatefulWidget {
 
   /// Callback when a merged cell value is changed.
   final void Function(String groupId, String columnKey, dynamic newValue)?
-      onMergedCellChanged;
+  onMergedCellChanged;
 
   /// Callback to calculate the height of a specific row.
   final double? Function(int rowIndex, T rowData)? calculateRowHeight;
@@ -351,13 +356,17 @@ class TablePlusBodyState<T> extends State<TablePlusBody<T>>
 
   /// Handle selection toggle for merged groups.
   void _handleMergedGroupSelectionToggle(
-      MergedRowGroup<T> mergeGroup, bool isCurrentlySelected) {
+    MergedRowGroup<T> mergeGroup,
+    bool isCurrentlySelected,
+  ) {
     widget.onRowSelectionChanged!(mergeGroup.groupId, !isCurrentlySelected);
   }
 
   /// Handle selection toggle for regular rows.
   void _handleRegularRowSelectionToggle(
-      String rowId, bool isCurrentlySelected) {
+    String rowId,
+    bool isCurrentlySelected,
+  ) {
     widget.onRowSelectionChanged!(rowId, !isCurrentlySelected);
   }
 
@@ -418,9 +427,7 @@ class TablePlusBodyState<T> extends State<TablePlusBody<T>>
     if (widget.data.isEmpty) {
       return Container(
         height: widget.theme.rowHeight * 3,
-        decoration: BoxDecoration(
-          color: widget.theme.backgroundColor,
-        ),
+        decoration: BoxDecoration(color: widget.theme.backgroundColor),
         child: Center(
           child: Text(
             'No data available',

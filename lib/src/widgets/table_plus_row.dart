@@ -67,14 +67,19 @@ class TablePlusRow<T> extends TablePlusRowWidget<T> {
   final TablePlusTooltipTheme tooltipTheme;
   final bool Function(int rowIndex, String columnKey)? isCellEditing;
   final TextEditingController? Function(int rowIndex, String columnKey)?
-      getCellController;
+  getCellController;
   final void Function(int rowIndex, String columnKey)? onCellTap;
   final void Function({required bool save})? onStopEditing;
   @override
   final void Function(String rowId)? onRowDoubleTap;
   @override
-  final void Function(String rowId, TapDownDetails details, RenderBox renderBox,
-      bool isSelected)? onRowSecondaryTapDown;
+  final void Function(
+    String rowId,
+    TapDownDetails details,
+    RenderBox renderBox,
+    bool isSelected,
+  )?
+  onRowSecondaryTapDown;
   @override
   final double? calculatedHeight;
   final bool needsVerticalScroll;
@@ -155,10 +160,12 @@ class _TablePlusRowState<T> extends TablePlusRowStateBase<TablePlusRow<T>, T> {
             tooltipTheme: widget.tooltipTheme,
             isCellEditing:
                 widget.isCellEditing?.call(widget.rowIndex, column.key) ??
-                    false,
+                false,
             isSelected: widget.isSelected,
-            cellController:
-                widget.getCellController?.call(widget.rowIndex, column.key),
+            cellController: widget.getCellController?.call(
+              widget.rowIndex,
+              column.key,
+            ),
             onCellTap: widget.onCellTap != null
                 ? () => widget.onCellTap!(widget.rowIndex, column.key)
                 : null,

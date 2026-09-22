@@ -149,10 +149,7 @@ class _TablePlusCellState<T> extends State<TablePlusCell<T>> {
       // widget tooltip — and that tooltip takes the whole cell.
       return _wrapWithTooltip(
         shouldShow: _shouldShowTooltip('', customCell),
-        child: Align(
-          alignment: widget.column.alignment,
-          child: customCell,
-        ),
+        child: Align(alignment: widget.column.alignment, child: customCell),
         fallbackMessage: '',
       );
     }
@@ -162,8 +159,10 @@ class _TablePlusCellState<T> extends State<TablePlusCell<T>> {
 
     Widget textWidget = Text(
       displayValue,
-      style:
-          widget.theme.getEffectiveTextStyle(widget.isSelected, widget.isDim),
+      style: widget.theme.getEffectiveTextStyle(
+        widget.isSelected,
+        widget.isDim,
+      ),
       overflow: widget.column.textOverflow,
       textAlign: widget.column.textAlign,
     );
@@ -219,10 +218,8 @@ class _TablePlusCellState<T> extends State<TablePlusCell<T>> {
   /// [_willTextOverflowCached] asks it how much of the declared width it takes
   /// away from the child. Those two disagreeing is the defect the second one
   /// exists to avoid.
-  BoxDecoration _decoration() => BoxDecoration(
-        color: Colors.transparent,
-        border: _composeBorder(),
-      );
+  BoxDecoration _decoration() =>
+      BoxDecoration(color: Colors.transparent, border: _composeBorder());
 
   Widget _wrapWithTooltip({
     required bool shouldShow,
@@ -256,12 +253,14 @@ class _TablePlusCellState<T> extends State<TablePlusCell<T>> {
       width: widget.width,
       height: widget.calculatedHeight ?? widget.theme.rowHeight,
       padding: widget.isCellEditing
-          ? widget.editableTheme
-              .cellContainerPadding // Use editable theme's container padding
+          ? widget
+                .editableTheme
+                .cellContainerPadding // Use editable theme's container padding
           : widget.theme.padding,
       decoration: _decoration(),
-      child:
-          widget.isCellEditing ? _buildEditingTextField() : _buildRegularCell(),
+      child: widget.isCellEditing
+          ? _buildEditingTextField()
+          : _buildRegularCell(),
     );
 
     // Wrap with GestureDetector for cell editing if applicable
@@ -301,8 +300,7 @@ class _TablePlusCellState<T> extends State<TablePlusCell<T>> {
   /// of that constant is not created and a caller's own decoration is covered
   /// by the same expression.
   bool _willTextOverflowCached(String displayValue) {
-    final inset = _decoration()
-        .padding
+    final inset = _decoration().padding
         .resolve(Directionality.maybeOf(context) ?? TextDirection.ltr)
         .horizontal;
     final availableWidth =
@@ -312,8 +310,10 @@ class _TablePlusCellState<T> extends State<TablePlusCell<T>> {
       context: context,
       text: displayValue,
       maxWidth: availableWidth,
-      style:
-          widget.theme.getEffectiveTextStyle(widget.isSelected, widget.isDim),
+      style: widget.theme.getEffectiveTextStyle(
+        widget.isSelected,
+        widget.isDim,
+      ),
       textAlign: widget.column.textAlign,
     );
 

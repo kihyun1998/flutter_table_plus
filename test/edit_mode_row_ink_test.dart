@@ -48,7 +48,7 @@ Future<void> _pump(
   TablePlusTheme theme = const TablePlusTheme(),
   void Function(String id, bool isSelected)? onRowSelectionChanged,
   void Function(String id, TapDownDetails d, RenderBox box, bool sel)?
-      onRowSecondaryTapDown,
+  onRowSecondaryTapDown,
 }) async {
   await tester.pumpWidget(
     MaterialApp(
@@ -76,8 +76,9 @@ Finder _rowInkWell() => find
     .first;
 
 void main() {
-  testWidgets('tapping a non-editable cell selects the row while editing',
-      (tester) async {
+  testWidgets('tapping a non-editable cell selects the row while editing', (
+    tester,
+  ) async {
     final selected = <String>[];
     await _pump(tester, onRowSelectionChanged: (id, _) => selected.add(id));
 
@@ -87,8 +88,9 @@ void main() {
     expect(selected, ['2']);
   });
 
-  testWidgets('tapping an editable cell edits it and does not select the row',
-      (tester) async {
+  testWidgets('tapping an editable cell edits it and does not select the row', (
+    tester,
+  ) async {
     final selected = <String>[];
     await _pump(tester, onRowSelectionChanged: (id, _) => selected.add(id));
 
@@ -99,8 +101,9 @@ void main() {
     expect(selected, isEmpty);
   });
 
-  testWidgets('a row with only a secondary-tap handler wires no primary tap',
-      (tester) async {
+  testWidgets('a row with only a secondary-tap handler wires no primary tap', (
+    tester,
+  ) async {
     // No selection and no double-tap handler: the ink layer exists only for the
     // right-click gesture, so InkWell must not look tappable — otherwise it
     // paints a splash for a left click that does nothing.
@@ -113,8 +116,9 @@ void main() {
     expect(tester.widget<InkWell>(_rowInkWell()).onTap, isNull);
   });
 
-  testWidgets('the body theme ink colors reach the row InkWell while editing',
-      (tester) async {
+  testWidgets('the body theme ink colors reach the row InkWell while editing', (
+    tester,
+  ) async {
     const splash = Color(0x80FF0000);
     const hover = Color(0x8000FF00);
     const highlight = Color(0x800000FF);

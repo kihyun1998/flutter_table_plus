@@ -39,14 +39,16 @@ void main() {
   });
 
   group('insertColumn', () {
-    test('places the new column at the target order and shifts the rest up',
-        () {
-      final m = (_abc()..insertColumn('x', _col('x'), 2)).build();
-      expect(m['a']!.order, 1);
-      expect(m['x']!.order, 2);
-      expect(m['b']!.order, 3);
-      expect(m['c']!.order, 4);
-    });
+    test(
+      'places the new column at the target order and shifts the rest up',
+      () {
+        final m = (_abc()..insertColumn('x', _col('x'), 2)).build();
+        expect(m['a']!.order, 1);
+        expect(m['x']!.order, 2);
+        expect(m['b']!.order, 3);
+        expect(m['c']!.order, 4);
+      },
+    );
 
     test('rejects an order below 1', () {
       final b = _abc();

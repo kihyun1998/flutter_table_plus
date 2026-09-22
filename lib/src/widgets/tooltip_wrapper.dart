@@ -43,9 +43,5 @@ Widget wrapWithTooltip<T>({
       ? tooltipFormatter(data)
       : fallbackMessage;
 
-  return FlutterTooltipPlus(
-    message: message,
-    theme: theme,
-    child: child,
-  );
+  return FlutterTooltipPlus(message: message, theme: theme, child: child);
 }

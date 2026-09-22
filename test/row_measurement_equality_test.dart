@@ -79,77 +79,88 @@ void main() {
     setUp(() => callCount = 0);
 
     testWidgets(
-        'a State method tear-off is not treated as a new height function',
-        (tester) async {
-      final data = _rows(6);
+      'a State method tear-off is not treated as a new height function',
+      (tester) async {
+        final data = _rows(6);
 
-      await tester.pumpWidget(const _TearOffHost(data: []));
-      await tester.pumpWidget(_TearOffHost(data: data));
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(const _TearOffHost(data: []));
+        await tester.pumpWidget(_TearOffHost(data: data));
+        await tester.pumpAndSettle();
 
-      final afterFirst = callCount;
-      expect(afterFirst, greaterThan(0),
-          reason: 'the table never asked for a height, so this proves nothing');
+        final afterFirst = callCount;
+        expect(
+          afterFirst,
+          greaterThan(0),
+          reason: 'the table never asked for a height, so this proves nothing',
+        );
 
-      // A second pump with the same data list and the same State. Only the
-      // tear-off's identity can differ, and it must not count as a change.
-      await tester.pumpWidget(_TearOffHost(data: data));
-      await tester.pumpAndSettle();
+        // A second pump with the same data list and the same State. Only the
+        // tear-off's identity can differ, and it must not count as a change.
+        await tester.pumpWidget(_TearOffHost(data: data));
+        await tester.pumpAndSettle();
 
-      expect(callCount, afterFirst,
-          reason: 'the height cache was dropped and every row re-measured, '
+        expect(
+          callCount,
+          afterFirst,
+          reason:
+              'the height cache was dropped and every row re-measured, '
               'because the callback was compared by identity rather than by '
-              'value — a tear-off is equal to itself on the same receiver');
-    });
+              'value — a tear-off is equal to itself on the same receiver',
+        );
+      },
+    );
 
-    test('the predicate itself: a tear-off equals itself, across receivers not',
-        () {
-      final a = _Holder(1);
-      final b = _Holder(2);
+    test(
+      'the predicate itself: a tear-off equals itself, across receivers not',
+      () {
+        final a = _Holder(1);
+        final b = _Holder(2);
 
-      expect(
-        rowMeasurementChanged<Row>(
-          oldCalculateRowHeight: a.height,
-          newCalculateRowHeight: a.height,
-          oldScale: 1,
-          newScale: 1,
-          oldRowHeight: 40,
-          newRowHeight: 40,
-        ),
-        isFalse,
-        reason: 'the same method on the same receiver is not a change',
-      );
+        expect(
+          rowMeasurementChanged<Row>(
+            oldCalculateRowHeight: a.height,
+            newCalculateRowHeight: a.height,
+            oldScale: 1,
+            newScale: 1,
+            oldRowHeight: 40,
+            newRowHeight: 40,
+          ),
+          isFalse,
+          reason: 'the same method on the same receiver is not a change',
+        );
 
-      expect(
-        rowMeasurementChanged<Row>(
-          oldCalculateRowHeight: a.height,
-          newCalculateRowHeight: b.height,
-          oldScale: 1,
-          newScale: 1,
-          oldRowHeight: 40,
-          newRowHeight: 40,
-        ),
-        isTrue,
-        reason: 'the same method on a *different* receiver is a real swap, and '
-            'this is the case that has to keep working',
-      );
+        expect(
+          rowMeasurementChanged<Row>(
+            oldCalculateRowHeight: a.height,
+            newCalculateRowHeight: b.height,
+            oldScale: 1,
+            newScale: 1,
+            oldRowHeight: 40,
+            newRowHeight: 40,
+          ),
+          isTrue,
+          reason:
+              'the same method on a *different* receiver is a real swap, and '
+              'this is the case that has to keep working',
+        );
 
-      // The shape every ordinary call site writes. Two lambdas are never equal,
-      // so this stays a change under either comparison — stated because it is
-      // what makes the switch safe rather than merely cheaper.
-      expect(
-        rowMeasurementChanged<Row>(
-          oldCalculateRowHeight: (i, r) => 40,
-          newCalculateRowHeight: (i, r) => 40,
-          oldScale: 1,
-          newScale: 1,
-          oldRowHeight: 40,
-          newRowHeight: 40,
-        ),
-        isTrue,
-        reason: 'two inline closures are distinct objects and unequal',
-      );
-    });
+        // The shape every ordinary call site writes. Two lambdas are never equal,
+        // so this stays a change under either comparison — stated because it is
+        // what makes the switch safe rather than merely cheaper.
+        expect(
+          rowMeasurementChanged<Row>(
+            oldCalculateRowHeight: (i, r) => 40,
+            newCalculateRowHeight: (i, r) => 40,
+            oldScale: 1,
+            newScale: 1,
+            oldRowHeight: 40,
+            newRowHeight: 40,
+          ),
+          isTrue,
+          reason: 'two inline closures are distinct objects and unequal',
+        );
+      },
+    );
   });
 }
 

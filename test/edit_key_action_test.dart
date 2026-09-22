@@ -4,14 +4,18 @@ import 'package:flutter_test/flutter_test.dart';
 
 KeyDownEvent _down(LogicalKeyboardKey key, PhysicalKeyboardKey physical) =>
     KeyDownEvent(
-        physicalKey: physical, logicalKey: key, timeStamp: Duration.zero);
+      physicalKey: physical,
+      logicalKey: key,
+      timeStamp: Duration.zero,
+    );
 
 void main() {
   group('editKeyAction', () {
     test('Enter down commits', () {
       expect(
         editKeyAction(
-            _down(LogicalKeyboardKey.enter, PhysicalKeyboardKey.enter)),
+          _down(LogicalKeyboardKey.enter, PhysicalKeyboardKey.enter),
+        ),
         EditKeyAction.save,
       );
     });
@@ -19,7 +23,8 @@ void main() {
     test('Escape down cancels', () {
       expect(
         editKeyAction(
-            _down(LogicalKeyboardKey.escape, PhysicalKeyboardKey.escape)),
+          _down(LogicalKeyboardKey.escape, PhysicalKeyboardKey.escape),
+        ),
         EditKeyAction.cancel,
       );
     });
@@ -33,22 +38,26 @@ void main() {
 
     test('a key-up (even Enter) is not an action', () {
       expect(
-        editKeyAction(const KeyUpEvent(
-          physicalKey: PhysicalKeyboardKey.enter,
-          logicalKey: LogicalKeyboardKey.enter,
-          timeStamp: Duration.zero,
-        )),
+        editKeyAction(
+          const KeyUpEvent(
+            physicalKey: PhysicalKeyboardKey.enter,
+            logicalKey: LogicalKeyboardKey.enter,
+            timeStamp: Duration.zero,
+          ),
+        ),
         EditKeyAction.none,
       );
     });
 
     test('a key-repeat (even Enter) is not an action', () {
       expect(
-        editKeyAction(const KeyRepeatEvent(
-          physicalKey: PhysicalKeyboardKey.enter,
-          logicalKey: LogicalKeyboardKey.enter,
-          timeStamp: Duration.zero,
-        )),
+        editKeyAction(
+          const KeyRepeatEvent(
+            physicalKey: PhysicalKeyboardKey.enter,
+            logicalKey: LogicalKeyboardKey.enter,
+            timeStamp: Duration.zero,
+          ),
+        ),
         EditKeyAction.none,
       );
     });

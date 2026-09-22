@@ -78,8 +78,9 @@ Future<void> _pumpRebuilds(
               columns: rebuildColumns ? _buildColumns() : _stableColumns,
               data: _data,
               rowId: (r) => r['id'] as String,
-              calculateRowHeight:
-                  inlineCallback ? (int index, Row row) => 40.0 : _staticHeight,
+              calculateRowHeight: inlineCallback
+                  ? (int index, Row row) => 40.0
+                  : _staticHeight,
               theme: const TablePlusTheme(
                 bodyTheme: TablePlusBodyTheme(rowHeight: 40),
                 headerTheme: TablePlusHeaderTheme(height: 40),
@@ -120,10 +121,17 @@ Future<List<String>> _warningsWhile(Future<void> Function() body) async {
 
 void main() {
   group('inline calculateRowHeight diagnostic (#161)', () {
-    testWidgets('speaks once when the callback is the only thing rebuilt',
-        (tester) async {
-      final warnings = await _warningsWhile(() => _pumpRebuilds(tester, 12,
-          inlineCallback: true, rebuildColumns: false));
+    testWidgets('speaks once when the callback is the only thing rebuilt', (
+      tester,
+    ) async {
+      final warnings = await _warningsWhile(
+        () => _pumpRebuilds(
+          tester,
+          12,
+          inlineCallback: true,
+          rebuildColumns: false,
+        ),
+      );
 
       // Once, not twelve times: the condition holds on every build after the
       // threshold, so "fires" and "floods" are different claims and this
@@ -134,16 +142,29 @@ void main() {
     });
 
     testWidgets('stays silent for a stable receiver', (tester) async {
-      final warnings = await _warningsWhile(() => _pumpRebuilds(tester, 12,
-          inlineCallback: false, rebuildColumns: false));
+      final warnings = await _warningsWhile(
+        () => _pumpRebuilds(
+          tester,
+          12,
+          inlineCallback: false,
+          rebuildColumns: false,
+        ),
+      );
 
       expect(warnings, isEmpty);
     });
 
-    testWidgets('stays silent while the columns are rebuilt too',
-        (tester) async {
-      final warnings = await _warningsWhile(() => _pumpRebuilds(tester, 12,
-          inlineCallback: true, rebuildColumns: true));
+    testWidgets('stays silent while the columns are rebuilt too', (
+      tester,
+    ) async {
+      final warnings = await _warningsWhile(
+        () => _pumpRebuilds(
+          tester,
+          12,
+          inlineCallback: true,
+          rebuildColumns: true,
+        ),
+      );
 
       expect(warnings, isEmpty);
     });

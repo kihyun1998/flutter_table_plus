@@ -22,56 +22,76 @@ void main() {
   group('same column, ascendingFirst (none -> asc -> desc -> none)', () {
     const c = SortCycleOrder.ascendingFirst;
     test(
-        'none -> ascending',
-        () => expect(
-            next(SortDirection.none, cycle: c), SortDirection.ascending));
+      'none -> ascending',
+      () => expect(next(SortDirection.none, cycle: c), SortDirection.ascending),
+    );
     test(
-        'ascending -> descending',
-        () => expect(
-            next(SortDirection.ascending, cycle: c), SortDirection.descending));
+      'ascending -> descending',
+      () => expect(
+        next(SortDirection.ascending, cycle: c),
+        SortDirection.descending,
+      ),
+    );
     test(
-        'descending -> none',
-        () => expect(
-            next(SortDirection.descending, cycle: c), SortDirection.none));
+      'descending -> none',
+      () =>
+          expect(next(SortDirection.descending, cycle: c), SortDirection.none),
+    );
   });
 
   group('same column, descendingFirst (none -> desc -> asc -> none)', () {
     const c = SortCycleOrder.descendingFirst;
     test(
-        'none -> descending',
-        () => expect(
-            next(SortDirection.none, cycle: c), SortDirection.descending));
+      'none -> descending',
+      () =>
+          expect(next(SortDirection.none, cycle: c), SortDirection.descending),
+    );
     test(
-        'descending -> ascending',
-        () => expect(
-            next(SortDirection.descending, cycle: c), SortDirection.ascending));
+      'descending -> ascending',
+      () => expect(
+        next(SortDirection.descending, cycle: c),
+        SortDirection.ascending,
+      ),
+    );
     test(
-        'ascending -> none',
-        () => expect(
-            next(SortDirection.ascending, cycle: c), SortDirection.none));
+      'ascending -> none',
+      () => expect(next(SortDirection.ascending, cycle: c), SortDirection.none),
+    );
   });
 
   group('a different column ignores current direction and starts fresh', () {
     test('ascendingFirst starts ascending', () {
       expect(
-        next(SortDirection.descending,
-            tapped: 'b', sorted: 'a', cycle: SortCycleOrder.ascendingFirst),
+        next(
+          SortDirection.descending,
+          tapped: 'b',
+          sorted: 'a',
+          cycle: SortCycleOrder.ascendingFirst,
+        ),
         SortDirection.ascending,
       );
     });
 
     test('descendingFirst starts descending', () {
       expect(
-        next(SortDirection.ascending,
-            tapped: 'b', sorted: 'a', cycle: SortCycleOrder.descendingFirst),
+        next(
+          SortDirection.ascending,
+          tapped: 'b',
+          sorted: 'a',
+          cycle: SortCycleOrder.descendingFirst,
+        ),
         SortDirection.descending,
       );
     });
 
     test('nothing sorted yet (null key) starts the cycle', () {
       expect(
-        next(SortDirection.none,
-            tapped: 'a', sorted: null, cycle: SortCycleOrder.ascendingFirst),
+        next(
+          SortDirection.none,
+          tapped: 'a',
+          sorted: null,
+          cycle: SortCycleOrder.ascendingFirst,
+        ),
         SortDirection.ascending,
       );
     });

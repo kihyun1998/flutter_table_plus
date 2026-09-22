@@ -18,9 +18,10 @@ class CellEditSession<T> {
     required this.columnKey,
     required this.originalValue,
     required int rowIndex,
-  })  : _rowIndex = rowIndex,
-        controller =
-            TextEditingController(text: originalValue?.toString() ?? '');
+  }) : _rowIndex = rowIndex,
+       controller = TextEditingController(
+         text: originalValue?.toString() ?? '',
+       );
 
   /// The id of the row being edited (stable across data reorders).
   final String rowId;

@@ -52,7 +52,7 @@ class _TestRow extends TablePlusRowWidget<Object> {
   void Function(String)? get onRowDoubleTap => null;
   @override
   void Function(String, TapDownDetails, RenderBox, bool)?
-      get onRowSecondaryTapDown => null;
+  get onRowSecondaryTapDown => null;
 
   @override
   State<_TestRow> createState() => _TestRowState();
@@ -126,32 +126,44 @@ void main() {
 
     test('true only when selectable and id present', () {
       expect(
-        row(isEditable: false, isSelectable: true, selectionId: 'r')
-            .enableSelectionInk,
+        row(
+          isEditable: false,
+          isSelectable: true,
+          selectionId: 'r',
+        ).enableSelectionInk,
         isTrue,
       );
     });
 
     test('still true while editing', () {
       expect(
-        row(isEditable: true, isSelectable: true, selectionId: 'r')
-            .enableSelectionInk,
+        row(
+          isEditable: true,
+          isSelectable: true,
+          selectionId: 'r',
+        ).enableSelectionInk,
         isTrue,
       );
     });
 
     test('false when not selectable', () {
       expect(
-        row(isEditable: false, isSelectable: false, selectionId: 'r')
-            .enableSelectionInk,
+        row(
+          isEditable: false,
+          isSelectable: false,
+          selectionId: 'r',
+        ).enableSelectionInk,
         isFalse,
       );
     });
 
     test('false when the id is null', () {
       expect(
-        row(isEditable: false, isSelectable: true, selectionId: null)
-            .enableSelectionInk,
+        row(
+          isEditable: false,
+          isSelectable: true,
+          selectionId: null,
+        ).enableSelectionInk,
         isFalse,
       );
     });

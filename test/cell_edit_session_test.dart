@@ -68,8 +68,11 @@ void main() {
 
       s.end();
       expect(s.isActive, isFalse);
-      expect(s.isEditing(1, 'name'), isFalse,
-          reason: 'an ended session is no longer the active edit');
+      expect(
+        s.isEditing(1, 'name'),
+        isFalse,
+        reason: 'an ended session is no longer the active edit',
+      );
       s.dispose();
     });
   });

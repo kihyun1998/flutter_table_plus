@@ -49,10 +49,10 @@ void main() {
     });
 
     test('prepends a selection column when selectable', () {
-      final result = order(
-        {'a': col('a', order: 1), 'b': col('b', order: 2)},
-        isSelectable: true,
-      );
+      final result = order({
+        'a': col('a', order: 1),
+        'b': col('b', order: 2),
+      }, isSelectable: true);
       expect(result.map((c) => c.key), ['__selection__', 'a', 'b']);
 
       final selection = result.first;
@@ -74,10 +74,7 @@ void main() {
     });
 
     test('no selection column when not selectable', () {
-      final result = order(
-        {'a': col('a', order: 1)},
-        isSelectable: false,
-      );
+      final result = order({'a': col('a', order: 1)}, isSelectable: false);
       expect(result.map((c) => c.key), ['a']);
     });
 

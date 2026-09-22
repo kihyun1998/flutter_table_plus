@@ -62,13 +62,16 @@ const _known = <String>{
 };
 
 void main() {
-  test('CheckboxStyle has not grown a field this package has not considered',
-      () {
+  test('CheckboxStyle has not grown a field this package has not considered', () {
     final config = File('.dart_tool/package_config.json');
-    expect(config.existsSync(), isTrue,
-        reason: 'no package_config.json — run `flutter pub get` first. '
-            'Without it this test cannot see the resolved package and would '
-            'pass for the wrong reason.');
+    expect(
+      config.existsSync(),
+      isTrue,
+      reason:
+          'no package_config.json — run `flutter pub get` first. '
+          'Without it this test cannot see the resolved package and would '
+          'pass for the wrong reason.',
+    );
 
     final packages =
         (jsonDecode(config.readAsStringSync()) as Map)['packages'] as List;
@@ -83,25 +86,34 @@ void main() {
         ? root.toFilePath()
         : File.fromUri(config.uri.resolveUri(root)).path;
     final source = File('$dir/lib/src/style/checkbox_style.dart');
-    expect(source.existsSync(), isTrue,
-        reason: 'CheckboxStyle moved: ${source.path}. That is itself the '
-            'signal this test exists for.');
+    expect(
+      source.existsSync(),
+      isTrue,
+      reason:
+          'CheckboxStyle moved: ${source.path}. That is itself the '
+          'signal this test exists for.',
+    );
 
     // `final <type> <name>;` at one indent level — the class's declared fields.
-    final found = RegExp(r'^  final [\w<>?,\s]+ (\w+);', multiLine: true)
-        .allMatches(source.readAsStringSync())
-        .map((m) => m.group(1)!)
-        .toSet();
+    final found = RegExp(
+      r'^  final [\w<>?,\s]+ (\w+);',
+      multiLine: true,
+    ).allMatches(source.readAsStringSync()).map((m) => m.group(1)!).toSet();
 
-    expect(found, isNotEmpty,
-        reason: 'the field regex matched nothing — the upstream file was '
-            'reformatted and this tripwire is now blind, which is worse than '
-            'a failure');
+    expect(
+      found,
+      isNotEmpty,
+      reason:
+          'the field regex matched nothing — the upstream file was '
+          'reformatted and this tripwire is now blind, which is worse than '
+          'a failure',
+    );
 
     expect(
       found,
       _known,
-      reason: 'the resolved CheckboxStyle no longer matches the field set this '
+      reason:
+          'the resolved CheckboxStyle no longer matches the field set this '
           'package was written against.\n'
           'added:   ${found.difference(_known)}\n'
           'removed: ${_known.difference(found)}\n'

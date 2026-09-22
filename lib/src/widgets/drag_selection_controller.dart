@@ -217,14 +217,13 @@ class DragSelectionController {
     required double edgeZone,
     required double maxSpeed,
     required bool clampProximity,
-  }) =>
-      EdgeAutoScroller.axisScrollDelta(
-        localPos: localPos,
-        viewportExtent: viewportExtent,
-        edgeZone: edgeZone,
-        maxSpeed: maxSpeed,
-        clampProximity: clampProximity,
-      );
+  }) => EdgeAutoScroller.axisScrollDelta(
+    localPos: localPos,
+    viewportExtent: viewportExtent,
+    edgeZone: edgeZone,
+    maxSpeed: maxSpeed,
+    clampProximity: clampProximity,
+  );
 
   /// The auto-scroll delta to apply this tick as an [Offset] (`dx` horizontal,
   /// `dy` vertical), computed from the last known pointer position and the

@@ -92,8 +92,7 @@ class HeaderCell extends StatelessWidget {
         // border, so by default nothing is folded into the child's inset here.
         // A caller-supplied `cellDecoration` can carry one, and asking the
         // decoration covers both cases with the same expression.
-        final inset = _buildCellDecoration()
-            .padding
+        final inset = _buildCellDecoration().padding
             .resolve(Directionality.maybeOf(context) ?? TextDirection.ltr)
             .horizontal;
         final availableWidth =
@@ -145,9 +144,7 @@ class HeaderCell extends StatelessWidget {
       return customCellDecoration;
     }
 
-    return BoxDecoration(
-      color: _getBackgroundColor(),
-    );
+    return BoxDecoration(color: _getBackgroundColor());
   }
 
   @override
@@ -166,9 +163,7 @@ class HeaderCell extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             // Column label
-            Flexible(
-              child: _buildHeaderText(context, textStyle),
-            ),
+            Flexible(child: _buildHeaderText(context, textStyle)),
 
             // Sort icon (FittedBox scales custom icons to match sortIconWidth)
             if (sortIcon != null) ...[
@@ -206,10 +201,7 @@ class HeaderCell extends StatelessWidget {
     if (column.sortable && onSortClick != null) {
       return GestureDetector(
         onTap: onSortClick,
-        child: MouseRegion(
-          cursor: SystemMouseCursors.click,
-          child: content,
-        ),
+        child: MouseRegion(cursor: SystemMouseCursors.click, child: content),
       );
     }
 
@@ -246,9 +238,7 @@ class SelectionHeaderCell extends StatelessWidget {
       return customCellDecoration;
     }
 
-    return BoxDecoration(
-      color: theme.backgroundColor,
-    );
+    return BoxDecoration(color: theme.backgroundColor);
   }
 
   @override
