@@ -9,11 +9,12 @@ import '../theme/table_palette.dart';
 
 /// Turn the mouse wheel over the table, and Shift+wheel for the other axis.
 ///
-/// **One argument, and `null` is the default.** `wheelMotion` left out moves
-/// the body at once on every notch, which is the table as it always was. Hand
-/// it a `WheelMotion` and the body animates to where the notch points instead;
-/// notches during the motion add to its target, so a fast flick still travels
-/// the whole distance. The header and scrollbars follow on every frame.
+/// **One argument, and it is on by default.** A table with no `wheelMotion`
+/// animates each notch as `WheelMotion.spring()`: the body moves to where the
+/// notch points, notches during the motion add to its target, so a fast flick
+/// still travels the whole distance, and the header and scrollbars follow on
+/// every frame. Pass another motion to change the feel, or `null` to move at
+/// once on every notch.
 ///
 /// **`WheelMotion` comes from this package's import.** It is re-exported, so
 /// there is no second dependency to add for it.
@@ -23,7 +24,10 @@ import '../theme/table_palette.dart';
 /// of its own. How far one notch travels is not a table setting at all — that
 /// is app-wide, through `SmoothWheelBinding` in `flutter_smooth_wheel_scroll`.
 class SmoothWheelRecipe extends StatelessWidget {
-  const SmoothWheelRecipe({super.key, this.wheelMotion});
+  const SmoothWheelRecipe({
+    super.key,
+    this.wheelMotion = const WheelMotion.spring(),
+  });
 
   /// How the body moves on a wheel notch; `null` moves it at once.
   final WheelMotion? wheelMotion;

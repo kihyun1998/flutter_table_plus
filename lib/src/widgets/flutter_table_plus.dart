@@ -73,7 +73,7 @@ class FlutterTablePlus<T> extends StatefulWidget {
     this.onScaleChanged,
     this.scaleStep = 0.05,
     this.blockModifierScroll,
-    this.wheelMotion,
+    this.wheelMotion = const WheelMotion.spring(),
   }) : assert(scale > 0, 'scale must be greater than zero');
 
   /// The column definitions for the table.
@@ -456,13 +456,16 @@ class FlutterTablePlus<T> extends StatefulWidget {
 
   /// How the body moves on mouse wheel input, horizontally and vertically.
   ///
-  /// Defaults to `null`, where a wheel notch moves the body at once. With a
-  /// [WheelMotion], the body animates to where the notch points, and notches
-  /// during the motion add to its target. The header and scrollbars follow
-  /// the body on every frame.
+  /// Defaults to `WheelMotion.spring()`: the body animates to where a notch
+  /// points, and notches during the motion add to its target. The header and
+  /// scrollbars follow the body on every frame. Pass `null` to move the body
+  /// at once on every notch instead.
   ///
   /// ```dart
-  /// wheelMotion: const WheelMotion.spring(),
+  /// wheelMotion: const WheelMotion.spring(
+  ///   duration: Duration(milliseconds: 250),
+  /// ),
+  /// wheelMotion: null, // no animation
   /// ```
   ///
   /// Only the wheel is animated: dragging a scrollbar, drag-selection

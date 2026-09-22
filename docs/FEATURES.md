@@ -1009,16 +1009,27 @@ FlutterTablePlus<User>(
 
 ## Smooth Wheel Scrolling
 
-By default a mouse wheel notch moves the table at once. Pass a `wheelMotion` and the body animates instead, vertically and with Shift+wheel horizontally. The header and scrollbars follow it on every frame.
+A mouse wheel notch animates the body by default, vertically and with Shift+wheel horizontally, as `WheelMotion.spring()`: 400ms, no bounce. The header and scrollbars follow it on every frame. Pass another `wheelMotion` to change the feel, or `null` to move at once on every notch.
 
 ```dart
 FlutterTablePlus<Employee>(
   columns: columns,
   data: employees,
   rowId: (e) => e.id,
-  wheelMotion: const WheelMotion.spring(),
+  wheelMotion: const WheelMotion.spring(
+    duration: Duration(milliseconds: 250),
+  ),
+)
+
+FlutterTablePlus<Employee>(
+  columns: columns,
+  data: employees,
+  rowId: (e) => e.id,
+  wheelMotion: null, // no animation
 )
 ```
+
+The example app's *Smooth wheel* recipe and playground have a knob for every parameter below.
 
 `WheelMotion` comes from [`flutter_smooth_wheel_scroll`](https://pub.dev/packages/flutter_smooth_wheel_scroll) and is re-exported here, so no extra import is needed.
 

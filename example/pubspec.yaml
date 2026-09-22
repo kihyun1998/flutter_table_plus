@@ -47,6 +47,12 @@ dev_dependencies:
   # the assertion the guard exists for.
   flutter_syntax_highlight: ^0.1.0
 
+  # Already in the tree, under flutter_table_plus. Named here for one test:
+  # test/recipes_d_test.dart reads a motion's duration and bounce, and the
+  # barrel re-exports `WheelMotion` alone, so its variants are importable only
+  # from the package that declares them.
+  flutter_smooth_wheel_scroll: ^0.1.2
+
 flutter:
   uses-material-design: true
   assets:

@@ -22,17 +22,31 @@ enum InkColorOption {
   final Color? color;
 }
 
-/// Which [WheelMotion] the playground hands the table while smooth wheel
-/// scrolling is on, each at the package's defaults.
+/// Which kind of [WheelMotion] the playground hands the table; [off] is
+/// `null`, which moves the body at once.
 enum WheelMotionKind {
-  spring('Spring', WheelMotion.spring()),
-  curve('Curve', WheelMotion.curve()),
-  lerp('Lerp', WheelMotion.lerp());
+  off('Off'),
+  spring('Spring'),
+  curve('Curve'),
+  lerp('Lerp');
 
-  const WheelMotionKind(this.label, this.motion);
+  const WheelMotionKind(this.label);
 
   final String label;
-  final WheelMotion motion;
+}
+
+/// The curves the playground offers a [WheelMotion.curve].
+enum WheelCurveOption {
+  easeOutCubic('easeOutCubic', Curves.easeOutCubic),
+  easeOut('easeOut', Curves.easeOut),
+  easeInOut('easeInOut', Curves.easeInOut),
+  decelerate('decelerate', Curves.decelerate),
+  linear('linear', Curves.linear);
+
+  const WheelCurveOption(this.label, this.curve);
+
+  final String label;
+  final Curve curve;
 }
 
 /// Playground settings configuration
@@ -131,13 +145,28 @@ class PlaygroundSettings {
   final double scale;
   final bool blockModifierScroll;
 
-  // Smooth wheel scrolling
-  final bool smoothWheelEnabled;
+  // Smooth wheel scrolling. The defaults are the table's own, so the
+  // playground opens on what a table with no `wheelMotion` does.
   final WheelMotionKind wheelMotionKind;
+  final double wheelDurationMs;
+  final double wheelBounce;
+  final WheelCurveOption wheelCurve;
+  final double wheelTimeConstantMs;
 
-  /// What the table's `wheelMotion` is: `null` while the switch is off.
-  WheelMotion? get wheelMotion =>
-      smoothWheelEnabled ? wheelMotionKind.motion : null;
+  /// The table's `wheelMotion`, built from the kind and its own knobs.
+  WheelMotion? get wheelMotion {
+    final duration = Duration(milliseconds: wheelDurationMs.round());
+    return switch (wheelMotionKind) {
+      WheelMotionKind.off => null,
+      WheelMotionKind.spring =>
+        WheelMotion.spring(duration: duration, bounce: wheelBounce),
+      WheelMotionKind.curve =>
+        WheelMotion.curve(duration: duration, curve: wheelCurve.curve),
+      WheelMotionKind.lerp => WheelMotion.lerp(
+          timeConstant: Duration(milliseconds: wheelTimeConstantMs.round()),
+        ),
+    };
+  }
 
   const PlaygroundSettings({
     this.rowCount = 100,
@@ -198,8 +227,11 @@ class PlaygroundSettings {
     this.resizeHandleEndIndent = 0.0,
     this.scale = 1.0,
     this.blockModifierScroll = true,
-    this.smoothWheelEnabled = false,
     this.wheelMotionKind = WheelMotionKind.spring,
+    this.wheelDurationMs = 400,
+    this.wheelBounce = 0,
+    this.wheelCurve = WheelCurveOption.easeOutCubic,
+    this.wheelTimeConstantMs = 60,
   });
 
   PlaygroundSettings copyWith({
@@ -261,8 +293,11 @@ class PlaygroundSettings {
     double? resizeHandleEndIndent,
     double? scale,
     bool? blockModifierScroll,
-    bool? smoothWheelEnabled,
     WheelMotionKind? wheelMotionKind,
+    double? wheelDurationMs,
+    double? wheelBounce,
+    WheelCurveOption? wheelCurve,
+    double? wheelTimeConstantMs,
   }) {
     return PlaygroundSettings(
       rowCount: rowCount ?? this.rowCount,
@@ -337,8 +372,11 @@ class PlaygroundSettings {
           resizeHandleEndIndent ?? this.resizeHandleEndIndent,
       scale: scale ?? this.scale,
       blockModifierScroll: blockModifierScroll ?? this.blockModifierScroll,
-      smoothWheelEnabled: smoothWheelEnabled ?? this.smoothWheelEnabled,
       wheelMotionKind: wheelMotionKind ?? this.wheelMotionKind,
+      wheelDurationMs: wheelDurationMs ?? this.wheelDurationMs,
+      wheelBounce: wheelBounce ?? this.wheelBounce,
+      wheelCurve: wheelCurve ?? this.wheelCurve,
+      wheelTimeConstantMs: wheelTimeConstantMs ?? this.wheelTimeConstantMs,
     );
   }
 }

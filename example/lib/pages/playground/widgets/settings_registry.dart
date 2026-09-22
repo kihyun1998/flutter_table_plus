@@ -258,14 +258,6 @@ final Map<String, ControlBuilder> settingsRegistry = {
       ),
 
   // interaction > smooth wheel
-  'smoothWheelEnabled': (s, onChanged) => buildSwitchTile(
-        id: 'smoothWheelEnabled',
-        label: 'Smooth Wheel',
-        value: s.smoothWheelEnabled,
-        onChanged: (value) {
-          onChanged(s.copyWith(smoothWheelEnabled: value));
-        },
-      ),
   'wheelMotionKind': (s, onChanged) => buildDropdownRow<WheelMotionKind>(
         id: 'wheelMotionKind',
         label: 'Motion',
@@ -274,6 +266,50 @@ final Map<String, ControlBuilder> settingsRegistry = {
         itemLabel: (kind) => kind.label,
         onChanged: (value) {
           onChanged(s.copyWith(wheelMotionKind: value));
+        },
+      ),
+  'wheelDurationMs': (s, onChanged) => buildSliderSetting(
+        id: 'wheelDurationMs',
+        label: 'Duration',
+        value: s.wheelDurationMs,
+        min: 50,
+        max: 1000,
+        unit: 'ms',
+        onChanged: (value) {
+          onChanged(s.copyWith(wheelDurationMs: value));
+        },
+      ),
+  'wheelBounce': (s, onChanged) => buildSliderSetting(
+        id: 'wheelBounce',
+        label: 'Bounce',
+        value: s.wheelBounce,
+        min: -0.5,
+        max: 0.8,
+        unit: '',
+        decimalPlaces: 2,
+        onChanged: (value) {
+          onChanged(s.copyWith(wheelBounce: value));
+        },
+      ),
+  'wheelCurve': (s, onChanged) => buildDropdownRow<WheelCurveOption>(
+        id: 'wheelCurve',
+        label: 'Curve',
+        value: s.wheelCurve,
+        items: WheelCurveOption.values,
+        itemLabel: (curve) => curve.label,
+        onChanged: (value) {
+          onChanged(s.copyWith(wheelCurve: value));
+        },
+      ),
+  'wheelTimeConstantMs': (s, onChanged) => buildSliderSetting(
+        id: 'wheelTimeConstantMs',
+        label: 'Time Constant',
+        value: s.wheelTimeConstantMs,
+        min: 10,
+        max: 300,
+        unit: 'ms',
+        onChanged: (value) {
+          onChanged(s.copyWith(wheelTimeConstantMs: value));
         },
       ),
 

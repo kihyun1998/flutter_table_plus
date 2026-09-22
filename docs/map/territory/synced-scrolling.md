@@ -29,8 +29,11 @@ master, so the next author is free to reverse it without knowing what breaks.
   the slave's extent is not the master's, so an unclamped mirror of the master's
   offset is out of range whenever the two differ.
 - **Wheel input is animated on the master only** (#181). The two body
-  controllers `SyncedScrollControllers` creates are `SmoothScrollController`s;
-  with `wheelMotion` null they carry a zero-duration motion, which is
+  controllers `SyncedScrollControllers` creates are `SmoothScrollController`s.
+  `FlutterTablePlus.wheelMotion` defaults to a spring, by the maintainer's
+  call, which reversed the opt-in #181 shipped with before 2.18.0 was
+  published. `null` is the way out: the controllers then carry a
+  zero-duration motion, which is
   `ScrollController`'s own wheel path rather than an imitation of it. A slave
   still moves by `jumpTo`, now once per frame of a motion — the guard re-arms
   on every master notification, so it holds at that rate (measured: zero

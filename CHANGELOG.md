@@ -6,17 +6,22 @@
     *   **The constraint is `^0.1.2`, not anything lower, for two reasons.** 0.1.0 declared Flutter `>=3.41.0`, so a 3.32 user could not resolve it; that is the same reasoning that took `flutter_checkbox` to `^0.3.1`. And 0.1.1 dropped a wheel notch sent while a motion was already heading for the end, instead of passing it to an enclosing scroll view. That was reported upstream and fixed in 0.1.2 rather than worked around here
     *   **The source was reformatted, with no behaviour change.** `dart format` picks its style from the package's language version, and from Dart 3.7 that is the tall style, so raising the SDK bound past 3.6 reformats the tree on its own. That reformat is a separate, mechanical commit
 
-*   **FEAT**: opt-in smooth mouse wheel scrolling through `wheelMotion` ([#181](https://github.com/kihyun1998/flutter_table_plus/issues/181))
-    *   **What a consumer sees differently.** Nothing unless `wheelMotion` is set; `null`, the default, moves the body at once on a wheel notch exactly as before. With `wheelMotion: const WheelMotion.spring()` (or `.curve` / `.lerp`) the body animates to where the notch points, vertically and with Shift+wheel horizontally, and notches during the motion add to its target
+*   **BREAKING**: mouse wheel scrolling is animated by default ([#181](https://github.com/kihyun1998/flutter_table_plus/issues/181))
+    *   **What a consumer sees differently.** A table that does not set `wheelMotion` no longer jumps on a wheel notch. It animates there as `WheelMotion.spring()`, 400ms with no bounce, so the scroll offset arrives over several frames rather than at once
+    *   **What can break.** A test that sends a wheel event and reads the offset straight away. `pumpAndSettle()` lets the motion finish, or pass `wheelMotion: null` to that table
+    *   **The way back is one argument.** `wheelMotion: null` takes exactly the path every version before this one took, not an imitation of it (see the FEAT entry below)
+
+*   **FEAT**: smooth mouse wheel scrolling through `wheelMotion`, on by default ([#181](https://github.com/kihyun1998/flutter_table_plus/issues/181))
+    *   **What it does.** The body animates to where a notch points, vertically and with Shift+wheel horizontally, and notches during the motion add to its target. `WheelMotion.spring()`, `.curve()` and `.lerp()` each take their own parameters; `null` moves the body at once
     *   **The header and scrollbars follow the body on every frame**, through the same master/slave sync as before. The body is still the only input surface, so only its two controllers changed. `WheelMotion` is re-exported, so no import of `flutter_smooth_wheel_scroll` is needed
     *   **`null` is the same code path, not an imitation of it.** The body controllers are always `SmoothScrollController`s now. With no motion they carry a zero-duration one, which hands the wheel to `ScrollController`'s own `pointerScroll`. That is also why changing `wheelMotion` at runtime only swaps the motion: the controllers are kept, and so is the scroll position
     *   **Only the wheel is animated.** Scrollbar drags, drag-selection auto-scroll and scale correction still jump, and stop a motion in progress. A wheel turned over a scrollbar also jumps, because the scrollbar is its own scroll view. Ctrl/Cmd+wheel zoom is unaffected
     *   **Inside a page that scrolls too, a notch the table cannot use goes to the page**, even while a motion is still heading for the table's end. The body's vertical scroll view sits inside its horizontal one, and a test pins that this layout still reaches the page
     *   **How far a notch travels is not a table setting.** It is app-wide, through `SmoothWheelBinding` in `flutter_smooth_wheel_scroll`, and this package does not install it
 
-*   **EXAMPLE**: a *Smooth wheel* recipe, and the same switch in the playground ([#184](https://github.com/kihyun1998/flutter_table_plus/issues/184))
+*   **EXAMPLE**: a *Smooth wheel* recipe, and a knob for every motion parameter in the playground ([#184](https://github.com/kihyun1998/flutter_table_plus/issues/184))
     *   **The recipe is one argument.** `wheelMotion` on a table with room to scroll on both axes, with `WheelMotion` imported through this package's re-export, so the file pastes with no second dependency
-    *   **The playground lists it under Interaction**, with a switch and a *Motion* choice of spring, curve or lerp at the package's defaults. The *Everything* preset turns it on with the rest
+    *   **The playground lists it under Interaction**, with a knob for every parameter: *Motion* (off, spring, curve or lerp), *Duration*, *Bounce*, *Curve* and *Time Constant*. It has no on/off switch, so the *Bare* preset leaves it at the table's own default rather than turning it off
 
 ## 2.17.0
 

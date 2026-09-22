@@ -2,19 +2,23 @@ import 'package:example/app/recipe_catalog.dart';
 import 'package:example/demo_data/demo_data.dart';
 import 'package:example/pages/playground/models/playground_settings.dart';
 import 'package:example/pages/playground/models/settings_presets.dart';
+import 'package:example/pages/playground/models/settings_spec.dart';
 import 'package:example/pages/playground/playground_page.dart';
 import 'package:example/recipes/smooth_wheel_recipe.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_example_template/flutter_example_template.dart';
+import 'package:flutter_smooth_wheel_scroll/flutter_smooth_wheel_scroll.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-// The smooth wheel recipe #184 adds, and the playground switch beside it.
+// The smooth wheel recipe #184 adds, and the playground knobs beside it.
 //
 // The package pins the motion itself in `test/smooth_wheel_scroll_test.dart`:
 // that a notch animates, and that the header and scrollbars follow on every
 // frame. This file asserts only what the example writes — which `WheelMotion`
-// each setting produces, and that it reaches the table.
+// each setting produces, and that it reaches the table. The variants' fields
+// are read through the upstream package, a dev dependency here, because the
+// barrel re-exports `WheelMotion` alone.
 
 FlutterTablePlus<Employee> _table(WidgetTester tester) =>
     tester.widget<FlutterTablePlus<Employee>>(
@@ -23,91 +27,144 @@ FlutterTablePlus<Employee> _table(WidgetTester tester) =>
 Recipe _recipe(String featureId) =>
     recipeCatalog.firstWhere((r) => r.featureId == featureId);
 
-/// The motion's type by name. `WheelMotion` is the only name the barrel
-/// re-exports, so the variants are told apart the way a reader would see them.
-String? _kind(WheelMotion? motion) => motion?.runtimeType.toString();
-
 void main() {
   final base = applyPreset(const PlaygroundSettings(), presetById('bare'));
 
-  group('the catalogue wires the smooth wheel settings', () {
-    test('off means no motion, whatever kind is picked', () {
+  group('the settings build the motion', () {
+    test('bare shows the table default, a 400ms spring with no bounce', () {
+      final motion = base.wheelMotion;
+      expect(motion, isA<SpringWheelMotion>());
+      motion as SpringWheelMotion;
+      expect(motion.duration, const Duration(milliseconds: 400));
+      expect(motion.bounce, 0.0);
+    });
+
+    test('off is no motion', () {
+      expect(base.copyWith(wheelMotionKind: WheelMotionKind.off).wheelMotion,
+          isNull);
+    });
+
+    test('spring reads duration and bounce', () {
+      final motion = base
+          .copyWith(
+            wheelMotionKind: WheelMotionKind.spring,
+            wheelDurationMs: 250,
+            wheelBounce: 0.3,
+          )
+          .wheelMotion as SpringWheelMotion;
+      expect(motion.duration, const Duration(milliseconds: 250));
+      expect(motion.bounce, 0.3);
+    });
+
+    test('curve reads duration and curve', () {
+      final motion = base
+          .copyWith(
+            wheelMotionKind: WheelMotionKind.curve,
+            wheelDurationMs: 600,
+            wheelCurve: WheelCurveOption.easeInOut,
+          )
+          .wheelMotion as CurveWheelMotion;
+      expect(motion.duration, const Duration(milliseconds: 600));
+      expect(motion.curve, Curves.easeInOut);
+    });
+
+    test('lerp reads the time constant', () {
+      final motion = base
+          .copyWith(
+            wheelMotionKind: WheelMotionKind.lerp,
+            wheelTimeConstantMs: 90,
+          )
+          .wheelMotion as LerpWheelMotion;
+      expect(motion.timeConstant, const Duration(milliseconds: 90));
+    });
+  });
+
+  group('the catalogue', () {
+    test('hands the recipe what the settings build', () {
       final recipe = _recipe('smoothWheel');
       SmoothWheelRecipe built(PlaygroundSettings s) =>
           recipe.build(s) as SmoothWheelRecipe;
 
-      for (final kind in WheelMotionKind.values) {
-        expect(
-          built(base.copyWith(smoothWheelEnabled: false, wheelMotionKind: kind))
+      expect(
+          built(base.copyWith(wheelMotionKind: WheelMotionKind.off))
               .wheelMotion,
-          isNull,
-          reason: kind.name,
-        );
-      }
+          isNull);
+      expect(
+          built(base.copyWith(
+                  wheelMotionKind: WheelMotionKind.lerp,
+                  wheelTimeConstantMs: 90))
+              .wheelMotion,
+          isA<LerpWheelMotion>().having((m) => m.timeConstant, 'timeConstant',
+              const Duration(milliseconds: 90)));
     });
 
-    test('on, each kind is its own motion', () {
-      final recipe = _recipe('smoothWheel');
-      String? kindOf(WheelMotionKind kind) => _kind((recipe.build(
-                  base.copyWith(smoothWheelEnabled: true, wheelMotionKind: kind))
-              as SmoothWheelRecipe)
-          .wheelMotion);
-
-      expect(kindOf(WheelMotionKind.spring), 'SpringWheelMotion');
-      expect(kindOf(WheelMotionKind.curve), 'CurveWheelMotion');
-      expect(kindOf(WheelMotionKind.lerp), 'LerpWheelMotion');
-    });
-
-    test('the knobs are the switch and the kind', () {
-      expect(_recipe('smoothWheel').knobIds,
-          ['smoothWheelEnabled', 'wheelMotionKind']);
+    test('the knobs are the kind and its four parameters', () {
+      expect(_recipe('smoothWheel').knobIds, [
+        'wheelMotionKind',
+        'wheelDurationMs',
+        'wheelBounce',
+        'wheelCurve',
+        'wheelTimeConstantMs',
+      ]);
     });
   });
 
   group('the recipe', () {
-    Future<void> pump(WidgetTester tester, Brightness brightness,
-        {WheelMotion? motion}) async {
+    Future<void> pump(WidgetTester tester, Widget recipe,
+        {Brightness brightness = Brightness.light}) async {
       tester.view.physicalSize = const Size(1000, 900);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.reset);
       await tester.pumpWidget(MaterialApp(
         theme: exampleTheme(brightness),
-        home: Scaffold(body: SmoothWheelRecipe(wheelMotion: motion)),
+        home: Scaffold(body: recipe),
       ));
       await tester.pumpAndSettle();
     }
 
-    testWidgets('hands its motion to the table', (tester) async {
+    testWidgets('left alone, runs the table default', (tester) async {
+      await pump(tester, const SmoothWheelRecipe());
+      expect(_table(tester).wheelMotion, isA<SpringWheelMotion>());
+    });
+
+    testWidgets('hands its motion to the table, null included',
+        (tester) async {
       const motion = WheelMotion.lerp();
-      await pump(tester, Brightness.light, motion: motion);
+      await pump(tester, const SmoothWheelRecipe(wheelMotion: motion));
       expect(_table(tester).wheelMotion, same(motion));
 
-      await pump(tester, Brightness.light);
+      await pump(tester, const SmoothWheelRecipe(wheelMotion: null));
       expect(_table(tester).wheelMotion, isNull);
     });
 
     testWidgets('follows the app brightness', (tester) async {
       // #101's defect: a demo table wearing no theme drew white in a dark app.
-      await pump(tester, Brightness.light);
+      await pump(tester, const SmoothWheelRecipe());
       final light = _table(tester).theme.bodyTheme.backgroundColor;
 
-      await pump(tester, Brightness.dark);
+      await pump(tester, const SmoothWheelRecipe(),
+          brightness: Brightness.dark);
       expect(_table(tester).theme.bodyTheme.backgroundColor, isNot(light));
     });
   });
 
-  testWidgets('the playground switch reaches the table', (tester) async {
-    tester.view.physicalSize = const Size(1400, 900);
+  testWidgets('the playground Motion knob reaches the table', (tester) async {
+    tester.view.physicalSize = const Size(1400, 1000);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
 
     await tester.pumpWidget(const MaterialApp(home: PlaygroundPage()));
     await tester.pumpAndSettle();
-    expect(_table(tester).wheelMotion, isNull, reason: 'the playground opens bare');
+    expect(_table(tester).wheelMotion, isA<SpringWheelMotion>(),
+        reason: 'bare leaves the table default on');
 
-    await tester.tap(find.byKey(const ValueKey('feature-dot-smoothWheel')));
+    await tester.tap(find.text(featureById('smoothWheel').title));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(DropdownButton<WheelMotionKind>));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(WheelMotionKind.lerp.label).last);
     await tester.pumpAndSettle();
 
-    expect(_kind(_table(tester).wheelMotion), 'SpringWheelMotion');
+    expect(_table(tester).wheelMotion, isA<LerpWheelMotion>());
   });
 }

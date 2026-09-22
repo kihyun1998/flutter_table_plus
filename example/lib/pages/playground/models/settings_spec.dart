@@ -135,8 +135,13 @@ const settingsSpec = <SettingGroup>[
       SettingFeature(
         id: 'smoothWheel',
         title: 'Smooth wheel',
-        switchId: 'smoothWheelEnabled',
-        options: ['wheelMotionKind'],
+        options: [
+          'wheelMotionKind',
+          'wheelDurationMs',
+          'wheelBounce',
+          'wheelCurve',
+          'wheelTimeConstantMs',
+        ],
         interactions: [
           Interaction(
             otherFeatureId: 'zoom',

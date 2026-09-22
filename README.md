@@ -31,7 +31,7 @@ A highly customizable, type-safe Flutter table widget with synchronized scrollin
 | **Dynamic Row Heights** | Support for variable height rows |
 | **Smart Tooltips** | Text, widget, and whole-row tooltips, anchored beside the widget or beside the cursor |
 | **Dim Rows** | Style inactive rows differently |
-| **Smooth Wheel Scrolling** | Opt-in animated mouse wheel scrolling through `wheelMotion`, with the header and scrollbars in step |
+| **Smooth Wheel Scrolling** | Animated mouse wheel scrolling, on by default and tuned or turned off through `wheelMotion`, with the header and scrollbars in step |
 | **Scale / Zoom** | Ctrl/Cmd+wheel zoom with platform-aware modifier key, scroll-safe physics, automatic position correction, and optional `blockModifierScroll` control |
 | **Deep Theming** | Nested theme classes down to individual borders, dividers and placeholder text |
 | **Minimal Dependencies** | Only [`just_tooltip`](https://pub.dev/packages/just_tooltip), [`flutter_checkbox`](https://pub.dev/packages/flutter_checkbox) and [`flutter_smooth_wheel_scroll`](https://pub.dev/packages/flutter_smooth_wheel_scroll) |
