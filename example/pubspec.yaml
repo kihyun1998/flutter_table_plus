@@ -32,7 +32,12 @@ dependencies:
   # the root package consumes `just_tooltip` and `flutter_checkbox`. `example/`
   # is a gate, and a gate that only resolves on a machine holding a second
   # checkout is a gate a fresh clone cannot run.
-  flutter_example_template: ^0.1.0
+  #
+  # 0.3.0 is a floor, not a preference: it is the release with the Room mode.
+  # Every earlier mode drew a named viewport, shrunk to fit the stage or clipped
+  # at 1:1, so none showed a table at the size of the region it was given —
+  # the size a reader's own app would run it at (#189).
+  flutter_example_template: ^0.3.0
 
 dev_dependencies:
   flutter_test:

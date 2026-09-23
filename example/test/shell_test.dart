@@ -53,7 +53,7 @@ const _largeScenario = 'A hundred thousand rows';
 ///
 /// **Outside wall mode only.** The Device Wall draws three `PreviewStage`s, and
 /// `tester.widget` throws on more than one match — so a wall-mode test observes
-/// by the frame labels instead (see "carries the wall as a fourth mode").
+/// by the frame labels instead (see "carries the wall as a mode of its own").
 ViewportSpec _stageSpec(WidgetTester tester) =>
     tester.widget<PreviewStage>(find.byType(PreviewStage)).spec;
 
@@ -138,7 +138,7 @@ void main() {
       expect(tester.getSize(find.byType(EmployeeDemoKnobs)), knobsBefore);
     });
 
-    testWidgets('and carries the wall as a fourth mode', (tester) async {
+    testWidgets('and carries the wall as a mode of its own', (tester) async {
       _wide(tester);
       await _pumpShell(tester);
 
@@ -263,15 +263,10 @@ void main() {
     });
   });
 
-  group('the menu draws a category with nothing in it', () {
-    testWidgets('and says so, which the shell can no longer show it doing',
-        (tester) async {
-      // Pumped directly rather than through `ShellPage`, and that is the whole
-      // point of this test. Every `ShellCategory` has entries as of #109, so
-      // the empty-state branch is unreachable from the app and a shell test
-      // cannot reach it either. It is kept because the next category added is
-      // added empty — exactly when it is needed, and exactly when nobody
-      // would think to write it.
+  group('the menu draws nothing for a category with nothing in it', () {
+    testWidgets('neither a header nor a line saying so', (tester) async {
+      // Pumped directly rather than through `ShellPage`: every `ShellCategory`
+      // has entries in this app, so an empty one is only reachable here.
       _wide(tester);
 
       await tester.pumpWidget(MaterialApp(
@@ -294,9 +289,17 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      // Two of the three categories have nothing in them, and each draws its
-      // own line rather than one shared placeholder. Counted, not named.
-      expect(find.text('nothing here yet'), findsNWidgets(2));
+      // Every category but the one claimed is empty, read off the enum so a
+      // category the shell adds later is held to the same answer.
+      for (final category in ShellCategory.values) {
+        final claimed = category == ShellCategory.recipes;
+        expect(find.text(category.title.toUpperCase()),
+            claimed ? findsOneWidget : findsNothing,
+            reason: claimed
+                ? 'the claimed category lost its header'
+                : '${category.name} drew a header with nothing under it');
+      }
+      expect(find.text('nothing here yet'), findsNothing);
       expect(find.text('The only one'), findsOneWidget);
     });
   });

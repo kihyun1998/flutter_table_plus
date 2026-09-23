@@ -117,11 +117,11 @@ void main() {
         ],
       );
 
-      expect(
-        _visible(tester),
-        ['r1', 'r2', 'r3'],
-        reason: 'r1 is in `data`, belongs to the group, and must be drawn',
-      );
+      expect(_visible(tester), [
+        'r1',
+        'r2',
+        'r3',
+      ], reason: 'r1 is in `data`, belongs to the group, and must be drawn');
 
       // **Text on screen is not enough**, and a first version of this test
       // stopped there. A group that renders as ungrouped rows draws exactly the
@@ -155,11 +155,11 @@ void main() {
       // so `['1','0']` draws r1 above r0. That is pre-existing and is #121's
       // territory (how a group distributes itself among its members); what #135
       // is about is that r1 is drawn *at all*.
-      expect(
-        _visible(tester),
-        ['r1', 'r0', 'r2'],
-        reason: 'r1 belongs to the group and was drawn by neither branch',
-      );
+      expect(_visible(tester), [
+        'r1',
+        'r0',
+        'r2',
+      ], reason: 'r1 belongs to the group and was drawn by neither branch');
     });
 
     testWidgets('does not reserve height for the member it does not have', (
@@ -307,11 +307,13 @@ void main() {
       data.removeWhere((r) => r['id'] == '4');
       await _pump(tester, data: data, groups: groups);
 
-      expect(
-        _visible(tester),
-        ['r0', 'r1', 'r2', 'r3', 'r5'],
-        reason: 'r4 is gone from `data` and everything else is still drawn',
-      );
+      expect(_visible(tester), [
+        'r0',
+        'r1',
+        'r2',
+        'r3',
+        'r5',
+      ], reason: 'r4 is gone from `data` and everything else is still drawn');
     });
 
     testWidgets('sorting in place is seen, and the length never changes', (
@@ -332,11 +334,12 @@ void main() {
       ];
 
       await _pump(tester, data: data, groups: groups);
-      expect(
-        _visible(tester),
-        ['r0', 'r1', 'r2', 'r3'],
-        reason: 'the group is one render row and still draws both members',
-      );
+      expect(_visible(tester), [
+        'r0',
+        'r1',
+        'r2',
+        'r3',
+      ], reason: 'the group is one render row and still draws both members');
 
       data.sort((a, b) => (b['id'] as String).compareTo(a['id'] as String));
       await _pump(tester, data: data, groups: groups);
