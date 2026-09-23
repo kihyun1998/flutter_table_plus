@@ -41,8 +41,11 @@ size *and told that size is the whole screen*, so column widths — and any `Med
 branch your own code would take — resolve as they would on that device rather than in the desktop
 window. The frame owns its own `Overlay`, because a real viewport does: `Draggable` feedback and
 `just_tooltip` both resolve `Overlay.of(context)` to the nearest one, and without it a header cell
-dragged out of a preview drawn at 0.46× rendered at 1:1, floating over the whole window. There is a
-fourth choice that draws all three sizes at once, side by side, for when the question is what changed
+dragged out of a preview drawn at 0.46× rendered at 1:1, floating over the whole window. Each of those three is a named device, shrunk to fit the stage — the
+desktop one draws at 0.589× in a 1440 × 900 window — or clipped at 1:1. A fourth choice, the
+**Room**, is no device: it draws the recipe at 1:1 in the space the stage actually has and tells it
+that space is the whole screen, which is the size your own app would give it. A fifth choice
+draws all three sizes at once, side by side, for when the question is what changed
 *between* two widths — offered everywhere except the one scenario whose point is a measurement. All three are live and share one state, so selecting or sorting in the phone
 frame — which renders at its full size, since a frame is never scaled up — shows the result at tablet
 and desktop width in the same moment.

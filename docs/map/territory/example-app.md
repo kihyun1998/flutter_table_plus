@@ -210,6 +210,16 @@ notes.
   expensive shape is reachable without a scenario. The tables build their rows
   lazily, so the cost is three times what is on screen rather than three times
   the data.
+- **The Room is the one mode drawn at the stage region's own size, and it is
+  the reason the shell floor is 0.3.0.** Every earlier mode drew a named
+  viewport — fit into the region, where the desktop one draws at 0.589× in a
+  1440 × 900 window (measured 2026-09-20, the shell's #18), or at 1:1 and
+  clipped to it — so none showed a table at the size the reader's own app would
+  give it. The Room hands the destination the region less its caption, at 1:1,
+  and tells it through `MediaQuery` that this box is the whole screen: honesty
+  about size, not more area (ADR-0014 there). `ShellPage` offers it for every
+  destination, so this app took it by raising the constraint and wrote no code
+  for it (#189).
 - **The typeface is the caller's, and the zone names none.** `exampleTheme`
   takes a family name; passing nothing leaves Flutter's own Material typography,
   which Flutter ships — measured 2026-09-06, and it is `Roboto` rather than null,
@@ -250,8 +260,9 @@ notes.
   subject — each is a full page with its own `Scaffold`, so the shell points at
   it instead of drawing it. The category was `playground('Playground')` while it
   had one member, which is a set named after its only element; the second member
-  is what made that visible, and renaming cost nothing because no test asserts a
-  category header (#147). Inventing a content theme to cover "every setting at
+  is what made that visible, and renaming cost nothing because no test names a
+  category header (#147) — the one that asserts headers reads them off
+  `ShellCategory.values`. Inventing a content theme to cover "every setting at
   once" and "where a tooltip sits" would have been naming a set after something
   it does not have.
 - **A knob pane only draws its own feature's controls**, so an interaction
@@ -336,13 +347,18 @@ deliberately not extracted with the shell: every recipe imports it and
   draws a single frame is written by someone who would not think to pass the
   parameter, and `false` is the answer they want. Recorded because an unused
   default reads as dead code to whoever finds it next.
-- **Every `ShellCategory` now has entries, so `ShellMenu`'s empty-category
-  branch is unreachable from the app.** It is kept on purpose — the next
-  category added is added empty, which is exactly when it is needed and exactly
-  when nobody would think to write it — and it is pinned by a test that pumps
-  `ShellMenu` directly rather than through the shell. Recorded here because
-  "unreachable from the app" is what gets a branch deleted as dead code the day
-  before someone needs it.
+- **An empty `ShellCategory` draws nothing, and that is the shell's rule, not
+  this app's.** Up to shell 0.1.0 the menu drew a header over a *nothing here
+  yet* line for one, and this suite pinned that as a branch kept on purpose for
+  the next category added empty. 0.2.0 removed the branch upstream (its #11,
+  ADR-0005 there): `ShellCategory` is a fixed enum and the roster is the only
+  input, so an empty category is a capability nothing supplied. The test was
+  turned around rather than deleted when the floor moved to 0.3.0 (#189), and
+  that was the maintainer's call — the alternative on the table was deleting it
+  as upstream's to test, as the tokenizer's tests were at the extraction. It
+  still pumps `ShellMenu` directly, because every category has entries here,
+  and it reads the categories off `ShellCategory.values`, so a category the
+  shell adds later is held to the same answer rather than skipped.
 
 - **The extraction took one guard with it, and it was rewritten on the other
   side.** `example_theme_test.dart` read `example_theme.dart` as text, counted
@@ -358,10 +374,13 @@ deliberately not extracted with the shell: every recipe imports it and
   deliberately: both read the built `ThemeData`, so they are the weaker half and
   they are also this repository's only observation of that dependency's font
   contract.
-- **Nothing here gates the shell's own behaviour, and there is no CI on either
-  side.** The example's suite still pumps it — the viewport control, the wall,
-  the panes, the Code pane over this app's recipes — so a regression that
-  reaches this demo is caught. What is not caught is a regression that does not:
-  the shell can change under a version range with `example/lib` untouched, which
-  is the shape `docs/map/invariant/upstream-contract.md` records for
-  `just_tooltip` and `flutter_checkbox` and which now has a third member.
+- **Nothing here gates the shell's own behaviour.** The shell has had CI of its
+  own since its 0.1.0; this repository has none. The example's suite still pumps
+  it — the viewport control, the wall, the panes, the Code pane over this app's
+  recipes — so a regression that reaches this demo is caught. What is not caught
+  is a regression that does not: the shell can change under a version range with
+  `example/lib` untouched. That is the shape
+  `docs/map/invariant/upstream-contract.md` records for the root package's
+  siblings, arriving here through the example's manifest instead; the shell is
+  registered as a source in `docs/agents/thegraph.md`, binding for `example/`
+  only, and #189 was the first floor raised on it.
