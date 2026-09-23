@@ -281,11 +281,9 @@ void main() {
         ),
       );
 
-      expect(
-        _shown(tester),
-        ['VAL-c'],
-        reason: 'every member is present, so the index is the whole answer',
-      );
+      expect(_shown(tester), [
+        'VAL-c',
+      ], reason: 'every member is present, so the index is the whole answer');
       expect(
         lines.where((l) => l.contains('does not hold')),
         isEmpty,
