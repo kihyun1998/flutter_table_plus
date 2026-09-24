@@ -1,6 +1,6 @@
 name: flutter_table_plus
 description: "A customizable Flutter table widget with synchronized and smooth wheel scrolling, theming, sorting, selection, column reorder and resize, cell editing, and merged rows."
-version: 2.18.0
+version: 2.19.0
 homepage: https://github.com/kihyun1998/flutter_table_plus
 repository: https://github.com/kihyun1998/flutter_table_plus
 topics:
@@ -11,7 +11,7 @@ topics:
   - datagrid
 
 # The binding floor is the max of what our dependencies demand: flutter_checkbox
-# 0.3.1 declares Flutter `>=3.27.0` / Dart `>=3.6.0` (its newest call is
+# 0.3.3 declares Flutter `>=3.27.0` / Dart `>=3.6.0` (its newest call is
 # `Color.withValues`, 3.27+; everything else needs only Dart 3.0), just_tooltip
 # 0.4.4 declares Flutter `>=3.13.0` / Dart `>=3.1.0` (its `RenderObject.parent`
 # ancestor walk needs `describeApproximatePaintClip`, added in 3.13), and
@@ -23,10 +23,12 @@ topics:
 # 0.3.0 had over-declared its floor as 3.35 — the SDK it was built with, not the
 # one its code needs — and taking `^0.3.0` made that 3.35 our transitive
 # requirement (that was the 2.16.0 raise). 0.3.1 corrected it down to 3.27, so
-# this declaration is free to follow. The constraint is `^0.3.1`, not `^0.3.0`:
+# this declaration is free to follow. The constraint was `^0.3.1`, not `^0.3.0`:
 # `^0.3.0` still admits 0.3.0, whose 3.35 floor a 3.27 user could not satisfy —
 # the declared range must be a promise we can keep for every version the
 # constraint allows, the same honesty the 3.35 raise served, run in reverse.
+# It is `^0.3.3` now for a behaviour reason, given at the dependency below; the
+# SDK floor 0.3.3 declares is unchanged from 0.3.1's.
 environment:
   sdk: ">=3.8.0 <4.0.0"
   flutter: ">=3.32.0"
@@ -34,7 +36,12 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_checkbox: ^0.3.1
+  # 0.3.3 is a floor, not a preference: before it, a checkbox left at its
+  # default drew a white check on the theme's `primary`, which every dark
+  # Material 3 theme makes light — 1.7:1, and 1.0:1 on a monochrome one
+  # (upstream #13). The table's default checkbox style leaves `checkColor`
+  # null, so every table in a dark app inherited it.
+  flutter_checkbox: ^0.3.3
   # 0.4.4 is a floor, not a preference: it stops a tooltip with nothing to draw
   # from suppressing the row card, which this package used to do itself by not
   # building such a tooltip at all. That guard is gone, so 0.4.3 would reissue

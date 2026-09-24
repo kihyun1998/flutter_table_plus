@@ -90,10 +90,10 @@ packages:
     dependency: transitive
     description:
       name: flutter_checkbox
-      sha256: fb377fcddf2909a69f6f8003ff216ad5abae57210b03150be64c7806c45b9aae
+      sha256: "09bd20809d716d44da5e5dc038854cfaf73474337ef96698ca27368d5242e0cc"
       url: "https://pub.dev"
     source: hosted
-    version: "0.3.2"
+    version: "0.3.3"
   flutter_example_template:
     dependency: "direct main"
     description:
@@ -140,7 +140,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "2.18.0"
+    version: "2.19.0"
   flutter_test:
     dependency: "direct dev"
     description: flutter
