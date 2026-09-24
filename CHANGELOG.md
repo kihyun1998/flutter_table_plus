@@ -2,7 +2,7 @@
 
 *   **FEAT**: `TablePlusTheme.fromColorScheme(scheme)` derives the whole table theme from your app's `ColorScheme` ([#112](https://github.com/kihyun1998/flutter_table_plus/issues/112))
     *   **What it gives you.** `theme: TablePlusTheme.fromColorScheme(Theme.of(context).colorScheme)` makes a dark app's table dark, and a branded app's table branded, without listing a colour. That covers surfaces, dividers, the selected row, the editing cell and cursor, rejected-cell borders, the drag band, the scrollbar, tooltips and the checkbox. [`docs/THEMING.md`](docs/THEMING.md#from-your-apps-colorscheme) lists the role each one takes. Adjust the result with `copyWith`
-    *   **What it does not change.** It is opt-in. `TablePlusTheme()` and every default are exactly what they were, and nothing reads your app's theme unless you call it. Only colours are derived; every size, padding and flag is the default's
+    *   **What it does not change.** It is opt-in. `TablePlusTheme()` and every default are exactly what they were, and nothing reads your app's theme unless you call it. Only colours are derived, plus `editableTheme.filled`, which is on so the editing cell paints the colour its text is paired with; every other size, padding and flag is the default's
     *   **Two things worth knowing.** A selected row's text style replaces the body text style rather than merging over it, so if you change `bodyTheme.textStyle` afterwards, change `selectedRowTextStyle` too. And a monochrome scheme gets a monochrome table: nothing substitutes a hue for the editing border
     *   The decisions behind the role mapping are recorded in [`docs/adr/0001-theme-from-color-scheme.md`](docs/adr/0001-theme-from-color-scheme.md)
 

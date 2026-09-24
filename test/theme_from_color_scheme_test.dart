@@ -95,80 +95,95 @@ void main() {
     seedColor: const Color(0xFF1565C0),
     brightness: Brightness.dark,
   );
+  final light = ColorScheme.fromSeed(seedColor: const Color(0xFF1565C0));
 
-  group('fromColorScheme maps each colour to its role', () {
-    test('body', () {
-      final body = TablePlusTheme.fromColorScheme(dark).bodyTheme;
-      expect(body.backgroundColor, dark.surface);
-      expect(body.textStyle.color, dark.onSurface);
-      expect(body.selectedRowColor, dark.secondaryContainer);
-      expect(body.selectedRowTextStyle?.color, dark.onSecondaryContainer);
-      expect(body.dividerColor, dark.outlineVariant);
-    });
+  for (final scheme in [light, dark]) {
+    group(
+      'fromColorScheme maps each colour to its role (${scheme.brightness.name})',
+      () {
+        test('body', () {
+          final body = TablePlusTheme.fromColorScheme(scheme).bodyTheme;
+          expect(body.backgroundColor, scheme.surface);
+          expect(body.textStyle.color, scheme.onSurface);
+          expect(body.selectedRowColor, scheme.secondaryContainer);
+          expect(body.selectedRowTextStyle?.color, scheme.onSecondaryContainer);
+          expect(body.dividerColor, scheme.outlineVariant);
+        });
 
-    test('header', () {
-      final header = TablePlusTheme.fromColorScheme(dark).headerTheme;
-      expect(header.backgroundColor, dark.surfaceContainerHigh);
-      expect(header.textStyle.color, dark.onSurface);
-      expect(header.textStyle.fontWeight, FontWeight.w600);
-      expect(header.bottomBorder.color, dark.outlineVariant);
-      // Hidden by default; derived anyway, so turning it on is not a light
-      // grey line in a dark table.
-      expect(header.topBorder.color, dark.outlineVariant);
-      expect(header.verticalDivider.color, dark.outlineVariant);
-    });
+        test('header', () {
+          final header = TablePlusTheme.fromColorScheme(scheme).headerTheme;
+          expect(header.backgroundColor, scheme.surfaceContainerHigh);
+          expect(header.textStyle.color, scheme.onSurface);
+          expect(header.textStyle.fontWeight, FontWeight.w600);
+          expect(header.bottomBorder.color, scheme.outlineVariant);
+          // Hidden by default; derived anyway, so turning it on is not a light
+          // grey line in a dark table.
+          expect(header.topBorder.color, scheme.outlineVariant);
+          expect(header.verticalDivider.color, scheme.outlineVariant);
+        });
 
-    test('editing', () {
-      final editable = TablePlusTheme.fromColorScheme(dark).editableTheme;
-      expect(editable.editingCellColor, dark.primaryContainer);
-      expect(editable.editingTextStyle.color, dark.onPrimaryContainer);
-      expect(editable.editingBorderColor, dark.primary);
-      expect(editable.cursorColor, dark.primary);
-      expect(editable.effectiveErrorBorderColor, dark.error);
-      // Its null fallback is a literal red, not errorBorderColor, so leaving it
-      // null would draw a focused rejected cell in a red the scheme never named.
-      expect(editable.effectiveFocusedErrorBorderColor, dark.error);
-    });
+        test('editing', () {
+          final editable = TablePlusTheme.fromColorScheme(scheme).editableTheme;
+          expect(editable.editingCellColor, scheme.primaryContainer);
+          // Unfilled, editingCellColor is never painted and the text lands on
+          // the row instead.
+          expect(editable.filled, isTrue);
+          expect(editable.editingTextStyle.color, scheme.onPrimaryContainer);
+          expect(editable.editingBorderColor, scheme.primary);
+          expect(editable.cursorColor, scheme.primary);
+          expect(editable.effectiveErrorBorderColor, scheme.error);
+          // Its null fallback is a literal red, not errorBorderColor, so leaving it
+          // null would draw a focused rejected cell in a red the scheme never named.
+          expect(editable.effectiveFocusedErrorBorderColor, scheme.error);
+        });
 
-    test('drag selection', () {
-      final drag = TablePlusTheme.fromColorScheme(dark).dragSelectionTheme;
-      expect(drag.borderColor, dark.primary);
-      expect(drag.fillColor, dark.primary.withAlpha(0x33));
-    });
+        test('drag selection', () {
+          final drag = TablePlusTheme.fromColorScheme(
+            scheme,
+          ).dragSelectionTheme;
+          expect(drag.borderColor, scheme.primary);
+          expect(drag.fillColor, scheme.primary.withAlpha(0x33));
+        });
 
-    test('scrollbar', () {
-      final scrollbar = TablePlusTheme.fromColorScheme(dark).scrollbarTheme;
-      expect(scrollbar.thumbColor, dark.onSurfaceVariant);
-      expect(scrollbar.trackColor, dark.surfaceContainerHighest);
-    });
+        test('scrollbar', () {
+          final scrollbar = TablePlusTheme.fromColorScheme(
+            scheme,
+          ).scrollbarTheme;
+          expect(scrollbar.thumbColor, scheme.onSurfaceVariant);
+          expect(scrollbar.trackColor, scheme.surfaceContainerHighest);
+        });
 
-    test('tooltip', () {
-      final tooltip = TablePlusTheme.fromColorScheme(dark).tooltipTheme;
-      expect(tooltip.backgroundColor, dark.inverseSurface);
-      expect(tooltip.textStyle.color, dark.onInverseSurface);
-      expect(tooltip.textStyle.fontSize, 12);
-    });
+        test('tooltip', () {
+          final tooltip = TablePlusTheme.fromColorScheme(scheme).tooltipTheme;
+          expect(tooltip.backgroundColor, scheme.inverseSurface);
+          expect(tooltip.textStyle.color, scheme.onInverseSurface);
+          expect(tooltip.textStyle.fontSize, 12);
+        });
 
-    test('checkbox', () {
-      final style = TablePlusTheme.fromColorScheme(dark).checkboxTheme.style;
-      expect(style.activeColor, dark.primary);
-      expect(style.checkColor, dark.onPrimary);
-      expect(style.borderColor, dark.outline);
-      expect(style.size, 18);
-    });
+        test('checkbox', () {
+          final style = TablePlusTheme.fromColorScheme(
+            scheme,
+          ).checkboxTheme.style;
+          expect(style.activeColor, scheme.primary);
+          expect(style.checkColor, scheme.onPrimary);
+          expect(style.borderColor, scheme.outline);
+          expect(style.size, 18);
+        });
 
-    test('the selected row keeps the body text style it replaces', () {
-      // A selected row draws selectedRowTextStyle instead of textStyle, not
-      // merged over it, so anything but the colour must come from textStyle.
-      final body = TablePlusTheme.fromColorScheme(dark).bodyTheme;
-      expect(
-        body.selectedRowTextStyle,
-        const TablePlusBodyTheme().textStyle.copyWith(
-          color: dark.onSecondaryContainer,
-        ),
-      );
-    });
-  });
+        test('the selected row keeps the body text style it replaces', () {
+          // A selected row draws selectedRowTextStyle instead of textStyle, not
+          // merged over it, so anything but the colour must come from textStyle.
+          final body = TablePlusTheme.fromColorScheme(scheme).bodyTheme;
+          expect(
+            body.selectedRowTextStyle,
+            const TablePlusBodyTheme().textStyle.copyWith(
+              color: scheme.onSecondaryContainer,
+            ),
+          );
+        });
+      },
+    );
+  }
 
   group('what fromColorScheme leaves alone', () {
     test('every value that is not a colour stays at its default', () {
@@ -203,16 +218,13 @@ void main() {
       expect(t.headerTooltipTheme, isNull);
     });
 
-    test(
-      'nullable colours stay null, so their fallbacks follow the scheme',
-      () {
-        final body = TablePlusTheme.fromColorScheme(dark).bodyTheme;
-        expect(body.alternateRowColor, isNull);
-        expect(body.verticalDividerColor, isNull);
-        expect(body.memberDividerColor, isNull);
-        expect(body.hoverColor, isNull);
-      },
-    );
+    test('nullable colours stay null, keeping their own fallbacks', () {
+      final body = TablePlusTheme.fromColorScheme(dark).bodyTheme;
+      expect(body.alternateRowColor, isNull);
+      expect(body.verticalDividerColor, isNull);
+      expect(body.memberDividerColor, isNull);
+      expect(body.hoverColor, isNull);
+    });
 
     test('the column rule stays split (#177)', () {
       // Header half 1.0 opaque, body half 0.5 at alpha 0.5, both from the
@@ -296,6 +308,27 @@ void main() {
           field.decoration!.focusedErrorBorder! as OutlineInputBorder;
       expect(focusedError.borderSide.color, dark.error);
     });
+
+    testWidgets(
+      'an editing cell paints the fill its text colour is paired with',
+      (tester) async {
+        // The text is onPrimaryContainer, so primaryContainer has to be painted
+        // behind it. Unfilled, the text lands on the row instead: 1.1:1 in a
+        // monochrome light scheme, whose onPrimaryContainer is white.
+        final mono = ColorScheme.fromSeed(
+          seedColor: Colors.black,
+          dynamicSchemeVariant: DynamicSchemeVariant.monochrome,
+        );
+        await _pump(tester, mono, isEditable: true);
+        await tester.tap(find.text('Alpha'));
+        await tester.pumpAndSettle();
+        expect(
+          find.byType(InputDecorator),
+          // OutlineInputBorder paints its interior as a rounded rect.
+          paints..rrect(color: mono.primaryContainer),
+        );
+      },
+    );
 
     testWidgets('the drag-selection band', (tester) async {
       await _pump(tester, dark, enableDragSelection: true);

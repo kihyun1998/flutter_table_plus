@@ -26,7 +26,7 @@ TablePlusTheme(
 
 ## From Your App's ColorScheme
 
-`TablePlusTheme.fromColorScheme` takes the `ColorScheme` your app already has and derives every colour the table draws from it. A dark scheme gives a dark table without you listing a colour.
+`TablePlusTheme.fromColorScheme` takes the `ColorScheme` your app already has and derives the table's colours from it. A dark scheme gives a dark table without you listing a colour.
 
 ```dart
 FlutterTablePlus<User>(
@@ -62,11 +62,12 @@ The constructor, `TablePlusTheme(...)`, is still there for setting every value y
 | Tooltip background / text | `inverseSurface` / `onInverseSurface` |
 | Checkbox fill / check / unchecked border | `primary` / `onPrimary` / `outline` |
 
-Only colours change. Every size, padding, thickness and flag is the default constructor's.
+Only colours change, plus one flag: `editableTheme.filled` is `true`, so the editing cell actually paints `primaryContainer` behind its `onPrimaryContainer` text. Every size, padding and thickness, and every other flag, is the default constructor's.
 
 ### Worth knowing
 
-- **Colours with a `null` default stay `null`.** `alternateRowColor`, `hoverColor`, `verticalDividerColor`, `memberDividerColor` and the rest keep deriving from the fields above. For example, the body's column divider is still `dividerColor` at alpha 0.5, and `dividerColor` is now `outlineVariant`.
+- **Colours with a `null` default stay `null`.** Most keep deriving from the fields above. For example, the body's column divider is still `dividerColor` at alpha 0.5, and `dividerColor` is now `outlineVariant`.
+- **A few colours come from your app's `Theme`, not from the scheme.** Row hover, splash and highlight, the sorted-column arrows, and the placeholder hint in an editing cell all come from `Theme.of(context)`, as Material's `DataTable` does it. They match when you pass `Theme.of(context).colorScheme`. If you pass a different scheme, those few follow the app. Set `hoverColor` and its siblings on `bodyTheme` to take them over.
 - **The selected row's text style is a whole style.** A selected row draws `selectedRowTextStyle` *instead of* `textStyle`; the two are not merged. The factory builds it from the default body text style with the colour replaced. If you change `bodyTheme.textStyle` afterwards, change `selectedRowTextStyle` the same way, or selected rows keep the old size and weight.
 - **The column divider stays two different lines.** The header draws it 1.0px opaque and the body 0.5px at alpha 0.5, as the default theme does (see `verticalDividerThickness` below). Only the colour comes from the scheme.
 - **A scheme with no hue gets no hue.** With a monochrome scheme the editing border is black or white, whatever that scheme's `primary` is. `error` still comes from the scheme, and Material's monochrome schemes keep it red.

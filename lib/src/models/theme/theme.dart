@@ -27,10 +27,12 @@ class TablePlusTheme {
 
   /// Creates a [TablePlusTheme] whose colours are derived from [scheme].
   ///
-  /// Every colour the table draws takes a role of [scheme]; every size,
-  /// padding, thickness and flag is the default constructor's. Colours whose
-  /// default is `null` stay `null`, so they keep deriving from the ones set
-  /// here. The checkbox follows [scheme], not the ambient theme.
+  /// Every colour field with a non-null default takes a role of [scheme], and
+  /// so does the checkbox. [TablePlusEditableTheme.filled] is set so the
+  /// editing cell paints the fill its text colour is paired with; every other
+  /// size, padding, thickness and flag is the default constructor's. Colours whose default is `null` stay `null`, so
+  /// they keep their own fallbacks. Row ink, the sort arrows and the editing
+  /// hint fall back to the ambient [Theme], not to [scheme].
   ///
   /// The selected row's [TablePlusBodyTheme.selectedRowTextStyle] replaces the
   /// body text style rather than merging over it, so a later change to
@@ -65,6 +67,7 @@ class TablePlusTheme {
         ),
       ),
       editableTheme: editable.copyWith(
+        filled: true,
         editingCellColor: scheme.primaryContainer,
         editingTextStyle: editable.editingTextStyle.copyWith(
           color: scheme.onPrimaryContainer,

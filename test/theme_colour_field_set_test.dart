@@ -63,10 +63,15 @@ const _leftNull = {
   'TablePlusEditableTheme.enabledBorderColor',
   'TablePlusEditableTheme.fillColor',
   'TablePlusTooltipTheme.borderColor',
+  // Colour-carrying types other than Color and TextStyle; unset by default.
+  'TablePlusHeaderTheme.decoration',
+  'TablePlusHeaderTheme.cellDecoration',
+  'TablePlusScrollbarTheme.trackBorder',
+  'TablePlusTooltipTheme.boxShadow',
 };
 
-/// `Class.field` for every `final Color` / `final TextStyle` field declared in
-/// [source], nullable or not.
+/// `Class.field` for every field declared in [source] whose type can carry a
+/// colour, nullable or not.
 Set<String> _colourFields(String source) {
   final found = <String>{};
   String? owner;
@@ -74,7 +79,9 @@ Set<String> _colourFields(String source) {
     final cls = RegExp(r'^class (\w+)').firstMatch(line);
     if (cls != null) owner = cls.group(1);
     final field = RegExp(
-      r'^  final (?:Color|TextStyle)\??\s+(\w+);',
+      r'^  final (?:Color|TextStyle|BorderSide|Border|BoxBorder|Decoration|'
+      r'BoxDecoration|BoxShadow|List<BoxShadow>|Gradient|'
+      r'WidgetStateProperty<Color\??>)\??\s+(\w+);',
     ).firstMatch(line);
     if (field != null && owner != null) found.add('$owner.${field.group(1)}');
   }
