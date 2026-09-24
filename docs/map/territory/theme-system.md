@@ -167,14 +167,25 @@ the maintainer chose. It derives one colour, `outlineVariant`, for both halves
 and leaves the geometry as it is. So the split is now a decision made at the
 only scope that could make it, not an inheritance. [ADR 0001](../../adr/0001-theme-from-color-scheme.md)
 
-**Two nullable text styles fall back to a literal, not to a field.**
-`effectiveEmptyStateTextStyle` and `effectiveMergedRowCountTextStyle` fall back
-to `#757575`, where every other nullable colour here falls back to an
-expression over a field. So `fromColorScheme` cannot reach them by leaving them
-null, and does not set them: in a derived dark table they stay that grey,
-measured 4.0:1 on the dark surfaces tested, against 4.4:1 on the light default.
-No less readable than today, but not following the scheme, and nobody has
-decided they should not. `test/theme_colour_field_set_test.dart` marks both.
+**The two placeholder text styles follow `textStyle`'s colour, and one of them
+stops following it after `scaledBy`.** Both fell back to a literal `#757575`
+until #192. They now fall back to `textStyle.color` at 0.62 of its own opacity,
+which draws `#757575` on white at the default theme. `scaledBy` materialises the
+caption to scale its 10px, and that fixes its colour at the moment of scaling.
+The table re-scales `widget.theme` on every build, so the freeze reaches only a
+caller who runs `scaledBy` themselves and recolours afterwards. That is a
+decision rather than a hole: the maintainer chose it over the two alternatives
+([ADR 0001](../../adr/0001-theme-from-color-scheme.md), amended).
+`theme_reachable_values_test.dart` pins it.
+
+**What is still open is the caption on a selected group in a dark scheme.** It
+is `onSurface` at 0.62 on `secondaryContainer`, measured at 3.9:1, up from
+2.0:1 but short of 4.5:1 for 10px text. The caption does not read the selected
+text colour, and that is deliberate: `onSecondaryContainer` at reduced alpha
+measured 3.0:1 in a light scheme, which is worse than the literal it replaced.
+The cost of that choice falls on a light table given a hand-set dark selected or
+dim row: the caption there measured 1.14:1 where the literal gave 2.86:1. Kept
+as it is, in the same ADR amendment.
 
 **A public sub-theme went undocumented for its whole life, and a count asserted
 otherwise.** `TablePlusDragSelectionTheme` — five fields on the root, with its

@@ -109,12 +109,45 @@ The derivations:
 
 ## What it did not cover
 
-- **Two nullable fields whose fallback is a literal, not an expression.**
-  `effectiveEmptyStateTextStyle` and `effectiveMergedRowCountTextStyle` fall
-  back to `#757575`. They are left `null` like the rest, so both stay that grey
-  in a factory-built table. Measured at 4.0:1 on the dark surfaces tested
-  against 4.4:1 on the light ones, so they are no less readable than today.
-  But they do not follow the scheme, and nobody decided they should not.
+- **Two nullable fields whose fallback was a literal, not an expression.**
+  `effectiveEmptyStateTextStyle` and `effectiveMergedRowCountTextStyle` fell
+  back to `#757575`. They are left `null` like the rest, so both stayed that
+  grey in a factory-built table. Measured at 4.0:1 on the dark surfaces tested
+  against 4.4:1 on the light ones, so they were no less readable than before.
+  But they did not follow the scheme, and nobody had decided they should not.
+
+  **Amended 2026-09-24 (#192): both now follow the body text colour, and the
+  factory still leaves them `null`.** The fallback is `textStyle.color` with its
+  opacity multiplied by 0.62, or `#757575` when that colour is null.
+  - *Judgement — the maintainer's, on a measured table.* Three options were
+    shown with WCAG contrast over three dark and two light `fromSeed` schemes:
+    (a) derive from `textStyle`, (b) have the caption follow
+    `selectedRowTextStyle` on a selected group, (c) have the factory set
+    `onSurfaceVariant`. The maintainer chose (a). (b) was measured worse than
+    the literal in a light `#1565C0` scheme, 3.0:1 against 3.6:1, because an
+    `on*Container` colour at reduced alpha sinks into its own container.
+  - *Judgement — the maintainer's.* `scaledBy` still materialises the caption
+    to scale its 10px, and the colour is fixed with it. That was chosen over
+    deriving the size from `textStyle` too, which would reverse #171's "10 is a
+    caption size", and over a private scale field, which would need a second
+    constructor listing every field. It reaches only a caller who runs
+    `scaledBy` themselves and recolours afterwards, because the table scales
+    `widget.theme` again on every build.
+  - *Derivation.* 0.62 is where `#212121` over white rounds to `0x75`, so the
+    default theme draws the same pixel it drew before. Multiplying rather than
+    replacing the alpha keeps a translucent text colour from getting darker.
+  - *Not covered.* A selected group in a dark scheme now shows its caption at
+    3.9:1, up from 2.0:1 but short of 4.5:1 for 10px text. Reaching 4.5 is
+    option (c), which fixes size and style at factory time. It was left open,
+    not rejected.
+  - *Judgement — the maintainer's, on a case the first table could not show.*
+    The table above sampled only `fromSeed` schemes, where the selected
+    container has the surface's brightness. A light table that sets its own
+    dark `selectedRowColor` or `dimRowColor`, leaving `textStyle` alone, now
+    draws the caption at 1.14:1 on `#303030` (it was 2.86:1) and 1.36:1 on
+    `#424242` (it was 2.18:1). Following each row state's text style would fix
+    it, but that is (b), which regresses light schemes. Kept as it is. A caller
+    in that case sets `mergedRowCountTextStyle`.
 - `SortIcons.defaultIcons`' `Colors.grey`. `SortIcons` holds widgets, not
   colours.
 - Changing any default, and making the default theme read the ambient
