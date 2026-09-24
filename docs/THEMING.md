@@ -6,7 +6,7 @@ Complete reference for Flutter Table Plus theming system.
 
 ## Overview
 
-Flutter Table Plus uses a composable theme system with **8 nested theme classes** over 10 fields — the three tooltip fields share `TablePlusTooltipTheme` — plus 3 header sub-themes:
+Flutter Table Plus uses a composable theme system: one root, `TablePlusTheme`, whose fields are each a nested theme class. The three tooltip fields share `TablePlusTooltipTheme`, and the header has sub-themes of its own:
 
 ```dart
 TablePlusTheme(
@@ -19,6 +19,7 @@ TablePlusTheme(
   rowTooltipTheme: TablePlusTooltipTheme(...),  // rowTooltipBuilder's card; falls back to tooltipTheme
   headerTooltipTheme: TablePlusTooltipTheme(...),  // header tooltips; falls back to tooltipTheme
   hoverButtonTheme: TablePlusHoverButtonTheme(...),
+  dragSelectionTheme: TablePlusDragSelectionTheme(...),
 )
 ```
 
@@ -349,19 +350,14 @@ TablePlusCheckboxTheme(
 )
 ```
 
-### Material 3 Factory
+### Colour Shortcut
 
 ```dart
-// Pre-configured Material 3 theme
-TablePlusCheckboxTheme.material3(
-  primaryColor: Colors.blue,
-  size: 18.0,
-  tapTargetSize: null,
-  showCheckboxColumn: true,
-  showSelectAllCheckbox: true,
-  showRowCheckbox: true,
-  checkboxColumnWidth: 60.0,
-  cellTapTogglesCheckbox: false,
+// Sets the checkbox's three colours; everything else is the default
+TablePlusCheckboxTheme.colored(
+  activeColor: Colors.teal,
+  checkColor: Colors.white,   // null = white or black, by activeColor's brightness
+  borderColor: Colors.grey,   // null = the app's ColorScheme.outline
 )
 ```
 
@@ -374,7 +370,7 @@ Styling for cell editing mode.
 ```dart
 TablePlusEditableTheme(
   // Cell appearance while editing
-  editingCellColor: Colors.yellow.shade100,
+  editingCellColor: Colors.yellow.shade100,  // painted only when filled: true
   editingBorderColor: Colors.blue,
   editingBorderWidth: 2.0,
   editingBorderRadius: BorderRadius.circular(4),
@@ -398,7 +394,7 @@ TablePlusEditableTheme(
   errorBorderWidth: 1.0,               // null = 1.0
   borderRadius: BorderRadius.circular(4),  // null = uses editingBorderRadius
   fillColor: Colors.white,            // null = uses editingCellColor
-  filled: false,
+  filled: false,                       // true paints fillColor ?? editingCellColor
   isDense: true,
 )
 ```
