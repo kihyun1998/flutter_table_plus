@@ -24,6 +24,56 @@ TablePlusTheme(
 
 ---
 
+## From Your App's ColorScheme
+
+`TablePlusTheme.fromColorScheme` takes the `ColorScheme` your app already has and derives every colour the table draws from it. A dark scheme gives a dark table without you listing a colour.
+
+```dart
+FlutterTablePlus<User>(
+  theme: TablePlusTheme.fromColorScheme(Theme.of(context).colorScheme),
+  // ...
+)
+```
+
+Change anything afterwards with `copyWith`:
+
+```dart
+final base = TablePlusTheme.fromColorScheme(scheme);
+final theme = base.copyWith(
+  bodyTheme: base.bodyTheme.copyWith(rowHeight: 40),
+);
+```
+
+The constructor, `TablePlusTheme(...)`, is still there for setting every value yourself, and its defaults have not changed. Nothing reads your app's theme unless you call `fromColorScheme`.
+
+### Which role each colour takes
+
+| What the table draws | `ColorScheme` role |
+|---|---|
+| Body background / text | `surface` / `onSurface` |
+| Header background / text | `surfaceContainerHigh` / `onSurface` |
+| Row dividers, header borders, column dividers | `outlineVariant` |
+| Selected row / its text | `secondaryContainer` / `onSecondaryContainer` |
+| Editing cell / its text | `primaryContainer` / `onPrimaryContainer` |
+| Editing border and cursor | `primary` |
+| Rejected cell's border, focused or not | `error` |
+| Drag-selection band border / fill | `primary` / `primary` at alpha `0x33` |
+| Scrollbar thumb / track | `onSurfaceVariant` / `surfaceContainerHighest` |
+| Tooltip background / text | `inverseSurface` / `onInverseSurface` |
+| Checkbox fill / check / unchecked border | `primary` / `onPrimary` / `outline` |
+
+Only colours change. Every size, padding, thickness and flag is the default constructor's.
+
+### Worth knowing
+
+- **Colours with a `null` default stay `null`.** `alternateRowColor`, `hoverColor`, `verticalDividerColor`, `memberDividerColor` and the rest keep deriving from the fields above. For example, the body's column divider is still `dividerColor` at alpha 0.5, and `dividerColor` is now `outlineVariant`.
+- **The selected row's text style is a whole style.** A selected row draws `selectedRowTextStyle` *instead of* `textStyle`; the two are not merged. The factory builds it from the default body text style with the colour replaced. If you change `bodyTheme.textStyle` afterwards, change `selectedRowTextStyle` the same way, or selected rows keep the old size and weight.
+- **The column divider stays two different lines.** The header draws it 1.0px opaque and the body 0.5px at alpha 0.5, as the default theme does (see `verticalDividerThickness` below). Only the colour comes from the scheme.
+- **A scheme with no hue gets no hue.** With a monochrome scheme the editing border is black or white, whatever that scheme's `primary` is. `error` still comes from the scheme, and Material's monochrome schemes keep it red.
+- **The checkbox follows the scheme you pass, not the app's.** If you pass a scheme other than `Theme.of(context).colorScheme`, the checkbox follows the one you passed.
+
+---
+
 ## TablePlusHeaderTheme
 
 Styling for the table header row. Uses nested sub-theme classes for borders, dividers, and resize handles.
@@ -574,6 +624,8 @@ FlutterTablePlus<User>(
 
 ## Dark Theme Example
 
+If your app already has a dark `ColorScheme`, `TablePlusTheme.fromColorScheme(scheme)` gives you a dark table in one line. The theme below sets its own colours by hand:
+
 ```dart
 TablePlusTheme(
   headerTheme: TablePlusHeaderTheme(
@@ -628,6 +680,8 @@ When `factor == 1.0`, `scaledBy` returns `this` (zero allocation).
 ---
 
 ## Inheriting from App Theme
+
+`TablePlusTheme.fromColorScheme` does this for every colour. See [From Your App's ColorScheme](#from-your-apps-colorscheme). Below is how to do it by hand, when you want to choose the roles yourself:
 
 ```dart
 FlutterTablePlus<User>(

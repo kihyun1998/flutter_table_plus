@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart' show ColorScheme;
+
 import 'body_theme.dart' show TablePlusBodyTheme;
 import 'checkbox_theme.dart' show TablePlusCheckboxTheme;
 import 'drag_selection_theme.dart' show TablePlusDragSelectionTheme;
@@ -22,6 +24,78 @@ class TablePlusTheme {
     this.hoverButtonTheme = const TablePlusHoverButtonTheme(),
     this.dragSelectionTheme = const TablePlusDragSelectionTheme(),
   });
+
+  /// Creates a [TablePlusTheme] whose colours are derived from [scheme].
+  ///
+  /// Every colour the table draws takes a role of [scheme]; every size,
+  /// padding, thickness and flag is the default constructor's. Colours whose
+  /// default is `null` stay `null`, so they keep deriving from the ones set
+  /// here. The checkbox follows [scheme], not the ambient theme.
+  ///
+  /// The selected row's [TablePlusBodyTheme.selectedRowTextStyle] replaces the
+  /// body text style rather than merging over it, so a later change to
+  /// [TablePlusBodyTheme.textStyle] has to be made to it as well.
+  ///
+  /// See `docs/THEMING.md` for the role each colour takes.
+  factory TablePlusTheme.fromColorScheme(ColorScheme scheme) {
+    const base = TablePlusTheme();
+    final body = base.bodyTheme;
+    final header = base.headerTheme;
+    final editable = base.editableTheme;
+    final tooltip = base.tooltipTheme;
+    final checkbox = base.checkboxTheme;
+    return base.copyWith(
+      dragSelectionTheme: base.dragSelectionTheme.copyWith(
+        borderColor: scheme.primary,
+        fillColor: scheme.primary.withAlpha(0x33),
+      ),
+      scrollbarTheme: base.scrollbarTheme.copyWith(
+        thumbColor: scheme.onSurfaceVariant,
+        trackColor: scheme.surfaceContainerHighest,
+      ),
+      tooltipTheme: tooltip.copyWith(
+        backgroundColor: scheme.inverseSurface,
+        textStyle: tooltip.textStyle.copyWith(color: scheme.onInverseSurface),
+      ),
+      checkboxTheme: checkbox.copyWith(
+        style: checkbox.style.copyWith(
+          activeColor: scheme.primary,
+          checkColor: scheme.onPrimary,
+          borderColor: scheme.outline,
+        ),
+      ),
+      editableTheme: editable.copyWith(
+        editingCellColor: scheme.primaryContainer,
+        editingTextStyle: editable.editingTextStyle.copyWith(
+          color: scheme.onPrimaryContainer,
+        ),
+        editingBorderColor: scheme.primary,
+        cursorColor: scheme.primary,
+        errorBorderColor: scheme.error,
+        focusedErrorBorderColor: scheme.error,
+      ),
+      headerTheme: header.copyWith(
+        backgroundColor: scheme.surfaceContainerHigh,
+        textStyle: header.textStyle.copyWith(color: scheme.onSurface),
+        topBorder: header.topBorder.copyWith(color: scheme.outlineVariant),
+        bottomBorder: header.bottomBorder.copyWith(
+          color: scheme.outlineVariant,
+        ),
+        verticalDivider: header.verticalDivider.copyWith(
+          color: scheme.outlineVariant,
+        ),
+      ),
+      bodyTheme: body.copyWith(
+        backgroundColor: scheme.surface,
+        textStyle: body.textStyle.copyWith(color: scheme.onSurface),
+        selectedRowColor: scheme.secondaryContainer,
+        selectedRowTextStyle: body.textStyle.copyWith(
+          color: scheme.onSecondaryContainer,
+        ),
+        dividerColor: scheme.outlineVariant,
+      ),
+    );
+  }
 
   /// Theme configuration for the table header.
   final TablePlusHeaderTheme headerTheme;
