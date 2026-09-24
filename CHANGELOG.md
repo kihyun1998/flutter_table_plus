@@ -1,3 +1,12 @@
+## Unreleased
+
+*   **FIX**: the empty-table placeholder and a merged group's "N rows" caption follow the body text colour ([#192](https://github.com/kihyun1998/flutter_table_plus/issues/192))
+    *   **What a consumer sees differently.** With `emptyStateTextStyle` or `mergedRowCountTextStyle` unset, the text was always `#757575`, whatever colour the table was. It is now `bodyTheme.textStyle`'s colour at 0.62 of its opacity. So it follows a recoloured body and `TablePlusTheme.fromColorScheme`. In a dark scheme, the caption on a selected group went from 2.0:1 to 3.9:1 contrast
+    *   **At the default theme nothing moves on white.** `#212121` at 0.62 draws `#757575` there, the old grey, and white is the only background the empty placeholder has. On a tinted row the caption now blends with the row rather than sitting on it as solid grey. On the default selected row that is 4.4:1 where it was 4.0:1
+    *   **One case gets harder to read.** A light table where you set a dark `selectedRowColor` or `dimRowColor` yourself, and left `textStyle` dark, now draws that row's caption dark on dark: 1.1:1 on `#303030`, where the old grey gave 2.9:1. Set `mergedRowCountTextStyle` to a colour that suits that row
+    *   **Unchanged.** A style you set is used as it is. A `textStyle` with no colour still gives `#757575`, and one that paints with `foreground` still paints the empty placeholder with it. The caption's size is still 10
+    *   **One case does not follow.** A body theme you scale with `scaledBy` yourself stores the caption's colour, so recolouring `textStyle` afterwards does not reach it. The `scale` parameter is unaffected
+
 ## 2.19.0
 
 *   **FEAT**: `TablePlusTheme.fromColorScheme(scheme)` derives the whole table theme from your app's `ColorScheme` ([#112](https://github.com/kihyun1998/flutter_table_plus/issues/112))

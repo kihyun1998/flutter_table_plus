@@ -141,15 +141,20 @@ class TablePlusBodyTheme {
 
   /// The text style for the placeholder shown when `data` is empty.
   ///
-  /// If null, [textStyle] in grey and italic — derived, so it follows a scaled
-  /// or recoloured body without being restated.
+  /// If null, [textStyle] in italic and in its own colour at 0.62 of that
+  /// colour's opacity — derived, so it follows a scaled or recoloured body
+  /// without being restated. A [textStyle] with no colour gives `#757575`,
+  /// and one that paints with a [TextStyle.foreground] keeps that paint here.
   final TextStyle? emptyStateTextStyle;
 
   /// The text style for the "N rows" caption under a merged group's checkbox.
   ///
-  /// If null, a 10px grey caption. Unlike [emptyStateTextStyle] this default is
-  /// **not** derived from [textStyle] — 10 is a caption size, not a scaled body
-  /// size — which is why [scaledBy] has to materialise it rather than skip it.
+  /// If null, a 10px caption in [textStyle]'s colour at 0.62 of its opacity,
+  /// or `#757575` when [textStyle] has no colour. The colour is derived and the
+  /// size is **not** — 10 is a caption size, not a scaled body size — which is
+  /// why [scaledBy] has to materialise it rather than skip it. Materialising
+  /// fixes the colour too, so a [textStyle] recoloured after [scaledBy] does
+  /// not reach the caption.
   final TextStyle? mergedRowCountTextStyle;
 
   /// Whether to show vertical dividers between columns.
@@ -269,18 +274,20 @@ class TablePlusBodyTheme {
   /// `Colors.grey.shade600` no caller could name (#171).
   TextStyle get effectiveEmptyStateTextStyle =>
       emptyStateTextStyle ??
-      textStyle.copyWith(
-        color: const Color(0xFF757575), // Colors.grey.shade600
-        fontStyle: FontStyle.italic,
-      );
+      textStyle.copyWith(color: _placeholderColor, fontStyle: FontStyle.italic);
 
   /// The resolved style for a merged group's "N rows" caption.
   TextStyle get effectiveMergedRowCountTextStyle =>
       mergedRowCountTextStyle ??
-      const TextStyle(
-        fontSize: 10,
-        color: Color(0xFF757575), // Colors.grey.shade600
-      );
+      TextStyle(fontSize: 10, color: _placeholderColor);
+
+  /// The colour both placeholder fallbacks share: [textStyle]'s colour at 0.62
+  /// of its own opacity, or `Colors.grey.shade600` when it has none.
+  Color get _placeholderColor {
+    final color = textStyle.color;
+    if (color == null) return const Color(0xFF757575);
+    return color.withValues(alpha: color.a * 0.62);
+  }
 
   /// Creates a copy of this theme with the given fields replaced with new values.
   TablePlusBodyTheme copyWith({

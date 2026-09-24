@@ -33,6 +33,11 @@ const Color kProbe = Color(0xFF00FF7F);
 const Color kProbe2 = Color(0xFFFF00AA);
 const double kThick = 7.0;
 
+/// The default body text colour, `#212121`, at the placeholders' 0.62 (#192).
+final Color kDefaultPlaceholder = const Color(
+  0xFF212121,
+).withValues(alpha: 0.62);
+
 Map<String, TablePlusColumn<Row>> _columns() {
   final b = TableColumnsBuilder<Row>();
   for (final k in ['c0', 'c1']) {
@@ -287,13 +292,13 @@ void main() {
   });
 
   group('the two placeholder styles are reachable (#171)', () {
-    testWidgets('empty data: the control is textStyle, grey and italic', (
+    testWidgets('empty data: the control is textStyle, faded and italic', (
       tester,
     ) async {
       await _pump(tester, body: base, data: const []);
 
       final style = _styleOf(tester, 'No data available');
-      expect(style!.color, const Color(0xFF757575));
+      expect(style!.color, kDefaultPlaceholder);
       expect(style.fontStyle, FontStyle.italic);
       expect(
         style.fontSize,
@@ -345,7 +350,7 @@ void main() {
         selectable: true,
       );
       final control = _styleOf(tester, '2 rows');
-      expect(control!.color, const Color(0xFF757575));
+      expect(control!.color, kDefaultPlaceholder);
       expect(control.fontSize, 10);
 
       await _pump(
@@ -360,6 +365,122 @@ void main() {
       final set = _styleOf(tester, '2 rows');
       expect(set!.color, kProbe);
       expect(set.fontSize, 22);
+    });
+  });
+
+  group('the two placeholders follow the body text colour (#192)', () {
+    // The opacity is multiplied, not replaced: 0x80 is a text colour already
+    // half transparent, and the placeholder must not come out more opaque
+    // than the text it stands beside.
+    const halfProbe = Color(0x8000FF7F);
+
+    testWidgets('empty data: recolour the body and the placeholder follows', (
+      tester,
+    ) async {
+      await _pump(
+        tester,
+        body: base.copyWith(
+          textStyle: const TextStyle(fontSize: 14, color: kProbe),
+        ),
+        data: const [],
+      );
+
+      final style = _styleOf(tester, 'No data available');
+      expect(style!.color, kProbe.withValues(alpha: 0.62));
+      expect(style.fontStyle, FontStyle.italic);
+    });
+
+    testWidgets('the N rows caption: recolour the body and it follows', (
+      tester,
+    ) async {
+      await _pump(
+        tester,
+        body: base.copyWith(
+          rowHeight: 90,
+          textStyle: const TextStyle(fontSize: 14, color: kProbe),
+        ),
+        data: ['a', 'b', 'c'],
+        groupKeys: ['a', 'b'],
+        selectable: true,
+      );
+
+      final style = _styleOf(tester, '2 rows');
+      expect(style!.color, kProbe.withValues(alpha: 0.62));
+      expect(
+        style.fontSize,
+        10,
+        reason: 'only the colour derives; the size stays a caption size',
+      );
+    });
+
+    test('a translucent text colour is multiplied, not made more opaque', () {
+      const body = TablePlusBodyTheme(
+        textStyle: TextStyle(fontSize: 14, color: halfProbe),
+      );
+      final expected = halfProbe.withValues(alpha: (0x80 / 0xFF) * 0.62);
+
+      expect(body.effectiveEmptyStateTextStyle.color, expected);
+      expect(body.effectiveMergedRowCountTextStyle.color, expected);
+    });
+
+    test('the default theme draws the same pixel on white as before', () {
+      const body = TablePlusBodyTheme();
+      for (final style in [
+        body.effectiveEmptyStateTextStyle,
+        body.effectiveMergedRowCountTextStyle,
+      ]) {
+        final onWhite = Color.alphaBlend(style.color!, Colors.white);
+        expect(
+          [onWhite.r, onWhite.g, onWhite.b].map((c) => (c * 255).round()),
+          [0x75, 0x75, 0x75],
+          reason: '#212121 at 0.62 over white is #757575, the old literal',
+        );
+      }
+    });
+
+    test('a body text style with no colour keeps the literal grey', () {
+      const body = TablePlusBodyTheme(textStyle: TextStyle(fontSize: 14));
+
+      expect(body.effectiveEmptyStateTextStyle.color, const Color(0xFF757575));
+      expect(
+        body.effectiveMergedRowCountTextStyle.color,
+        const Color(0xFF757575),
+      );
+    });
+
+    test('a scheme-derived body carries onSurface into both', () {
+      final scheme = ColorScheme.fromSeed(
+        seedColor: const Color(0xFF1565C0),
+        brightness: Brightness.dark,
+      );
+      final body = TablePlusTheme.fromColorScheme(scheme).bodyTheme;
+      final expected = scheme.onSurface.withValues(alpha: 0.62);
+
+      expect(body.emptyStateTextStyle, isNull);
+      expect(body.mergedRowCountTextStyle, isNull);
+      expect(body.effectiveEmptyStateTextStyle.color, expected);
+      expect(body.effectiveMergedRowCountTextStyle.color, expected);
+    });
+
+    test('scaledBy freezes the caption colour and not the placeholder', () {
+      // Decided 2026-09-24: `scaledBy` materialises the caption to scale its
+      // 10px, and the colour is materialised with it. Pinned as a position.
+      final scaled = const TablePlusBodyTheme(
+        textStyle: TextStyle(fontSize: 14, color: kProbe),
+      ).scaledBy(2.0);
+      final recoloured = scaled.copyWith(
+        textStyle: scaled.textStyle.copyWith(color: kProbe2),
+      );
+
+      expect(
+        recoloured.effectiveMergedRowCountTextStyle.color,
+        kProbe.withValues(alpha: 0.62),
+      );
+      expect(recoloured.effectiveMergedRowCountTextStyle.fontSize, 20);
+      expect(
+        recoloured.effectiveEmptyStateTextStyle.color,
+        kProbe2.withValues(alpha: 0.62),
+      );
     });
   });
 
@@ -491,7 +612,7 @@ void main() {
             'its default derives from no scaled field, so leaving it '
             'null would hold the caption at 10 while the table doubled',
       );
-      expect(s.effectiveMergedRowCountTextStyle.color, const Color(0xFF757575));
+      expect(s.effectiveMergedRowCountTextStyle.color, kDefaultPlaceholder);
     });
 
     test(

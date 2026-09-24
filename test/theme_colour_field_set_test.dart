@@ -45,9 +45,9 @@ const _leftNull = {
   'TablePlusBodyTheme.dimRowHighlightColor',
   'TablePlusBodyTheme.verticalDividerColor',
   'TablePlusBodyTheme.memberDividerColor',
-  // Falls back to a literal #757575, not to a field in _derived.
+  // Falls back to textStyle's colour at 0.62 opacity (#192).
   'TablePlusBodyTheme.emptyStateTextStyle',
-  // Falls back to a literal #757575, not to a field in _derived.
+  // Falls back to textStyle's colour at 0.62 opacity (#192).
   'TablePlusBodyTheme.mergedRowCountTextStyle',
   'TablePlusBodyTheme.hoverColor',
   'TablePlusBodyTheme.splashColor',

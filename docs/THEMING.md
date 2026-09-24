@@ -67,7 +67,7 @@ Only colours change, plus one flag: `editableTheme.filled` is `true`, so the edi
 
 ### Worth knowing
 
-- **Colours with a `null` default stay `null`.** Most keep deriving from the fields above. For example, the body's column divider is still `dividerColor` at alpha 0.5, and `dividerColor` is now `outlineVariant`.
+- **Colours with a `null` default stay `null`.** They keep deriving from the fields above. For example, the body's column divider is still `dividerColor` at alpha 0.5, and `dividerColor` is now `outlineVariant`. The empty-table placeholder and a merged group's "N rows" caption are `onSurface` at 0.62 opacity, including on a selected group.
 - **A few colours come from your app's `Theme`, not from the scheme.** Row hover, splash and highlight, the sorted-column arrows, and the placeholder hint in an editing cell all come from `Theme.of(context)`, as Material's `DataTable` does it. They match when you pass `Theme.of(context).colorScheme`. If you pass a different scheme, those few follow the app. Set `hoverColor` and its siblings on `bodyTheme` to take them over.
 - **The selected row's text style is a whole style.** A selected row draws `selectedRowTextStyle` *instead of* `textStyle`; the two are not merged. The factory builds it from the default body text style with the colour replaced. If you change `bodyTheme.textStyle` afterwards, change `selectedRowTextStyle` the same way, or selected rows keep the old size and weight.
 - **The column divider stays two different lines.** The header draws it 1.0px opaque and the body 0.5px at alpha 0.5, as the default theme does (see `verticalDividerThickness` below). Only the colour comes from the scheme.
@@ -189,8 +189,8 @@ TablePlusBodyTheme(
 
   // Text
   textStyle: TextStyle(fontSize: 14, color: Colors.black87),
-  emptyStateTextStyle: TextStyle(color: Colors.grey),   // null = textStyle, grey, italic
-  mergedRowCountTextStyle: TextStyle(fontSize: 10),     // null = 10px grey caption
+  emptyStateTextStyle: TextStyle(color: Colors.grey),   // null = textStyle, faded, italic
+  mergedRowCountTextStyle: TextStyle(fontSize: 10),     // null = 10px caption, faded
 
   // Padding
   padding: EdgeInsets.symmetric(horizontal: 16.0),
@@ -256,13 +256,21 @@ the derivation shown below.
 | `verticalDividerSide` | `verticalDividerColor` ?? `dividerColor` at alpha 0.5 | `verticalDividerThickness` ?? `0.5` |
 | `verticalDividerBorder` | the same side as a right-only `Border`, or `null` when `showVerticalDividers` is false | — |
 | `memberDividerSide` | `memberDividerColor` ?? `dividerColor` at alpha 0.3 | `dividerThickness` — no field of its own |
-| `effectiveEmptyStateTextStyle` | `emptyStateTextStyle` ?? `textStyle` in grey, italic | — |
-| `effectiveMergedRowCountTextStyle` | `mergedRowCountTextStyle` ?? a 10px grey caption | — |
+| `effectiveEmptyStateTextStyle` | `emptyStateTextStyle` ?? `textStyle`'s colour at 0.62 of its opacity, italic | `textStyle`'s |
+| `effectiveMergedRowCountTextStyle` | `mergedRowCountTextStyle` ?? `textStyle`'s colour at 0.62 of its opacity | `10`, not `textStyle`'s |
 
 **The default is the derivation, not the colour it produces.** Move
 `dividerColor` and all three lines move together, keeping the hierarchy a row
 boundary at full alpha, a column rule at 0.5 and a member separator at 0.3.
 Naming any of the fields takes that line off the derivation entirely.
+
+The two placeholders follow the body text the same way. They take `textStyle`'s
+colour at 0.62 of its own opacity, so a translucent text colour stays
+translucent. On the default theme that is `#212121` at 0.62, which draws
+`#757575` on white: the grey these placeholders always drew. A `textStyle`
+with no colour gives `#757575` itself. One that paints with `foreground`
+instead of a colour keeps that paint in the empty placeholder, as it keeps the
+rest of `textStyle`.
 
 `memberDividerSide` is the only one of the three lines whose width reads
 `dividerThickness`, and it has no width field for that reason: it used to be
@@ -673,6 +681,12 @@ final scaledTheme = theme.scaledBy(1.5);
 Scrollbar and tooltip themes are excluded because they are UI chrome / overlay elements that should remain at a fixed size regardless of table zoom level.
 
 When `factor == 1.0`, `scaledBy` returns `this` (zero allocation).
+
+A scaled body theme stores its "N rows" caption style, because its 10px size
+derives from nothing else that scales. Its colour is stored with it. So if you
+call `scaledBy` yourself and then change `textStyle`'s colour, the caption keeps
+the old one. The `scale` parameter is unaffected, since the table scales the
+theme you pass on every build.
 
 ---
 
