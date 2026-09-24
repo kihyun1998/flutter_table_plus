@@ -219,9 +219,12 @@ class TablePalette {
 /// unpadded bubble and nothing else does — the row-card recipe overrides it
 /// locally rather than making every table here pay for it.
 ///
-/// That is the measurement behind #112: nothing here can be derived from the
-/// app's `ColorScheme`, so every colour below is a decision this demo makes by
-/// hand, and the ones it has no reason to make yet stay default. Three stopped
+/// Every colour below is a decision this demo makes by hand, and the ones it
+/// has no reason to make yet stay default. Since #112 the package can derive a
+/// table theme from a `ColorScheme` (`TablePlusTheme.fromColorScheme`), and
+/// this demo deliberately does not: its palette is achromatic on purpose, and
+/// #98 keeps the table's colours visibly apart from the app chrome's. This
+/// file was the measurement that opened #112. Three stopped
 /// being safe to leave the moment a demo rendered them — drag selection and
 /// cell editing at #105 (`#448AFF`, `#2196F3`, blues #110's sweep never saw
 /// because no demo drew them), and the tooltip bubble at #107.

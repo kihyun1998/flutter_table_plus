@@ -8,11 +8,14 @@ rules that decide which tooltip theme a given tooltip actually gets.
 
 ## Governing decisions
 
-**None.**
+→ [ADR 0001 — a table theme derived from the app's `ColorScheme`](../../adr/0001-theme-from-color-scheme.md)
+— which role each colour takes in `TablePlusTheme.fromColorScheme`, and which of
+those were the maintainer's judgement rather than a derivation.
 
-`docs/THEMING.md` documents every field and shows what `scaledBy` scales — but as
-a guide, not a decision: it records *that* colours and radii do not scale, not
-why, and nothing records the fallback chain's precedence as a decision either.
+Nothing else here is a recorded decision. `docs/THEMING.md` documents every
+field and shows what `scaledBy` scales, but as a guide: it records *that*
+colours and radii do not scale, not why, and nothing records the fallback
+chain's precedence as a decision either.
 
 ## Design model
 
@@ -156,6 +159,22 @@ that default reddens instead of passing. #177 closed on that basis.
 this rather than inherit it. The question is not which value is right; it is
 that a shared visual element has no owner that can hold it, and only the root
 can become one.
+
+**The root gained that place in #112, and kept the split.**
+`TablePlusTheme.fromColorScheme` is the first code that sees both halves, and
+it was shown both options — split and unified — on a 10× magnification before
+the maintainer chose. It derives one colour, `outlineVariant`, for both halves
+and leaves the geometry as it is. So the split is now a decision made at the
+only scope that could make it, not an inheritance. [ADR 0001](../../adr/0001-theme-from-color-scheme.md)
+
+**Two nullable text styles fall back to a literal, not to a field.**
+`effectiveEmptyStateTextStyle` and `effectiveMergedRowCountTextStyle` fall back
+to `#757575`, where every other nullable colour here falls back to an
+expression over a field. So `fromColorScheme` cannot reach them by leaving them
+null, and does not set them: in a derived dark table they stay that grey,
+measured 4.0:1 on the dark surfaces tested, against 4.4:1 on the light default.
+No less readable than today, but not following the scheme, and nobody has
+decided they should not. `test/theme_colour_field_set_test.dart` marks both.
 
 **A public sub-theme went undocumented for its whole life, and a count asserted
 otherwise.** `TablePlusDragSelectionTheme` — five fields on the root, with its

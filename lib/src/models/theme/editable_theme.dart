@@ -33,6 +33,9 @@ class TablePlusEditableTheme {
   });
 
   /// The background color for cells that are currently being edited.
+  ///
+  /// Painted as the text field's fill, so only when [filled] is true; with the
+  /// default `filled: false` the cell shows the row's own colour instead.
   final Color editingCellColor;
 
   /// The text style for text inside editing text fields.

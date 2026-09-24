@@ -1,3 +1,15 @@
+## 2.19.0
+
+*   **FEAT**: `TablePlusTheme.fromColorScheme(scheme)` derives the whole table theme from your app's `ColorScheme` ([#112](https://github.com/kihyun1998/flutter_table_plus/issues/112))
+    *   **What it gives you.** `theme: TablePlusTheme.fromColorScheme(Theme.of(context).colorScheme)` makes a dark app's table dark, and a branded app's table branded, without listing a colour. That covers surfaces, dividers, the selected row, the editing cell and cursor, rejected-cell borders, the drag band, the scrollbar, tooltips and the checkbox. [`docs/THEMING.md`](docs/THEMING.md#from-your-apps-colorscheme) lists the role each one takes. Adjust the result with `copyWith`
+    *   **What it does not change.** It is opt-in. `TablePlusTheme()` and every default are exactly what they were, and nothing reads your app's theme unless you call it. Only colours are derived, plus `editableTheme.filled`, which is on so the editing cell paints the colour its text is paired with; every other size, padding and flag is the default's
+    *   **Two things worth knowing.** A selected row's text style replaces the body text style rather than merging over it, so if you change `bodyTheme.textStyle` afterwards, change `selectedRowTextStyle` too. And a monochrome scheme gets a monochrome table: nothing substitutes a hue for the editing border
+    *   The decisions behind the role mapping are recorded in [`docs/adr/0001-theme-from-color-scheme.md`](docs/adr/0001-theme-from-color-scheme.md)
+
+*   **FIX**: a table's checkbox draws a legible check in a dark theme. The `flutter_checkbox` floor is now `^0.3.3` ([flutter_checkbox#13](https://github.com/kihyun1998/flutter_checkbox/issues/13))
+    *   **What a consumer sees differently.** With the default checkbox style the check mark was always white, drawn on the theme's `primary`. Every dark Material 3 theme makes `primary` a light tone, so the check measured 1.7:1 against it, and 1.0:1 (invisible) on a dark monochrome theme. It is now the theme's `onPrimary`. No code in this package changed; the floor did
+    *   **What else arrives with it.** A `CheckboxStyle` that sets `activeColor` but not `checkColor`, which includes `TablePlusCheckboxTheme.colored(activeColor: ...)`, now gets a white or black check by that colour's brightness, and its hover, focus and splash overlays tint with `activeColor` instead of the theme's `primary`. Any colour set explicitly is unaffected. The SDK floor is unchanged
+
 ## 2.18.0
 
 *   **BREAKING**: minimum Flutter is now `3.32.0` (Dart `3.8.0`), up from `3.27.0` (Dart `3.6.0`) ([#180](https://github.com/kihyun1998/flutter_table_plus/issues/180))

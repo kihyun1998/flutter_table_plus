@@ -33,7 +33,7 @@ A highly customizable, type-safe Flutter table widget with synchronized scrollin
 | **Dim Rows** | Style inactive rows differently |
 | **Smooth Wheel Scrolling** | Animated mouse wheel scrolling, on by default and tuned or turned off through `wheelMotion`, with the header and scrollbars in step |
 | **Scale / Zoom** | Ctrl/Cmd+wheel zoom with platform-aware modifier key, scroll-safe physics, automatic position correction, and optional `blockModifierScroll` control |
-| **Deep Theming** | Nested theme classes down to individual borders, dividers and placeholder text |
+| **Deep Theming** | One call from your app's `ColorScheme`, or nested theme classes down to individual borders, dividers and placeholder text |
 | **Minimal Dependencies** | Only [`just_tooltip`](https://pub.dev/packages/just_tooltip), [`flutter_checkbox`](https://pub.dev/packages/flutter_checkbox) and [`flutter_smooth_wheel_scroll`](https://pub.dev/packages/flutter_smooth_wheel_scroll) |
 
 ---
@@ -111,6 +111,9 @@ FlutterTablePlus<User>(
   data: users,
   rowId: (user) => user.id,  // Unique identifier for each row
 
+  // Colours from your app's ColorScheme, so a dark app gets a dark table
+  theme: TablePlusTheme.fromColorScheme(Theme.of(context).colorScheme),
+
   // Sorting
   sortColumnKey: _sortColumn,
   sortDirection: _sortDirection,
@@ -180,6 +183,23 @@ FlutterTablePlus<User>(
 ```
 
 `WheelMotion` is exported by this package; there is no second import. See [Smooth Wheel Scrolling](docs/FEATURES.md#smooth-wheel-scrolling) for every option.
+
+### 5. Match Your App's Colours
+
+`TablePlusTheme.fromColorScheme` builds the whole table theme from the `ColorScheme` your app already has: surfaces, dividers, the selected row, the editing cell, the checkbox. Adjust the result with `copyWith`:
+
+```dart
+final base = TablePlusTheme.fromColorScheme(Theme.of(context).colorScheme);
+
+FlutterTablePlus<User>(
+  // ...
+  theme: base.copyWith(
+    bodyTheme: base.bodyTheme.copyWith(rowHeight: 40),
+  ),
+)
+```
+
+To set every value yourself instead, build a `TablePlusTheme(...)` directly. Without a `theme`, the table uses the package's own light defaults, as it always has. The [Theming Guide](docs/THEMING.md#from-your-apps-colorscheme) lists which role each colour takes.
 
 ---
 

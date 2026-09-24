@@ -37,6 +37,8 @@ docs/map/README.md               the MAP's entry point
 docs/map/territory/*.md          MAP territory notes
 docs/map/invariant/*.md          MAP cross-cutting invariant notes
 docs/agents/*.md                 agent bindings
+docs/adr/*.md                    decision records, numbered. CLAUDE.md names the
+                                 directory; the first one arrived with #112
 scripts/map/*.py                 the MAP gate (python)
 scripts/fonts/*.py               one-off asset tooling (python)
 ```
