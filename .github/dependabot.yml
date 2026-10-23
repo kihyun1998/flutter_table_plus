@@ -1,0 +1,19 @@
+# Pub constraint updates for the package root and example/.
+version: 2
+updates:
+  - package-ecosystem: pub
+    directory: /
+    schedule:
+      interval: weekly
+    versioning-strategy: increase-if-necessary
+    labels:
+      - needs-triage
+  - package-ecosystem: pub
+    directory: /example
+    schedule:
+      interval: monthly
+    groups:
+      example:
+        patterns: ["*"]
+    labels:
+      - needs-triage

@@ -79,3 +79,10 @@ answerable by reading rather than judgement: *does the fix I am about to write
 here exist because the layer below does something I disagree with?* And on every
 constraint change: *did the dependency's changelog move its `environment:` or its
 own floors?* A "just bump the version" request is exactly when that goes unread.
+
+**A Dependabot PR is that request, made by a robot.** The root runs
+`increase-if-necessary` with no committed lockfile, so a PR opens only when a
+sibling release leaves the caret. That is precisely the floor-raising case above,
+and each dependency gets its own PR so that one decision stays one decision.
+There is no CI, so the PR arrives with no gate: the checks are the ones in
+`CLAUDE.md`, run here, plus the sibling's changelog.
