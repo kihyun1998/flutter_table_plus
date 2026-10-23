@@ -91,6 +91,7 @@ chain's precedence as a decision either.
 → [Do not work around an upstream contract here](../invariant/upstream-contract.md) — the checkbox sub-theme wraps a sibling package's widget, and its `colored()` factory sits on that seam
 → [A guard reads the destination, never the source](../invariant/guard-the-destination.md) — a theme object is a source by construction, and #110 closed green while four blues survived in the sub-themes nobody had rendered
 → [A defect in these files produces no signal](../invariant/no-signal-on-failure.md) — the sub-theme field set is on the register, and a dropped field is invisible at the factor everyone tests with (#50, #116)
+→ [Observe at the screen, assert by count](../invariant/observe-at-the-screen.md) — the editing fill `fromColorScheme` turns on is painted by Flutter, whose canvas call changed at 3.44.0 inside the supported range (#199)
 
 ## Blast radius
 

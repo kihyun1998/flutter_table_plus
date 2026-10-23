@@ -324,8 +324,13 @@ void main() {
         await tester.pumpAndSettle();
         expect(
           find.byType(InputDecorator),
-          // OutlineInputBorder paints its interior as a rounded rect.
-          paints..rrect(color: mono.primaryContainer),
+          // The fill, as a rounded rect or as the border's outer path.
+          paints..something((method, args) {
+            if (method != #drawRRect && method != #drawPath) return false;
+            final paint = args.last as Paint;
+            return paint.style == PaintingStyle.fill &&
+                paint.color.toARGB32() == mono.primaryContainer.toARGB32();
+          }),
         );
       },
     );
