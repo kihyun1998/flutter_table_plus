@@ -58,6 +58,25 @@ compute one.
 
 ## Known holes / open
 
+- **Measuring each row's text is the whole cost of totalling the table's height
+  (#37).** `computeTableMetrics` calls the height callback once per row, and once
+  per member of a merged group. `benchmark/pure_paths_benchmark.dart` runs it
+  with a constant height and again with `createHeightCalculator` over one
+  240-pixel text column. Apple M2, Flutter 3.47.1, JIT, 2026-10-23:
+
+  | µs per total | constant | text |
+  |---|---|---|
+  | n = 1,000 | 149 | 89,522 |
+  | n = 10,000 | 2,366 | 470,547 |
+
+  The text column is measured in the square test font, so these heights wrap
+  where the screen's would not. That makes the text figures a worst-case width
+  rather than a rendered one ([the widget-test font](../invariant/test-font-square.md)).
+  The constant figures change by several times from one run to the next on the
+  same machine, so read them for their order of magnitude. Since the documented
+  wiring above rebuilds on every build, this is the per-frame cost for a caller
+  who builds the callback inline.
+
 - **The documented wiring drops both height caches on every build.** The
   callback is compared with `==`, and a closure built fresh in `build` is never
   equal to the last one — so the per-row heights, the total that decides whether

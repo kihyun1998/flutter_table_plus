@@ -118,4 +118,34 @@ calculation ultimately asks.
 
 ## Known holes / open
 
-**None.**
+**What the two per-snapshot structures cost is measured, and nothing has reduced
+it (#37).** `benchmark/row_memory_benchmark.dart` reads the VM heap after a full
+GC over 500,000 retained rows. Apple M2, Flutter 3.47.1, JIT test VM,
+uncompressed pointers, three of every ten rows in a merged group, 2026-10-23:
+
+| bytes per row | n = 1,000 | n = 10,000 |
+|---|---|---|
+| `RowLookup` — ids + `idToIndex` + `idToGroup` | 45.3 | 57.2 |
+| `RowGeometry`, every height `theme.rowHeight` | 17.3 | 26.2 |
+| `RowGeometry`, heights from a callback | 32.5 | 42.2 |
+
+The id strings are not in these figures. `rowId` returns the string the row
+already holds, so both structures store a reference to it.
+
+**The per-row figure moves with n, so one number misreads it.** Lists and maps
+grow by doubling, and the slack is part of the cost. `RowLookup` measured 44.0 at
+1,024, 8,192 and 16,384 rows and 64–67 at 1,100 and 8,300. The 1k and 10k columns
+sit at different points of that curve. Compare against the same n.
+
+**A callback height costs one boxed `double` per row**, about 15 bytes. A
+`theme.rowHeight` read shares one box. The benchmark builds heights with the
+body's own `calculateRowHeight ?? theme.rowHeight` expression, because a ternary
+of two constants boxed every row and hid the difference.
+
+**RSS does not work for this on macOS.** The first method read
+`ProcessInfo.currentRss` deltas. A 64-byte-per-row calibration read 0–3 at small
+phases and **−6.7** once the retained heap was large, which is what the memory
+compressor taking cold pages out of RSS looks like. The VM service's heap usage
+read that same calibration at 64.0. That needs `flutter test --enable-vmservice`;
+without it the measurement stops with that command, and a calibration more than
+5% off fails the run.

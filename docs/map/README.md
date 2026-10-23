@@ -78,7 +78,8 @@ These numbers exist in no note file, and they re-ordered the map:
   there.
 - **18 `clamp` sites across 7 files**, none of which call each other. That is a
   cross-cutting invariant, not a rule in one territory.
-- **Only 2 open issues** (#2, #37). The backlog is not this map's blind spot.
+- **The backlog is not this map's blind spot.** Few issues were open, and the
+  tracker says which; this note keeps no count of them.
 
 ## Conventions
 

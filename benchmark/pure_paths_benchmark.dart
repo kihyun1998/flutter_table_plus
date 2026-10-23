@@ -10,6 +10,7 @@
 // regressions locally; they are not a CI gate and are machine-dependent.
 
 import 'package:benchmark_harness/benchmark_harness.dart';
+import 'package:flutter/painting.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
 import 'package:flutter_table_plus/src/utils/column_width_resolver.dart';
 import 'package:flutter_table_plus/src/utils/table_metrics.dart';
@@ -89,16 +90,24 @@ class RowGeometryBenchmark extends BenchmarkBase {
 
 /// computeTableMetrics + computeRenderableIndices over N rows with ~10% merged.
 class TableMetricsBenchmark extends BenchmarkBase {
-  TableMetricsBenchmark(this.n) : super('tableMetrics(n=$n)');
+  TableMetricsBenchmark(this.n, {String name = 'tableMetrics'})
+    : super('$name(n=$n)');
 
   final int n;
   late final List<Map<String, dynamic>> _data;
   late final List<MergedRowGroup<Map<String, dynamic>>> _groups;
   late final RowLookup<Map<String, dynamic>> _lookup;
 
+  Map<String, dynamic> _row(int i) => {'id': 'r$i'};
+
+  double _rowHeightOf(int index) => 48;
+
+  double _mergedGroupHeightOf(MergedRowGroup<Map<String, dynamic>> g) =>
+      48.0 * g.rowKeys.length;
+
   @override
   void setup() {
-    _data = List.generate(n, (i) => {'id': 'r$i'});
+    _data = List.generate(n, _row);
     _groups = [
       for (int i = 0; i + 2 < n; i += 10)
         MergedRowGroup<Map<String, dynamic>>(
@@ -107,11 +116,7 @@ class TableMetricsBenchmark extends BenchmarkBase {
           mergeConfig: const {},
         ),
     ];
-    _lookup = RowLookup.build(
-      data: _data,
-      mergedGroups: _groups,
-      rowId: _idOf,
-    );
+    _lookup = RowLookup.build(data: _data, mergedGroups: _groups, rowId: _idOf);
   }
 
   @override
@@ -122,8 +127,8 @@ class TableMetricsBenchmark extends BenchmarkBase {
     computeTableMetrics<Map<String, dynamic>>(
       data: _data,
       lookup: _lookup,
-      rowHeightOf: (_) => 48,
-      mergedGroupHeightOf: (g) => 48.0 * g.rowKeys.length,
+      rowHeightOf: _rowHeightOf,
+      mergedGroupHeightOf: _mergedGroupHeightOf,
     );
     computeRenderableIndices<Map<String, dynamic>>(
       data: _data,
@@ -134,12 +139,65 @@ class TableMetricsBenchmark extends BenchmarkBase {
   }
 }
 
+/// [TableMetricsBenchmark] with each row's height laid out from its text by
+/// [TableRowHeightCalculator.createHeightCalculator], and a group's height as
+/// the sum of its members', as the table computes them.
+class TextHeightTableMetricsBenchmark extends TableMetricsBenchmark {
+  TextHeightTableMetricsBenchmark(super.n)
+    : super(name: 'tableMetrics.textHeights');
+
+  late final double? Function(int, Map<String, dynamic>) _heightOf;
+
+  @override
+  Map<String, dynamic> _row(int i) => {
+    'id': 'r$i',
+    'text': List.filled(1 + i % 12, 'lorem ipsum').join(' '),
+  };
+
+  @override
+  double _rowHeightOf(int index) => _heightOf(index, _data[index]) ?? 48;
+
+  @override
+  double _mergedGroupHeightOf(MergedRowGroup<Map<String, dynamic>> g) {
+    double total = 0;
+    for (final key in g.rowKeys) {
+      final index = _lookup.indexOf(key);
+      if (index != null) total += _rowHeightOf(index);
+    }
+    return total;
+  }
+
+  @override
+  void setup() {
+    super.setup();
+    _heightOf = TableRowHeightCalculator.createHeightCalculator(
+      columns: [
+        TablePlusColumn<Map<String, dynamic>>(
+          key: 'text',
+          label: 'Text',
+          order: 0,
+          valueAccessor: (r) => r['text'],
+          width: 240,
+          textOverflow: TextOverflow.visible,
+        ),
+      ],
+      columnWidths: const [240],
+      defaultTextStyle: const TextStyle(fontSize: 14),
+    );
+    final heights = {for (int i = 0; i < 12; i++) _rowHeightOf(i)};
+    if (heights.length < 2 || heights.every((h) => h <= 48)) {
+      throw StateError('No row height came from its text: $heights');
+    }
+  }
+}
+
 void main() {
   test('run pure-path microbenchmarks', () {
     for (final n in [1000, 10000]) {
       ColumnWidthsBenchmark(n).report();
       RowGeometryBenchmark(n).report();
       TableMetricsBenchmark(n).report();
+      TextHeightTableMetricsBenchmark(n).report();
     }
   }, timeout: const Timeout(Duration(minutes: 2)));
 }
