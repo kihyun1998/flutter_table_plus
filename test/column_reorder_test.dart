@@ -85,7 +85,7 @@ void main() {
   testWidgets(
     'onColumnReorder present builds a Draggable per reorderable column',
     (tester) async {
-      await _pump(tester, onColumnReorder: (_, __) {});
+      await _pump(tester, onColumnReorder: (_, _) {});
       expect(find.byType(Draggable<int>), findsNWidgets(3));
     },
   );

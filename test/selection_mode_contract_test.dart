@@ -57,7 +57,7 @@ Future<void> _pump(
           isSelectable: true,
           selectionMode: selectionMode,
           selectedRows: selectedRows,
-          onRowSelectionChanged: (_, __) {},
+          onRowSelectionChanged: (_, _) {},
           onSelectAll: onSelectAll,
         ),
       ),

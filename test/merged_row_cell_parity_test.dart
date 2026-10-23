@@ -74,7 +74,7 @@ Future<void> _pump(
               isEditable: isEditable,
               isSelectable: isSelectable,
               selectedRows: const {},
-              onRowSelectionChanged: (_, __) {},
+              onRowSelectionChanged: (_, _) {},
               theme: TablePlusTheme(
                 bodyTheme: TablePlusBodyTheme(
                   rowHeight: 40,

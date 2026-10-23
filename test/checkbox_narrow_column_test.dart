@@ -30,7 +30,7 @@ Future<void> _pump(
           ],
           rowId: (r) => r['id'] as String,
           isSelectable: true,
-          onRowSelectionChanged: (_, __) {},
+          onRowSelectionChanged: (_, _) {},
           onSelectAll: showSelectAll ? (_) {} : null,
           theme: TablePlusTheme(
             checkboxTheme: TablePlusCheckboxTheme(

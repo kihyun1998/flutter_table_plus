@@ -222,10 +222,7 @@ void main() {
 
     test('a column with a custom cell builder is skipped', () {
       final columns = [
-        _col(
-          key: 'v',
-          statefulCellBuilder: (_, __, ___, ____) => const SizedBox(),
-        ),
+        _col(key: 'v', statefulCellBuilder: (_, _, _, _) => const SizedBox()),
       ];
       expect(
         heightOf(columns, {'v': 'a very very very long value indeed'}),

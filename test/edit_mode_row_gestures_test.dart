@@ -54,7 +54,7 @@ Future<void> _pump(
           rowId: (r) => r['id'] as String,
           isSelectable: true,
           isEditable: true,
-          onCellChanged: (_, __, ___, ____, _____) {},
+          onCellChanged: (_, _, _, _, _) {},
           onRowDoubleTap: onRowDoubleTap,
           onRowSecondaryTapDown: onRowSecondaryTapDown,
         ),
@@ -87,7 +87,7 @@ void main() {
       String? secondary;
       await _pump(
         tester,
-        onRowSecondaryTapDown: (id, _, __, ___) => secondary = id,
+        onRowSecondaryTapDown: (id, _, _, _) => secondary = id,
       );
 
       final gesture = await tester.startGesture(

@@ -35,7 +35,7 @@ Future<void> _pump(
           rowId: (r) => r['id'] as String,
           theme: theme,
           isSelectable: isSelectable,
-          onRowSelectionChanged: isSelectable ? (_, __) {} : null,
+          onRowSelectionChanged: isSelectable ? (_, _) {} : null,
           isDimRow: isDimRow,
           calculateRowHeight: calculateRowHeight,
         ),

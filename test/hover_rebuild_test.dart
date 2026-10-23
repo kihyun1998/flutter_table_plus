@@ -39,7 +39,7 @@ void main() {
             ],
             rowId: (r) => r['id'] as String,
             isSelectable: true, // interaction layer active
-            onRowSelectionChanged: (_, __) {},
+            onRowSelectionChanged: (_, _) {},
             // hoverButtonBuilder: null (no hover buttons)
           ),
         ),
@@ -87,7 +87,7 @@ void main() {
             ],
             rowId: (r) => r['id'] as String,
             isSelectable: true,
-            onRowSelectionChanged: (_, __) {},
+            onRowSelectionChanged: (_, _) {},
             hoverButtonBuilder: (id, row) => const Icon(Icons.delete),
           ),
         ),

@@ -43,7 +43,7 @@ Widget _table({
         cellTapTogglesCheckbox: cellTapTogglesCheckbox,
       ),
     ),
-    onRowSelectionChanged: onRowSelectionChanged ?? (_, __) {},
+    onRowSelectionChanged: onRowSelectionChanged ?? (_, _) {},
     onSelectAll: (_) {},
   );
 }

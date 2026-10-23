@@ -186,7 +186,7 @@ void main() {
     await _pumpTable(
       tester,
       frame: _scaffold,
-      onRowSecondaryTapDown: (rowId, _, __, ___) => secondaryId = rowId,
+      onRowSecondaryTapDown: (rowId, _, _, _) => secondaryId = rowId,
     );
 
     final gesture = await tester.startGesture(
@@ -208,7 +208,7 @@ void main() {
       tester,
       frame: _scaffold,
       mergedGroups: const [_mergedGroup],
-      onRowSecondaryTapDown: (rowId, _, __, ___) => secondaryId = rowId,
+      onRowSecondaryTapDown: (rowId, _, _, _) => secondaryId = rowId,
     );
 
     final gesture = await tester.startGesture(

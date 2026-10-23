@@ -832,7 +832,7 @@ class _TablePlusMergedRowState<T>
       ),
       child: Row(
         children: [
-          if (_buildSelectionCell() case final selectionCell?) selectionCell,
+          ?_buildSelectionCell(),
           ...() {
             final nonSelectionColumns = widget.columns
                 .where((col) => col.key != '__selection__')

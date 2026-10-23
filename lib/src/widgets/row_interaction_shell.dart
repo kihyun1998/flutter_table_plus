@@ -61,9 +61,7 @@ class RowInteractionShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final content = Stack(
-      children: [rowContent, if (hoverButtons != null) hoverButtons!],
-    );
+    final content = Stack(children: [rowContent, ?hoverButtons]);
 
     // Only track hover when a consumer needs it (i.e. there are hover buttons).
     // Skipping the MouseRegion avoids a per-row setState on every pointer

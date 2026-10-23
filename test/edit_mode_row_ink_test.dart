@@ -60,7 +60,7 @@ Future<void> _pump(
           isSelectable: isSelectable,
           isEditable: isEditable,
           theme: theme,
-          onCellChanged: (_, __, ___, ____, _____) {},
+          onCellChanged: (_, _, _, _, _) {},
           onRowSelectionChanged: onRowSelectionChanged,
           onRowSecondaryTapDown: onRowSecondaryTapDown,
         ),
@@ -110,7 +110,7 @@ void main() {
     await _pump(
       tester,
       isSelectable: false,
-      onRowSecondaryTapDown: (_, __, ___, ____) {},
+      onRowSecondaryTapDown: (_, _, _, _) {},
     );
 
     expect(tester.widget<InkWell>(_rowInkWell()).onTap, isNull);
