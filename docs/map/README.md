@@ -63,21 +63,24 @@ and in one case by two different packages independently:
 
 ## What was measured while building this
 
-These numbers exist in no note file, and they re-ordered the map:
+Measured on 2026-08-25, when the map was built, and not kept current. These
+numbers are why the map is ordered as it is, not the state of the tree today.
+They exist in no note file:
 
-- **58 public types and 40 public constructor parameters. Zero governing
-  records.** `docs/adr/` does not exist. The de facto record store — CHANGELOG,
-  67 issues, `docs/agents/lessons.md` — is entirely event-indexed.
-- **Publishing has 0 issues about it and 2 incidents in it** (a published
+- **58 public types and 40 public constructor parameters, and no governing
+  records.** `docs/adr/` did not exist yet; the first record arrived with #112.
+  The de facto record store — CHANGELOG, 67 issues, `docs/agents/lessons.md` —
+  was entirely event-indexed.
+- **Publishing had 0 issues about it and 2 incidents in it** (a published
   changelog entry edited in place with the tag moved twice; a tag placed past an
   unmerged PR whose tree was broken for a range of users). Ordering work by
-  commit frequency puts it last; it is one of the four areas the maintainer names
+  commit frequency put it last; it is one of the four areas the maintainer names
   as quiet and expensive.
-- **`widgets/flutter_table_plus.dart` is 1235 lines — 14.5% of `lib/`** — and
-  holds at least five concerns. The map is deliberately finer than the file tree
+- **`widgets/flutter_table_plus.dart` was 1235 lines — 14.5% of `lib/`** — and
+  held at least five concerns. The map is deliberately finer than the file tree
   there.
-- **18 `clamp` sites across 7 files**, none of which call each other. That is a
-  cross-cutting invariant, not a rule in one territory.
+- **18 `clamp` sites across 7 files**, none of which called each other. That is
+  a cross-cutting invariant, not a rule in one territory.
 - **The backlog is not this map's blind spot.** Few issues were open, and the
   tracker says which; this note keeps no count of them.
 
