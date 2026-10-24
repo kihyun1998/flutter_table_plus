@@ -88,6 +88,13 @@ notes.
 - **The demo does not re-test the package.** A behaviour the package pins in its
   own suite is not re-asserted here; doing so would mean fighting the demo's own
   fixtures for a fact that is already proven.
+- **A fixture is written as an escape literal, never read from the checkout.**
+  Line endings are a property of the machine, not of the repository:
+  `.gitattributes` is `* text=auto`, so a Windows clone makes the recipe corpus
+  CRLF and a macOS or Linux clone makes it LF. A test that uses that corpus as a
+  fixture tests the checkout as much as the code. The witness is
+  `example/test/code_pane_test.dart`'s `everyKind` fixture — a `\n` written as
+  two characters says the same thing in every checkout.
 - **Settings are data, not widgets.** A registry describes each control, so a new
   option is a row rather than a new widget — which is what keeps the settings
   panel from becoming the god-file it started as.

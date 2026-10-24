@@ -7,22 +7,20 @@ skill — run `/thegraph` at the start. The skill carries its own nodes, guards 
 deciders. **`docs/agents/thegraph.md`** carries only what the skill cannot know and
 no file here answers: **the outside sources this package is read against, and
 whether each one binds.** Everything else a run needs is read from the repository
-itself rather than from a second copy of it — that document held one for months,
-and the copies went stale on their own, three times inside the file. The
-per-incident evidence lives in **`docs/agents/lessons.md`**. Read both before starting; add new
-war-stories to lessons. **Neither file keeps a roster of issue numbers** — a
-hand-copied one drifts the moment lessons grows; grep `lessons.md` for the
-current set.
+itself. The per-incident evidence lives in **`docs/agents/lessons.md`**. Read both
+before starting; add new war-stories to lessons.
+
+**Read counts and rosters from the repository; a copy here drifts, and nothing
+checks this file.** The issue set is
+`grep -o '#[0-9]\+' docs/agents/lessons.md | sort -u`; the MAP's notes are
+`ls docs/map/territory docs/map/invariant`.
 
 **Before drawing a boundary, read the MAP — [`docs/map/README.md`](docs/map/README.md).**
 Territories and cross-cutting invariants, indexed by *what the system does*
-rather than by the event that produced them. **How many of each is the MAP's own
-fact and is not copied here** — the same reason the issue roster above is not,
-and it drifted the same way: the invariant count was corrected in `## map` and
-left wrong four lines from a paragraph forbidding exactly that. Open the
-territory your change enters and treat its `## Blast radius` as a checklist. On
-the way out, ask whether the fact you just found is true outside that territory —
-if it is, an invariant note is part of the change.
+rather than by the event that produced them. Open the territory your change
+enters and treat its `## Blast radius` as a checklist. On the way out, ask
+whether the fact you just found is true outside that territory — if it is, an
+invariant note is part of the change.
 
 Two invariant notes are read **before** the work rather than during it, because
 both decide how the change is done rather than what it says.
@@ -33,25 +31,6 @@ was never evidence there. [`tree-rule`](docs/map/invariant/tree-rule.md) decides
 which directory a new file belongs in, and it is read before the file is written:
 placement is where a seam is physically expressed, and read afterwards it arrives
 as rework.
-
-**`theflow` is retired**, and its bindings doc is **deleted**. Bindings are
-consumed by the *first* build; a graph exists, so every run from here is an
-**update** that reads `docs/agents/thegraph.md` and never the bindings — nothing
-read that file and nothing maintained it. Its Step 7 gate matrix had already gone
-stale, listing 6 bare commands against the 9 that were real **at that time**,
-which is what a document nobody reads does next. Everything in it lives on: the
-reference sources in `thegraph.md`, the layout rule and the silent-failure
-register in the MAP, the tooltip boundary in the MAP's
-[`tooltips`](docs/map/territory/tooltips.md) territory, the incidents in
-`lessons.md`. `git log` has it if it is ever wanted back.
-
-**The compiled agent build went the same way, on 2026-09-04.** It generated four
-subagents and six scripts from a 965-line document that was mostly a second copy
-of this repository — a gate list, a surface list, a node roster, counts. The
-copies drifted exactly as `theflow`'s had. What a person actually answered was
-kept: the reference sources are in `thegraph.md`, the layout rule and the
-silent-failure register are MAP invariant notes, the seams are below. What went
-was every fact the repository already states.
 
 ## Package philosophy
 
@@ -77,19 +56,14 @@ merged rows. It does **not** manage or mutate your data.
   rubber-band geometry live in a `DragSelectionController` (unit-testable in
   isolation); row lookups go through the narrow `RowLocator` port the body implements.
 - **`scaledBy()` is built on `copyWith` at every level** and names only what it
-  changes, so a field added later cannot be dropped by forgetting to list it.
-  Hand-listing is exactly how `rowTooltipTheme` went missing at the root (#50)
-  and how five `CheckboxStyle` fields went missing one level down (#116) — a
-  field set owned by `flutter_checkbox`, which grows with no commit here. Saying
-  this of the root alone is what let the second one live for six releases.
+  changes, so a field added later cannot be dropped by forgetting to list it —
+  including fields of `CheckboxStyle`, a set owned by `flutter_checkbox` that
+  grows with no commit here.
 - **Tooltips are arbitrated by `just_tooltip`, not here.** Nesting = innermost
   wins, and since 0.4.4 "innermost" means *the innermost tooltip with something to
-  draw*. `^0.4.4` is a **floor, not a preference** — the old local
-  empty-message guard is gone (#96). A row tooltip uses `TooltipAnchor.pointer` as
-  a **correctness requirement** (a row is `contentWidth` wide, so hover region ≠
-  anchor), not a workaround. `just_tooltip` / `flutter_checkbox` /
-  `flutter_smooth_wheel_scroll` sources sit at `../` — read them, don't guess
-  from pub docs.
+  draw*. `^0.4.4` is a **floor, not a preference**. A row tooltip uses
+  `TooltipAnchor.pointer` as a **correctness requirement** (a row is
+  `contentWidth` wide, so hover region ≠ anchor), not a workaround.
 
 ### The seams, and which side owns what
 
@@ -101,46 +75,32 @@ merged rows. It does **not** manage or mutate your data.
 - **Policy — the consumer owns it.** The data and every operation on it,
   selection state, and what a callback does. `rowId` is the caller's, and
   identity is a `(data, rowId)` snapshot contract this package deliberately does
-  **not** assert (#132, #135).
+  **not** assert.
 - **Two seams, and both leak in both directions.** The published package, and the
   `../just_tooltip` / `../flutter_checkbox` / `../flutter_smooth_wheel_scroll`
-  membrane. When upstream raises a floor it lands on us with `lib/` untouched
-  (#69, 2.16.0); when we change a contract, the *rationale* a consumer already
-  wrote can quietly go false.
+  membrane. When upstream raises a floor it lands on us with `lib/` untouched;
+  when we change a contract, the *rationale* a consumer already wrote can
+  quietly go false.
 
 **Do not misdiagnose a contract as a defect.** When a consumer brings a "bug",
 the first question is *whose invariant broke* — a report against behaviour this
 package deliberately holds is a contract, and treating it as a defect deletes the
 contract instead of the workaround. **Judging where to fix and reporting upstream
-are separate duties**: a workaround that works well silences upstream forever
-(#33, #88 → #96).
+are separate duties**: a workaround that works well silences upstream forever.
 
 **And the urge to write a workaround here for a defect one layer deeper is a
 stop, not a task.** Come to the maintainer.
 
 ## Environment
 
-Claude Code and the user share **one** machine, and **which** one is a fact to
-read rather than to remember: this paragraph said *Windows* until 2026-09-04,
-when it was macOS. The Flutter SDK is on `PATH` either way, so run
-`flutter test` / `analyze` / `dart format` directly, and ask the user only for
-anything that opens a window (`flutter run`).
+**Read the machine, don't remember it** — `uname -s`. The Flutter SDK is on
+`PATH`, so run `flutter test` / `analyze` / `dart format` directly, and ask the
+user only for anything that opens a window (`flutter run`). Writing a test whose
+fixture is a checked-out file? Read the line-endings note in
+[`example-app`](docs/map/territory/example-app.md) first.
 
-The line endings a checkout carries follow from that, and they are **a property
-of the machine, not of the repository** — `.gitattributes` is `* text=auto`, so
-a Windows clone makes the recipe corpus CRLF and a macOS or Linux clone makes it
-LF. A test that uses that corpus as a fixture is therefore testing the checkout
-as much as the code. One did: `example/test/dart_highlighter_test.dart` asserted
-that at least one bundled recipe carried CRLF, was written on the Windows
-machine where that held, and could only fail on this one. It went first, on the
-instruction its own failure message carried; the rest of that file went with the
-tokenizer when the shell was extracted, because a pure function two packages
-away is its own repository's to test. **The witness is
-`example/test/code_pane_test.dart`'s `everyKind` fixture**, an escape literal
-for the same reason — a `\n` written as two characters says the
-same thing in every checkout.
-
-**There is no CI** — these are the only gates, and they run here:
+**There is no CI** — these are the only gates, and they run here, one line per
+bare command:
 
 ```
 flutter analyze
@@ -156,40 +116,20 @@ flutter pub publish --dry-run               (checks the archive, never the versi
 so `flutter test | tail -1 && commit` always commits — a gate you cannot fail is
 not a gate. **Never move a threshold to turn a build green.**
 
-**No count is written here, and that is deliberate.** This file said *nine* for
-the three days after a tenth was added, four dozen lines below a paragraph whose
-whole point is that a document nobody reads goes stale by miscounting gates. No
-assertion reads `CLAUDE.md`, so nothing could have caught it — and the list
-above is one line per bare command precisely so that writing it as an `&&` chain
-cannot make two gates look like one.
+- `example/` is **outside** the top-level `flutter test` — its own manifest, its
+  own analyzer run.
+- `dart format` covers `lib test` only, so **`example/lib` is outside the
+  formatter gate**, deliberately.
+- `flutter pub publish --dry-run` is the **archive** gate and runs on every
+  change: it resolves `.pubignore` and prints every file that would ship, and
+  the archive is the one artifact here that **cannot be un-published**. Read the
+  file tree it prints. It never checks the version, so **a green dry-run is not
+  evidence that a publish will succeed** — ask the registry for that,
+  separately. Before a release, or when the dry-run surprises you, read
+  [`publishing`](docs/map/territory/publishing.md).
 
-Three things the list does not make obvious. `example/` is **outside** the
-top-level `flutter test` — its own manifest, its own analyzer run — and a
-leftover `flutter create` template once kept it permanently red, which trains
-everyone to ignore it (#55). `dart format` covers `lib test` only, so
-**`example/lib` is outside the formatter gate**, deliberately. And
-`flutter pub publish --dry-run` **checks the archive, and never the version** —
-so it runs on every change, not only on a release.
-
-That sentence used to say the opposite: that the command insists on a version
-*ahead* of the registry, so between releases it is red for anything that is not
-a release, and the honest report is *N/A with the reason on screen*. **Measured
-2026-09-07 and false.** At `2.17.0`, with `2.17.0` already on pub.dev, it
-returns `Package has 0 warnings` and exits 0. The collision is the server's
-check, at the moment of publish, and no local command performs it.
-
-Which inverts what the gate is for. It was described as the release gate and it
-is the **archive** gate: it resolves `.pubignore` and prints every file that
-would ship, and the archive is the one artifact on this list that **cannot be
-un-published** — see the release rows in
-[`no-signal-on-failure`](docs/map/invariant/no-signal-on-failure.md). Read the
-file tree it prints; that is the output worth having. What it cannot tell you is
-whether the version is free, so **a green dry-run is not evidence that a publish
-will succeed** — ask the registry for that, separately.
-
-The N/A convention stays, for the case it was actually written for: a gate that
-genuinely cannot run here reports N/A **with the reason on screen**, never a
-quiet pass. It just does not apply to this one.
+A gate that genuinely cannot run here reports N/A **with the reason on screen**,
+never a quiet pass.
 
 ## Agent skills
 
