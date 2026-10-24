@@ -4,20 +4,17 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.8.0
-  # Named rather than inherited, because the dependencies below set it. The
-  # shell declares `>=3.27.0`, measured at both ends by its own CI rather than by
-  # the SDK that happened to build it; the root package declares `>=3.32.0`, so
-  # the higher of the two is what this app can actually be built with.
-  flutter: ">=3.32.0"
+  # The highest floor among the dependencies below: google_fonts ^9.0.0.
+  sdk: ^3.13.0
+  flutter: ">=3.47.0"
 
 
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.8
-  google_fonts: ^6.1.0
-  flutter_svg: ^2.0.17
+  cupertino_icons: ^2.0.0
+  google_fonts: ^9.0.0
+  flutter_svg: ^2.3.0
   flutter_table_plus:
     path: ../
 
@@ -37,12 +34,12 @@ dependencies:
   # Every earlier mode drew a named viewport, shrunk to fit the stage or clipped
   # at 1:1, so none showed a table at the size of the region it was given —
   # the size a reader's own app would run it at (#189).
-  flutter_example_template: ^0.3.0
+  flutter_example_template: ^0.4.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
 
   # Already in the tree, under the shell. Named here because one guard reaches
   # for it directly: the Code pane's monospace test walks every token kind, and
@@ -50,13 +47,13 @@ dev_dependencies:
   # not guard that branch, and the branch it missed is the one #123 shipped. A
   # transitive dependency is not importable, so the alternative was to weaken
   # the assertion the guard exists for.
-  flutter_syntax_highlight: ^0.1.0
+  flutter_syntax_highlight: ^0.4.0
 
   # Already in the tree, under flutter_table_plus. Named here for one test:
   # test/recipes_d_test.dart reads a motion's duration and bounce, and the
   # barrel re-exports `WheelMotion` alone, so its variants are importable only
   # from the package that declares them.
-  flutter_smooth_wheel_scroll: ^0.1.2
+  flutter_smooth_wheel_scroll: ^0.1.4
 
 flutter:
   uses-material-design: true

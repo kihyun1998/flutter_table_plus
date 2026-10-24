@@ -374,6 +374,20 @@ deliberately not extracted with the shell: every recipe imports it and
   deliberately: both read the built `ThemeData`, so they are the weaker half and
   they are also this repository's only observation of that dependency's font
   contract.
+- **The example's SDK floor is the highest one any dependency declares, and it
+  went false without a commit touching it.** `example/pubspec.yaml` declared
+  `flutter: ">=3.32.0"`, with a comment deriving it from the shell (`>=3.27.0`)
+  and the root package (`>=3.32.0`). But `google_fonts` 6.3.3, already in the
+  lock, declares `>=3.35.0`, so the declaration was wrong before anyone looked.
+  The comment named two dependencies and the floor came from a third. Since
+  #197 the floor is Flutter 3.47 / Dart 3.13, set by `google_fonts` ^9.0.0
+  (`cupertino_icons` 2.0.0 needs Dart 3.12, `flutter_svg` 2.3.0 Flutter 3.35).
+  **The maintainer chose that on 2026-10-24** over holding `google_fonts` at 8.x
+  or holding #197. The cost: on an SDK below 3.47 the two `example/` gates do
+  not run. That includes the Flutter 3.41.9 Windows machine #199 was found on.
+  No package user is affected, since `example/` publishes nothing. **To check
+  the floor**, read `environment` in each dependency's own `pubspec.yaml` under
+  the pub cache, not this comment.
 - **Nothing here gates the shell's own behaviour.** The shell has had CI of its
   own since its 0.1.0; this repository has none. The example's suite still pumps
   it — the viewport control, the wall, the panes, the Code pane over this app's
