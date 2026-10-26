@@ -21,8 +21,24 @@ what went wrong, not what the rule is for the next case.
 - **Nesting is arbitrated upstream, not here.** `just_tooltip` decides that the
   innermost tooltip wins; since 0.4.4 "innermost" means the innermost one *with
   something to draw*. This package holds **no** priority logic, and the local
-  empty-message guard that used to substitute for it is gone — `^0.4.4` is a
-  floor, not a preference, and the guard must not come back.
+  empty-message guard that used to substitute for it is gone — the floor
+  (`^0.5.1` now, which includes 0.4.4's rule) is not a preference, and the
+  guard must not come back.
+- **A screen reader hears a tooltip only where the table did not already draw
+  its text.** Since just_tooltip 0.5.1 a tooltip's text is put on its child's
+  semantics node, so a tooltip that repeats the child would be read twice. The
+  header tooltip (its message is `column.label`) and a cell tooltip showing the
+  cell's own text (`wrapWithTooltip`'s `fallbackMessage`) pass
+  `excludeFromSemantics: true`. A `tooltipFormatter` message is not the drawn
+  text, so it stays heard; a `tooltipBuilder` or row card is not heard at all,
+  since upstream reads a builder tooltip only through `semanticsTooltip`, which
+  this package does not set. The flag is a `FlutterTooltipPlus` constructor
+  parameter and not a theme field, because whether a tooltip repeats its child
+  is decided by the call site, not by the consumer's styling.
+- **`enableTap` is this package's own field, mapped onto upstream `tap`.**
+  `TablePlusTooltipTheme.enableTap` stays a `bool`; `FlutterTooltipPlus` passes
+  `tap: TooltipTap.claim` or `TooltipTap.none` for it, since upstream deprecated
+  its own `enableTap` in 0.5.0. `TooltipTap.observe` is not exposed.
 - **A row tooltip anchors at the pointer as a correctness requirement.** A row is
   `contentWidth` wide, so its hover region is not its anchor; `TooltipAnchor.pointer`
   is the only anchor that tracks where the user actually is. (The old reason —

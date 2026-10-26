@@ -83,7 +83,7 @@ publish.
 
 → [Public barrel and re-exports](public-barrel.md) — the export list is what a breaking change is measured against
 → [Example app](example-app.md) — it has its own manifest and lockfile, and a lockfile once recorded a version that did not exist
-→ [Tooltips](tooltips.md) — the `just_tooltip` constraint is the one most often raised, and `^0.4.4` is a floor rather than a preference
+→ [Tooltips](tooltips.md) — the `just_tooltip` constraint is the one most often raised, and `^0.5.1` is a floor rather than a preference
 → [Row selection](row-selection.md) — the `flutter_checkbox` constraint is the other one
 
 ## Known holes / open

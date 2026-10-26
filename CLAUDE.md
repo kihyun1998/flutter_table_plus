@@ -61,7 +61,7 @@ merged rows. It does **not** manage or mutate your data.
   grows with no commit here.
 - **Tooltips are arbitrated by `just_tooltip`, not here.** Nesting = innermost
   wins, and since 0.4.4 "innermost" means *the innermost tooltip with something to
-  draw*. `^0.4.4` is a **floor, not a preference**. A row tooltip uses
+  draw*. `^0.5.1` is a **floor, not a preference**. A row tooltip uses
   `TooltipAnchor.pointer` as a **correctness requirement** (a row is
   `contentWidth` wide, so hover region ≠ anchor), not a workaround.
 
