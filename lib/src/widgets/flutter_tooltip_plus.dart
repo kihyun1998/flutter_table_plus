@@ -33,6 +33,7 @@ class FlutterTooltipPlus extends StatelessWidget {
     this.message,
     this.tooltipBuilder,
     this.anchor,
+    this.excludeFromSemantics = false,
     required this.theme,
     required this.child,
   });
@@ -46,6 +47,11 @@ class FlutterTooltipPlus extends StatelessWidget {
   /// centre of whatever slice of it happens to be on screen: visible, but
   /// nowhere near the cell the user is pointing at.
   final TooltipAnchor? anchor;
+
+  /// Whether a screen reader is kept from hearing the tooltip on [child].
+  ///
+  /// Set it where [child] already shows the text the tooltip repeats.
+  final bool excludeFromSemantics;
 
   /// The text to display in the tooltip.
   /// Either [message] or [tooltipBuilder] should be provided.
@@ -73,7 +79,7 @@ class FlutterTooltipPlus extends StatelessWidget {
       offset: theme.offset,
       crossAxisOffset: theme.crossAxisOffset,
       screenMargin: theme.screenMargin,
-      enableTap: theme.enableTap,
+      tap: theme.enableTap ? TooltipTap.claim : TooltipTap.none,
       enableHover: theme.enableHover,
       interactive: theme.interactive,
       waitDuration: theme.waitDuration,
@@ -86,6 +92,7 @@ class FlutterTooltipPlus extends StatelessWidget {
       rotationBegin: theme.rotationBegin,
       animationDuration: theme.animationDuration,
       hideOnEmptyMessage: theme.hideOnEmptyMessage,
+      excludeFromSemantics: excludeFromSemantics,
       child: child,
     );
   }

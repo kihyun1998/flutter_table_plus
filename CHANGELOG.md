@@ -1,5 +1,15 @@
 ## Unreleased
 
+*   **DEPS**: `just_tooltip: ^0.4.4` → `^0.5.1`. The Flutter floor is unchanged: 0.5.x declares Flutter `>=3.32.0` / Dart `>=3.8.0`, the floor this package already has. No class, method or field of this package changed
+    *   **If your own `pubspec.yaml` names `just_tooltip`.** A constraint of `^0.4.x` no longer resolves alongside this version. Raise it to `^0.5.1`, and read just_tooltip's own migration notes for 0.5.0 and 0.5.1 if you use it directly
+    *   **A screen reader reads a tooltip with its cell or header.** It used to hear no tooltip at all. A header tooltip, and a cell tooltip showing the cell's own text, are not read, since that text is already what the cell or header says. A `tooltipFormatter` message is read with the cell. A `tooltipBuilder` tooltip and a `rowTooltipBuilder` card are not read
+    *   **Escape closes a shown tooltip**, one per press
+    *   **A tooltip follows the `Directionality`, `Theme`, `DefaultTextStyle` and `MediaQuery` around the table**, not only those above the app's `Overlay`. A table inside a local RTL section now mirrors its tooltips
+    *   **A tooltip on a scrolling table stays with its cell.** It was re-aimed one frame late, so it trailed the cell while the table scrolled
+    *   **Two theme values behave differently.** With `interactive: false`, the tooltip body lets hovers and taps through to what lies beneath it, so a tap on it reaches whatever is under it, and a button inside a `tooltipBuilder` tooltip can no longer be pressed. And a positive `crossAxisOffset` now moves an `alignment: TooltipAlignment.endTargetCenter` tooltip inward, as it does for `end`; a value tuned against the old direction needs its sign flipped
+    *   **`TablePlusTooltipTheme.enableTap` is unchanged.** It is still a `bool`, and passes `tap: TooltipTap.claim` or `TooltipTap.none` upstream, which replaced upstream's own deprecated `enableTap` with identical behaviour
+    *   All 557 package tests passed against 0.5.1 before any change here
+
 *   **FIX**: the empty-table placeholder and a merged group's "N rows" caption follow the body text colour ([#192](https://github.com/kihyun1998/flutter_table_plus/issues/192))
     *   **What a consumer sees differently.** With `emptyStateTextStyle` or `mergedRowCountTextStyle` unset, the text was always `#757575`, whatever colour the table was. It is now `bodyTheme.textStyle`'s colour at 0.62 of its opacity. So it follows a recoloured body and `TablePlusTheme.fromColorScheme`. In a dark scheme, the caption on a selected group went from 2.0:1 to 3.9:1 contrast
     *   **At the default theme nothing moves on white.** `#212121` at 0.62 draws `#757575` there, the old grey, and white is the only background the empty placeholder has. On a tinted row the caption now blends with the row rather than sitting on it as solid grey. On the default selected row that is 4.4:1 where it was 4.0:1

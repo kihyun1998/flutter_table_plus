@@ -534,6 +534,16 @@ content is not a message, so the flag does not apply to it.
 > requires it. Before that, the empty tooltip claimed the card first and
 > declined to draw second, and hovering such a cell showed nothing at all.
 
+### Screen readers and the keyboard
+
+A screen reader reads a tooltip's text along with the cell or header it is on,
+except where that text is already what the cell or header shows: a header
+tooltip, and a cell tooltip showing the cell's own value, are not read a second
+time. A `tooltipFormatter` message is read. A `tooltipBuilder` tooltip and a
+`rowTooltipBuilder` card are not read.
+
+Escape closes a shown tooltip.
+
 ---
 
 ## TablePlusDragSelectionTheme
