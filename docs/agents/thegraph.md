@@ -19,3 +19,7 @@ manages or mutates the caller's data.
 
 **summarized: none.** Every source above is read as raw source, so any of them can
 settle a question outright.
+
+## Release
+
+pub-ready
