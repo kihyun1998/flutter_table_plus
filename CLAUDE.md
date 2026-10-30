@@ -5,10 +5,11 @@
 Substantive changes (bug fix / feature / behavior change) follow the **`thegraph`**
 skill — run `/thegraph` at the start. The skill carries its own nodes, guards and
 deciders. **`docs/agents/thegraph.md`** carries only what the skill cannot know and
-no file here answers: **the outside sources this package is read against, and
-whether each one binds.** Everything else a run needs is read from the repository
-itself. The per-incident evidence lives in **`docs/agents/lessons.md`**. Read both
-before starting; add new war-stories to lessons.
+no file here answers: **the outside sources this package is read against,
+whether each one binds, and the release bar.** Everything else a run needs is
+read from the repository itself. The per-incident evidence lives in
+**`docs/agents/lessons.md`**. Read both before starting; add new war-stories to
+lessons.
 
 **Read counts and rosters from the repository; a copy here drifts, and nothing
 checks this file.** The issue set is
@@ -153,4 +154,4 @@ Where none seems to hold it, search the folder and the code symbol first; only
 then start a new note, named for what the system does there, not for the file.
 History goes to the commit message. Comments written before this rule still
 carry the rest: never delete one whose content the map does not yet hold — move
-it first (`decant`).
+it there first.
