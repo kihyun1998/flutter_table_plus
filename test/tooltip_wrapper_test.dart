@@ -69,6 +69,20 @@ void main() {
       },
     );
 
+    test('excludes from semantics only the fallback message', () {
+      final fallback = _wrap(shouldShow: true) as FlutterTooltipPlus;
+      final formatted =
+          _wrap(shouldShow: true, formatter: (d) => 'FMT')
+              as FlutterTooltipPlus;
+      final built =
+          _wrap(shouldShow: true, builder: (c, d) => const Text('x'))
+              as FlutterTooltipPlus;
+
+      expect(fallback.excludeFromSemantics, isTrue);
+      expect(formatted.excludeFromSemantics, isFalse);
+      expect(built.excludeFromSemantics, isFalse);
+    });
+
     test('overrides no anchor, leaving the theme to decide', () {
       const theme = TablePlusTooltipTheme(anchor: TooltipAnchor.pointer);
 

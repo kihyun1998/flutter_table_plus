@@ -13,12 +13,12 @@ topics:
 # The binding floor is the max of what our dependencies demand: flutter_checkbox
 # 0.3.3 declares Flutter `>=3.27.0` / Dart `>=3.6.0` (its newest call is
 # `Color.withValues`, 3.27+; everything else needs only Dart 3.0), just_tooltip
-# 0.4.4 declares Flutter `>=3.13.0` / Dart `>=3.1.0` (its `RenderObject.parent`
-# ancestor walk needs `describeApproximatePaintClip`, added in 3.13), and
+# 0.5.1 declares Flutter `>=3.32.0` / Dart `>=3.8.0` (it positions the tooltip
+# through `OverlayPortal.overlayChildLayoutBuilder`), and
 # flutter_smooth_wheel_scroll 0.1.2 declares Flutter `>=3.32.0` / Dart `^3.8.0`
 # (`SpringDescription.withDurationAndBounce`, flutter#164411, first stable in
-# 3.32.0). So the honest floor is `max(3.27, 3.13, 3.32) = 3.32` /
-# `max(3.6, 3.1, 3.8) = 3.8`.
+# 3.32.0). So the honest floor is `max(3.27, 3.32, 3.32) = 3.32` /
+# `max(3.6, 3.8, 3.8) = 3.8`.
 #
 # 0.3.0 had over-declared its floor as 3.35 — the SDK it was built with, not the
 # one its code needs — and taking `^0.3.0` made that 3.35 our transitive
@@ -42,11 +42,13 @@ dependencies:
   # (upstream #13). The table's default checkbox style leaves `checkColor`
   # null, so every table in a dark app inherited it.
   flutter_checkbox: ^0.3.3
-  # 0.4.4 is a floor, not a preference: it stops a tooltip with nothing to draw
-  # from suppressing the row card, which this package used to do itself by not
-  # building such a tooltip at all. That guard is gone, so 0.4.3 would reissue
-  # the bug (#88) rather than merely miss the fix.
-  just_tooltip: ^0.4.4
+  # 0.5.1 is a floor, not a preference: the header and cell tooltips pass
+  # `excludeFromSemantics` and `tap`, which 0.5.1 and 0.5.0 introduced. It also
+  # keeps 0.4.4's rule that a tooltip with nothing to draw does not suppress the
+  # row card; this package used to do that itself by not building such a
+  # tooltip at all, and that guard is gone, so 0.4.3 would reissue the bug
+  # (#88) rather than merely miss the fix.
+  just_tooltip: ^0.5.1
   # 0.1.2 is a floor, not a preference. 0.1.0 declared Flutter `>=3.41.0`, the
   # SDK it was built with, so a 3.32 user could not resolve it; and 0.1.1
   # dropped a wheel notch sent while a motion was already heading for the end,

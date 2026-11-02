@@ -17,8 +17,12 @@ import 'flutter_tooltip_plus.dart';
 /// `rowTooltipBuilder` card down and then decline to draw, leaving the cell
 /// showing nothing; the wrap had to be skipped here to prevent it. 0.4.4 gates
 /// that claim on having something to draw, so an empty-message tooltip is now
-/// inert — built, silent, and harmless to the card. Hence the `^0.4.4` floor:
-/// under 0.4.3 this function reissues that bug.
+/// inert — built, silent, and harmless to the card. Under 0.4.3 this function
+/// would reissue that bug; the `^0.5.1` floor keeps it out.
+///
+/// A tooltip showing [fallbackMessage] repeats the text [child] already shows,
+/// so it is excluded from semantics. One from `tooltipFormatter` or
+/// `tooltipBuilder` is not.
 Widget wrapWithTooltip<T>({
   required bool shouldShow,
   required Widget child,
@@ -39,9 +43,14 @@ Widget wrapWithTooltip<T>({
     );
   }
 
-  final message = (tooltipFormatter != null && data != null)
+  final formatted = (tooltipFormatter != null && data != null)
       ? tooltipFormatter(data)
-      : fallbackMessage;
+      : null;
 
-  return FlutterTooltipPlus(message: message, theme: theme, child: child);
+  return FlutterTooltipPlus(
+    message: formatted ?? fallbackMessage,
+    excludeFromSemantics: formatted == null,
+    theme: theme,
+    child: child,
+  );
 }
