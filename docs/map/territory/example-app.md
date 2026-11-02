@@ -386,15 +386,20 @@ deliberately not extracted with the shell: every recipe imports it and
   `flutter: ">=3.32.0"`, with a comment deriving it from the shell (`>=3.27.0`)
   and the root package (`>=3.32.0`). But `google_fonts` 6.3.3, already in the
   lock, declares `>=3.35.0`, so the declaration was wrong before anyone looked.
-  The comment named two dependencies and the floor came from a third. Since
-  #197 the floor is Flutter 3.47 / Dart 3.13, set by `google_fonts` ^9.0.0
-  (`cupertino_icons` 2.0.0 needs Dart 3.12, `flutter_svg` 2.3.0 Flutter 3.35).
-  **The maintainer chose that on 2026-10-24** over holding `google_fonts` at 8.x
-  or holding #197. The cost: on an SDK below 3.47 the two `example/` gates do
-  not run. That includes the Flutter 3.41.9 Windows machine #199 was found on.
-  No package user is affected, since `example/` publishes nothing. **To check
-  the floor**, read `environment` in each dependency's own `pubspec.yaml` under
-  the pub cache, not this comment.
+  The comment named two dependencies and the floor came from a third. The
+  floor is now Flutter 3.41 / Dart 3.11, set by `flutter_svg` ^2.3.2.
+  **`google_fonts` is held at 8.x and `cupertino_icons` at 1.x, by the
+  maintainer's choice (2026-11-02), so the floor stays at 3.41.** `google_fonts`
+  9.0.0 needs Flutter 3.47 / Dart 3.13 and `cupertino_icons` 2.0.0 needs Dart
+  3.12; below those the two `example/` gates do not run, and the Flutter 3.41.9
+  Windows machine #199 was found on is below them. The playground uses three
+  families (`notoSansKr`, `inter`, `firaCode`), all present in 8.2.1, and
+  nothing that 9.0.0 added. **A monthly Dependabot group for `example/` that
+  includes either major raises the floor again**, so taking one is a floor
+  decision, not a routine bump. No package user is affected, since `example/`
+  publishes nothing. **To check the floor**, read `sdks:` in
+  `example/pubspec.lock`, or `environment` in each dependency's own
+  `pubspec.yaml` under the pub cache, not this comment.
 - **Nothing here gates the shell's own behaviour.** The shell has had CI of its
   own since its 0.1.0; this repository has none. The example's suite still pumps
   it — the viewport control, the wall, the panes, the Code pane over this app's
