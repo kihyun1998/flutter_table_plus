@@ -4,16 +4,16 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  # The highest floor among the dependencies below: google_fonts ^9.0.0.
-  sdk: ^3.13.0
-  flutter: ">=3.47.0"
+  # The highest floor among the dependencies below: flutter_svg ^2.3.2.
+  sdk: ^3.11.0
+  flutter: ">=3.41.0"
 
 
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^2.0.0
-  google_fonts: ^9.0.0
+  cupertino_icons: ^1.0.9
+  google_fonts: ^8.2.1
   flutter_svg: ^2.3.2
   flutter_table_plus:
     path: ../
