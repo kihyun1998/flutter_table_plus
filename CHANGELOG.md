@@ -1,4 +1,4 @@
-## Unreleased
+## 2.20.1
 
 *   **FIX**: the header's `topBorder` and `bottomBorder` are drawn again over an opaque `backgroundColor` ([#209](https://github.com/kihyun1998/flutter_table_plus/issues/209))
     *   **What a consumer sees differently.** Since 2.17.0 both borders were painted and then covered by the header cells, so with the default opaque `backgroundColor` neither one showed. They show again. The same goes for the border of a `BoxDecoration` passed as `headerTheme.decoration`, and that border keeps its `borderRadius` and `shape`
