@@ -130,7 +130,9 @@ default theme, 500px viewport, two 150px columns:
 
 Right-aligned to the same edge, so the step is on the left. They do **not** abut:
 `headerTheme.bottomBorder` sits between them at 1.0px opaque, full width, which
-is most of why nobody has reported this.
+is most of why nobody has reported this. From 2.17.0 to 2.20.0 the header cells
+covered that border, so in those versions the two dividers did meet (#209,
+[decoration-eats-the-child](../invariant/decoration-eats-the-child.md)).
 
 **Neither value was decided.** `dfa2f5f` (2026-03-05) extracted the body's
 `alpha: 0.5, width: 0.5` from **five** copy-pasted widget sites into one getter;

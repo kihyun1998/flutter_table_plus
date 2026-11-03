@@ -1,3 +1,11 @@
+## Unreleased
+
+*   **FIX**: the header's `topBorder` and `bottomBorder` are drawn again over an opaque `backgroundColor` ([#209](https://github.com/kihyun1998/flutter_table_plus/issues/209))
+    *   **What a consumer sees differently.** Since 2.17.0 both borders were painted and then covered by the header cells, so with the default opaque `backgroundColor` neither one showed. They show again. The same goes for the border of a `BoxDecoration` passed as `headerTheme.decoration`, and that border keeps its `borderRadius` and `shape`
+    *   **Why they were covered.** 2.17.0 ([#160](https://github.com/kihyun1998/flutter_table_plus/issues/160)) stopped the header decoration from insetting the header cells, so the cells now span the full header height. Every header cell, the selection cell included, paints an opaque fill of its own (`backgroundColor`, or `sortedColumnBackgroundColor` on a sorted column), and that fill lay over the border strip. The border of a header `BoxDecoration` is now painted in front of the cells, and its fill, shadow, gradient and image behind them
+    *   **One difference from 2.16.1.** There the cells sat inside the border strip. Now they span the full header height and the border is drawn over their outer edge, so a border thick enough to reach the label, checkbox or sort icon is drawn over its edge. A translucent border blends with the cell's fill under it, not with the header's
+*   **Unchanged.** #160's alignment fix: the header still insets nothing, and header column N still starts where body column N starts. The label stays centred in the full header height, so it does not move back to where 2.16.1 drew it. A `headerTheme.decoration` that is not a `BoxDecoration`, such as a `ShapeDecoration`, is still painted whole behind the cells, so the cells still cover its border
+
 ## 2.20.0
 
 *   **BREAKING**: `just_tooltip: ^0.4.4` → `^0.5.1`. The Flutter floor is unchanged: 0.5.x declares Flutter `>=3.32.0` / Dart `>=3.8.0`, the floor this package already has. No class, method or field of this package changed

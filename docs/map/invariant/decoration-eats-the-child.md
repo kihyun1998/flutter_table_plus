@@ -153,3 +153,47 @@ its width — a wider box gives the child more room without moving its left edge
 back. That is the same shape as #121's rejected fix, which distributed a
 height shortfall proportionally instead of charging it to the child at the
 border: in both cases the repair addressed a quantity the defect was not made of.
+
+**The inset was also what kept the border visible, and #160 did not see it.**
+The comment written for #160 said *"same painted result, same paint order"*.
+The paint order was the same. The painted result was not, because the
+decoration paints *behind* its child, and the inset had kept the child off the
+border strip. Without the inset, every header cell (the ordinary cell and the
+selection cell alike) is a full-height `Container` painting an opaque
+`backgroundColor`, and that fill covered `topBorder` and `bottomBorder`. It
+shipped in 2.17.0 and lasted until 2.20.0, with no exception and no failing
+test. A consuming app found it by comparing pixels of 231 screens across
+2.16.1 and 2.20.0, where the header's top and bottom edge was the only band
+that changed (#209).
+
+So **removing the inset is half of this repair**. The other half: once the
+child spans the border strip, the border has to be painted in front of the
+child. `table_header.dart`'s `_decorate` splits a `BoxDecoration`: the border,
+with the `borderRadius` and `shape` it is painted against, goes into a
+`DecorationPosition.foreground` box, and the rest stays behind with the border
+replaced by `const Border()`. That half is a `copyWith`, not a list of the
+fields to keep, so a field `BoxDecoration` gains later stays behind the cells
+([no-hand-enumeration](no-hand-enumeration.md)). The foreground half does list
+fields by hand, because `copyWith` cannot clear one: it names exactly the
+geometry `BoxBorder.paint` takes (`shape`, `borderRadius`; the text direction
+comes from the `DecoratedBox`). A `BoxBorder.paint` that took more would be a
+field this list drops.
+
+The split costs one thing, read from the SDK and not measured. With a border
+present, `BoxDecoration` shrinks its fill by half of each fully opaque side, and
+its own comment gives the reason: the anti-aliased edge of a fill clipped to a
+rounded shape otherwise leaks past the border. The background half has no
+border, so its rounded fill is not shrunk, and a fill colour, a `borderRadius`
+and an opaque border together can leave a sub-pixel fringe of fill at the
+rounded outer edge. In the header that edge lies over square header cells,
+whose fill already shows outside a rounded border. A `BoxDecoration` subclass
+also comes back from `copyWith` as a plain `BoxDecoration`, so an override of
+its painting is lost in the background half. A decoration that is not a
+`BoxDecoration` cannot be split in general and is still painted whole, behind
+the cells.
+
+**The proof has to be pixels.** #160's test measured where the header label
+starts against the body, which is exactly the quantity the inset moved, and it
+stayed green through a regression in what the header draws.
+`test/header_border_paint_test.dart` reads the colour at the header's first and
+last rows over an ordinary cell and over the selection cell.

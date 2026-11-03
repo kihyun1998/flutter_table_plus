@@ -178,6 +178,28 @@ class _TablePlusHeaderState<T> extends State<TablePlusHeader<T>> {
     );
   }
 
+  /// [decoration] painted around [content], with a [BoxDecoration]'s border
+  /// split out and painted in the foreground. A decoration of any other kind
+  /// is painted whole, behind [content].
+  Widget _decorate(Decoration decoration, Widget content) {
+    if (decoration is! BoxDecoration || decoration.border == null) {
+      return DecoratedBox(decoration: decoration, child: content);
+    }
+    return DecoratedBox(
+      // `Border()` has every side `BorderSide.none`, so it paints nothing.
+      decoration: decoration.copyWith(border: const Border()),
+      child: DecoratedBox(
+        position: DecorationPosition.foreground,
+        decoration: BoxDecoration(
+          border: decoration.border,
+          borderRadius: decoration.borderRadius,
+          shape: decoration.shape,
+        ),
+        child: content,
+      ),
+    );
+  }
+
   /// Handle sort click for a column
   void _handleSortClick(String columnKey) {
     if (widget.onSort == null) return;
@@ -355,30 +377,14 @@ class _TablePlusHeaderState<T> extends State<TablePlusHeader<T>> {
       content = Stack(clipBehavior: Clip.none, children: [content, ...handles]);
     }
 
-    // `SizedBox` + `DecoratedBox`, never `Container(decoration:)`.
-    //
-    // A `Container` folds `decoration.padding` — the border's own
-    // `dimensions` — into its child's inset, so the row of header cells was
-    // laid out in `totalWidth − border` while their widths still summed to
-    // `totalWidth`, and the body below has no such box. A caller setting
-    // `headerTheme.decoration` with a border therefore slid the whole header
-    // against the body by the left border's width, silently: measured at 2.0px
-    // for `Border.all(width: 2)`, with no exception and no banner (#160).
-    //
-    // `DecoratedBox` is a `RenderProxyBox` — it paints the decoration and lays
-    // the child out at full size, applying no inset. Same painted result, same
-    // paint order (the decoration is a background here as it was inside the
-    // `Container`), and the child keeps the width the header's columns were
-    // measured against.
-    //
-    // Growing the box by the inset instead does *not* work, and that was
-    // measured too: the defect is the child's origin, not its width, so a wider
-    // box leaves the desync exactly where it was and adds a `RenderFlex`
-    // overflow of the full horizontal inset on top.
+    // `SizedBox` + `DecoratedBox`, never `Container(decoration:)`: the header
+    // decoration insets nothing, so the cells keep the width the body's
+    // columns were measured against. A `BoxDecoration`'s border is painted in
+    // front of the cells and the rest of it behind them.
     return SizedBox(
       height: widget.theme.height,
       width: widget.totalWidth,
-      child: DecoratedBox(decoration: _buildHeaderDecoration(), child: content),
+      child: _decorate(_buildHeaderDecoration(), content),
     );
   }
 }
