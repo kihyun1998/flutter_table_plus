@@ -183,6 +183,7 @@ worth watching.
 [drag selection](territory/drag-selection.md) ·
 [empty state](territory/empty-state.md) ·
 [example app](territory/example-app.md) ·
+[gates](territory/gates.md) ·
 [hover buttons](territory/hover-buttons.md) ·
 [merged rows](territory/merged-rows.md) ·
 [public barrel and re-exports](territory/public-barrel.md) ·

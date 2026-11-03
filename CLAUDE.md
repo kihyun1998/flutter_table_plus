@@ -95,7 +95,7 @@ stop, not a task.** Come to the maintainer.
 ## Environment
 
 **Read the machine, don't remember it** — `uname -s`. The Flutter SDK is on
-`PATH`, so run `flutter test` / `analyze` / `dart format` directly, and ask the
+`PATH`, so run `flutter test` / `analyze` directly, and ask the
 user only for anything that opens a window (`flutter run`). Writing a test whose
 fixture is a checked-out file? Read the line-endings note in
 [`example-app`](docs/map/territory/example-app.md) first.
@@ -105,7 +105,7 @@ bare command:
 
 ```
 flutter analyze
-dart format --output=none --set-exit-if-changed lib test
+python scripts/format/check_format.py       (a pinned dart_style; --fix formats)
 flutter test
 flutter analyze                             (in example/)
 flutter test                                (in example/)
@@ -119,8 +119,9 @@ not a gate. **Never move a threshold to turn a build green.**
 
 - `example/` is **outside** the top-level `flutter test` — its own manifest, its
   own analyzer run.
-- `dart format` covers `lib test` only, so **`example/lib` is outside the
-  formatter gate**, deliberately.
+- The formatter gate covers `lib test` only, so **`example/lib` is outside it**,
+  deliberately. It runs a pinned `dart_style`, not the SDK's `dart format`,
+  whose output changes with the SDK; see [`gates`](docs/map/territory/gates.md).
 - `flutter pub publish --dry-run` is the **archive** gate and runs on every
   change: it resolves `.pubignore` and prints every file that would ship, and
   the archive is the one artifact here that **cannot be un-published**. Read the

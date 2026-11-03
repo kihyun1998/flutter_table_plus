@@ -40,6 +40,7 @@ docs/agents/*.md                 agent bindings
 docs/adr/*.md                    decision records, numbered. CLAUDE.md names the
                                  directory; the first one arrived with #112
 scripts/map/*.py                 the MAP gate (python)
+scripts/format/*.py              the formatter gate (python)
 scripts/fonts/*.py               one-off asset tooling (python)
 ```
 
