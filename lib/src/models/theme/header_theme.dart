@@ -179,6 +179,11 @@ class TablePlusHeaderTheme {
   final EdgeInsets padding;
 
   /// Optional decoration for the entire header container.
+  ///
+  /// The header cells paint over the header container. A [BoxDecoration]'s
+  /// border is painted in front of the cells and the rest of it behind them;
+  /// any other [Decoration] is painted whole behind the cells, so an opaque
+  /// cell fill covers it.
   final Decoration? decoration;
 
   /// Optional decoration for individual header cells.
