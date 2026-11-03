@@ -1,6 +1,6 @@
-## Unreleased
+## 2.20.0
 
-*   **DEPS**: `just_tooltip: ^0.4.4` → `^0.5.1`. The Flutter floor is unchanged: 0.5.x declares Flutter `>=3.32.0` / Dart `>=3.8.0`, the floor this package already has. No class, method or field of this package changed
+*   **BREAKING**: `just_tooltip: ^0.4.4` → `^0.5.1`. The Flutter floor is unchanged: 0.5.x declares Flutter `>=3.32.0` / Dart `>=3.8.0`, the floor this package already has. No class, method or field of this package changed
     *   **If your own `pubspec.yaml` names `just_tooltip`.** A constraint of `^0.4.x` no longer resolves alongside this version. Raise it to `^0.5.1`, and read just_tooltip's own migration notes for 0.5.0 and 0.5.1 if you use it directly
     *   **A screen reader reads a tooltip with its cell or header.** It used to hear no tooltip at all. A header tooltip, and a cell tooltip showing the cell's own text, are not read, since that text is already what the cell or header says. A `tooltipFormatter` message is read with the cell. A `tooltipBuilder` tooltip and a `rowTooltipBuilder` card are not read
     *   **Escape closes a shown tooltip**, one per press
