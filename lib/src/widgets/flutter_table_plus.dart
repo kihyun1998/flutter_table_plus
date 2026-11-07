@@ -215,6 +215,10 @@ class FlutterTablePlus<T> extends StatefulWidget {
   /// height. So this can fire with a different set from a rebuild alone, with
   /// no pointer movement behind it.
   ///
+  /// **A scroll while the pointer is down moves that end too.** A mouse wheel
+  /// over the body or a scrollbar extends the range to the row now under the
+  /// pointer, so this fires during the wheel as well.
+  ///
   /// **Replacing [data] mid-drag is outside that.** The anchor is a position
   /// in the list the drag began on; hand over a different list and the range
   /// reported for the rest of that gesture is undefined. Nothing asserts it —
@@ -714,10 +718,8 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
   /// row it was taken on. #133 proposed re-pointing the anchor at its row id
   /// to buy that; measured 2026-09-04, it is already true.
   ///
-  /// The current endpoint is not covered, because nothing outside this
-  /// controller's own pointer and tick handlers rewrites it and a rebuild
-  /// reaches none of them — stated as a property rather than as the list of
-  /// handlers, which a later one would silently falsify.
+  /// The current endpoint is not covered, because a rebuild reaches nothing
+  /// that rewrites it.
   ///
   /// **The auto-scroll case is the one that never recovers.** Shrinking the
   /// rows shrinks `maxScrollExtent`, the offset is clamped onto it, and the
@@ -1347,12 +1349,19 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
                         },
                       );
 
-                final bodyScrollable = SingleChildScrollView(
-                  controller: horizontalScrollController,
-                  scrollDirection: Axis.horizontal,
-                  physics: _bodyPhysics,
-                  child: SizedBox(width: contentWidth, child: bodyContent),
-                );
+                final bodyScrollable =
+                    NotificationListener<ScrollUpdateNotification>(
+                      onNotification: _handleBodyScrolled,
+                      child: SingleChildScrollView(
+                        controller: horizontalScrollController,
+                        scrollDirection: Axis.horizontal,
+                        physics: _bodyPhysics,
+                        child: SizedBox(
+                          width: contentWidth,
+                          child: bodyContent,
+                        ),
+                      ),
+                    );
 
                 // Drag selection lives at the table level — the Listener wraps
                 // the body's horizontal Scrollable so its RenderBox is
@@ -1484,6 +1493,17 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
   }
 
   // --- Drag-selection: pointer handlers ---
+
+  /// Brings a live drag's endpoint and rubber band up to a scroll of the body,
+  /// whose two scroll views sit at depth 0 and 1. A scroll view in a cell is
+  /// deeper.
+  bool _handleBodyScrolled(ScrollUpdateNotification notification) {
+    if (notification.depth <= 1 && _dragController.isDragging) {
+      _dragController.refresh();
+      setState(() {});
+    }
+    return false;
+  }
 
   void _onDragPointerDown(PointerDownEvent event) {
     if (!_isDragSelectionEnabled) return;

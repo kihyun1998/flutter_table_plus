@@ -172,12 +172,13 @@ class DragSelectionController {
   /// the anchor means *the row you pressed*, and nothing that happens under a
   /// held pointer may move it.
   ///
-  /// **Two callers, and they are two different reasons the row under a still
+  /// **Three callers, and they are different reasons the row under a still
   /// pointer changes.** Each auto-scroll tick that actually moved the view,
-  /// since no pointer event fires during pure auto-scroll — and the host's
+  /// since no pointer event fires during pure auto-scroll — the host's
   /// `didUpdateWidget`, post-frame, when a rebuild dropped the row geometry
   /// underneath a live drag (#133): a height change re-lays out the rows
-  /// without moving the pointer or the scroll.
+  /// without moving the pointer or the scroll — and the host's scroll listener,
+  /// for any scroll of the body, such as a wheel (#216).
   ///
   /// The second is not a variation on the first, which is why it needs its own
   /// caller. [_tick] reaches this line only when the scroll succeeded, so a

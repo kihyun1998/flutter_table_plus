@@ -1,4 +1,6 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_table_plus/flutter_table_plus.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -93,6 +95,7 @@ Future<_DragHarness> _pumpDragTable(
   // Identity, for the group at the bottom. Defaults to the plain `id` field so
   // every caller above is unaffected.
   String Function(Map<String, dynamic>)? rowId,
+  WheelMotion? wheelMotion = const WheelMotion.spring(),
 }) async {
   // `rowCount` is ignored entirely when `data` is supplied, so the two can
   // disagree in silence and a reader would believe the wrong one.
@@ -131,6 +134,7 @@ Future<_DragHarness> _pumpDragTable(
               rowId: rowId ?? (r) => r['id'] as String,
               isSelectable: true,
               enableDragSelection: true,
+              wheelMotion: wheelMotion,
               mergedGroups: mergedGroups,
               calculateRowHeight: calculateRowHeight,
               scale: scale,
@@ -1342,6 +1346,293 @@ void main() {
             'the next tick that happened to scroll',
       );
 
+      await g.up();
+      await tester.pump();
+    });
+  });
+
+  group('a scroll under a held drag', () {
+    Set<String> range(int first, int last) => {
+      for (int i = first; i <= last; i++) '$i',
+    };
+
+    /// A drag held from row 0 down to row 1, so the selection is rows 0 and 1.
+    Future<TestGesture> holdDrag(WidgetTester tester, _DragHarness h) async {
+      final g = await tester.startGesture(
+        _bodyPoint(tester, h.tableKey, x: 50, row: 0.5),
+        kind: PointerDeviceKind.mouse,
+      );
+      await g.moveTo(_bodyPoint(tester, h.tableKey, x: 50, row: 1.5));
+      await tester.pump();
+      expect(h.updates.last, range(0, 1));
+      return g;
+    }
+
+    Future<void> wheel(
+      WidgetTester tester,
+      Offset at,
+      double dy, {
+      bool shift = false,
+    }) async {
+      final mouse = TestPointer(9, PointerDeviceKind.mouse);
+      await tester.sendEventToBinding(mouse.hover(at));
+      if (shift) await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+      await tester.sendEventToBinding(mouse.scroll(Offset(0, dy)));
+      if (shift) await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+      await tester.pump();
+    }
+
+    Rect band(WidgetTester tester) {
+      final paint = tester.widget<CustomPaint>(
+        find.byWidgetPredicate(
+          (w) =>
+              w is CustomPaint &&
+              w.painter.runtimeType.toString() == '_RubberBandPainter',
+        ),
+      );
+      return (paint.painter as dynamic).rect as Rect;
+    }
+
+    testWidgets('moves the endpoint, and a release reports it', (tester) async {
+      final h = await _pumpDragTable(tester, rowCount: 200, wheelMotion: null);
+      final g = await holdDrag(tester, h);
+      final before = band(tester);
+
+      await wheel(tester, _bodyPoint(tester, h.tableKey, x: 50, row: 1.5), 400);
+
+      // Row 1.5 of the viewport, 400px further on: absolute 460, row 11.
+      expect(h.updates.last, range(0, 11));
+      expect(band(tester).top, before.top - 400);
+
+      await g.up();
+      await tester.pump();
+      expect(h.ends.single, range(0, 11));
+    });
+
+    for (final motion in <WheelMotion?>[null, const WheelMotion.spring()]) {
+      final name = motion == null ? 'no motion' : 'a motion';
+
+      testWidgets('over the scrollbar too, with $name', (tester) async {
+        final h = await _pumpDragTable(
+          tester,
+          rowCount: 200,
+          wheelMotion: motion,
+        );
+        final g = await holdDrag(tester, h);
+        final strip = find.descendant(
+          of: find.byType(Scrollbar),
+          matching: find.byWidgetPredicate(
+            (w) =>
+                w is SingleChildScrollView &&
+                w.scrollDirection == Axis.vertical,
+          ),
+        );
+
+        await wheel(tester, tester.getCenter(strip), 400);
+        await _pumpFrames(tester, frames: 60);
+
+        expect(h.updates.last, range(0, 11));
+        await g.up();
+        await tester.pump();
+      });
+    }
+
+    testWidgets('follows a motion row by row, and arrives', (tester) async {
+      final h = await _pumpDragTable(tester, rowCount: 200);
+      final g = await holdDrag(tester, h);
+
+      await wheel(tester, _bodyPoint(tester, h.tableKey, x: 50, row: 1.5), 400);
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pump(const Duration(milliseconds: 16));
+      expect(
+        h.updates.last.length,
+        inExclusiveRange(2, 12),
+        reason: 'part way through the motion',
+      );
+      await _pumpFrames(tester, frames: 60);
+
+      expect(h.updates.last, range(0, 11));
+      await g.up();
+      await tester.pump();
+    });
+
+    testWidgets('emits nothing while the row stays the same', (tester) async {
+      final h = await _pumpDragTable(tester, rowCount: 200, wheelMotion: null);
+      final g = await holdDrag(tester, h);
+      final emitted = h.updates.length;
+      final before = band(tester);
+
+      await wheel(tester, _bodyPoint(tester, h.tableKey, x: 50, row: 1.5), 10);
+
+      expect(h.updates, hasLength(emitted));
+      expect(band(tester).top, before.top - 10);
+      await g.up();
+      await tester.pump();
+    });
+
+    testWidgets('sideways, the band follows and the rows stay', (tester) async {
+      final h = await _pumpDragTable(
+        tester,
+        rowCount: 200,
+        colCount: 12,
+        wheelMotion: null,
+      );
+      final g = await holdDrag(tester, h);
+      final emitted = h.updates.length;
+      final before = band(tester);
+
+      await wheel(
+        tester,
+        _bodyPoint(tester, h.tableKey, x: 50, row: 1.5),
+        60,
+        shift: true,
+      );
+
+      expect(band(tester).left, before.left - 60);
+      expect(h.updates, hasLength(emitted));
+      await g.up();
+      await tester.pump();
+    });
+
+    testWidgets('before the drag is live, nothing is emitted', (tester) async {
+      final h = await _pumpDragTable(tester, rowCount: 200, wheelMotion: null);
+      final at = _bodyPoint(tester, h.tableKey, x: 50, row: 0.5);
+      final g = await tester.startGesture(at, kind: PointerDeviceKind.mouse);
+
+      await wheel(tester, at, 400);
+
+      expect(h.updates, isEmpty);
+      await g.up();
+      await tester.pump();
+      expect(h.ends, isEmpty);
+    });
+
+    testWidgets('with no drag, a scroll does not rebuild the rows', (
+      tester,
+    ) async {
+      var firstRowBuilds = 0;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: FlutterTablePlus<Map<String, dynamic>>(
+              columns: {
+                'name': TablePlusColumn<Map<String, dynamic>>(
+                  key: 'name',
+                  label: 'Name',
+                  order: 0,
+                  valueAccessor: (r) => r['id'],
+                  width: 200,
+                  statefulCellBuilder: (context, row, isSelected, isDim) =>
+                      Builder(
+                        builder: (_) {
+                          if (row['id'] == '0') firstRowBuilds++;
+                          return Text(row['id'] as String);
+                        },
+                      ),
+                ),
+              },
+              data: _buildData(200),
+              rowId: (r) => r['id'] as String,
+              isSelectable: true,
+              enableDragSelection: true,
+              wheelMotion: null,
+              onDragSelectionUpdate: (_) {},
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final before = firstRowBuilds;
+      expect(before, greaterThan(0));
+
+      await wheel(tester, tester.getCenter(find.text('1')), 10);
+
+      expect(firstRowBuilds, before);
+    });
+
+    testWidgets('a scroll view in a cell rebuilds nothing during a drag', (
+      tester,
+    ) async {
+      final inCell = ScrollController();
+      addTearDown(inCell.dispose);
+      var secondRowBuilds = 0;
+      tester.view.physicalSize = const Size(_surfaceWidth, _surfaceHeight);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final updates = <Set<String>>[];
+      final key = GlobalKey();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: FlutterTablePlus<Map<String, dynamic>>(
+              key: key,
+              columns: {
+                'name': TablePlusColumn<Map<String, dynamic>>(
+                  key: 'name',
+                  label: 'Name',
+                  order: 0,
+                  valueAccessor: (r) => r['id'],
+                  width: 200,
+                  statefulCellBuilder: (context, row, isSelected, isDim) {
+                    if (row['id'] == '0') {
+                      return SingleChildScrollView(
+                        controller: inCell,
+                        scrollDirection: Axis.horizontal,
+                        child: const SizedBox(width: 2000, height: 20),
+                      );
+                    }
+                    return Builder(
+                      builder: (_) {
+                        if (row['id'] == '1') secondRowBuilds++;
+                        return Text(row['id'] as String);
+                      },
+                    );
+                  },
+                ),
+              },
+              data: _buildData(200),
+              rowId: (r) => r['id'] as String,
+              isSelectable: true,
+              enableDragSelection: true,
+              wheelMotion: null,
+              onDragSelectionUpdate: (ids) => updates.add(Set.of(ids)),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final g = await tester.startGesture(
+        _bodyPoint(tester, key, x: 50, row: 0.5),
+        kind: PointerDeviceKind.mouse,
+      );
+      await g.moveTo(_bodyPoint(tester, key, x: 50, row: 1.5));
+      await tester.pump();
+      expect(updates, isNotEmpty, reason: 'the drag has to be live');
+      final before = secondRowBuilds;
+
+      inCell.jumpTo(100);
+      await tester.pump();
+
+      expect(inCell.offset, 100);
+      expect(secondRowBuilds, before);
+      await g.up();
+      await tester.pump();
+    });
+
+    testWidgets('rows shrinking under it throw nothing', (tester) async {
+      final h = await _pumpDragTable(tester, rowCount: 200, wheelMotion: null);
+      final g = await holdDrag(tester, h);
+      await wheel(
+        tester,
+        _bodyPoint(tester, h.tableKey, x: 50, row: 1.5),
+        4000,
+      );
+
+      await _pumpDragTable(tester, rowCount: 30, harness: h, settle: false);
+      await _pumpFrames(tester, frames: 30);
+
+      expect(tester.takeException(), isNull);
       await g.up();
       await tester.pump();
     });

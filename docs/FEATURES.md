@@ -451,6 +451,8 @@ FlutterTablePlus<User>(
 )
 ```
 
+A mouse wheel turned while a drag is held scrolls the table as auto-scroll does: the selection extends to the row now under the pointer, over the body and over a scrollbar.
+
 ### If the rows can change height while a drag is held
 
 A density toggle or a font-size slider is operable with the mouse button still
