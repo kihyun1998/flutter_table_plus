@@ -959,12 +959,12 @@ FlutterTablePlus<User>(
 )
 ```
 
-When `onScaleChanged` is non-null:
+When `onScaleChanged` is non-null, and unless `blockModifierScroll` is `false`:
 - Ctrl+wheel events are intercepted internally
-- Scrolling is blocked via custom `ScrollPhysics` (`shouldAcceptUserOffset` returns `false` when Ctrl is held), unless `blockModifierScroll` is `false`
+- Scrolling is blocked via custom `ScrollPhysics` (`shouldAcceptUserOffset` returns `false` when Ctrl is held)
 - Scroll positions are automatically corrected to keep the same content visible
 
-`blockModifierScroll` sets the blocking on its own: `true` blocks Ctrl+wheel scrolling with or without `onScaleChanged`, and `false` lets it scroll with or without. Left out, it blocks when `onScaleChanged` is set. A scale change stops a wheel motion in progress, so with `false`, `onScaleChanged` and a motion set, a caller that applies the new scale at once sees the zoom and not the scroll. With `wheelMotion: null` it sees both.
+`blockModifierScroll` sets the blocking on its own: `true` blocks Ctrl+wheel scrolling with or without `onScaleChanged`. `false` lets it scroll, and `onScaleChanged` is then not called. Left out, it blocks when `onScaleChanged` is set.
 
 ### What Gets Scaled
 
@@ -1048,5 +1048,5 @@ The example app's *Smooth wheel* recipe and playground have a knob for every par
 - Only the wheel is animated. Dragging a scrollbar, drag-selection auto-scroll and scale correction move the body at once, and stop a motion in progress
 - A wheel along a scrollbar's own axis joins the body's motion, and notches over either add to its target. That is a wheel over the vertical scrollbar, and Shift+wheel or a tilt wheel over the horizontal one
 - Inside a page that scrolls too, a notch the table cannot use goes to the page, even while a motion is still heading for the table's end
-- Ctrl/Cmd+wheel zoom is unaffected: with `onScaleChanged` set it still changes scale and, unless `blockModifierScroll` is `false`, does not scroll
+- Ctrl/Cmd+wheel zoom is unaffected: with `onScaleChanged` set it still changes scale and does not scroll, unless `blockModifierScroll` is `false`, when it only scrolls
 - How far one notch travels is app-wide, not per table: install `SmoothWheelBinding` from `flutter_smooth_wheel_scroll` in `main()`

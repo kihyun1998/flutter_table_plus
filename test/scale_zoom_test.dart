@@ -363,7 +363,7 @@ void main() {
           (null, false, 0, 60),
           (true, true, 2, 0),
           (true, false, 0, 0),
-          (false, true, 2, 60),
+          (false, true, 0, 60),
           (false, false, 0, 60),
         ]) {
       final name = 'flag $block, ${callback ? 'a' : 'no'} callback';
@@ -428,7 +428,7 @@ void main() {
           );
 
           expect(offset(tester, Axis.horizontal), moved);
-          expect(sent, 1);
+          expect(sent, block ? 1 : 0);
         },
         variant: windows,
       );
@@ -489,72 +489,5 @@ void main() {
         expect(table.position.pixels, tableMoved);
       }, variant: windows);
     }
-
-    testWidgets(
-      'off, under a motion, a scale applied at once stops the scroll',
-      (tester) async {
-        double? requested;
-        Future<void> pump(double scale) => _pump(
-          tester,
-          scale: scale,
-          rows: 200,
-          blockModifierScroll: false,
-          onScaleChanged: (s) => requested = s,
-        );
-        await pump(1.0);
-        await ctrlWheelAt(
-          tester,
-          tester.getCenter(find.byType(FlutterTablePlus<Map<String, dynamic>>)),
-        );
-
-        await pump(requested!);
-
-        expect(offset(tester, Axis.vertical), 0);
-      },
-      variant: windows,
-    );
-
-    testWidgets('off, under a motion, a request the caller ignores scrolls', (
-      tester,
-    ) async {
-      await _pump(
-        tester,
-        rows: 200,
-        blockModifierScroll: false,
-        onScaleChanged: (_) {},
-      );
-      await ctrlWheelAt(
-        tester,
-        tester.getCenter(find.byType(FlutterTablePlus<Map<String, dynamic>>)),
-      );
-      await tester.pumpAndSettle();
-
-      expect(offset(tester, Axis.vertical), 60);
-    }, variant: windows);
-
-    testWidgets('off, a request the caller applies moves and rescales', (
-      tester,
-    ) async {
-      double? requested;
-      Future<void> pump(double scale) => _pump(
-        tester,
-        scale: scale,
-        rows: 200,
-        wheelMotion: null,
-        blockModifierScroll: false,
-        onScaleChanged: (s) => requested = s,
-      );
-      await pump(1.0);
-      await ctrlWheelAt(
-        tester,
-        tester.getCenter(find.byType(FlutterTablePlus<Map<String, dynamic>>)),
-      );
-      expect(offset(tester, Axis.vertical), 60);
-      expect(requested, 0.95);
-
-      await pump(requested!);
-
-      expect(offset(tester, Axis.vertical), moreOrLessEquals(57));
-    }, variant: windows);
   });
 }
