@@ -28,7 +28,13 @@ widths and text do.
   does not carry that physics: it claims the event, and `ScrollbarController`
   refuses to hand it to the body (see [synced scrolling](synced-scrolling.md)).
 - **Offsets are re-derived across a scale change**, both axes, from the pre-scale
-  offset and the ratio, and clamped into the new extents.
+  offset and the ratio, and clamped into the new extents. The pre-scale offset is
+  read in `didUpdateWidget`, before the new layout, because layout clamps a scale
+  down from the end first and the ratio would then apply twice. No offset is kept
+  between the gesture and the change: a caller may ignore the request or apply it
+  later. It needs none, because whenever a request goes out the body's physics on
+  both axes refuse the wheel, and a scrollbar's hand-off asks those physics
+  (#215).
 - **Not everything scales.** Which theme fields participate is decided in the
   theme system, not here.
 - **What crosses back out is unscaled, and what comes in is converted.** A
