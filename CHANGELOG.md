@@ -9,6 +9,8 @@
     *   **Drag-selection auto-scroll.** A notch over a scrollbar during auto-scroll can now be lost when a motion is set, because auto-scroll stops the motion, as it does for a notch over the body. With `wheelMotion: null` the notch still takes effect
     *   **Unchanged.** `wheelMotion: null` moves at once, over a scrollbar too. `FlutterTablePlus` takes no new argument
     *   **Dependency.** `flutter_smooth_wheel_scroll` is now `^0.1.6`, the first version with `ScrollbarController`. The SDK floor is unchanged
+*   **FIX**: Ctrl/Cmd+tilt wheel no longer asks for a larger scale ([#220](https://github.com/kihyun1998/flutter_table_plus/issues/220))
+    *   **What a consumer sees differently.** A sideways wheel with Ctrl or Cmd held called `onScaleChanged` with a larger scale in both directions. It now does not call it. Vertical Ctrl/Cmd+wheel is unchanged
 *   **FIX**: `blockModifierScroll` does what it says on both axes ([#213](https://github.com/kihyun1998/flutter_table_plus/issues/213))
     *   **What a consumer sees differently.** With `blockModifierScroll: true` and no `onScaleChanged`, Ctrl/Cmd+wheel no longer scrolls vertically. With `blockModifierScroll: false` and `onScaleChanged` set, it now scrolls vertically too and requests a scale change, where it used to do neither vertically and only scroll sideways. Inside a page, the wheel goes where the table now leaves it: a table that blocks passes it to the page, and one that scrolls keeps it
     *   **Scrolling and zooming together.** A scale change stops a wheel motion in progress, so with the default `wheelMotion`, a caller that applies the new scale at once sees the zoom and not the scroll. With `wheelMotion: null` it sees both

@@ -101,6 +101,40 @@ void main() {
     }
   });
 
+  testWidgets('Ctrl+tilt requests nothing, and scrolls only if not blocked', (
+    tester,
+  ) async {
+    for (final (block, moved) in <(bool, double)>[(true, 0), (false, 60)]) {
+      final requested = <double>[];
+      await _pump(
+        tester,
+        rows: 200,
+        columnWidth: 3000,
+        wheelMotion: null,
+        blockModifierScroll: block,
+        onScaleChanged: requested.add,
+      );
+      final body = find.byType(FlutterTablePlus<Map<String, dynamic>>);
+      final pointer = TestPointer(1, PointerDeviceKind.mouse);
+      await tester.sendEventToBinding(pointer.hover(tester.getCenter(body)));
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+      await tester.sendEventToBinding(pointer.scroll(const Offset(60, 0)));
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+      await tester.pump();
+
+      expect(requested, isEmpty);
+      expect(
+        tester
+            .stateList<ScrollableState>(find.byType(Scrollable))
+            .firstWhere((s) => s.position.axis == Axis.horizontal)
+            .position
+            .pixels,
+        moved,
+      );
+      await tester.pumpWidget(const SizedBox());
+    }
+  }, variant: TargetPlatformVariant.only(TargetPlatform.windows));
+
   testWidgets('Ctrl+wheel zooms instead of scrolling; a plain wheel scrolls', (
     tester,
   ) async {
