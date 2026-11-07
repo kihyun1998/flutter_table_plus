@@ -17,7 +17,7 @@ class SyncedScrollControllers extends StatefulWidget {
   /// [scrollController]: An optional external [ScrollController] for the main vertical scrollable area.
   ///   If not provided, an internal controller will be created.
   /// [verticalScrollbarController]: An optional external [ScrollController] for the vertical scrollbar.
-  ///   If not provided, an internal controller will be created.
+  ///   If not provided, an internal controller will be created, which hands its wheel input to the main vertical controller.
   /// [horizontalScrollController]: An optional external [ScrollController] for the body's horizontal scrollable area.
   ///   This controller is the master input source for horizontal scrolling.
   ///   If not provided, an internal controller will be created.
@@ -26,7 +26,7 @@ class SyncedScrollControllers extends StatefulWidget {
   ///   driven exclusively by [horizontalScrollController]'s position changes (one-way sync).
   ///   If not provided, an internal controller will be created.
   /// [horizontalScrollbarController]: An optional external [ScrollController] for the horizontal scrollbar.
-  ///   If not provided, an internal controller will be created.
+  ///   If not provided, an internal controller will be created, which hands its wheel input to the body's horizontal controller.
   ///
   /// The `builder` function provides the following controllers:
   /// - `verticalDataController`: The primary controller for vertical scrolling of data.
@@ -150,7 +150,8 @@ class _SyncedScrollControllersState extends State<SyncedScrollControllers> {
     // 수직 스크롤바 컨트롤러
     _sc12 =
         widget.verticalScrollbarController ??
-        ScrollController(
+        ScrollbarController(
+          body: _sc11!,
           initialScrollOffset: _sc11!.hasClients && _sc11!.positions.isNotEmpty
               ? _sc11!.offset
               : 0.0,
@@ -159,7 +160,8 @@ class _SyncedScrollControllersState extends State<SyncedScrollControllers> {
     // 수평 스크롤바 컨트롤러
     _sc22 =
         widget.horizontalScrollbarController ??
-        ScrollController(
+        ScrollbarController(
+          body: _sc21!,
           initialScrollOffset: _sc21!.hasClients && _sc21!.positions.isNotEmpty
               ? _sc21!.offset
               : 0.0,

@@ -24,7 +24,9 @@ widths and text do.
   `PointerSignalEvent` cannot be stopped from propagating, so a `Listener` that
   handles Ctrl+wheel does not prevent the inner `Scrollable` from scrolling too.
   The custom physics refuses the offset *before* the scrollable registers with
-  the pointer-signal resolver — see the reference entry below.
+  the pointer-signal resolver — see the reference entry below. A scrollbar strip
+  does not carry that physics: it claims the event, and `ScrollbarController`
+  refuses to hand it to the body (see [synced scrolling](synced-scrolling.md)).
 - **Offsets are re-derived across a scale change**, both axes, from the pre-scale
   offset and the ratio, and clamped into the new extents.
 - **Not everything scales.** Which theme fields participate is decided in the
