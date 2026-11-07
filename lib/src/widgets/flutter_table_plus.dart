@@ -427,7 +427,8 @@ class FlutterTablePlus<T> extends StatefulWidget {
   /// over the table, requesting a scale change.
   ///
   /// When non-null, the library intercepts Ctrl+wheel events internally and
-  /// calls this callback with the proposed new scale value.
+  /// calls this callback with the proposed new scale value. A wheel with no
+  /// vertical movement, such as a tilt, proposes nothing.
   ///
   /// The caller should update [scale] in response:
   /// ```dart
@@ -1474,7 +1475,9 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
   /// Whether the same wheel also scrolls is decided apart from this, by
   /// [_ScaleBlockingScrollPhysics] under [FlutterTablePlus.blockModifierScroll].
   void _handlePointerSignalForScale(PointerSignalEvent event) {
-    if (event is PointerScrollEvent && isScaleModifierPressed()) {
+    if (event is PointerScrollEvent &&
+        event.scrollDelta.dy != 0 &&
+        isScaleModifierPressed()) {
       final delta = event.scrollDelta.dy > 0
           ? -widget.scaleStep
           : widget.scaleStep;
