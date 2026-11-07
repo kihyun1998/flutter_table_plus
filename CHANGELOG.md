@@ -9,6 +9,8 @@
     *   **Drag-selection auto-scroll.** A notch over a scrollbar during auto-scroll can now be lost when a motion is set, because auto-scroll stops the motion, as it does for a notch over the body. With `wheelMotion: null` the notch still takes effect
     *   **Unchanged.** `wheelMotion: null` moves at once, over a scrollbar too. `FlutterTablePlus` takes no new argument
     *   **Dependency.** `flutter_smooth_wheel_scroll` is now `^0.1.6`, the first version with `ScrollbarController`. The SDK floor is unchanged
+*   **FIX**: a drag selection follows a wheel turned while it is held ([#216](https://github.com/kihyun1998/flutter_table_plus/issues/216))
+    *   **What a consumer sees differently.** The selection and the rubber band stayed where they were until the pointer next moved, when they jumped, and a release without moving reported the old range. Both now follow the row under the pointer on every scroll, so `onDragSelectionUpdate` also fires during the wheel, on each scroll update that changes the row
 *   **FIX**: Ctrl/Cmd+tilt wheel no longer asks for a larger scale ([#220](https://github.com/kihyun1998/flutter_table_plus/issues/220))
     *   **What a consumer sees differently.** A sideways wheel with Ctrl or Cmd held called `onScaleChanged` with a larger scale in both directions. It now does not call it. Vertical Ctrl/Cmd+wheel is unchanged
 *   **FIX**: `blockModifierScroll` governs both axes ([#213](https://github.com/kihyun1998/flutter_table_plus/issues/213))

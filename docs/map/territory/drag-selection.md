@@ -39,9 +39,19 @@ and neither has a record above it.
   account of what `measurementOnly` leaves standing — owned by
   [row rendering and geometry](row-render-geometry.md) and by the
   `RowCacheInvalidation` enum, and not restated here. The current endpoint is
-  not covered: nothing outside the controller's own pointer and tick handlers
-  rewrites it and a rebuild reaches none of them, so `FlutterTablePlusState`
+  not covered: only the controller's pointer and tick handlers and the host's
+  scroll listener below rewrite it, and a rebuild reaches none of them, so
+  `FlutterTablePlusState`
   re-resolves it post-frame whenever that geometry was dropped (#133).
+- **Any scroll of the body moves the endpoint and the band** (#216, the
+  maintainer's call). A wheel during a drag changes the row under the pointer as
+  auto-scroll does, so a `NotificationListener` around the body's `Scrollable`
+  calls `refresh` and rebuilds, for the body's two scroll views only: a scroll
+  view in a consumer's cell could otherwise call `setState` during a build. Without it the selection stayed put until the next
+  pointer move jumped it, and a release with no move reported a range the screen
+  no longer showed. The listener sits inside the drag `Listener`, so the coordinate
+  frame is untouched. A drag not yet past the threshold, or with no anchor yet, is
+  left alone: the first pointer move resolves it from the scrolled position.
 
 ## Code
 
