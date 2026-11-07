@@ -1,4 +1,4 @@
-## Unreleased
+## 2.21.0
 
 *   **BREAKING**: a mouse wheel turned over a scrollbar animates with `wheelMotion`, as it does over the body ([#212](https://github.com/kihyun1998/flutter_table_plus/issues/212))
     *   **What a consumer sees differently.** A notch over either scrollbar used to move the table at once. It now moves the body over several frames, and notches over the body and over a scrollbar add to one target. A wheel past the end over the vertical scrollbar now brings the body to its own end; it used to stop 12px short with the default theme
