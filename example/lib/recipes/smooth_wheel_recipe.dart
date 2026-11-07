@@ -19,10 +19,10 @@ import '../theme/table_palette.dart';
 /// **`WheelMotion` comes from this package's import.** It is re-exported, so
 /// there is no second dependency to add for it.
 ///
-/// **Only the wheel animates.** Dragging a scrollbar jumps, and stops a motion
-/// in progress; so does a wheel turned over a scrollbar, which is a scroll view
-/// of its own. How far one notch travels is not a table setting at all — that
-/// is app-wide, through `SmoothWheelBinding` in `flutter_smooth_wheel_scroll`.
+/// **Only the wheel animates**, over the body and over a scrollbar alike.
+/// Dragging a scrollbar jumps, and stops a motion in progress. How far one
+/// notch travels is not a table setting at all — that is app-wide, through
+/// `SmoothWheelBinding` in `flutter_smooth_wheel_scroll`.
 class SmoothWheelRecipe extends StatelessWidget {
   const SmoothWheelRecipe({
     super.key,

@@ -1,3 +1,15 @@
+## Unreleased
+
+*   **BREAKING**: a mouse wheel turned over a scrollbar animates with `wheelMotion`, as it does over the body ([#212](https://github.com/kihyun1998/flutter_table_plus/issues/212))
+    *   **What a consumer sees differently.** A notch over either scrollbar used to move the table at once. It now moves the body over several frames, and notches over the body and over a scrollbar add to one target. A wheel past the end over the vertical scrollbar now brings the body to its own end; it used to stop 12px short with the default theme
+    *   **Shift+wheel on the desktop.** Shift+wheel over the horizontal scrollbar moved nothing on Windows, macOS and Linux. It now moves the table, as it already did over the body
+    *   **A press on a scrollbar.** Pressing the thumb or clicking the track now stops a motion in progress, so a thumb drag or a track click takes effect instead of being overrun by the motion
+    *   **What can break.** A test that sends a wheel event over a scrollbar and reads the offset straight away. `pumpAndSettle()` lets the motion finish, or pass `wheelMotion: null` to that table
+    *   **Ctrl/Cmd+wheel.** With `onScaleChanged` set, Ctrl/Cmd+wheel over a scrollbar no longer scrolls the table. Before, the scrollbar moved, and only a caller that applied the new scale had the offset restored. With `blockModifierScroll: false`, the vertical scrollbar now refuses it too, as the body already did
+    *   **Drag-selection auto-scroll.** A notch over a scrollbar during auto-scroll can now be lost when a motion is set, because auto-scroll stops the motion, as it does for a notch over the body. With `wheelMotion: null` the notch still takes effect
+    *   **Unchanged.** `wheelMotion: null` moves at once, over a scrollbar too. `FlutterTablePlus` takes no new argument
+    *   **Dependency.** `flutter_smooth_wheel_scroll` is now `^0.1.6`, the first version with `ScrollbarController`. The SDK floor is unchanged
+
 ## 2.20.1
 
 *   **FIX**: the header's `topBorder` and `bottomBorder` are drawn again over an opaque `backgroundColor` ([#209](https://github.com/kihyun1998/flutter_table_plus/issues/209))

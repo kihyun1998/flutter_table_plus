@@ -114,10 +114,10 @@ packages:
     dependency: "direct dev"
     description:
       name: flutter_smooth_wheel_scroll
-      sha256: fce4025db96215ee3211af382c40bf9d9787273e1b05923d41b4ef872ef4b8ee
+      sha256: f8d01ce20b0068bede06a5cf00005d659bd3d715d69f52c32cf3c93bf1afa747
       url: "https://pub.dev"
     source: hosted
-    version: "0.1.5"
+    version: "0.1.6"
   flutter_svg:
     dependency: "direct main"
     description:

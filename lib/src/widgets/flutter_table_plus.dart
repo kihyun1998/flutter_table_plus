@@ -470,7 +470,8 @@ class FlutterTablePlus<T> extends StatefulWidget {
   ///
   /// Only the wheel is animated: dragging a scrollbar, drag-selection
   /// auto-scroll and scale correction move the body at once, and stop a
-  /// motion in progress. A wheel turned over a scrollbar moves it at once too.
+  /// motion in progress. A wheel along a scrollbar's own axis joins the body's
+  /// motion, and notches over either add to its target.
   ///
   /// How far a notch travels is not set here; that is app-wide, through
   /// `SmoothWheelBinding` in `flutter_smooth_wheel_scroll`.
@@ -1118,42 +1119,78 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
           child: child,
         );
       },
-      child: Container(
-        width: isVertical ? trackWidth : null,
-        height: isVertical ? null : trackWidth,
-        decoration: BoxDecoration(
-          color: scrollbarTheme.trackColor,
-          border: scrollbarTheme.trackBorder,
-          borderRadius: BorderRadius.circular(
-            scrollbarTheme.radius ?? trackWidth / 2,
-          ),
-        ),
-        child: Theme(
-          data: Theme.of(context).copyWith(
-            scrollbarTheme: ScrollbarThemeData(
-              thumbColor: WidgetStateProperty.all(scrollbarTheme.thumbColor),
-              trackColor: WidgetStateProperty.all(Colors.transparent),
-              radius: Radius.circular(scrollbarTheme.radius ?? trackWidth / 2),
-              thickness: WidgetStateProperty.all(
-                scrollbarTheme.thickness ?? trackWidth * 0.7,
-              ),
+      child: Listener(
+        onPointerSignal: isVertical
+            ? null
+            : (event) => _handleHorizontalScrollbarSignal(event, controller),
+        child: Container(
+          width: isVertical ? trackWidth : null,
+          height: isVertical ? null : trackWidth,
+          decoration: BoxDecoration(
+            color: scrollbarTheme.trackColor,
+            border: scrollbarTheme.trackBorder,
+            borderRadius: BorderRadius.circular(
+              scrollbarTheme.radius ?? trackWidth / 2,
             ),
           ),
-          child: Scrollbar(
-            controller: controller,
-            thumbVisibility: true,
-            trackVisibility: false,
-            child: SingleChildScrollView(
+          child: Theme(
+            data: Theme.of(context).copyWith(
+              scrollbarTheme: ScrollbarThemeData(
+                thumbColor: WidgetStateProperty.all(scrollbarTheme.thumbColor),
+                trackColor: WidgetStateProperty.all(Colors.transparent),
+                radius: Radius.circular(
+                  scrollbarTheme.radius ?? trackWidth / 2,
+                ),
+                thickness: WidgetStateProperty.all(
+                  scrollbarTheme.thickness ?? trackWidth * 0.7,
+                ),
+              ),
+            ),
+            child: Scrollbar(
               controller: controller,
-              scrollDirection: axis,
-              child: SizedBox(
-                width: isVertical ? trackWidth : contentExtent,
-                height: isVertical ? contentExtent : trackWidth,
+              thumbVisibility: true,
+              trackVisibility: false,
+              child: SingleChildScrollView(
+                controller: controller,
+                scrollDirection: axis,
+                child: SizedBox(
+                  width: isVertical ? trackWidth : contentExtent,
+                  height: isVertical ? contentExtent : trackWidth,
+                ),
               ),
             ),
           ),
         ),
       ),
+    );
+  }
+
+  /// Moves [controller] by a mouse wheel turned with an axis modifier held,
+  /// unless another scroll view has claimed the event or the wheel could not
+  /// move [controller].
+  void _handleHorizontalScrollbarSignal(
+    PointerSignalEvent event,
+    ScrollController controller,
+  ) {
+    if (event is! PointerScrollEvent || event.kind != PointerDeviceKind.mouse) {
+      return;
+    }
+    final modifiers = ScrollConfiguration.of(context).pointerAxisModifiers;
+    if (!HardwareKeyboard.instance.logicalKeysPressed.any(modifiers.contains)) {
+      return;
+    }
+    final position = controller.position;
+    final delta = axisDirectionIsReversed(position.axisDirection)
+        ? -event.scrollDelta.dy
+        : event.scrollDelta.dy;
+    final target = (position.pixels + delta).clamp(
+      position.minScrollExtent,
+      position.maxScrollExtent,
+    );
+    if (target == position.pixels) return;
+    GestureBinding.instance.pointerSignalResolver.register(
+      event,
+      (_) => position.pointerScroll(delta),
     );
   }
 
@@ -1402,10 +1439,7 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
                                 scrollbarTheme: theme.scrollbarTheme,
                                 controller: verticalScrollbarController,
                                 axis: Axis.vertical,
-                                contentExtent: needsHorizontalScroll
-                                    ? tableDataHeight -
-                                          theme.scrollbarTheme.trackWidth
-                                    : tableDataHeight,
+                                contentExtent: tableDataHeight,
                               ),
                             ),
 
