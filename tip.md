@@ -35,19 +35,8 @@ class _ScaleBlockingScrollPhysics extends ClampingScrollPhysics {
 - null이면 기존 `ClampingScrollPhysics` 유지
 - `HardwareKeyboard.instance.isControlPressed`는 동기적으로 확인 가능
 
-### 백업: pre-scale offset 저장
-
-ScrollPhysics가 1차 방어선이지만, 만약을 대비해 `Listener.onPointerSignal`에서
-스크롤 발생 전 offset을 저장하고 `didUpdateWidget`에서 보정합니다.
-
-```dart
-// Listener에서 (스크롤 오염 전)
-_preScaleVerticalOffset = controller.offset;
-
-// didUpdateWidget에서 (scale 변경 후)
-final baseOffset = _preScaleVerticalOffset ?? controller.offset;
-controller.jumpTo((baseOffset * ratio).clamp(0, maxExtent));
-```
+이 physics가 스크롤을 막으므로 제스처 시점의 offset을 따로 저장할 필요가 없습니다.
+저장하면 호출자가 `onScaleChanged`를 무시했을 때 값이 남아, 다음 scale 변경이 그 값으로 튑니다.
 
 ## 2. 스크롤 위치 보정
 
@@ -61,6 +50,17 @@ offset=500, scale 1.0→2.0 일 때:
 
 `didUpdateWidget`에서 `addPostFrameCallback`으로 보정해야 합니다.
 (새 레이아웃의 `maxScrollExtent`가 계산된 후에 `jumpTo` 가능)
+
+offset은 `didUpdateWidget`에서 읽어 콜백으로 넘깁니다. 콜백 안에서 읽으면 축소할 때
+새 레이아웃이 이미 잘라낸 값에 비율을 또 곱하게 됩니다.
+
+```dart
+// didUpdateWidget에서 (새 레이아웃 전)
+final baseOffset = controller.offset;
+addPostFrameCallback((_) {
+  controller.jumpTo((baseOffset * ratio).clamp(0, controller.position.maxScrollExtent));
+});
+```
 
 ## 3. 스케일링 대상 구분
 

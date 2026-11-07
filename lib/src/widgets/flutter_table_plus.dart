@@ -533,12 +533,6 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
   ScrollController? _verticalScrollController;
   ScrollController? _horizontalScrollController;
 
-  /// Pre-scale scroll offsets saved before a scale change triggers an
-  /// unwanted scroll (e.g. Ctrl+wheel fires both zoom and scroll).
-  /// Used to restore the correct position after scale correction.
-  double? _preScaleVerticalOffset;
-  double? _preScaleHorizontalOffset;
-
   // --- Drag selection state ---
   //
   // Lives at the table level (not inside [TablePlusBody]) because the
@@ -663,22 +657,21 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
     if (rowCacheInvalidation != RowCacheInvalidation.none) {
       _scheduleDragEndpointRefresh();
     }
-    // Correct scroll positions when scale changes.
-    //
-    // We use pre-scale offsets (saved before the scroll event contaminates
-    // the position) when available, falling back to the current offset.
-    // This prevents Ctrl+wheel from simultaneously zooming AND scrolling.
+    // Correct scroll positions when scale changes, from the offsets as they
+    // stand before the new layout.
     if (widget.scale != oldWidget.scale) {
       final ratio = widget.scale / oldWidget.scale;
-      final savedV = _preScaleVerticalOffset;
-      final savedH = _preScaleHorizontalOffset;
-      _preScaleVerticalOffset = null;
-      _preScaleHorizontalOffset = null;
+      final preScaleV = _verticalScrollController?.hasClients == true
+          ? _verticalScrollController!.offset
+          : null;
+      final preScaleH = _horizontalScrollController?.hasClients == true
+          ? _horizontalScrollController!.offset
+          : null;
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         if (_verticalScrollController?.hasClients == true) {
-          final baseOffset = savedV ?? _verticalScrollController!.offset;
+          final baseOffset = preScaleV ?? _verticalScrollController!.offset;
           _verticalScrollController!.jumpTo(
             (baseOffset * ratio).clamp(
               0.0,
@@ -687,7 +680,7 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
           );
         }
         if (_horizontalScrollController?.hasClients == true) {
-          final baseOffset = savedH ?? _horizontalScrollController!.offset;
+          final baseOffset = preScaleH ?? _horizontalScrollController!.offset;
           _horizontalScrollController!.jumpTo(
             (baseOffset * ratio).clamp(
               0.0,
@@ -1473,8 +1466,7 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
 
   /// Intercept Ctrl+wheel (or Cmd+wheel on macOS) to change scale.
   ///
-  /// Saves current scroll offsets **before** the scroll event can contaminate
-  /// them, then calls [onScaleChanged] with the proposed new value.
+  /// Calls [onScaleChanged] with the proposed new value.
   ///
   /// The actual scroll prevention is handled by [_ScaleBlockingScrollPhysics]
   /// which returns `false` from [shouldAcceptUserOffset] when Ctrl is held,
@@ -1482,15 +1474,6 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
   void _handlePointerSignalForScale(PointerSignalEvent event) {
     if (event is PointerScrollEvent && isScaleModifierPressed()) {
       if (widget.onScaleChanged != null) {
-        // Save offsets for scroll correction in didUpdateWidget
-        _preScaleVerticalOffset = _verticalScrollController?.hasClients == true
-            ? _verticalScrollController!.offset
-            : null;
-        _preScaleHorizontalOffset =
-            _horizontalScrollController?.hasClients == true
-            ? _horizontalScrollController!.offset
-            : null;
-
         final delta = event.scrollDelta.dy > 0
             ? -widget.scaleStep
             : widget.scaleStep;

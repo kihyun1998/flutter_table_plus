@@ -8,13 +8,13 @@ import 'package:flutter_test/flutter_test.dart';
 // Widget coverage for the scale feature: scaled rendering, Ctrl+wheel ->
 // onScaleChanged, and scroll blocking while the scale modifier is held.
 
-Map<String, TablePlusColumn<Map<String, dynamic>>> _columns() => {
+Map<String, TablePlusColumn<Map<String, dynamic>>> _columns(double width) => {
   'name': TablePlusColumn<Map<String, dynamic>>(
     key: 'name',
     label: 'Name',
     order: 0,
     valueAccessor: (r) => r['name'],
-    width: 200,
+    width: width,
   ),
 };
 
@@ -23,12 +23,13 @@ Future<void> _pump(
   double scale = 1.0,
   ValueChanged<double>? onScaleChanged,
   int rows = 3,
+  double columnWidth = 200,
 }) async {
   await tester.pumpWidget(
     MaterialApp(
       home: Scaffold(
         body: FlutterTablePlus<Map<String, dynamic>>(
-          columns: _columns(),
+          columns: _columns(columnWidth),
           data: [
             for (int i = 0; i < rows; i++) {'id': '$i', 'name': 'R$i'},
           ],
@@ -131,5 +132,157 @@ void main() {
     } finally {
       debugDefaultTargetPlatformOverride = null;
     }
+  });
+
+  group('the offsets across a scale change', () {
+    final windows = TargetPlatformVariant.only(TargetPlatform.windows);
+
+    List<ScrollPosition> positions(WidgetTester tester, Axis axis) => tester
+        .stateList<ScrollableState>(find.byType(Scrollable))
+        .map((s) => s.position)
+        .where((p) => p.axis == axis)
+        .toList();
+
+    Future<void> wheel(
+      WidgetTester tester,
+      double dy, {
+      bool shift = false,
+    }) async {
+      final pointer = TestPointer(1, PointerDeviceKind.mouse);
+      await tester.sendEventToBinding(
+        pointer.hover(
+          tester.getCenter(find.byType(FlutterTablePlus<Map<String, dynamic>>)),
+        ),
+      );
+      if (shift) await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+      await tester.sendEventToBinding(pointer.scroll(Offset(0, dy)));
+      if (shift) await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+      await tester.pumpAndSettle();
+    }
+
+    void expectOffset(WidgetTester tester, Axis axis, double offset) {
+      expect(
+        positions(tester, axis).map((p) => p.pixels),
+        everyElement(moreOrLessEquals(offset)),
+      );
+    }
+
+    testWidgets('a Ctrl+wheel the caller ignored leaves nothing behind', (
+      tester,
+    ) async {
+      void ignore(double _) {}
+      Future<void> pump(double scale) => _pump(
+        tester,
+        scale: scale,
+        onScaleChanged: ignore,
+        rows: 200,
+        columnWidth: 3000,
+      );
+      await pump(1.0);
+      await _ctrlWheel(tester, -60);
+      await wheel(tester, 600);
+      await wheel(tester, 300, shift: true);
+      expectOffset(tester, Axis.vertical, 600);
+      expectOffset(tester, Axis.horizontal, 300);
+
+      await pump(1.5);
+
+      expectOffset(tester, Axis.vertical, 900);
+      expectOffset(tester, Axis.horizontal, 450);
+    }, variant: windows);
+
+    testWidgets('a Ctrl+wheel the caller applied keeps the place', (
+      tester,
+    ) async {
+      double? requested;
+      await _pump(
+        tester,
+        onScaleChanged: (s) => requested = s,
+        rows: 200,
+        columnWidth: 3000,
+      );
+      await wheel(tester, 600);
+      await wheel(tester, 300, shift: true);
+
+      await _ctrlWheel(tester, -60);
+      expect(requested, 1.05);
+      expectOffset(tester, Axis.vertical, 600);
+      await _pump(
+        tester,
+        scale: requested!,
+        onScaleChanged: (s) => requested = s,
+        rows: 200,
+        columnWidth: 3000,
+      );
+
+      expectOffset(tester, Axis.vertical, 630);
+      expectOffset(tester, Axis.horizontal, 315);
+    }, variant: windows);
+
+    testWidgets('a scale applied late takes the offset of that moment', (
+      tester,
+    ) async {
+      void ignore(double _) {}
+      await _pump(tester, onScaleChanged: ignore, rows: 200);
+      await _ctrlWheel(tester, -60);
+      await wheel(tester, 600);
+
+      await _pump(tester, scale: 1.05, onScaleChanged: ignore, rows: 200);
+
+      expectOffset(tester, Axis.vertical, 630);
+    }, variant: windows);
+
+    testWidgets(
+      'Ctrl+Shift+wheel over the horizontal scrollbar moves nothing',
+      (tester) async {
+        final requested = <double>[];
+        await _pump(
+          tester,
+          onScaleChanged: requested.add,
+          rows: 200,
+          columnWidth: 3000,
+        );
+        await wheel(tester, 300, shift: true);
+        final strip = find.descendant(
+          of: find.byType(Scrollbar),
+          matching: find.byWidgetPredicate(
+            (w) =>
+                w is SingleChildScrollView &&
+                w.scrollDirection == Axis.horizontal,
+          ),
+        );
+
+        final pointer = TestPointer(1, PointerDeviceKind.mouse);
+        await tester.sendEventToBinding(pointer.hover(tester.getCenter(strip)));
+        await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+        await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+        await tester.sendEventToBinding(pointer.scroll(const Offset(0, 60)));
+        await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+        await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+        await tester.pumpAndSettle();
+
+        expect(requested, hasLength(1));
+        expectOffset(tester, Axis.horizontal, 300);
+      },
+      variant: windows,
+    );
+
+    testWidgets('a scale down from the end stays at the end', (tester) async {
+      await _pump(tester, rows: 200);
+      await wheel(tester, 1000000);
+      final end = positions(tester, Axis.vertical).first;
+      expect(end.pixels, end.maxScrollExtent);
+      final atOne = end.pixels;
+
+      await _pump(tester, scale: 0.5, rows: 200);
+
+      final after = positions(tester, Axis.vertical);
+      expect(
+        after.first.maxScrollExtent,
+        lessThan(atOne * 0.5),
+        reason: 'the ratio alone has to land past the new end',
+      );
+      expectOffset(tester, Axis.vertical, after.first.maxScrollExtent);
+    }, variant: windows);
   });
 }
