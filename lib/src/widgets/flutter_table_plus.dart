@@ -1427,6 +1427,7 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
                           if (theme.scrollbarTheme.showVertical &&
                               needsVerticalScroll)
                             Positioned(
+                              key: const ValueKey(Axis.vertical),
                               top: theme.headerTheme.height,
                               right: 0,
                               bottom:
@@ -1447,6 +1448,7 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
                           if (theme.scrollbarTheme.showHorizontal &&
                               needsHorizontalScroll)
                             Positioned(
+                              key: const ValueKey(Axis.horizontal),
                               left: 0,
                               right: 0,
                               bottom: 0,

@@ -21,6 +21,10 @@ resolver's five branches are independent implementations of the same rule — wh
 is why no territory-to-territory edge could carry it, and why a note inside any
 one territory would be invisible from the other six files.
 
+**One path is not clamped, and says so.** A scrollbar's position takes the body's
+offset on `attach`, before layout, where neither range is current. See
+[synced scrolling](../territory/synced-scrolling.md).
+
 Census at the time of writing: **18 clamp sites across 7 files.**
 
 ## Territories it holds in

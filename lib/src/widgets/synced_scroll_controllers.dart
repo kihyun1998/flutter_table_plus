@@ -150,22 +150,12 @@ class _SyncedScrollControllersState extends State<SyncedScrollControllers> {
     // 수직 스크롤바 컨트롤러
     _sc12 =
         widget.verticalScrollbarController ??
-        ScrollbarController(
-          body: _sc11!,
-          initialScrollOffset: _sc11!.hasClients && _sc11!.positions.isNotEmpty
-              ? _sc11!.offset
-              : 0.0,
-        );
+        _AlignedScrollbarController(body: _sc11!);
 
     // 수평 스크롤바 컨트롤러
     _sc22 =
         widget.horizontalScrollbarController ??
-        ScrollbarController(
-          body: _sc21!,
-          initialScrollOffset: _sc21!.hasClients && _sc21!.positions.isNotEmpty
-              ? _sc21!.offset
-              : 0.0,
-        );
+        _AlignedScrollbarController(body: _sc21!);
 
     // 수평 헤더 컨트롤러 (slave — body의 master 위치를 따라감)
     _sc23 =
@@ -221,6 +211,7 @@ class _SyncedScrollControllersState extends State<SyncedScrollControllers> {
       master: master,
       slave: slave,
       masterOffset: master.offset,
+      slaveOffset: slave.offset,
       slaveMin: slave.position.minScrollExtent,
       slaveMax: slave.position.maxScrollExtent,
     );
@@ -232,4 +223,16 @@ class _SyncedScrollControllersState extends State<SyncedScrollControllers> {
   @override
   Widget build(BuildContext context) =>
       widget.builder(context, _sc11!, _sc12, _sc21!, _sc22, _sc23);
+}
+
+/// A [ScrollbarController] whose position takes [body]'s offset each time it
+/// attaches, without a notification.
+class _AlignedScrollbarController extends ScrollbarController {
+  _AlignedScrollbarController({required super.body});
+
+  @override
+  void attach(ScrollPosition position) {
+    super.attach(position);
+    if (body.hasClients) position.correctPixels(body.offset);
+  }
 }
