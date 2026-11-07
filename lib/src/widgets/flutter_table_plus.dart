@@ -426,9 +426,8 @@ class FlutterTablePlus<T> extends StatefulWidget {
   /// Callback fired when the user Ctrl+scrolls (or Cmd+scrolls on macOS)
   /// over the table, requesting a scale change.
   ///
-  /// When non-null, the library intercepts Ctrl+wheel events internally,
-  /// saves scroll positions **before** the wheel event can contaminate them,
-  /// and calls this callback with the proposed new scale value.
+  /// When non-null, the library intercepts Ctrl+wheel events internally and
+  /// calls this callback with the proposed new scale value.
   ///
   /// The caller should update [scale] in response:
   /// ```dart
@@ -437,7 +436,8 @@ class FlutterTablePlus<T> extends StatefulWidget {
   /// },
   /// ```
   ///
-  /// When null, Ctrl+wheel events are not intercepted and scroll normally.
+  /// When null, no scale change is requested, and Ctrl+wheel scrolls unless
+  /// [blockModifierScroll] is `true`.
   final ValueChanged<double>? onScaleChanged;
 
   /// The amount [scale] changes per mouse wheel tick when [onScaleChanged]
@@ -446,9 +446,11 @@ class FlutterTablePlus<T> extends StatefulWidget {
 
   /// Whether to block normal scrolling while Ctrl (or Cmd on macOS) is held.
   ///
-  /// When `true`, Ctrl+wheel events are consumed for scale changes only and
-  /// do not scroll the table. When `false`, Ctrl+wheel scrolls normally
-  /// even if [onScaleChanged] is set.
+  /// When `true`, Ctrl+wheel does not scroll the table, with or without
+  /// [onScaleChanged]. When `false`, Ctrl+wheel scrolls normally, and with
+  /// [onScaleChanged] set it also requests a scale change. A scale change stops
+  /// a [wheelMotion] in progress, so with a motion set, a caller that applies
+  /// the new scale at once sees the zoom and not the scroll.
   ///
   /// Defaults to `null`, which follows [onScaleChanged]: blocking is enabled
   /// when [onScaleChanged] is non-null, and disabled otherwise.
@@ -485,6 +487,11 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
   /// Whether Ctrl+wheel scrolling should be blocked.
   bool get _blockModifierScroll =>
       widget.blockModifierScroll ?? (widget.onScaleChanged != null);
+
+  /// The physics of the body's two scrollables.
+  ScrollPhysics get _bodyPhysics => _blockModifierScroll
+      ? const _ScaleBlockingScrollPhysics()
+      : const ClampingScrollPhysics();
 
   final ValueNotifier<bool> _isHovered = ValueNotifier<bool>(false);
 
@@ -1330,9 +1337,7 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
                               onMergedCellChanged: widget.onMergedCellChanged,
                               calculateRowHeight: widget.calculateRowHeight,
                               scale: scale,
-                              scrollPhysics: widget.onScaleChanged != null
-                                  ? const _ScaleBlockingScrollPhysics()
-                                  : const ClampingScrollPhysics(),
+                              scrollPhysics: _bodyPhysics,
                               needsVerticalScroll: needsVerticalScroll,
                               hoverButtonBuilder: widget.hoverButtonBuilder,
                               hoverButtonPosition: widget.hoverButtonPosition,
@@ -1345,9 +1350,7 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
                 final bodyScrollable = SingleChildScrollView(
                   controller: horizontalScrollController,
                   scrollDirection: Axis.horizontal,
-                  physics: _blockModifierScroll
-                      ? const _ScaleBlockingScrollPhysics()
-                      : const ClampingScrollPhysics(),
+                  physics: _bodyPhysics,
                   child: SizedBox(width: contentWidth, child: bodyContent),
                 );
 
@@ -1387,7 +1390,7 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
                 );
 
                 return Listener(
-                  onPointerSignal: _blockModifierScroll
+                  onPointerSignal: widget.onScaleChanged != null
                       ? _handlePointerSignalForScale
                       : null,
                   child: MouseRegion(
@@ -1468,20 +1471,14 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
   ///
   /// Calls [onScaleChanged] with the proposed new value.
   ///
-  /// The actual scroll prevention is handled by [_ScaleBlockingScrollPhysics]
-  /// which returns `false` from [shouldAcceptUserOffset] when Ctrl is held,
-  /// preventing the [Scrollable] from registering a scroll handler at all.
+  /// Whether the same wheel also scrolls is decided apart from this, by
+  /// [_ScaleBlockingScrollPhysics] under [FlutterTablePlus.blockModifierScroll].
   void _handlePointerSignalForScale(PointerSignalEvent event) {
     if (event is PointerScrollEvent && isScaleModifierPressed()) {
-      if (widget.onScaleChanged != null) {
-        final delta = event.scrollDelta.dy > 0
-            ? -widget.scaleStep
-            : widget.scaleStep;
-        widget.onScaleChanged!(widget.scale + delta);
-      }
-      // When onScaleChanged is null but blockModifierScroll is true,
-      // the event is still consumed (via _ScaleBlockingScrollPhysics)
-      // to prevent Ctrl+wheel from scrolling.
+      final delta = event.scrollDelta.dy > 0
+          ? -widget.scaleStep
+          : widget.scaleStep;
+      widget.onScaleChanged!(widget.scale + delta);
     }
   }
 

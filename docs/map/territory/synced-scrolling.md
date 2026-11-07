@@ -59,7 +59,7 @@ master, so the next author is free to reverse it without knowing what breaks.
   against 0.1.5 with `SmoothScrollController`s on the strips: a 120 notch over
   the strip and a 60 notch over the body two frames later settled at 120, and
   the same in the other order, against 180 with the hand-off.
-  **The body's physics are what keep Ctrl+wheel out**, because the strip does
+  **With the block on, the body's physics are what keep Ctrl+wheel out**, because the strip does
   not carry `_ScaleBlockingScrollPhysics`: its `Scrollable` claims the event,
   and the hand-off then refuses it. So inside a page, Ctrl+wheel over the middle
   of the vertical strip does not move the page, where over the body it can;

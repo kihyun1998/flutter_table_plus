@@ -465,7 +465,7 @@ void main() {
 
         expect(_table(tester).blockModifierScroll, isFalse);
         expect(
-            find.textContaining('zooms and scrolls at once'), findsOneWidget);
+            find.textContaining('blockModifierScroll is off'), findsOneWidget);
       });
     });
   });

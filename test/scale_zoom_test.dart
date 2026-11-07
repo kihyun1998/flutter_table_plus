@@ -24,6 +24,8 @@ Future<void> _pump(
   ValueChanged<double>? onScaleChanged,
   int rows = 3,
   double columnWidth = 200,
+  bool? blockModifierScroll,
+  WheelMotion? wheelMotion = const WheelMotion.spring(),
 }) async {
   await tester.pumpWidget(
     MaterialApp(
@@ -36,6 +38,8 @@ Future<void> _pump(
           rowId: (r) => r['id'] as String,
           scale: scale,
           onScaleChanged: onScaleChanged,
+          blockModifierScroll: blockModifierScroll,
+          wheelMotion: wheelMotion,
         ),
       ),
     ),
@@ -283,6 +287,240 @@ void main() {
         reason: 'the ratio alone has to land past the new end',
       );
       expectOffset(tester, Axis.vertical, after.first.maxScrollExtent);
+    }, variant: windows);
+  });
+
+  group('blockModifierScroll', () {
+    final windows = TargetPlatformVariant.only(TargetPlatform.windows);
+
+    double offset(WidgetTester tester, Axis axis) => tester
+        .stateList<ScrollableState>(find.byType(Scrollable))
+        .firstWhere((s) => s.position.axis == axis)
+        .position
+        .pixels;
+
+    Finder strip(Axis axis) => find.descendant(
+      of: find.byType(Scrollbar),
+      matching: find.byWidgetPredicate(
+        (w) => w is SingleChildScrollView && w.scrollDirection == axis,
+      ),
+    );
+
+    Future<void> ctrlWheelAt(
+      WidgetTester tester,
+      Offset at, {
+      bool shift = false,
+    }) async {
+      final pointer = TestPointer(1, PointerDeviceKind.mouse);
+      await tester.sendEventToBinding(pointer.hover(at));
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+      if (shift) await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+      await tester.sendEventToBinding(pointer.scroll(const Offset(0, 60)));
+      if (shift) await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+      await tester.pump();
+    }
+
+    // The flag and the callback, and what one Ctrl+wheel over the body and one
+    // Ctrl+Shift+wheel over it should do: requests sent, then each axis.
+    for (final (block, callback, requests, moved)
+        in <(bool?, bool, int, double)>[
+          (null, true, 2, 0),
+          (null, false, 0, 60),
+          (true, true, 2, 0),
+          (true, false, 0, 0),
+          (false, true, 2, 60),
+          (false, false, 0, 60),
+        ]) {
+      final name = 'flag $block, ${callback ? 'a' : 'no'} callback';
+
+      testWidgets('$name, over the body', (tester) async {
+        var sent = 0;
+        await _pump(
+          tester,
+          rows: 200,
+          columnWidth: 3000,
+          wheelMotion: null,
+          blockModifierScroll: block,
+          onScaleChanged: callback ? (_) => sent++ : null,
+        );
+        final body = tester.getCenter(
+          find.byType(FlutterTablePlus<Map<String, dynamic>>),
+        );
+
+        await ctrlWheelAt(tester, body);
+        expect(offset(tester, Axis.vertical), moved);
+        await ctrlWheelAt(tester, body, shift: true);
+        expect(offset(tester, Axis.horizontal), moved);
+        expect(sent, requests);
+      }, variant: windows);
+
+      testWidgets('$name, over the vertical scrollbar', (tester) async {
+        var sent = 0;
+        await _pump(
+          tester,
+          rows: 200,
+          columnWidth: 3000,
+          wheelMotion: null,
+          blockModifierScroll: block,
+          onScaleChanged: callback ? (_) => sent++ : null,
+        );
+
+        await ctrlWheelAt(tester, tester.getCenter(strip(Axis.vertical)));
+
+        expect(offset(tester, Axis.vertical), moved);
+        expect(sent, requests ~/ 2);
+      }, variant: windows);
+    }
+
+    for (final (block, moved) in <(bool, double)>[(true, 0), (false, 60)]) {
+      testWidgets(
+        'flag $block, Ctrl+Shift+wheel over the horizontal scrollbar',
+        (tester) async {
+          var sent = 0;
+          await _pump(
+            tester,
+            rows: 200,
+            columnWidth: 3000,
+            wheelMotion: null,
+            blockModifierScroll: block,
+            onScaleChanged: (_) => sent++,
+          );
+
+          await ctrlWheelAt(
+            tester,
+            tester.getCenter(strip(Axis.horizontal)),
+            shift: true,
+          );
+
+          expect(offset(tester, Axis.horizontal), moved);
+          expect(sent, 1);
+        },
+        variant: windows,
+      );
+    }
+
+    for (final (name, block, callback, tableMoved, pageMoved)
+        in <(String, bool, bool, double, double)>[
+          ('a table that blocks leaves it to the page', true, false, 0, 60),
+          ('a table that scrolls keeps it', false, true, 60, 0),
+        ]) {
+      testWidgets('inside a page, $name', (tester) async {
+        final page = ScrollController();
+        addTearDown(page.dispose);
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: SingleChildScrollView(
+                controller: page,
+                child: Column(
+                  children: [
+                    SizedBox(
+                      height: 300,
+                      child: FlutterTablePlus<Map<String, dynamic>>(
+                        columns: _columns(200),
+                        data: [
+                          for (int i = 0; i < 200; i++)
+                            {'id': '$i', 'name': 'R$i'},
+                        ],
+                        rowId: (r) => r['id'] as String,
+                        wheelMotion: null,
+                        blockModifierScroll: block,
+                        onScaleChanged: callback ? (_) {} : null,
+                      ),
+                    ),
+                    const SizedBox(height: 2000),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        await ctrlWheelAt(
+          tester,
+          tester.getCenter(find.byType(FlutterTablePlus<Map<String, dynamic>>)),
+        );
+
+        expect(page.offset, pageMoved);
+        final table = tester
+            .stateList<ScrollableState>(
+              find.descendant(
+                of: find.byType(FlutterTablePlus<Map<String, dynamic>>),
+                matching: find.byType(Scrollable),
+              ),
+            )
+            .firstWhere((s) => s.position.axis == Axis.vertical);
+        expect(table.position.pixels, tableMoved);
+      }, variant: windows);
+    }
+
+    testWidgets(
+      'off, under a motion, a scale applied at once stops the scroll',
+      (tester) async {
+        double? requested;
+        Future<void> pump(double scale) => _pump(
+          tester,
+          scale: scale,
+          rows: 200,
+          blockModifierScroll: false,
+          onScaleChanged: (s) => requested = s,
+        );
+        await pump(1.0);
+        await ctrlWheelAt(
+          tester,
+          tester.getCenter(find.byType(FlutterTablePlus<Map<String, dynamic>>)),
+        );
+
+        await pump(requested!);
+
+        expect(offset(tester, Axis.vertical), 0);
+      },
+      variant: windows,
+    );
+
+    testWidgets('off, under a motion, a request the caller ignores scrolls', (
+      tester,
+    ) async {
+      await _pump(
+        tester,
+        rows: 200,
+        blockModifierScroll: false,
+        onScaleChanged: (_) {},
+      );
+      await ctrlWheelAt(
+        tester,
+        tester.getCenter(find.byType(FlutterTablePlus<Map<String, dynamic>>)),
+      );
+      await tester.pumpAndSettle();
+
+      expect(offset(tester, Axis.vertical), 60);
+    }, variant: windows);
+
+    testWidgets('off, a request the caller applies moves and rescales', (
+      tester,
+    ) async {
+      double? requested;
+      Future<void> pump(double scale) => _pump(
+        tester,
+        scale: scale,
+        rows: 200,
+        wheelMotion: null,
+        blockModifierScroll: false,
+        onScaleChanged: (s) => requested = s,
+      );
+      await pump(1.0);
+      await ctrlWheelAt(
+        tester,
+        tester.getCenter(find.byType(FlutterTablePlus<Map<String, dynamic>>)),
+      );
+      expect(offset(tester, Axis.vertical), 60);
+      expect(requested, 0.95);
+
+      await pump(requested!);
+
+      expect(offset(tester, Axis.vertical), moreOrLessEquals(57));
     }, variant: windows);
   });
 }
