@@ -25,6 +25,11 @@ master, so the next author is free to reverse it without knowing what breaks.
 - **A driven controller must not drive back.** `NoCascadeGuard` suppresses the
   echo a `jumpTo` would otherwise produce, so a single user gesture cannot
   ping-pong between the two controllers.
+- **A jump arms the guard only if it moves the slave.** A `jumpTo` to the offset
+  the slave already has sends no notification, so a flag armed for it stays set
+  and swallows the slave's next real change. Measured 2026-11-07: a scrollbar
+  turned on in the same build as the rows shrank, then a track click, left strip
+  542.4 and body 728. The no-op `jumpTo` is still made, for the `goIdle` in it.
 - **Every jump is clamped into the slave's own range** before it is applied —
   the slave's extent is not the master's, so an unclamped mirror of the master's
   offset is out of range whenever the two differ.
@@ -61,6 +66,19 @@ master, so the next author is free to reverse it without knowing what breaks.
   upstream records that as the maintainer's choice. A strip that does not claim
   the event leaves it to the page: the vertical strip at its end, and the
   horizontal strip for a vertical wheel.
+- **A strip stays with its axis, and starts at the body** (#214). The two strips
+  are conditional children of one `Stack`, so they carry keys: without them the
+  horizontal strip drops into the vertical one's slot when that one leaves, and
+  keeps its `ScrollPosition`. Mirroring runs only on a notification, and a strip
+  that appears has sent none, while its position restores from `PageStorage` or
+  starts at 0. So `_AlignedScrollbarController` corrects the position to the
+  body's offset on `attach`, with `correctPixels`: the two agree in the frame it
+  appears, and no `jumpTo` sends `NoCascadeGuard` an echo. Attach is the one
+  unclamped path, because neither range is current there: when the rows shrink in
+  the same build the body's extents are still the old ones, so a clamp would pass
+  the old offset through. Both then settle at the new end. Upstream leaves keeping the
+  two offsets equal to the consumer, so this is ours. Without it a wheel toward
+  the strip's own edge is lost, because the strip decides from its own pixels.
 - **Shift+wheel over the horizontal strip is handled here** (maintainer's call,
   2026-11-06). `RawScrollbarState._pointerSignalEventDelta` reads `dx` on a
   horizontal bar and ignores `pointerAxisModifiers` (flutter/flutter#193282),
@@ -79,7 +97,7 @@ master, so the next author is free to reverse it without knowing what breaks.
 
 ## Code
 
-`widgets/synced_scroll_controllers.dart` — `SyncedScrollControllers`
+`widgets/synced_scroll_controllers.dart` — `SyncedScrollControllers`, `_AlignedScrollbarController`
 `widgets/flutter_table_plus.dart` — `_handleHorizontalScrollbarSignal`
 `utils/no_cascade_guard.dart` — `NoCascadeGuard`, `resolveJump`, `reset`
 `utils/clamped_scroll_delta.dart` — `clampedScrollDelta`

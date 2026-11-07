@@ -47,6 +47,8 @@ Future<void> _pump(
   ValueChanged<double>? onScaleChanged,
   List<Map<String, dynamic>>? data,
   Widget? noDataWidget,
+  TablePlusTheme theme = const TablePlusTheme(),
+  bool settle = true,
 }) async {
   tester.view.physicalSize = const Size(800, 600);
   tester.view.devicePixelRatio = 1.0;
@@ -67,6 +69,7 @@ Future<void> _pump(
                     rowId: (r) => r['id'] as String,
                     onScaleChanged: onScaleChanged,
                     noDataWidget: noDataWidget,
+                    theme: theme,
                   )
                 : FlutterTablePlus<Map<String, dynamic>>(
                     key: _tableKey,
@@ -76,13 +79,14 @@ Future<void> _pump(
                     wheelMotion: wheelMotion as WheelMotion?,
                     onScaleChanged: onScaleChanged,
                     noDataWidget: noDataWidget,
+                    theme: theme,
                   ),
           ),
         ),
       ),
     ),
   );
-  await tester.pumpAndSettle();
+  if (settle) await tester.pumpAndSettle();
 }
 
 /// Every scroll offset on [axis] in the table: the body, and the header and
@@ -891,6 +895,208 @@ void main() {
     final body = _bodyPosition(tester, Axis.vertical);
 
     expect(content.height, body.maxScrollExtent + body.viewportDimension);
+  });
+
+  group('a scrollbar that comes and goes', () {
+    final desktop = TargetPlatformVariant.only(TargetPlatform.windows);
+    final fewRows = _rows.take(3).toList();
+
+    TablePlusTheme scrollbars({bool vertical = true, bool horizontal = true}) =>
+        TablePlusTheme(
+          scrollbarTheme: TablePlusScrollbarTheme(
+            showVertical: vertical,
+            showHorizontal: horizontal,
+          ),
+        );
+
+    testWidgets('losing the vertical one leaves the horizontal one in step', (
+      tester,
+    ) async {
+      await _pump(tester, wheelMotion: null);
+      await _wheel(tester, 600);
+      await _wheel(tester, 300, shift: true);
+      expect(_offsets(tester, Axis.horizontal), everyElement(300.0));
+
+      await _pump(tester, wheelMotion: null, data: fewRows);
+      expect(_strip(Axis.vertical), findsNothing);
+      expect(_offsets(tester, Axis.horizontal), everyElement(300.0));
+
+      await _wheel(
+        tester,
+        -60,
+        shift: true,
+        at: tester.getCenter(_strip(Axis.horizontal)),
+      );
+      expect(_offsets(tester, Axis.horizontal), everyElement(240.0));
+
+      await _pump(tester, wheelMotion: null);
+      expect(_strip(Axis.vertical), findsOneWidget);
+      expect(_offsets(tester, Axis.horizontal), everyElement(240.0));
+    }, variant: desktop);
+
+    testWidgets(
+      'a vertical track animation does not reach the horizontal axis',
+      (tester) async {
+        await _pump(tester, wheelMotion: null);
+        final click = await tester.startGesture(
+          tester.getTopLeft(_strip(Axis.vertical)) + const Offset(6, 150),
+          kind: PointerDeviceKind.mouse,
+        );
+        await click.up();
+        await tester.pump(_frame);
+        await tester.pump(_frame);
+        expect(
+          _offsets(tester, Axis.vertical),
+          everyElement(greaterThan(0.0)),
+          reason: 'the rows have to change while the track animation runs',
+        );
+
+        await _pump(tester, wheelMotion: null, data: fewRows);
+
+        expect(_offsets(tester, Axis.horizontal), everyElement(0.0));
+      },
+      variant: desktop,
+    );
+
+    testWidgets(
+      'a vertical one turned on starts at the body and takes a wheel',
+      (tester) async {
+        await _pump(
+          tester,
+          wheelMotion: null,
+          theme: scrollbars(vertical: false),
+        );
+        await _wheel(tester, 900);
+        expect(_offsets(tester, Axis.vertical), [900.0]);
+
+        await _pump(
+          tester,
+          wheelMotion: null,
+          theme: scrollbars(),
+          settle: false,
+        );
+        expect(_offsets(tester, Axis.vertical), [
+          900.0,
+          900.0,
+        ], reason: 'in the frame it appears');
+
+        await _wheel(tester, -60, at: tester.getCenter(_strip(Axis.vertical)));
+        expect(_offsets(tester, Axis.vertical), [840.0, 840.0]);
+      },
+      variant: desktop,
+    );
+
+    testWidgets(
+      'a horizontal one turned on starts at the body and takes a wheel',
+      (tester) async {
+        await _pump(
+          tester,
+          wheelMotion: null,
+          theme: scrollbars(horizontal: false),
+        );
+        await _wheel(tester, 300, shift: true);
+        expect(_offsets(tester, Axis.horizontal), [300.0, 300.0]);
+
+        await _pump(
+          tester,
+          wheelMotion: null,
+          theme: scrollbars(),
+          settle: false,
+        );
+        expect(_offsets(tester, Axis.horizontal), [
+          300.0,
+          300.0,
+          300.0,
+        ], reason: 'in the frame it appears');
+
+        await _wheel(
+          tester,
+          -60,
+          shift: true,
+          at: tester.getCenter(_strip(Axis.horizontal)),
+        );
+        expect(_offsets(tester, Axis.horizontal), [240.0, 240.0, 240.0]);
+      },
+      variant: desktop,
+    );
+
+    testWidgets(
+      'after losing the vertical one, a horizontal click pages from 0',
+      (tester) async {
+        await _pump(tester, wheelMotion: null);
+        await _wheel(tester, 600);
+        expect(_offsets(tester, Axis.horizontal), everyElement(0.0));
+
+        await _pump(tester, wheelMotion: null, data: fewRows);
+        expect(_offsets(tester, Axis.horizontal), everyElement(0.0));
+
+        final strip = _strip(Axis.horizontal);
+        final click = await tester.startGesture(
+          tester.getTopRight(strip) + const Offset(-20, 6),
+          kind: PointerDeviceKind.mouse,
+        );
+        await click.up();
+        await tester.pumpAndSettle();
+
+        final offsets = _offsets(tester, Axis.horizontal);
+        expect(offsets.toSet(), hasLength(1));
+        expect(offsets.first, inExclusiveRange(0.0, 400.0));
+      },
+      variant: desktop,
+    );
+
+    testWidgets(
+      'one turned on while the rows shrink settles in step, then a click takes',
+      (tester) async {
+        await _pump(
+          tester,
+          wheelMotion: null,
+          theme: scrollbars(vertical: false),
+        );
+        await _wheel(tester, 100000);
+
+        await _pump(
+          tester,
+          wheelMotion: null,
+          data: _rows.take(20).toList(),
+          theme: scrollbars(),
+        );
+        final settled = _offsets(tester, Axis.vertical);
+        expect(settled.toSet(), hasLength(1));
+        final body = _bodyPosition(tester, Axis.vertical);
+        expect(settled.first, body.maxScrollExtent);
+
+        final click = await tester.startGesture(
+          tester.getTopLeft(_strip(Axis.vertical)) + const Offset(6, 3),
+          kind: PointerDeviceKind.mouse,
+        );
+        await click.up();
+        await tester.pumpAndSettle();
+
+        final clicked = _offsets(tester, Axis.vertical);
+        expect(clicked.toSet(), hasLength(1));
+        expect(clicked.first, lessThan(settled.first));
+      },
+      variant: desktop,
+    );
+
+    testWidgets('one turned back on takes where the body went meanwhile', (
+      tester,
+    ) async {
+      await _pump(tester, wheelMotion: null);
+      await _wheel(tester, 600);
+      await _pump(
+        tester,
+        wheelMotion: null,
+        theme: scrollbars(vertical: false),
+      );
+      await _wheel(tester, 300);
+      expect(_offsets(tester, Axis.vertical), [900.0]);
+
+      await _pump(tester, wheelMotion: null, theme: scrollbars());
+
+      expect(_offsets(tester, Axis.vertical), [900.0, 900.0]);
+    }, variant: desktop);
   });
 
   group('changing wheelMotion', () {

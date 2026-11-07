@@ -18,11 +18,13 @@ class NoCascadeGuard {
   /// the echo of our own prior jump and must be suppressed to break the loop.
   ///
   /// On a real (non-echo) change it arms [slave]'s one-shot suppression so the
-  /// jump it is about to receive won't cascade back.
+  /// jump it is about to receive won't cascade back, unless [slave] is already
+  /// at that offset: such a jump sends no notification to consume the flag.
   double? resolveJump({
     required Object master,
     required Object slave,
     required double masterOffset,
+    required double slaveOffset,
     required double slaveMin,
     required double slaveMax,
   }) {
@@ -31,8 +33,9 @@ class NoCascadeGuard {
       return null;
     }
 
-    _suppress[slave] = true;
-    return masterOffset.clamp(slaveMin, slaveMax);
+    final target = masterOffset.clamp(slaveMin, slaveMax);
+    if (target != slaveOffset) _suppress[slave] = true;
+    return target;
   }
 
   /// Clears all armed suppression (called when controllers are (re)initialized).

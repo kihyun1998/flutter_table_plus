@@ -9,6 +9,8 @@
     *   **Drag-selection auto-scroll.** A notch over a scrollbar during auto-scroll can now be lost when a motion is set, because auto-scroll stops the motion, as it does for a notch over the body. With `wheelMotion: null` the notch still takes effect
     *   **Unchanged.** `wheelMotion: null` moves at once, over a scrollbar too. `FlutterTablePlus` takes no new argument
     *   **Dependency.** `flutter_smooth_wheel_scroll` is now `^0.1.6`, the first version with `ScrollbarController`. The SDK floor is unchanged
+*   **FIX**: a scrollbar that appears or disappears no longer leaves another out of step with the table ([#214](https://github.com/kihyun1998/flutter_table_plus/issues/214))
+    *   **What a consumer sees differently.** When the rows shrank enough to hide the vertical scrollbar, the horizontal one took over its position, so it stood at the wrong place and a wheel or a track click over it could be lost or jump the table. It now keeps its own. A scrollbar turned on with `showVertical` or `showHorizontal` now starts where the table is, instead of at 0
 
 ## 2.20.1
 

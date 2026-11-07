@@ -13,6 +13,7 @@ void main() {
           master: 'A',
           slave: 'B',
           masterOffset: 50,
+          slaveOffset: -1,
           slaveMin: 0,
           slaveMax: 100,
         ),
@@ -27,6 +28,7 @@ void main() {
         master: 'A',
         slave: 'B',
         masterOffset: 50,
+        slaveOffset: -1,
         slaveMin: 0,
         slaveMax: 100,
       );
@@ -36,6 +38,7 @@ void main() {
           master: 'B',
           slave: 'A',
           masterOffset: 50,
+          slaveOffset: -1,
           slaveMin: 0,
           slaveMax: 100,
         ),
@@ -49,6 +52,7 @@ void main() {
         master: 'A',
         slave: 'B',
         masterOffset: 50,
+        slaveOffset: -1,
         slaveMin: 0,
         slaveMax: 100,
       );
@@ -56,6 +60,7 @@ void main() {
         master: 'B',
         slave: 'A',
         masterOffset: 50,
+        slaveOffset: -1,
         slaveMin: 0,
         slaveMax: 100,
       );
@@ -64,6 +69,7 @@ void main() {
           master: 'A',
           slave: 'B',
           masterOffset: 70,
+          slaveOffset: -1,
           slaveMin: 0,
           slaveMax: 100,
         ),
@@ -77,6 +83,7 @@ void main() {
           master: 'A',
           slave: 'B',
           masterOffset: 150,
+          slaveOffset: -1,
           slaveMin: 0,
           slaveMax: 100,
         ),
@@ -87,6 +94,7 @@ void main() {
           master: 'A',
           slave: 'B',
           masterOffset: -10,
+          slaveOffset: -1,
           slaveMin: 0,
           slaveMax: 100,
         ),
@@ -100,6 +108,7 @@ void main() {
         master: 'A',
         slave: 'B',
         masterOffset: 50,
+        slaveOffset: -1,
         slaveMin: 0,
         slaveMax: 100,
       );
@@ -110,6 +119,34 @@ void main() {
           master: 'B',
           slave: 'A',
           masterOffset: 30,
+          slaveOffset: -1,
+          slaveMin: 0,
+          slaveMax: 100,
+        ),
+        30,
+      );
+    });
+
+    test('a jump that would not move the slave arms nothing', () {
+      final g = NoCascadeGuard();
+      expect(
+        g.resolveJump(
+          master: 'A',
+          slave: 'B',
+          masterOffset: 50,
+          slaveOffset: 50,
+          slaveMin: 0,
+          slaveMax: 100,
+        ),
+        50,
+      );
+      // That jump sends no notification, so B's next one is a real change.
+      expect(
+        g.resolveJump(
+          master: 'B',
+          slave: 'A',
+          masterOffset: 30,
+          slaveOffset: 50,
           slaveMin: 0,
           slaveMax: 100,
         ),
