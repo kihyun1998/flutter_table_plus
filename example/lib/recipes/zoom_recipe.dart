@@ -23,8 +23,11 @@ import '../theme/table_palette.dart';
 /// intercepting Ctrl+wheel, and Ctrl+wheel scrolls like an ordinary wheel. The
 /// two are only separable by setting the flag explicitly, which is the switch
 /// this recipe puts on a knob: turn it off with zoom still on and one gesture
-/// zooms *and* scrolls at the same time. That is worth doing once, because it
-/// is exactly the bug the flag exists to prevent — a `PointerSignalEvent`
+/// both scrolls and asks for a scale. Under the default wheel motion, the scale
+/// this recipe applies at once stops that motion, so what shows is the zoom, and
+/// the scroll only when the scale does not change; with `wheelMotion: null` both
+/// show. That is worth doing once, because scrolling under a zoom is exactly
+/// what the flag exists to prevent — a `PointerSignalEvent`
 /// cannot be stopped from propagating, so blocking the scroll is a decision the
 /// scroll *physics* has to make before the scrollable ever registers for the
 /// event.
@@ -198,7 +201,8 @@ class _ScaleStrip extends StatelessWidget {
           Text(
             blocking
                 ? 'zoom only'
-                : 'zooms and scrolls at once — blockModifierScroll is off',
+                : 'blockModifierScroll is off: the wheel scrolls too, until a '
+                      'scale change stops its motion',
             style: TextStyle(
               fontSize: 11.5,
               color: blocking ? scheme.onSurfaceVariant : scheme.error,

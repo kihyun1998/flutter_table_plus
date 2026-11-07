@@ -31,8 +31,8 @@ class _ScaleBlockingScrollPhysics extends ClampingScrollPhysics {
 }
 ```
 
-- `onScaleChanged`가 non-null일 때만 이 physics를 적용
-- null이면 기존 `ClampingScrollPhysics` 유지
+- 차단 여부를 정하는 값 하나로 두 축의 physics를 함께 결정 (이 패키지에서는 `blockModifierScroll`, 기본은 `onScaleChanged` non-null)
+- 차단하지 않으면 기존 `ClampingScrollPhysics` 유지
 - `HardwareKeyboard.instance.isControlPressed`는 동기적으로 확인 가능
 
 이 physics가 스크롤을 막으므로 제스처 시점의 offset을 따로 저장할 필요가 없습니다.
