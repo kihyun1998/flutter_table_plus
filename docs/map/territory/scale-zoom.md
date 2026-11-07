@@ -32,15 +32,17 @@ widths and text do.
   read in `didUpdateWidget`, before the new layout, because layout clamps a scale
   down from the end first and the ratio would then apply twice. No offset is kept
   between the gesture and the change: a caller may ignore the request or apply it
-  later (#215). With the block on, the body's physics refuse the wheel on both
-  axes and a scrollbar's hand-off asks those physics, so the offset read is the
-  one from before the gesture. With it off, the wheel has already moved the
-  offset, and the ratio applies to where it landed.
-- **Blocking and zooming are two switches** (#213). `blockModifierScroll` decides
-  the physics on both axes; `onScaleChanged` decides whether the `Listener` sends a
-  request. The flag defaults to following the callback, so the default couples
-  them. Off with a callback does both, the case 2.9.1 promised, with the limit
-  below.
+  later. It needs none, because whenever a request goes out the body's physics on
+  both axes refuse the wheel, and a scrollbar's hand-off asks those physics
+  (#215).
+- **One switch, and it turns off both** (#213). `blockModifierScroll` decides the
+  physics on both axes and whether the `Listener` sends a request, so the flag off
+  means a plain scroll and no zoom. It defaults to following `onScaleChanged`.
+  This is the maintainer's call, made against `flutter_folderview`, which holds the
+  same contract and pins it in a test, and the versions read here since the flag
+  arrived, whose `Listener` read it. It withdraws 2.9.1's "zoom without scroll
+  blocking", which no version read did. Zoom and scroll on one wheel also had a
+  limit: the scale correction's `jumpTo` ended the motion that wheel started.
 - **Not everything scales.** Which theme fields participate is decided in the
   theme system, not here.
 - **What crosses back out is unscaled, and what comes in is converted.** A
@@ -81,9 +83,4 @@ widths and text do.
 
 ## Known holes / open
 
-- **Off with a callback, a motion and a caller that applies at once: the zoom wins.**
-  The scale correction's `jumpTo` ends the motion the same wheel just started.
-  Measured 2026-11-07: spring, scale 0.95, offset stays 0; `wheelMotion: null`, 60
-  then 57. The maintainer chose to state this rather than keep the motion through
-  the correction, which would change "a scale correction stops a motion" for every
-  scale change and has not been measured.
+**None.**
