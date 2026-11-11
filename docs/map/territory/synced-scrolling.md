@@ -103,6 +103,26 @@ master, so the next author is free to reverse it without knowing what breaks.
   horizontal page around the table takes it (measured 2026-11-11: page 60, table
   unmoved). Remove the handler, and this set with it, when the SDK reads the
   modifier.
+- **Whether the body scrolls is decided against the body's own height** (#231).
+  The vertical strip is an overlay and reserves no width, but the horizontal
+  strip has a spacer of `trackWidth` under the body, so the body's viewport is
+  the table's height minus the header and that spacer. `needsVerticalScroll`
+  compares the content against the table's height minus `horizontalTrackHeight`,
+  the one value the spacer and the vertical strip's `bottom` also take, so the
+  three cannot disagree. Compared against the whole height, a table that
+  overflowed by less than the track scrolled with no vertical scrollbar:
+  measured 2026-11-11 with the default theme, five rows and a 1000px column,
+  heights 296 to 307 scrolled by up to 12px with no bar. The same decision
+  drives `LastRowBorderBehavior.smart`, which drew the last row's border in that
+  band. `TablePlusTheme.scaledBy` leaves `scrollbarTheme` unscaled, its
+  doc-comment's reason being that the scrollbar renders in an overlay; the
+  spacer is not an overlay but takes the same `trackWidth`, so it is 12 at every
+  scale (measured at scale 2). No record says whether the spacer is meant to
+  stay unscaled; the decision reads whatever value the spacer takes. `needsHorizontalScroll` has no
+  such term, because nothing is reserved beside the body.
+  `test/vertical_scrollbar_track_band_test.dart` pins both ends of the band, the
+  cases with no spacer, scale 2 and the smart border. Prior art:
+  flutter_folderview #177 made the same correction.
 - **The constraint is a floor.** `SyncedScrollControllers` builds on
   `ScrollbarController`, which 0.1.6 introduced. Below that, 0.1.0 declared
   Flutter `>=3.41.0`, the SDK it was built with, so a 3.32 user could not resolve
@@ -153,6 +173,7 @@ pixels and extents and both end in `position.pointerScroll`, which is where
 → [Scale / zoom](scale-zoom.md) — a scale change re-derives both offsets from the old ones, through this pair
 → [Column resizing](column-resize.md) — the resize drag auto-scrolls the same horizontal controller
 → [Column width resolution](column-width.md) — total content width is what there is to scroll; `stretchLastColumn` changes it
+→ [Row render geometry](row-render-geometry.md) — `needsVerticalScroll`, decided here, is what `LastRowBorderBehavior.smart` reads
 
 ## Known holes / open
 

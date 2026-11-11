@@ -25,7 +25,7 @@ right-hand column is the measurement, not a guess at risk.
 | `lib/src/widgets/drag_selection_controller.dart` | the auto-scroll `Timer` and the gesture state machine — a leak keeps scrolling in the consumer's app |
 | `lib/src/widgets/row_locator.dart` | the port both sides of drag-select agree on |
 | `lib/src/widgets/synced_scroll_controllers.dart` | the single-coordinate-frame invariant; break it and every drag coordinate is wrong by an offset |
-| `lib/src/widgets/flutter_table_plus.dart` | where edit commits and selection callbacks cross into the **consumer's data** |
+| `lib/src/widgets/flutter_table_plus.dart` | where edit commits and selection callbacks cross into the **consumer's data**. It also decides whether the body scrolls from heights it computes rather than reads from the body: #231 shipped a body that scrolled by up to 12px with no vertical scrollbar, because the decision left out the horizontal scrollbar's spacer |
 | `lib/src/widgets/row_geometry.dart` | drag-select hit-testing reads row geometry, and #128 records that it has **never** been exercised against changing row heights |
 | `lib/src/widgets/table_body.dart` | it caches measured row heights; #120 shipped stale ones when `calculateRowHeight` changed identity |
 | `lib/src/widgets/table_plus_merged_row.dart` | it owns the height distribution — each member's extent, and which cell absorbs the group's bottom border. #121 shipped every measured height computed and discarded, through 2.16.1 |
