@@ -240,7 +240,7 @@ LastRowBorderBehavior.never
 // Always show bottom border on last row
 LastRowBorderBehavior.always
 
-// Smart: show only when content fills viewport
+// Smart: show only when the body does not scroll vertically
 LastRowBorderBehavior.smart
 ```
 
