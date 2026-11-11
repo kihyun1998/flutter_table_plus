@@ -1,3 +1,10 @@
+## Unreleased
+
+*   **FIX**: a Shift+wheel over the horizontal scrollbar no longer ends a thumb drag ([#225](https://github.com/kihyun1998/flutter_table_plus/issues/225))
+    *   **What a consumer sees differently.** A Shift+wheel notch over the horizontal scrollbar while its thumb was dragged ended the drag, so the next pointer move no longer moved the table. Off the web the table now ignores that notch while a pointer is pressed on the scrollbar, as Flutter's own scrollbar does with a wheel during a thumb drag, and the drag keeps moving the table. A horizontal page around the table takes the notch instead. A press held on the track outside the thumb ignores it too
+    *   **On the web.** The notch still moves the table and ends the drag, as Flutter's scrollbar lets a wheel through there
+    *   **Unchanged.** A Shift+wheel over the table body during a thumb drag still moves the table and ends the drag
+
 ## 2.21.0
 
 *   **BREAKING**: a mouse wheel turned over a scrollbar animates with `wheelMotion`, as it does over the body ([#212](https://github.com/kihyun1998/flutter_table_plus/issues/212))
