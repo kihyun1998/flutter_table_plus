@@ -1265,10 +1265,19 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
                 _horizontalScrollController = horizontalScrollController;
 
                 // Determine if scrolling is needed
-                final bool needsVerticalScroll =
-                    totalContentHeight > availableHeight;
                 final bool needsHorizontalScroll =
                     contentWidth > availableWidth;
+                final bool showsHorizontalScrollbar =
+                    theme.scrollbarTheme.showHorizontal &&
+                    needsHorizontalScroll;
+                // The height reserved under the body for the horizontal
+                // scrollbar, which the body's viewport does not get.
+                final double horizontalTrackHeight = showsHorizontalScrollbar
+                    ? theme.scrollbarTheme.trackWidth
+                    : 0;
+                final bool needsVerticalScroll =
+                    totalContentHeight >
+                    availableHeight - horizontalTrackHeight;
 
                 // Header and body live in independent horizontal Scrollables —
                 // the body controller is the user-input master, the header is
@@ -1433,11 +1442,8 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
                               // overlay (positioned at bottom). Sits outside
                               // the horizontal scrollables so it doesn't
                               // participate in horizontal scrolling.
-                              if (theme.scrollbarTheme.showHorizontal &&
-                                  needsHorizontalScroll)
-                                SizedBox(
-                                  height: theme.scrollbarTheme.trackWidth,
-                                ),
+                              if (showsHorizontalScrollbar)
+                                SizedBox(height: horizontalTrackHeight),
                             ],
                           ),
 
@@ -1448,11 +1454,7 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
                               key: const ValueKey(Axis.vertical),
                               top: theme.headerTheme.height,
                               right: 0,
-                              bottom:
-                                  (theme.scrollbarTheme.showHorizontal &&
-                                      needsHorizontalScroll)
-                                  ? theme.scrollbarTheme.trackWidth
-                                  : 0,
+                              bottom: horizontalTrackHeight,
                               child: _buildScrollbarTrack(
                                 context: context,
                                 scrollbarTheme: theme.scrollbarTheme,
@@ -1463,8 +1465,7 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
                             ),
 
                           // Horizontal Scrollbar (bottom overlay)
-                          if (theme.scrollbarTheme.showHorizontal &&
-                              needsHorizontalScroll)
+                          if (showsHorizontalScrollbar)
                             Positioned(
                               key: const ValueKey(Axis.horizontal),
                               left: 0,

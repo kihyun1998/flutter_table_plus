@@ -79,7 +79,9 @@ calculation ultimately asks.
   the same shape as the measurement branch's, one level up.
 - **The last row's border is a named behaviour**, not an edge case:
   `LastRowBorderBehavior` makes the choice explicit rather than implicit in a
-  conditional.
+  conditional. `smart` reads the parent's `needsVerticalScroll`, which is decided
+  against the body's own height, the horizontal scrollbar's spacer left out
+  ([Synced scrolling](synced-scrolling.md), #231).
 
 ## Code
 
