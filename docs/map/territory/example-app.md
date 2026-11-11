@@ -338,6 +338,7 @@ deliberately not extracted with the shell: every recipe imports it and
 → [Viewport-local coordinates come from one frame](../invariant/viewport-local-frame.md) — the preview scales the table, and the belief that scaling broke the frame is the one thing here that was asserted, measured, and withdrawn
 → [A guard reads the destination, never the source](../invariant/guard-the-destination.md) — measured here three times: #110’s blues, and both of #113’s guards reading a theme object and a wrapper style instead of what is drawn
 → [A file's directory is decided before it is written](../invariant/tree-rule.md) — `example/` is a package of its own with its own manifest, and `example/test/` is a gate rather than a demo detail (#55)
+→ [A literal test pointer id can be a held gesture's id](../invariant/test-pointer-ids.md) — `example/test/` runs on the same flutter_test pointer counter; the zoom recipe's Ctrl+wheel helper builds its pointer with `tester.nextPointer` because the same file holds gestures with `startGesture`
 
 ## Blast radius
 

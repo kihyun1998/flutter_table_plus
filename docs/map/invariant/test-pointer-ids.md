@@ -30,14 +30,17 @@ gesture. Hover and scroll events register no hit test, so a later
 Any test that sends a wheel, hover or trackpad event through a hand-built
 `TestPointer` while a gesture from `startGesture` may be held is exposed. That is
 how a held drag meets a wheel, how a zoom gesture meets a modifier-wheel, and how
-a scrollbar thumb drag meets a notch. Those tests sit in three territories and
-three test files, and none of them knows the counter is shared.
+a scrollbar thumb drag meets a notch. Those tests sit in four territories and
+four test files. One of them is in `example/test/`, which runs under its own
+`flutter test` on the same flutter_test counter. None of them knows the counter
+is shared.
 
 ## Territories it holds in
 
 → [Drag selection](../territory/drag-selection.md) — the 'a scroll under a held drag' group in `test/drag_selection_test.dart` holds a drag and sends a wheel; its helper is where the collision was measured
 → [Synced scrolling](../territory/synced-scrolling.md) — `test/smooth_wheel_scroll_test.dart` sends wheel and trackpad events through hand-built `TestPointer`s, one of them beside a held scrollbar-thumb gesture
 → [Scale / zoom](../territory/scale-zoom.md) — `test/scale_zoom_test.dart` sends every Ctrl+wheel through a hand-built `TestPointer`
+→ [Example app](../territory/example-app.md) — `example/test/recipes_b_test.dart` sends its zoom recipe's Ctrl+wheel through a hand-built `TestPointer`, in a file that also calls `startGesture`
 
 ## What a violation looks like
 
@@ -55,22 +58,26 @@ scroll, down or pan-zoom start event sent meanwhile: `GestureBinding` stores a h
 for a down or a pan-zoom start and drops it on up, cancel or pan-zoom
 end, so only the counter's value crosses from one test to the next.
 
-- **The two shared helpers were the exposure, and now use
-  `tester.nextPointer`.** `_wheel` in `test/smooth_wheel_scroll_test.dart` and
-  `_ctrlWheel` in `test/scale_zoom_test.dart` both built `TestPointer(1, …)`.
-  In a filtered run the first `startGesture` receives id 1, so a test that
-  held its gesture while calling either helper would have failed with the
-  assertion above. No test does so today. The probe: a test that pumps the
+- **Every shared helper now uses `tester.nextPointer`.** Five helpers built
+  `TestPointer(1, …)`: `_wheel` in `test/smooth_wheel_scroll_test.dart`;
+  `_ctrlWheel` in `test/scale_zoom_test.dart`, and in the same file the
+  group-local `wheel` in 'the offsets across a scale change' and
+  `ctrlWheelAt` in 'blockModifierScroll'; and `_ctrlWheel` in
+  `example/test/recipes_b_test.dart`, used by four tests in a file that also
+  calls `startGesture`. A helper is the exposure because a test written later
+  can call it while holding a gesture: in a filtered run the first
+  `startGesture` receives id 1, and the helper's next event would fail with
+  the assertion above. No test does so today. The probe: a test that pumps the
   table, expects `tester.nextPointer` to be 1, holds
   `tester.startGesture(const Offset(1, 1))`, calls the helper and releases,
-  run alone with `--plain-name`. It failed for both helpers with the literal
-  id and passed with `tester.nextPointer`. It was not kept: its `nextPointer`
+  run alone with `--plain-name`. It failed with the literal id and passed with
+  `tester.nextPointer` for `_wheel`, the scale-zoom `_ctrlWheel` and the
+  example `_ctrlWheel`; `wheel` and `ctrlWheelAt` were changed on the same
+  reading without a probe of their own. It was not kept: its `nextPointer`
   guard holds only when it runs first.
-- **`test/scale_zoom_test.dart` — five literal `TestPointer(1, …)` stay**:
-  three inside single tests, and two in group-local helpers, `wheel` in 'the
-  offsets across a scale change' and `ctrlWheelAt` in 'blockModifierScroll'.
-  The file calls no `startGesture`, `createGesture`, drag or tap, so no
-  gesture is ever down when they are sent.
+- **`test/scale_zoom_test.dart` — three literal `TestPointer(1, …)` inside
+  single tests stay.** The file calls no `startGesture`, `createGesture`, drag
+  or tap, so no gesture is ever down when they are sent.
 - **`test/smooth_wheel_scroll_test.dart` — two literal `TestPointer(1, …)`
   inside single tests stay**, the tilt wheel over the horizontal scrollbar and
   the trackpad scroll with the modifier. Neither test presses a gesture. Every
@@ -95,8 +102,10 @@ end, so only the counter's value crosses from one test to the next.
   `test/smooth_wheel_scroll_test.dart` and `test/scale_zoom_test.dart`, latent:
   no test called them under a held gesture. A probe that held the run's first
   gesture and called each helper failed under `--plain-name`. Both helpers now
-  use `tester.nextPointer`; the single-test literals were read site by site
-  and left.
+  use `tester.nextPointer`. A second change gave the same id to the two
+  group-local helpers in `test/scale_zoom_test.dart` and to `_ctrlWheel` in
+  `example/test/recipes_b_test.dart`. The single-test literals were read site
+  by site and left.
 
 ## Where it will recur
 
