@@ -75,6 +75,7 @@ read against this implementation.
 → [Widths and offsets are clamped on every path](../invariant/clamped-dimensions.md) — the auto-scroller clamps its proximity ratio
 → [A defect in these files produces no signal](../invariant/no-signal-on-failure.md) — three of the register's entries are here — the gesture state machine, the auto-scroll `Timer`, and the port both sides agree on
 → [A file's directory is decided before it is written](../invariant/tree-rule.md) — `drag_selection_controller.dart` is the named exception on the `widgets/` side: not a `Widget`, and placed there anyway
+→ [A literal test pointer id can be a held gesture's id](../invariant/test-pointer-ids.md) — a test that holds a drag and sends a wheel shares flutter_test's pointer counter with that drag, so the wheel's id comes from `tester.nextPointer`
 
 ## Blast radius
 
