@@ -117,8 +117,10 @@ master, so the next author is free to reverse it without knowing what breaks.
   band. `TablePlusTheme.scaledBy` leaves `scrollbarTheme` unscaled, its
   doc-comment's reason being that the scrollbar renders in an overlay; the
   spacer is not an overlay but takes the same `trackWidth`, so it is 12 at every
-  scale (measured at scale 2). No record says whether the spacer is meant to
-  stay unscaled; the decision reads whatever value the spacer takes. `needsHorizontalScroll` has no
+  scale (measured at scale 2). It stays unscaled by the maintainer's call
+  (2026-11-11): the spacer reserves the bar's room, so it follows the bar,
+  which is unscaled by that doc-comment. The decision reads whatever value the
+  spacer takes, so a later change to it moves all three together. `needsHorizontalScroll` has no
   such term, because nothing is reserved beside the body.
   `test/vertical_scrollbar_track_band_test.dart` pins both ends of the band, the
   cases with no spacer, scale 2 and the smart border. Prior art:
