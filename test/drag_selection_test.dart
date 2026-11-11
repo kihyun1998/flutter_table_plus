@@ -1374,7 +1374,8 @@ void main() {
       double dy, {
       bool shift = false,
     }) async {
-      final mouse = TestPointer(9, PointerDeviceKind.mouse);
+      // An id no gesture has been given yet.
+      final mouse = TestPointer(tester.nextPointer, PointerDeviceKind.mouse);
       await tester.sendEventToBinding(mouse.hover(at));
       if (shift) await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
       await tester.sendEventToBinding(mouse.scroll(Offset(0, dy)));
@@ -1407,6 +1408,57 @@ void main() {
       await g.up();
       await tester.pump();
       expect(h.ends.single, range(0, 11));
+    });
+
+    testWidgets('lands on a merged group as a pointer move there does', (
+      tester,
+    ) async {
+      // Rows 10..12 render as one 120px group at absolute 400..520.
+      const groups = [
+        MergedRowGroup<Map<String, dynamic>>(
+          groupId: 'g1',
+          rowKeys: ['10', '11', '12'],
+          mergeConfig: {},
+        ),
+      ];
+      // Absolute 500 is the group's last member row: a group shorter than its
+      // three members would put a later row there instead.
+      final expected = {...range(0, 9), 'g1'};
+
+      // The same place reached by a pointer move, in a table tall enough to
+      // show absolute 500 without scrolling.
+      final ref = await _pumpDragTable(
+        tester,
+        rowCount: 200,
+        tableHeight: 600,
+        mergedGroups: groups,
+        wheelMotion: null,
+      );
+      final rg = await holdDrag(tester, ref);
+      await rg.moveTo(_bodyPoint(tester, ref.tableKey, x: 50, row: 12.5));
+      await tester.pump();
+      await rg.up();
+      await tester.pump();
+      expect(ref.updates.last, expected);
+      expect(ref.ends.single, expected);
+
+      final h = await _pumpDragTable(
+        tester,
+        rowCount: 200,
+        mergedGroups: groups,
+        wheelMotion: null,
+      );
+      final g = await holdDrag(tester, h);
+
+      await wheel(tester, _bodyPoint(tester, h.tableKey, x: 50, row: 1.5), 440);
+
+      // Row 1.5 of the viewport, 440px further on: absolute 500.
+      expect(h.updates.last, expected);
+      expect(h.updates.last, ref.updates.last);
+      await g.up();
+      await tester.pump();
+      expect(h.ends.single, expected);
+      expect(h.ends.single, ref.ends.single);
     });
 
     for (final motion in <WheelMotion?>[null, const WheelMotion.spring()]) {

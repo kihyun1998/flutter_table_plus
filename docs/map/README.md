@@ -203,6 +203,7 @@ worth watching.
 **Cross-cutting invariants** —
 [widths and offsets are clamped on every path](invariant/clamped-dimensions.md) ·
 [the widget-test font is a square per glyph](invariant/test-font-square.md) ·
+[a literal test pointer id can be a held gesture's id](invariant/test-pointer-ids.md) ·
 [do not work around an upstream contract here](invariant/upstream-contract.md) ·
 [never re-assemble by hand-listing fields](invariant/no-hand-enumeration.md) ·
 [viewport-local coordinates come from one frame](invariant/viewport-local-frame.md) ·
