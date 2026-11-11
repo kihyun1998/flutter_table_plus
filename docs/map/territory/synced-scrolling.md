@@ -89,7 +89,20 @@ master, so the next author is free to reverse it without knowing what breaks.
   hand-off, not here. That registration is why there is no double
   move on Android, where the strip's `Scrollable` is hit and registers first.
   It goes through `position.pointerScroll`, so it takes the hand-off above.
-  Remove it when the SDK reads the modifier.
+  While a pointer is pressed on the strip it claims nothing, off the web, as
+  `RawScrollbarState._receivedPointerSignal` refuses a wheel while `_thumbDrag`
+  is set (`_thumbDrag == null || kIsWeb`, Flutter 3.47.1); the strip's
+  `pointerScroll` goes idle and so would end the drag. The same `Listener`
+  counts the pressed pointers with `onPointerDown`/`onPointerUp`/`onPointerCancel`.
+  That set is wider than `_thumbDrag`, which only the thumb's drag recognizer
+  sets: a press held on the track outside the thumb, a secondary-button press,
+  and a thumb press before the drag recognizer starts also refuse the notch,
+  where the SDK takes it. Kept wide by the maintainer's call (2026-11-11), shown
+  those three cases (read from source, not run) against narrowing to the SDK's
+  private thumb test; flutter_folderview keeps the same set. A refused notch is left to the resolver, so a
+  horizontal page around the table takes it (measured 2026-11-11: page 60, table
+  unmoved). Remove the handler, and this set with it, when the SDK reads the
+  modifier.
 - **The constraint is a floor.** `SyncedScrollControllers` builds on
   `ScrollbarController`, which 0.1.6 introduced. Below that, 0.1.0 declared
   Flutter `>=3.41.0`, the SDK it was built with, so a 3.32 user could not resolve
@@ -98,7 +111,7 @@ master, so the next author is free to reverse it without knowing what breaks.
 ## Code
 
 `widgets/synced_scroll_controllers.dart` — `SyncedScrollControllers`, `_AlignedScrollbarController`
-`widgets/flutter_table_plus.dart` — `_handleHorizontalScrollbarSignal`
+`widgets/flutter_table_plus.dart` — `_handleHorizontalScrollbarSignal`, `_horizontalScrollbarPointers`
 `utils/no_cascade_guard.dart` — `NoCascadeGuard`, `resolveJump`, `reset`
 `utils/clamped_scroll_delta.dart` — `clampedScrollDelta`
 `test/smooth_wheel_scroll_test.dart` — per-frame alignment under `wheelMotion`
@@ -142,17 +155,27 @@ pixels and extents and both end in `position.pointerScroll`, which is where
 
 ## Known holes / open
 
-- **Shift+wheel during a thumb drag ends the drag.** Measured 2026-11-07 on the
-  Windows target, `wheelMotion: null`: a 20px drag reached 60, a Shift+wheel of
-  60 reached 120, and a further 20px drag left it at 120, with no exception. A
-  plain wheel over the bar is ignored during a thumb drag off the web
-  (`RawScrollbarState._thumbDrag`), but over the body it ends the drag too,
-  because the mirrored `jumpTo` goes idle. Telling a drag apart here would take
-  state for a case nobody has reported.
+- **A wheel over the body during a thumb drag ends the drag.** The mirrored
+  `jumpTo` goes idle on the strip. Measured 2026-11-11 on the Windows target,
+  `wheelMotion: null`: a 20px drag reached 60, a Shift+wheel of 60 over the body
+  reached 120, and a further 20px drag left it at 120. A single `Scrollable`
+  under a `Scrollbar` does the same, read from Flutter 3.47.1 and not run:
+  `Scrollable` registers a wheel with no drag check, and
+  `ScrollPositionWithSingleContext.pointerScroll` goes idle. Left as it is.
 - **An inertia cancel over a strip does not stop a motion.**
   `RawScrollbarState._receivedPointerSignal` answers
   `PointerScrollInertiaCancelEvent` with a `jumpTo` on the strip alone, so the
   body's motion runs on; over the body the event stops it. Trackpad inertia only.
+
+**Closed: Shift+wheel during a thumb drag no longer ends the drag** (#225).
+On the Windows target a 20px thumb drag reached 60. Measured 2026-11-07: with
+`wheelMotion: null` a Shift+wheel of 60 then took it to 120 and a further 20px
+drag left it there; with a spring the notch moved nothing within a frame and the
+further drag reached 61.6, not 120. Remeasured 2026-11-11 before the fix: the
+notch took it to 120 with `wheelMotion: null`, and the spring's further drag
+reached 61.6. The strip now claims no notch while a pointer is pressed on it;
+`test/smooth_wheel_scroll_test.dart` pins both motions, and the release and the
+cancel that clear the set.
 
 **Closed: the vertical strip's end is the body's.** The strip's `contentExtent`
 subtracted `trackWidth` when the table scrolled sideways, 12px with the default

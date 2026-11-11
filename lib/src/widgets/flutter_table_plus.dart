@@ -499,6 +499,9 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
 
   final ValueNotifier<bool> _isHovered = ValueNotifier<bool>(false);
 
+  /// The pointers pressed on the horizontal scrollbar track.
+  final Set<int> _horizontalScrollbarPointers = {};
+
   /// Column resize state: tracks user-resized widths by column key
   final Map<String, double> _resizedWidths = {};
 
@@ -1122,6 +1125,15 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
         );
       },
       child: Listener(
+        onPointerDown: isVertical
+            ? null
+            : (event) => _horizontalScrollbarPointers.add(event.pointer),
+        onPointerUp: isVertical
+            ? null
+            : (event) => _horizontalScrollbarPointers.remove(event.pointer),
+        onPointerCancel: isVertical
+            ? null
+            : (event) => _horizontalScrollbarPointers.remove(event.pointer),
         onPointerSignal: isVertical
             ? null
             : (event) => _handleHorizontalScrollbarSignal(event, controller),
@@ -1168,8 +1180,8 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
   }
 
   /// Moves [controller] by a mouse wheel turned with an axis modifier held,
-  /// unless another scroll view has claimed the event or the wheel could not
-  /// move [controller].
+  /// unless another scroll view has claimed the event, the wheel could not
+  /// move [controller], or, off the web, a pointer is pressed on the track.
   void _handleHorizontalScrollbarSignal(
     PointerSignalEvent event,
     ScrollController controller,
@@ -1177,6 +1189,7 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
     if (event is! PointerScrollEvent || event.kind != PointerDeviceKind.mouse) {
       return;
     }
+    if (_horizontalScrollbarPointers.isNotEmpty && !kIsWeb) return;
     final modifiers = ScrollConfiguration.of(context).pointerAxisModifiers;
     if (!HardwareKeyboard.instance.logicalKeysPressed.any(modifiers.contains)) {
       return;

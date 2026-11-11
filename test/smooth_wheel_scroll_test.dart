@@ -805,30 +805,80 @@ void main() {
       expect(_offsets(tester, Axis.horizontal), everyElement(0.0));
     }, variant: desktops);
 
-    testWidgets('during a thumb drag throws nothing and keeps in step', (
-      tester,
-    ) async {
-      await _pump(tester, wheelMotion: const WheelMotion.spring());
-      final at = thumb(tester);
-      final drag = await tester.startGesture(at, kind: PointerDeviceKind.mouse);
-      await tester.pump(_frame);
-      await drag.moveBy(const Offset(20, 0));
-      await tester.pump(_frame);
+    for (final (name, motion) in <(String, WheelMotion?)>[
+      ('jumps', null),
+      ('springs', const WheelMotion.spring()),
+    ]) {
+      testWidgets('during a thumb drag moves nothing and the drag still leads '
+          'when the wheel $name', (tester) async {
+        await _pump(tester, wheelMotion: motion);
+        final at = thumb(tester);
+        final drag = await tester.startGesture(
+          at,
+          pointer: 1,
+          kind: PointerDeviceKind.mouse,
+        );
+        await tester.pump(_frame);
+        await drag.moveBy(const Offset(20, 0));
+        await tester.pump(_frame);
+        final dragged = _offsets(tester, Axis.horizontal);
+        expect(dragged.toSet(), hasLength(1));
+        final step = dragged.first;
+        expect(step, greaterThan(0.0), reason: 'the drag has to move first');
 
-      final mouse = TestPointer(2, PointerDeviceKind.mouse);
-      await tester.sendEventToBinding(mouse.hover(at + const Offset(20, 0)));
-      await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
-      await tester.sendEventToBinding(mouse.scroll(const Offset(0, 60)));
-      await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
-      await tester.pump(_frame);
-      await drag.moveBy(const Offset(20, 0));
-      await tester.pump(_frame);
-      await drag.up();
-      await tester.pumpAndSettle();
+        final mouse = TestPointer(2, PointerDeviceKind.mouse);
+        await tester.sendEventToBinding(mouse.hover(at + const Offset(20, 0)));
+        await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+        await tester.sendEventToBinding(mouse.scroll(const Offset(0, 60)));
+        await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+        await tester.pump(_frame);
+        expect(
+          _offsets(tester, Axis.horizontal),
+          everyElement(step),
+          reason: 'a scrollbar takes no wheel while its thumb is dragged',
+        );
 
-      expect(tester.takeException(), isNull);
-      expect(_offsets(tester, Axis.horizontal).toSet(), hasLength(1));
-    }, variant: desktops);
+        await drag.moveBy(const Offset(20, 0));
+        await tester.pump(_frame);
+        expect(
+          _offsets(tester, Axis.horizontal),
+          everyElement(closeTo(step * 2, 1e-6)),
+          reason: 'the second 20 px of drag moves as far as the first',
+        );
+        await drag.up();
+        await tester.pumpAndSettle();
+
+        expect(tester.takeException(), isNull);
+        expect(_offsets(tester, Axis.horizontal).toSet(), hasLength(1));
+      }, variant: desktops);
+    }
+
+    for (final (name, end) in <(String, Future<void> Function(TestGesture))>[
+      ('released', (drag) => drag.up()),
+      ('cancelled', (drag) => drag.cancel()),
+    ]) {
+      testWidgets('after a thumb drag is $name moves again', (tester) async {
+        await _pump(tester, wheelMotion: null);
+        final drag = await tester.startGesture(
+          thumb(tester),
+          kind: PointerDeviceKind.mouse,
+        );
+        await tester.pump(_frame);
+        await drag.moveBy(const Offset(20, 0));
+        await tester.pump(_frame);
+        await end(drag);
+        await tester.pumpAndSettle();
+        final before = _offsets(tester, Axis.horizontal);
+        expect(before.toSet(), hasLength(1));
+
+        await _wheel(tester, 60, shift: true, at: thumb(tester));
+        await tester.pump();
+        expect(
+          _offsets(tester, Axis.horizontal),
+          everyElement(before.first + 60),
+        );
+      }, variant: desktops);
+    }
 
     testWidgets('at the end goes to a horizontal page around the table', (
       tester,
