@@ -94,7 +94,7 @@ Future<void> _dragBoundary(
 Future<void> _ctrlWheel(WidgetTester tester, double dy) async {
   await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
   final loc = tester.getCenter(find.byType(FlutterTablePlus<Employee>));
-  final pointer = TestPointer(1, PointerDeviceKind.mouse);
+  final pointer = TestPointer(tester.nextPointer, PointerDeviceKind.mouse);
   await tester.sendEventToBinding(pointer.hover(loc));
   await tester.sendEventToBinding(pointer.scroll(Offset(0, dy)));
   await tester.pump();

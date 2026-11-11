@@ -55,7 +55,7 @@ Future<void> _ctrlWheel(WidgetTester tester, double dy) async {
   final loc = tester.getCenter(
     find.byType(FlutterTablePlus<Map<String, dynamic>>),
   );
-  final pointer = TestPointer(1, PointerDeviceKind.mouse);
+  final pointer = TestPointer(tester.nextPointer, PointerDeviceKind.mouse);
   await tester.sendEventToBinding(pointer.hover(loc));
   await tester.sendEventToBinding(pointer.scroll(Offset(0, dy)));
   await tester.pump();
@@ -186,7 +186,7 @@ void main() {
       double dy, {
       bool shift = false,
     }) async {
-      final pointer = TestPointer(1, PointerDeviceKind.mouse);
+      final pointer = TestPointer(tester.nextPointer, PointerDeviceKind.mouse);
       await tester.sendEventToBinding(
         pointer.hover(
           tester.getCenter(find.byType(FlutterTablePlus<Map<String, dynamic>>)),
@@ -345,7 +345,7 @@ void main() {
       Offset at, {
       bool shift = false,
     }) async {
-      final pointer = TestPointer(1, PointerDeviceKind.mouse);
+      final pointer = TestPointer(tester.nextPointer, PointerDeviceKind.mouse);
       await tester.sendEventToBinding(pointer.hover(at));
       await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
       if (shift) await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);

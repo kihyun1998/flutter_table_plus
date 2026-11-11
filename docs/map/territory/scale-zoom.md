@@ -73,7 +73,7 @@ widths and text do.
 → [Widths and offsets are clamped on every path](../invariant/clamped-dimensions.md) — both re-derived offsets are clamped into the new extents
 → [Never re-assemble by hand-listing fields](../invariant/no-hand-enumeration.md) — scaling a theme is where a field has gone missing twice — #50 at the root, #116 one level down
 → [A measurement is given what the paint resolves, never what the caller wrote](../invariant/measure-what-the-paint-resolves.md) — `scaledBy` multiplies `fontSize` inside the style while `TextScaler` multiplies the resolved size, so the two stack and neither substitutes for the other
-→ [A literal test pointer id can be a held gesture's id](../invariant/test-pointer-ids.md) — the Ctrl+wheel test helper builds its pointer with a literal id
+→ [A literal test pointer id can be a held gesture's id](../invariant/test-pointer-ids.md) — every wheel helper in the scale tests builds its pointer with `tester.nextPointer`; the file presses no gesture, so the literal ids left in single tests cannot meet a held one
 
 ## Blast radius
 
