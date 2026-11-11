@@ -154,7 +154,7 @@ Future<void> _wheel(
   bool shift = false,
   Offset? at,
 }) async {
-  final mouse = TestPointer(1, PointerDeviceKind.mouse);
+  final mouse = TestPointer(tester.nextPointer, PointerDeviceKind.mouse);
   await tester.sendEventToBinding(
     mouse.hover(at ?? tester.getCenter(find.byKey(_tableKey))),
   );

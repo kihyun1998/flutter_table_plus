@@ -145,7 +145,7 @@ pixels and extents and both end in `position.pointerScroll`, which is where
 → [Viewport-local coordinates come from one frame](../invariant/viewport-local-frame.md) — every drag and resize coordinate is read against this alignment
 → [Widths and offsets are clamped on every path](../invariant/clamped-dimensions.md) — `clampedScrollDelta` and `NoCascadeGuard.resolveJump` are two of its sites
 → [A defect in these files produces no signal](../invariant/no-signal-on-failure.md) — the single coordinate frame is on the register: break it and every drag coordinate is wrong by a constant offset nothing reports
-→ [A literal test pointer id can be a held gesture's id](../invariant/test-pointer-ids.md) — the wheel and trackpad tests build their pointers with literal ids, one beside a held scrollbar-thumb gesture
+→ [A literal test pointer id can be a held gesture's id](../invariant/test-pointer-ids.md) — the wheel helper builds its pointer with `tester.nextPointer`; two single-test literal ids and one pair pinned by hand beside a held scrollbar-thumb gesture stay
 
 ## Blast radius
 
