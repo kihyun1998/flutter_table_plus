@@ -436,6 +436,8 @@ TablePlusScrollbarTheme(
 )
 ```
 
+The scrollbars take a thumb drag and a track click on every platform, Android included, and no scrollbar theme the app sets turns that off.
+
 ---
 
 ## TablePlusTooltipTheme

@@ -7,6 +7,13 @@
 *   **FIX**: a table that scrolls vertically by no more than the horizontal scrollbar's height shows its vertical scrollbar ([#231](https://github.com/kihyun1998/flutter_table_plus/issues/231))
     *   **What a consumer sees differently.** With the horizontal scrollbar shown, a table whose rows overflowed the body by up to `trackWidth`, 12px with the default theme, scrolled vertically with no vertical scrollbar. It now shows one
     *   **`LastRowBorderBehavior.smart`.** In that case the last row drew its bottom border although the body scrolled. It now leaves it out, as it does whenever the body scrolls
+*   **FIX**: on iOS, a scrollbar thumb dragged past the end stops the scrollbar at the table's end ([#234](https://github.com/kihyun1998/flutter_table_plus/issues/234))
+    *   **What a consumer sees differently.** On iOS a thumb dragged past either end took the scrollbar past it while the table stopped there, so the two disagreed for the rest of the drag. On the vertical scrollbar the offset could run away to millions of pixels. The scrollbar now stops at the end with the table, and the drag moves both again once the pointer comes back. A thumb flung toward the end stops there too
+    *   **Unchanged.** A fling of the thumb on iOS goes as far as before. The desktop already stopped at the end
+*   **FIX**: on Android, the scrollbars take a thumb drag and a track click ([#234](https://github.com/kihyun1998/flutter_table_plus/issues/234))
+    *   **What a consumer sees differently.** On Android a thumb drag or a click on the track did nothing, because Flutter's Material scrollbar turns its gestures off there unless told otherwise. They now work as on the other platforms, and a thumb let go while moving flings on, as on iOS. The scrollbar also stops at the end under an app's bouncing scroll physics
+    *   **A touch on the track.** A finger dragged along the track, off the thumb, used to scroll the scrollbar the opposite way, as dragging content does. It now pages toward the touch, as a track click does, and the drag moves nothing more
+    *   **An app's scrollbar theme.** No scrollbar theme the app sets turns these gestures off, neither `ThemeData.scrollbarTheme` nor a `ScrollbarTheme` around the table
 
 ## 2.21.0
 
