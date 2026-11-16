@@ -1164,9 +1164,11 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
               controller: controller,
               thumbVisibility: true,
               trackVisibility: false,
+              interactive: true,
               child: SingleChildScrollView(
                 controller: controller,
                 scrollDirection: axis,
+                physics: const _ScrollbarStripPhysics(),
                 child: SizedBox(
                   width: isVertical ? trackWidth : contentExtent,
                   height: isVertical ? contentExtent : trackWidth,
@@ -1678,5 +1680,25 @@ class _ScaleBlockingScrollPhysics extends ClampingScrollPhysics {
   bool shouldAcceptUserOffset(ScrollMetrics position) {
     if (isScaleModifierPressed()) return false;
     return super.shouldAcceptUserOffset(position);
+  }
+}
+
+/// The physics of a scrollbar strip's own scroll view: it stops at the ends
+/// as [ClampingScrollPhysics] does, and leaves everything else, the fling
+/// included, to the physics it is applied to.
+class _ScrollbarStripPhysics extends ScrollPhysics {
+  const _ScrollbarStripPhysics({super.parent});
+
+  @override
+  _ScrollbarStripPhysics applyTo(ScrollPhysics? ancestor) {
+    return _ScrollbarStripPhysics(parent: buildParent(ancestor));
+  }
+
+  @override
+  double applyBoundaryConditions(ScrollMetrics position, double value) {
+    return const ClampingScrollPhysics().applyBoundaryConditions(
+      position,
+      value,
+    );
   }
 }

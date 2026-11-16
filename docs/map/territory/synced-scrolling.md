@@ -125,6 +125,60 @@ master, so the next author is free to reverse it without knowing what breaks.
   `test/vertical_scrollbar_track_band_test.dart` pins both ends of the band, the
   cases with no spacer, scale 2 and the smart border. Prior art:
   flutter_folderview #177 made the same correction.
+- **A strip stops at its ends, and leaves the fling to the platform** (#234).
+  The strip's `SingleChildScrollView` carries `_ScrollbarStripPhysics`, which
+  clamps at the ends as `ClampingScrollPhysics` does and hands everything else
+  to the platform's physics. `RawScrollbarState._getPrimaryDelta` clamps a
+  thumb drag only on the desktop and leaves iOS and Android to the physics
+  (Flutter 3.47.1), so with `BouncingScrollPhysics` the strip went past the
+  end while the body, mirrored through a clamped `jumpTo`, stopped there.
+  Measured 2026-11-16 on the iOS target, 10 px thumb steps: horizontal strip
+  1059.4 against a body at 800, vertical strip 48250111.1 against 4568. The
+  vertical one runs away because `BouncingScrollPhysics` scales a push further
+  out by `0.52 * (1 - overscroll / viewport)^2`, which is 0 at one viewport of
+  overscroll and rises past 1 beyond about 2.4 viewports. A finger never gets
+  past the zero; a thumb step is multiplied by track-to-scroll (24 on that
+  vertical strip, viewport 232), and the first step past the end is applied
+  unclamped, so it landed at 240 overscroll, past the zero. Plain
+  `ClampingScrollPhysics` was not used because it also shortens the iOS
+  thumb fling (measured: 300.6 to 119.2 horizontally, 720.6 to 539.2
+  vertically); `test/scrollbar_thumb_drag_test.dart` derives the expected fling
+  from the platform physics' own simulation, and pins a fling that reaches
+  the end. The physics sits on the strip, not the controller, so it applies
+  to whatever controller the strip gets.
+  Prior art: flutter_folderview #220 (`FolderViewBarScrollPhysics`), declined
+  plain clamping for the same fling.
+- **A strip takes a thumb drag and a track click on Android too.** Material
+  `Scrollbar` turns its gestures off on Android when neither the widget nor
+  the theme sets `interactive` (`enableGestures`, Flutter 3.47.1). The
+  `Theme` wrapper in `_buildScrollbarTrack` replaces the app's
+  `ThemeData.scrollbarTheme`, so an app's `interactive: true` there never
+  arrived. Measured 2026-11-16 on Android, mouse: a 30 px thumb drag and then
+  a click near the far end of the track moved nothing on either axis; on
+  Windows the drag reached 90.0 horizontally and 744.8 vertically, and the
+  click took them to 410.0 and 930.4. The strip's `Scrollbar` now passes
+  `interactive: true`, a widget argument, so no theme turns it off: neither
+  `ThemeData.scrollbarTheme` nor a `ScrollbarTheme` widget around the table,
+  which does reach the strip. **Maintainer's call** (2026-11-16), shown three
+  options: this; inheriting the app's `ScrollbarTheme.interactive` with true
+  when unset, which would also turn the thumb off on the desktop for an app
+  that sets `false`; and a new `TablePlusScrollbarTheme.interactive` field
+  defaulting to true. Chosen because the table's scrollbar is owned by
+  `TablePlusScrollbarTheme`, and to match flutter_folderview #220.
+  **Found after that call, and kept by a second maintainer's call**
+  (2026-11-16, shown the measurements below; the alternative was to reopen
+  the choice and hold the change). Measured 2026-11-16, Android, touch:
+  - a touch drag on the thumb now moves the thumb. From mid-track, 30 px
+    forward: 400 to 370 horizontally and 2284 to 2254 vertically before, the
+    strip dragged as content; 490 and 3028.8 after.
+  - a touch drag on the track off the thumb now pages toward the touch and
+    ignores the drag: 320 horizontally and 185.6 vertically, either
+    direction. Before, it dragged the strip as content: 120 for a 120 px drag
+    toward the start, nothing toward the end from 0.
+  - a released thumb now flings, as on iOS (`handleThumbPressEnd` hands the
+    velocity on only on iOS and Android).
+  - the Android path under an app's bouncing physics now reaches the end
+    case #234 fixes; it could not before, because the thumb took no drag.
 - **The constraint is a floor.** `SyncedScrollControllers` builds on
   `ScrollbarController`, which 0.1.6 introduced. Below that, 0.1.0 declared
   Flutter `>=3.41.0`, the SDK it was built with, so a 3.32 user could not resolve
@@ -133,10 +187,11 @@ master, so the next author is free to reverse it without knowing what breaks.
 ## Code
 
 `widgets/synced_scroll_controllers.dart` — `SyncedScrollControllers`, `_AlignedScrollbarController`
-`widgets/flutter_table_plus.dart` — `_handleHorizontalScrollbarSignal`, `_horizontalScrollbarPointers`
+`widgets/flutter_table_plus.dart` — `_handleHorizontalScrollbarSignal`, `_horizontalScrollbarPointers`, `_ScrollbarStripPhysics`
 `utils/no_cascade_guard.dart` — `NoCascadeGuard`, `resolveJump`, `reset`
 `utils/clamped_scroll_delta.dart` — `clampedScrollDelta`
 `test/smooth_wheel_scroll_test.dart` — per-frame alignment under `wheelMotion`
+`test/scrollbar_thumb_drag_test.dart` — a thumb drag past either end, the iOS thumb fling, and Android's thumb and track
 
 ## Reference behaviour
 
@@ -190,6 +245,18 @@ pixels and extents and both end in `position.pointerScroll`, which is where
   `RawScrollbarState._receivedPointerSignal` answers
   `PointerScrollInertiaCancelEvent` with a `jumpTo` on the strip alone, so the
   body's motion runs on; over the body the event stops it. Trackpad inertia only.
+- **A `ScrollbarTheme` widget around the table restyles the strips.**
+  `ScrollbarTheme.of` reads the nearest `ScrollbarTheme` widget before
+  `ThemeData.scrollbarTheme`, and the `Theme` wrapper in
+  `_buildScrollbarTrack` only sets the latter. Measured 2026-11-16 on
+  Android: such a widget's `thumbColor` reached the strip, and with an empty
+  one the thumb took Material's Android size instead of
+  `TablePlusScrollbarTheme`'s, so a press 7 px into the 12 px track missed it.
+  `interactive` is not affected, being a widget argument. Left as it is.
+- **On iOS the strips are `CupertinoScrollbar`s**, which Material
+  `Scrollbar` builds from its own arguments only (`material/scrollbar.dart`,
+  Flutter 3.47.1), so `TablePlusScrollbarTheme`'s thumb colour, thickness and
+  radius do not reach them there. Read from source, not run.
 
 **Closed: Shift+wheel during a thumb drag no longer ends the drag** (#225).
 On the Windows target a 20px thumb drag reached 60. Measured 2026-11-07: with
