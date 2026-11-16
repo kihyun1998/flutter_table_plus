@@ -436,7 +436,9 @@ TablePlusScrollbarTheme(
 )
 ```
 
-The scrollbars take a thumb drag and a track click on every platform, Android included, and no scrollbar theme the app sets turns that off.
+The scrollbars take a thumb drag and a click or tap on the track on every platform, Android and iOS included, and no scrollbar theme the app sets turns that off.
+
+The thumb's colour, thickness and radius come from this theme on every platform. A `ScrollbarTheme` around the table does not change them, and on iOS this thumb is drawn in place of Flutter's Cupertino one.
 
 ---
 
