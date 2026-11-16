@@ -165,8 +165,9 @@ master, so the next author is free to reverse it without knowing what breaks.
   that sets `false`; and a new `TablePlusScrollbarTheme.interactive` field
   defaulting to true. Chosen because the table's scrollbar is owned by
   `TablePlusScrollbarTheme`, and to match flutter_folderview #220.
-  **Not covered by that call, and found after it** (measured 2026-11-16,
-  Android, touch):
+  **Found after that call, and kept by a second maintainer's call**
+  (2026-11-16, shown the measurements below; the alternative was to reopen
+  the choice and hold the change). Measured 2026-11-16, Android, touch:
   - a touch drag on the thumb now moves the thumb. From mid-track, 30 px
     forward: 400 to 370 horizontally and 2284 to 2254 vertically before, the
     strip dragged as content; 490 and 3028.8 after.
