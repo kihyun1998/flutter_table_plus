@@ -55,6 +55,7 @@ text clipped. Three bug reports that look unrelated.
 → [Text overflow detection](../territory/text-overflow.md) — the detector measured with the theme's bare style, no scaler, and a width the divider's border had already taken 0.5px from (#156)
 → [Row height](../territory/row-height.md) — the same three, in the public helper, where the symptom is clipped text rather than a missing tooltip
 → [Column width resolution](../territory/column-width.md) — the site that got it right, and therefore the reference the other two were repaired against
+→ [Synced scrolling](../territory/synced-scrolling.md) — the scrollbar thumb's cap reads the track border from `BoxDecoration.padding`, which follows `strokeAlign`; the widths a caller wrote are the border's full width whatever side of the edge it is drawn on (#237)
 → [Scale / zoom](../territory/scale-zoom.md) — `scaledBy` multiplies `fontSize` *inside* the style while `TextScaler` multiplies the resolved size, so the two stack and neither substitutes for the other
 
 ## What a violation looks like

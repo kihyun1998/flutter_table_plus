@@ -1112,6 +1112,16 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
   }) {
     final trackWidth = scrollbarTheme.trackWidth;
     final isVertical = axis == Axis.vertical;
+    final trackDecoration = BoxDecoration(
+      color: scrollbarTheme.trackColor,
+      border: scrollbarTheme.trackBorder,
+      borderRadius: BorderRadius.circular(
+        scrollbarTheme.radius ?? trackWidth / 2,
+      ),
+    );
+    final trackInset = trackDecoration.padding;
+    final thumbRoom =
+        trackWidth - (isVertical ? trackInset.horizontal : trackInset.vertical);
 
     return ValueListenableBuilder<bool>(
       valueListenable: _isHovered,
@@ -1140,17 +1150,12 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
         child: Container(
           width: isVertical ? trackWidth : null,
           height: isVertical ? null : trackWidth,
-          decoration: BoxDecoration(
-            color: scrollbarTheme.trackColor,
-            border: scrollbarTheme.trackBorder,
-            borderRadius: BorderRadius.circular(
-              scrollbarTheme.radius ?? trackWidth / 2,
-            ),
-          ),
+          decoration: trackDecoration,
           child: _ScrollbarStripThumb(
             controller: controller,
             thumbColor: scrollbarTheme.thumbColor,
             thickness: scrollbarTheme.thickness ?? trackWidth * 0.7,
+            room: thumbRoom,
             radius: Radius.circular(scrollbarTheme.radius ?? trackWidth / 2),
             child: SingleChildScrollView(
               controller: controller,
@@ -1673,21 +1678,30 @@ class _ScaleBlockingScrollPhysics extends ClampingScrollPhysics {
 /// [thickness] and [radius] and taking drags and track clicks on every
 /// platform.
 ///
+/// The painted thickness is [thickness] capped at [room], the extent across
+/// the strip that [child] is laid out in, less the cross-axis margin, and
+/// never below zero.
+///
 /// A Material [Scrollbar] under a [ScrollbarTheme] of these values on every
-/// platform but iOS, with Material's own margins and minimum lengths. On iOS,
-/// a [RawScrollbar] given the values Material's [Scrollbar] paints with there
-/// when it does not hand over to `CupertinoScrollbar`.
+/// platform but iOS, with Material's own cross-axis margin set explicitly and
+/// its own minimum lengths. On iOS, a [RawScrollbar] given the values
+/// Material's [Scrollbar] paints with there when it does not hand over to
+/// `CupertinoScrollbar`.
 class _ScrollbarStripThumb extends StatelessWidget {
   const _ScrollbarStripThumb({
     required this.controller,
     required this.thumbColor,
     required this.thickness,
+    required this.room,
     required this.radius,
     required this.child,
   });
 
   /// Material's cross-axis margin off Android.
   static const double _materialCrossAxisMargin = 2;
+
+  /// Material's cross-axis margin on Android.
+  static const double _androidCrossAxisMargin = 0;
 
   /// Material's minimum thumb length.
   static const double _materialMinThumbLength = 48;
@@ -1699,21 +1713,27 @@ class _ScrollbarStripThumb extends StatelessWidget {
   final ScrollController controller;
   final Color thumbColor;
   final double thickness;
+  final double room;
   final Radius radius;
   final Widget child;
 
   @override
   Widget build(BuildContext context) {
-    if (Theme.of(context).platform == TargetPlatform.iOS) {
+    final platform = Theme.of(context).platform;
+    final crossAxisMargin = platform == TargetPlatform.android
+        ? _androidCrossAxisMargin
+        : _materialCrossAxisMargin;
+    final paintedThickness = max(0.0, min(thickness, room - crossAxisMargin));
+    if (platform == TargetPlatform.iOS) {
       return RawScrollbar(
         controller: controller,
         thumbVisibility: true,
         trackVisibility: false,
         interactive: true,
         thumbColor: thumbColor,
-        thickness: thickness,
+        thickness: paintedThickness,
         radius: radius,
-        crossAxisMargin: _materialCrossAxisMargin,
+        crossAxisMargin: crossAxisMargin,
         minThumbLength: _materialMinThumbLength,
         minOverscrollLength: _rawMinOverscrollLength,
         child: child,
@@ -1723,7 +1743,8 @@ class _ScrollbarStripThumb extends StatelessWidget {
       data: ScrollbarThemeData(
         thumbColor: WidgetStateProperty.all(thumbColor),
         radius: radius,
-        thickness: WidgetStateProperty.all(thickness),
+        thickness: WidgetStateProperty.all(paintedThickness),
+        crossAxisMargin: crossAxisMargin,
       ),
       child: Scrollbar(
         controller: controller,

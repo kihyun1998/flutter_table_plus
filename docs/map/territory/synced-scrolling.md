@@ -230,6 +230,30 @@ master, so the next author is free to reverse it without knowing what breaks.
   `CupertinoScrollbar` does; and that plus the haptic tap. Chosen to match
   flutter_folderview #218 and keep one behaviour across platforms, accepting
   the divergence from iOS's native track tap and haptics.
+- **A thumb is painted no thicker than its room** (#237). The room is the
+  extent across the strip that the thumb's painter is laid out in: the
+  track's `Container` folds its `BoxDecoration` border into the child's
+  inset ([decoration-eats-the-child](../invariant/decoration-eats-the-child.md)),
+  so the painter gets `trackWidth` less the border on both sides of the
+  cross axis. `_buildScrollbarTrack` reads that from the decoration's
+  `padding`, the value `Container` insets by, not from the widths the
+  caller wrote ([measure-what-the-paint-resolves](../invariant/measure-what-the-paint-resolves.md)).
+  `_ScrollbarStripThumb` paints `max(0, min(thickness, room - margin))`,
+  where the margin is 0 on Android and 2 elsewhere, and passes the margin
+  explicitly to Material's `Scrollbar` too, so the margin the cap uses is
+  the one painted; it equals Material's default (`_kScrollbarMargin`,
+  `material/scrollbar.dart`, Flutter 3.41.9), so a thumb that fitted paints
+  as before. `TablePlusScrollbarTheme.thickness` keeps the value given.
+  `MediaQuery` padding, which the painter also insets the thumb by, is not
+  in the cap (#238). `test/scrollbar_thumb_theme_test.dart` pins the cap
+  per platform and axis, with borders on both or one side and drawn inside,
+  centred on and outside the edge; the last two are the cases a cap summed
+  from the caller's widths gets wrong.
+  **Maintainer's call** (2026-11-17), shown the measurements in the closed
+  entry below and these alternatives: flutter_folderview's
+  `trackWidth - margin` (its #122, #146), which has no border term because
+  its track has no border field; documentation only; and leaving it.
+  It did not cover the `MediaQuery` padding term, left to #238.
 - **The constraint is a floor.** `SyncedScrollControllers` builds on
   `ScrollbarController`, which 0.1.6 introduced. Below that, 0.1.0 declared
   Flutter `>=3.41.0`, the SDK it was built with, so a 3.32 user could not resolve
@@ -272,6 +296,8 @@ pixels and extents and both end in `position.pointerScroll`, which is where
 ## Cross-cutting invariants
 
 → [Viewport-local coordinates come from one frame](../invariant/viewport-local-frame.md) — every drag and resize coordinate is read against this alignment
+→ [A decorated box hands its child less than it declares](../invariant/decoration-eats-the-child.md) — the scrollbar track's border insets the thumb's painter, and the thumb's cap reads that room (#237)
+→ [A measurement is given what the paint resolves, never what the caller wrote](../invariant/measure-what-the-paint-resolves.md) — the thumb's cap reads the track border from the decoration's `padding`, which follows `strokeAlign`, not from the widths the caller wrote (#237)
 → [Widths and offsets are clamped on every path](../invariant/clamped-dimensions.md) — `clampedScrollDelta` and `NoCascadeGuard.resolveJump` are two of its sites
 → [A defect in these files produces no signal](../invariant/no-signal-on-failure.md) — the single coordinate frame is on the register: break it and every drag coordinate is wrong by a constant offset nothing reports
 → [A literal test pointer id can be a held gesture's id](../invariant/test-pointer-ids.md) — the wheel helper builds its pointer with `tester.nextPointer`; two single-test literal ids and one pair pinned by hand beside a held scrollbar-thumb gesture stay
@@ -297,15 +323,17 @@ pixels and extents and both end in `position.pointerScroll`, which is where
   `RawScrollbarState._receivedPointerSignal` answers
   `PointerScrollInertiaCancelEvent` with a `jumpTo` on the strip alone, so the
   body's motion runs on; over the body the event stops it. Trackpad inertia only.
-- **A thumb thicker than the track minus its margin paints outside the
-  track.** Measured 2026-11-16, `thickness: 12` on the default 12 px track:
-  the thumb spans -2 to 10 on Windows, and on iOS since #235; Android, with
-  no margin, fits. The default thickness, `0.7 * trackWidth`, reaches it off
-  Android once `trackWidth` is under 6.67 (the margin is a fixed 2), by
-  arithmetic, not run; the table's `scale` does not, as
-  `TablePlusTheme.scaledBy` leaves `scrollbarTheme` alone.
-  flutter_folderview caps the thickness at `trackWidth - margin` (its #122);
-  nothing here does. Not decided by anyone; left as it is.
+
+**Closed: a thumb thicker than its room painted outside the track** (#237).
+Measured 2026-11-16, `thickness: 12` on the default 12 px track: the thumb
+spanned -2 to 10 on Windows and iOS; Android, with no margin, fitted. The
+entry that stood here said the default thickness reached it only once
+`trackWidth` was under 6.67; that left out the track border. Measured
+2026-11-17 on Flutter 3.41.9, in the track's coordinates: the default
+thickness with `Border.all(width: 2)` spanned -0.4 to 8.0 off Android and
+1.6 to 10 on Android, against a room of 2 to 10; `thickness: 10` with
+`Border.all(width: 1)` spanned -1 to 9 and 1 to 11. The thumb is now capped
+as the design model's #237 entry says.
 
 **Closed: a `ScrollbarTheme` around the table restyled the strips, and on
 iOS `TablePlusScrollbarTheme` did not reach them** (#235). Both were found

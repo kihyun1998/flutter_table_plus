@@ -438,6 +438,8 @@ TablePlusScrollbarTheme(
 
 The scrollbars take a thumb drag and a click or tap on the track on every platform, Android and iOS included, and no scrollbar theme the app sets turns that off.
 
+The thumb is painted no thicker than its track has room for: `trackWidth`, less the part of `trackBorder` drawn inside the track on each side across the scrollbar (all of a border's width by default, none with `strokeAlign: BorderSide.strokeAlignOutside`), less the 2 px gap Flutter leaves between the thumb and the track's edge (none on Android). A larger `thickness` is capped when painted, and stays as given in the theme. For example, `thickness: 12` on the default 12 px track paints a 10 px thumb, 12 px on Android.
+
 The thumb's colour, thickness and radius come from this theme on every platform. A `ScrollbarTheme` around the table does not change them, and on iOS this thumb is drawn in place of Flutter's Cupertino one.
 
 ---

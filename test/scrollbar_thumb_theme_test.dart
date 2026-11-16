@@ -137,6 +137,43 @@ void _expectThemedThumb(WidgetTester tester, Axis axis) {
   );
 }
 
+/// Checks that the thumb of the strip on [axis] is painted [thickness] thick,
+/// at Material's margin for the platform, ending at the far edge of the room
+/// across the strip less that margin.
+void _expectCappedThumb(
+  WidgetTester tester,
+  Axis axis, {
+  required double room,
+  required double thickness,
+}) {
+  final margin = _materialMargin();
+  final painter = _painter(tester, axis);
+  expect(painter.thickness, thickness);
+  expect(painter.crossAxisMargin, margin);
+  final size = tester.getSize(find.byWidget(_thumbPaint(tester, axis)));
+  expect(axis == Axis.vertical ? size.width : size.height, room);
+  expect(
+    find.byWidget(_thumbPaint(tester, axis)),
+    paints..something((method, arguments) {
+      final Rect rect;
+      if (method == #drawRRect) {
+        rect = (arguments[0] as RRect).outerRect;
+      } else if (method == #drawRect) {
+        rect = arguments[0] as Rect;
+      } else {
+        return false;
+      }
+      final paint = arguments[1] as Paint;
+      final (near, far) = axis == Axis.vertical
+          ? (rect.left, rect.right)
+          : (rect.top, rect.bottom);
+      return paint.color == _red &&
+          near == room - thickness - margin &&
+          far == room - margin;
+    }),
+  );
+}
+
 const _theme = TablePlusScrollbarTheme(
   thickness: 6,
   radius: 1,
@@ -174,6 +211,98 @@ void main() {
           ),
         );
         _expectThemedThumb(tester, axis);
+      },
+      variant: _platforms,
+    );
+  }
+
+  // Each case: the theme's thickness and track border, the room across the
+  // strip inside that border, and the thickness painted off Android (margin
+  // 2) and on Android (margin 0), worked out by hand from a 12 px track. A
+  // border takes as much of the track as it is drawn inside it: all of its
+  // width by default, half with strokeAlignCenter, none with
+  // strokeAlignOutside.
+  final cases = <(String, double?, Border?, double, double, double)>[
+    ('thickness 12, no border', 12, null, 12, 10, 12),
+    (
+      'the default thickness, Border.all(width: 2)',
+      null,
+      Border.all(width: 2),
+      8,
+      6,
+      8,
+    ),
+    ('thickness 10, Border.all(width: 1)', 10, Border.all(width: 1), 10, 8, 10),
+    (
+      'thickness 12, Border.all(width: 5.5)',
+      12,
+      Border.all(width: 5.5),
+      1,
+      0,
+      1,
+    ),
+    (
+      'thickness 12, Border.all(width: 2) drawn centred on the edge',
+      12,
+      Border.all(width: 2, strokeAlign: BorderSide.strokeAlignCenter),
+      10,
+      8,
+      10,
+    ),
+    (
+      'thickness 12, Border.all(width: 2) drawn outside the edge',
+      12,
+      Border.all(width: 2, strokeAlign: BorderSide.strokeAlignOutside),
+      12,
+      10,
+      12,
+    ),
+  ];
+  for (final axis in Axis.values) {
+    for (final (name, thickness, border, room, elsewhere, android) in cases) {
+      testWidgets('the $axis thumb fits inside its track: $name', (
+        tester,
+      ) async {
+        await _pump(
+          tester,
+          scrollbarTheme: TablePlusScrollbarTheme(
+            thickness: thickness,
+            radius: 1,
+            thumbColor: _red,
+            trackBorder: border,
+          ),
+        );
+        _expectCappedThumb(
+          tester,
+          axis,
+          room: room,
+          thickness: defaultTargetPlatform == TargetPlatform.android
+              ? android
+              : elsewhere,
+        );
+      }, variant: _platforms);
+    }
+
+    testWidgets(
+      'the $axis thumb is capped by the border on its own cross axis only',
+      (tester) async {
+        const border = Border(left: BorderSide(width: 3));
+        await _pump(
+          tester,
+          scrollbarTheme: const TablePlusScrollbarTheme(
+            thickness: 12,
+            radius: 1,
+            thumbColor: _red,
+            trackBorder: border,
+          ),
+        );
+        final room = axis == Axis.vertical ? 9.0 : 12.0;
+        _expectCappedThumb(
+          tester,
+          axis,
+          room: room,
+          thickness: room - _materialMargin(),
+        );
       },
       variant: _platforms,
     );

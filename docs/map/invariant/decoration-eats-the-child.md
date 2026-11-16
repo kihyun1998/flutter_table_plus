@@ -51,6 +51,7 @@ space it is handed, so the shortfall existed all along and paid for itself.
 → [Row rendering and geometry](../territory/row-render-geometry.md) — the plain row and the body's list slots build the same shape from `rowDecoration`
 → [Row selection](../territory/row-selection.md) — the selection cell and the header cell size a checkbox inside a decorated box
 → [Row height](../territory/row-height.md) — a measured height is the declared number, never the number the child receives
+→ [Synced scrolling](../territory/synced-scrolling.md) — the scrollbar track carries `trackBorder`, so the thumb's painter is laid out in the track less the border, and the thumb's cap reads that room from the decoration's `padding` (#237)
 → [Text overflow detection](../territory/text-overflow.md) — the width axis: a cell measured its text against `width − padding` while the divider's border took another 0.5px from the glyphs, so text that was clipped on screen was reported as fitting (#156)
 
 ## What a violation looks like

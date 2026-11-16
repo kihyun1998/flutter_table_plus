@@ -28,6 +28,12 @@ class TablePlusScrollbarTheme {
 
   /// The thickness of the scrollbar thumb.
   /// If null, defaults to trackWidth * 0.7.
+  ///
+  /// The thumb is painted no thicker than the track has room for: [trackWidth]
+  /// less the part of [trackBorder] drawn inside the track on each side
+  /// across the scrollbar, less the gap between the thumb and the track's
+  /// edge (2 px, none on Android). This value is kept as given; only the
+  /// painted thumb is capped.
   final double? thickness;
 
   /// The radius of the scrollbar thumb and track corners.
