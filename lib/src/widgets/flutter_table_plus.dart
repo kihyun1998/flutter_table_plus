@@ -1101,8 +1101,8 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
   /// Build a themed scrollbar track widget for the given [axis].
   ///
   /// Shared by vertical and horizontal scrollbar overlays to avoid
-  /// duplicating the ValueListenableBuilder / AnimatedOpacity / Theme /
-  /// Scrollbar widget tree.
+  /// duplicating the ValueListenableBuilder / AnimatedOpacity / track /
+  /// thumb widget tree.
   Widget _buildScrollbarTrack({
     required BuildContext context,
     required TablePlusScrollbarTheme scrollbarTheme,
@@ -1147,32 +1147,18 @@ class _FlutterTablePlusState<T> extends State<FlutterTablePlus<T>> {
               scrollbarTheme.radius ?? trackWidth / 2,
             ),
           ),
-          child: Theme(
-            data: Theme.of(context).copyWith(
-              scrollbarTheme: ScrollbarThemeData(
-                thumbColor: WidgetStateProperty.all(scrollbarTheme.thumbColor),
-                trackColor: WidgetStateProperty.all(Colors.transparent),
-                radius: Radius.circular(
-                  scrollbarTheme.radius ?? trackWidth / 2,
-                ),
-                thickness: WidgetStateProperty.all(
-                  scrollbarTheme.thickness ?? trackWidth * 0.7,
-                ),
-              ),
-            ),
-            child: Scrollbar(
+          child: _ScrollbarStripThumb(
+            controller: controller,
+            thumbColor: scrollbarTheme.thumbColor,
+            thickness: scrollbarTheme.thickness ?? trackWidth * 0.7,
+            radius: Radius.circular(scrollbarTheme.radius ?? trackWidth / 2),
+            child: SingleChildScrollView(
               controller: controller,
-              thumbVisibility: true,
-              trackVisibility: false,
-              interactive: true,
-              child: SingleChildScrollView(
-                controller: controller,
-                scrollDirection: axis,
-                physics: const _ScrollbarStripPhysics(),
-                child: SizedBox(
-                  width: isVertical ? trackWidth : contentExtent,
-                  height: isVertical ? contentExtent : trackWidth,
-                ),
+              scrollDirection: axis,
+              physics: const _ScrollbarStripPhysics(),
+              child: SizedBox(
+                width: isVertical ? trackWidth : contentExtent,
+                height: isVertical ? contentExtent : trackWidth,
               ),
             ),
           ),
@@ -1680,6 +1666,73 @@ class _ScaleBlockingScrollPhysics extends ClampingScrollPhysics {
   bool shouldAcceptUserOffset(ScrollMetrics position) {
     if (isScaleModifierPressed()) return false;
     return super.shouldAcceptUserOffset(position);
+  }
+}
+
+/// The thumb of a scrollbar strip over [child], painted with [thumbColor],
+/// [thickness] and [radius] and taking drags and track clicks on every
+/// platform.
+///
+/// A Material [Scrollbar] under a [ScrollbarTheme] of these values on every
+/// platform but iOS, with Material's own margins and minimum lengths. On iOS,
+/// a [RawScrollbar] given the values Material's [Scrollbar] paints with there
+/// when it does not hand over to `CupertinoScrollbar`.
+class _ScrollbarStripThumb extends StatelessWidget {
+  const _ScrollbarStripThumb({
+    required this.controller,
+    required this.thumbColor,
+    required this.thickness,
+    required this.radius,
+    required this.child,
+  });
+
+  /// Material's cross-axis margin off Android.
+  static const double _materialCrossAxisMargin = 2;
+
+  /// Material's minimum thumb length.
+  static const double _materialMinThumbLength = 48;
+
+  /// [RawScrollbar]'s default minimum thumb length, which Material's
+  /// [Scrollbar] keeps as its minimum overscroll length.
+  static const double _rawMinOverscrollLength = 18;
+
+  final ScrollController controller;
+  final Color thumbColor;
+  final double thickness;
+  final Radius radius;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    if (Theme.of(context).platform == TargetPlatform.iOS) {
+      return RawScrollbar(
+        controller: controller,
+        thumbVisibility: true,
+        trackVisibility: false,
+        interactive: true,
+        thumbColor: thumbColor,
+        thickness: thickness,
+        radius: radius,
+        crossAxisMargin: _materialCrossAxisMargin,
+        minThumbLength: _materialMinThumbLength,
+        minOverscrollLength: _rawMinOverscrollLength,
+        child: child,
+      );
+    }
+    return ScrollbarTheme(
+      data: ScrollbarThemeData(
+        thumbColor: WidgetStateProperty.all(thumbColor),
+        radius: radius,
+        thickness: WidgetStateProperty.all(thickness),
+      ),
+      child: Scrollbar(
+        controller: controller,
+        thumbVisibility: true,
+        trackVisibility: false,
+        interactive: true,
+        child: child,
+      ),
+    );
   }
 }
 

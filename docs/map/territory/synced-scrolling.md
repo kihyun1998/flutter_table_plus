@@ -151,15 +151,16 @@ master, so the next author is free to reverse it without knowing what breaks.
 - **A strip takes a thumb drag and a track click on Android too.** Material
   `Scrollbar` turns its gestures off on Android when neither the widget nor
   the theme sets `interactive` (`enableGestures`, Flutter 3.47.1). The
-  `Theme` wrapper in `_buildScrollbarTrack` replaces the app's
-  `ThemeData.scrollbarTheme`, so an app's `interactive: true` there never
-  arrived. Measured 2026-11-16 on Android, mouse: a 30 px thumb drag and then
+  strip's own scrollbar theme does not set it (until #235 a `Theme` wrapper
+  that replaced the app's `ThemeData.scrollbarTheme`, now the thumb's own
+  `ScrollbarTheme`, below), so an app's `interactive: true` never arrives.
+  Measured 2026-11-16 on Android, mouse: a 30 px thumb drag and then
   a click near the far end of the track moved nothing on either axis; on
   Windows the drag reached 90.0 horizontally and 744.8 vertically, and the
   click took them to 410.0 and 930.4. The strip's `Scrollbar` now passes
   `interactive: true`, a widget argument, so no theme turns it off: neither
-  `ThemeData.scrollbarTheme` nor a `ScrollbarTheme` widget around the table,
-  which does reach the strip. **Maintainer's call** (2026-11-16), shown three
+  `ThemeData.scrollbarTheme` nor a `ScrollbarTheme` widget around the table.
+  The iOS `RawScrollbar` passes it too. **Maintainer's call** (2026-11-16), shown three
   options: this; inheriting the app's `ScrollbarTheme.interactive` with true
   when unset, which would also turn the thumb off on the desktop for an app
   that sets `false`; and a new `TablePlusScrollbarTheme.interactive` field
@@ -179,6 +180,56 @@ master, so the next author is free to reverse it without knowing what breaks.
     velocity on only on iOS and Android).
   - the Android path under an app's bouncing physics now reaches the end
     case #234 fixes; it could not before, because the thumb took no drag.
+- **A strip's thumb is `TablePlusScrollbarTheme`'s on every platform** (#235).
+  `_ScrollbarStripThumb` paints it. Off iOS it is a Material `Scrollbar` under
+  a `ScrollbarTheme` widget built from `TablePlusScrollbarTheme`:
+  `ScrollbarTheme.of` reads the nearest such widget before
+  `ThemeData.scrollbarTheme`, so the `Theme` copy that stood here until #235
+  let a `ScrollbarTheme` around the table restyle the thumb. Measured
+  2026-11-16 on Android, for #234: its `thumbColor` reached the strip, and
+  an empty one gave the thumb Material's Android size, so a press 7 px into
+  the 12 px track missed it. On iOS Material `Scrollbar.build` returns a
+  `CupertinoScrollbar` built from its own arguments, which has no colour
+  argument (`material/scrollbar.dart`, Flutter 3.47.1). Measured 2026-11-16
+  on the iOS target, theme thickness 6, radius 1, red: painted thickness 3.0,
+  Cupertino's. So iOS gets a `RawScrollbar` with the values Material's
+  `Scrollbar` paints with on iOS when it does not hand over: the theme's
+  colour, thickness and radius, `crossAxisMargin` 2, `minThumbLength` 48, and
+  `minOverscrollLength` 18, which `_MaterialScrollbar` never sets and so
+  keeps from `RawScrollbar`'s default `minThumbLength` (`_kMinThumbExtent`,
+  `RawScrollbarState.initState`). Off iOS the margins and minimum lengths are
+  left to Material, so Android keeps its 0 margin.
+  `test/scrollbar_thumb_theme_test.dart` reads the painter on iOS, Android
+  and Windows, both strips, with and without a `ScrollbarTheme` around the
+  table (thickness 1, radius 9, green, margins 5 and 7, minimum 20).
+  **Maintainer's call** (2026-11-16), made against flutter_folderview #218's
+  precedent (`FolderViewScrollbarThumb`, its #147 and #216); the alternative
+  was to fix the `ScrollbarTheme` leak only and keep `CupertinoScrollbar`
+  on iOS, passing only thickness and radius, which leaves the thumb colour
+  out of reach there. Accepted with it: the native Cupertino thumb, and its
+  thickening while dragged, are gone on iOS.
+  **Found in the work, after that call:** a click on the iOS track
+  now pages. `CupertinoScrollbar.handleTrackTapDown` skips paging on iOS on
+  purpose ("On iOS, tapping the track does not page towards the position of
+  the tap", `cupertino/scrollbar.dart`, Flutter 3.47.1); `RawScrollbar`
+  pages, as flutter_folderview #218's thumb does. Measured 2026-11-16 on the
+  iOS target, a click or a touch 5 px from the far end: 0.0 on both axes
+  before, 320.0 horizontally and 185.6 vertically after, the same as Android
+  and Windows. A touch drag along the track from there, 120 px toward the
+  start, moved nothing before and now pages toward the touch on release, to
+  the same values, as on Android. A thumb drag on iOS needs no press hold
+  either way (`CupertinoScrollbar` waits 100 ms, `RawScrollbar` 0):
+  measured, a 30 px drag with no hold moved the body before and after, mouse
+  and touch. The haptic tap is gone too: `CupertinoScrollbar` calls
+  `HapticFeedback.mediumImpact()` when the thumb press is taken and when a
+  moved thumb is let go slowly (`cupertino/scrollbar.dart`, Flutter 3.47.1),
+  and `RawScrollbar` does not. flutter_folderview #218 does not record it.
+  **Kept by a second maintainer's call** (2026-11-16), shown these
+  measurements and three options: keep it; block iOS track paging with a
+  private `RawScrollbar` subclass that skips `handleTrackTapDown` there, as
+  `CupertinoScrollbar` does; and that plus the haptic tap. Chosen to match
+  flutter_folderview #218 and keep one behaviour across platforms, accepting
+  the divergence from iOS's native track tap and haptics.
 - **The constraint is a floor.** `SyncedScrollControllers` builds on
   `ScrollbarController`, which 0.1.6 introduced. Below that, 0.1.0 declared
   Flutter `>=3.41.0`, the SDK it was built with, so a 3.32 user could not resolve
@@ -187,11 +238,12 @@ master, so the next author is free to reverse it without knowing what breaks.
 ## Code
 
 `widgets/synced_scroll_controllers.dart` — `SyncedScrollControllers`, `_AlignedScrollbarController`
-`widgets/flutter_table_plus.dart` — `_handleHorizontalScrollbarSignal`, `_horizontalScrollbarPointers`, `_ScrollbarStripPhysics`
+`widgets/flutter_table_plus.dart` — `_handleHorizontalScrollbarSignal`, `_horizontalScrollbarPointers`, `_ScrollbarStripPhysics`, `_ScrollbarStripThumb`
 `utils/no_cascade_guard.dart` — `NoCascadeGuard`, `resolveJump`, `reset`
 `utils/clamped_scroll_delta.dart` — `clampedScrollDelta`
 `test/smooth_wheel_scroll_test.dart` — per-frame alignment under `wheelMotion`
-`test/scrollbar_thumb_drag_test.dart` — a thumb drag past either end, the iOS thumb fling, and Android's thumb and track
+`test/scrollbar_thumb_drag_test.dart` — a thumb drag past either end, the iOS thumb fling, and the thumb and track on Android and iOS
+`test/scrollbar_thumb_theme_test.dart` — the thumb painted from `TablePlusScrollbarTheme` on every platform, under a `ScrollbarTheme` too
 
 ## Reference behaviour
 
@@ -245,18 +297,20 @@ pixels and extents and both end in `position.pointerScroll`, which is where
   `RawScrollbarState._receivedPointerSignal` answers
   `PointerScrollInertiaCancelEvent` with a `jumpTo` on the strip alone, so the
   body's motion runs on; over the body the event stops it. Trackpad inertia only.
-- **A `ScrollbarTheme` widget around the table restyles the strips.**
-  `ScrollbarTheme.of` reads the nearest `ScrollbarTheme` widget before
-  `ThemeData.scrollbarTheme`, and the `Theme` wrapper in
-  `_buildScrollbarTrack` only sets the latter. Measured 2026-11-16 on
-  Android: such a widget's `thumbColor` reached the strip, and with an empty
-  one the thumb took Material's Android size instead of
-  `TablePlusScrollbarTheme`'s, so a press 7 px into the 12 px track missed it.
-  `interactive` is not affected, being a widget argument. Left as it is.
-- **On iOS the strips are `CupertinoScrollbar`s**, which Material
-  `Scrollbar` builds from its own arguments only (`material/scrollbar.dart`,
-  Flutter 3.47.1), so `TablePlusScrollbarTheme`'s thumb colour, thickness and
-  radius do not reach them there. Read from source, not run.
+- **A thumb thicker than the track minus its margin paints outside the
+  track.** Measured 2026-11-16, `thickness: 12` on the default 12 px track:
+  the thumb spans -2 to 10 on Windows, and on iOS since #235; Android, with
+  no margin, fits. The default thickness, `0.7 * trackWidth`, reaches it off
+  Android once `trackWidth` is under 6.67 (the margin is a fixed 2), by
+  arithmetic, not run; the table's `scale` does not, as
+  `TablePlusTheme.scaledBy` leaves `scrollbarTheme` alone.
+  flutter_folderview caps the thickness at `trackWidth - margin` (its #122);
+  nothing here does. Not decided by anyone; left as it is.
+
+**Closed: a `ScrollbarTheme` around the table restyled the strips, and on
+iOS `TablePlusScrollbarTheme` did not reach them** (#235). Both were found
+for #234. The thumb is now built as the design model's #235 entry says, by the
+maintainer's call recorded there.
 
 **Closed: Shift+wheel during a thumb drag no longer ends the drag** (#225).
 On the Windows target a 20px thumb drag reached 60. Measured 2026-11-07: with

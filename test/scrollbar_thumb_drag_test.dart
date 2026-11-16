@@ -7,7 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 // end and the drag goes on, on every platform and under an app's bouncing
 // physics. A fling on the thumb goes as far as the platform's own physics
 // takes it. The thumb and the track take a pointer on Android too, whatever
-// the app's scrollbar theme says.
+// the app's scrollbar theme says, and the track takes a click on iOS too.
 
 Map<String, TablePlusColumn<Map<String, dynamic>>> _columns() {
   final builder = TableColumnsBuilder<Map<String, dynamic>>();
@@ -69,9 +69,13 @@ Future<void> _pump(
   await tester.pumpAndSettle();
 }
 
+/// A scrollbar strip's thumb: the [RawScrollbar] a Material [Scrollbar]
+/// builds off iOS, and a [RawScrollbar] on iOS.
+final Finder _thumbs = find.byWidgetPredicate((w) => w is RawScrollbar);
+
 /// The scroll view a scrollbar strip on [axis] is drawn on.
 Finder _strip(Axis axis) => find.descendant(
-  of: find.byType(Scrollbar),
+  of: _thumbs,
   matching: find.byWidgetPredicate(
     (w) => w is SingleChildScrollView && w.scrollDirection == axis,
   ),
@@ -87,7 +91,7 @@ ScrollPosition _stripPosition(WidgetTester tester, Axis axis) => tester
 /// header's, which takes no input.
 ScrollPosition _bodyPosition(WidgetTester tester, Axis axis) {
   final strips = find.descendant(
-    of: find.byType(Scrollbar),
+    of: _thumbs,
     matching: find.byType(Scrollable),
   );
   final stripPositions = tester
@@ -211,6 +215,7 @@ void main() {
         expect(strip.pixels, body.pixels);
       },
       variant: const TargetPlatformVariant({
+        TargetPlatform.iOS,
         TargetPlatform.android,
         TargetPlatform.windows,
       }),
