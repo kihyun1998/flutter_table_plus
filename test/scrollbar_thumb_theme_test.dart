@@ -6,7 +6,9 @@ import 'package:flutter_test/flutter_test.dart';
 // A scrollbar strip's thumb is painted from TablePlusScrollbarTheme on every
 // platform, iOS included, and a ScrollbarTheme widget around the table does
 // not reach it. The margins and minimum lengths are Material's own for the
-// platform, as Material's Scrollbar paints them off iOS.
+// platform, as Material's Scrollbar paints them off iOS. The thumb is no
+// thicker than its room across the strip, and a MediaQuery padding around
+// the table does not move it.
 
 Map<String, TablePlusColumn<Map<String, dynamic>>> _columns() {
   final builder = TableColumnsBuilder<Map<String, dynamic>>();
@@ -34,18 +36,20 @@ const Color _red = Color(0xFFFF0000);
 const Color _green = Color(0xFF00FF00);
 
 /// A 400x300 table of 100 rows by 8 columns, so both axes scroll, with
-/// [scrollbarTheme] as its scrollbar theme and [ancestor] as a
-/// [ScrollbarTheme] around it.
+/// [scrollbarTheme] as its scrollbar theme, [ancestor] as a
+/// [ScrollbarTheme] around it, and [padding] as the [MediaQuery] padding and
+/// view padding around it.
 Future<void> _pump(
   WidgetTester tester, {
   required TablePlusScrollbarTheme scrollbarTheme,
   ScrollbarThemeData? ancestor,
+  EdgeInsets? padding,
 }) async {
   tester.view.physicalSize = const Size(800, 600);
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
-  final table = FlutterTablePlus<Map<String, dynamic>>(
+  final Widget table = FlutterTablePlus<Map<String, dynamic>>(
     columns: _columns(),
     data: _rows,
     rowId: (r) => r['id'] as String,
@@ -59,9 +63,20 @@ Future<void> _pump(
           child: SizedBox(
             width: 400,
             height: 300,
-            child: ancestor == null
-                ? table
-                : ScrollbarTheme(data: ancestor, child: table),
+            child: Builder(
+              builder: (context) {
+                final themed = ancestor == null
+                    ? table
+                    : ScrollbarTheme(data: ancestor, child: table);
+                if (padding == null) return themed;
+                return MediaQuery(
+                  data: MediaQuery.of(
+                    context,
+                  ).copyWith(padding: padding, viewPadding: padding),
+                  child: themed,
+                );
+              },
+            ),
           ),
         ),
       ),
@@ -174,6 +189,29 @@ void _expectCappedThumb(
   );
 }
 
+/// The rect of the thumb of the strip on [axis], as painted, in the
+/// painter's coordinates.
+Rect _thumbRect(WidgetTester tester, Axis axis) {
+  Rect? painted;
+  expect(
+    find.byWidget(_thumbPaint(tester, axis)),
+    paints..something((method, arguments) {
+      final Rect rect;
+      if (method == #drawRRect) {
+        rect = (arguments[0] as RRect).outerRect;
+      } else if (method == #drawRect) {
+        rect = arguments[0] as Rect;
+      } else {
+        return false;
+      }
+      if ((arguments[1] as Paint).color != _red) return false;
+      painted = rect;
+      return true;
+    }),
+  );
+  return painted!;
+}
+
 const _theme = TablePlusScrollbarTheme(
   thickness: 6,
   radius: 1,
@@ -214,6 +252,21 @@ void main() {
       },
       variant: _platforms,
     );
+  }
+
+  for (final axis in Axis.values) {
+    testWidgets('MediaQuery padding does not move the $axis thumb', (
+      tester,
+    ) async {
+      await _pump(tester, scrollbarTheme: _theme);
+      final unpadded = _thumbRect(tester, axis);
+      await _pump(
+        tester,
+        scrollbarTheme: _theme,
+        padding: const EdgeInsets.fromLTRB(20, 30, 40, 50),
+      );
+      expect(_thumbRect(tester, axis), unpadded);
+    }, variant: _platforms);
   }
 
   // Each case: the theme's thickness and track border, the room across the

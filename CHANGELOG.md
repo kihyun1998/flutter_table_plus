@@ -1,5 +1,9 @@
 ## Unreleased
 
+*   **FIX**: a scrollbar thumb stays on its track under a `MediaQuery` padding ([#238](https://github.com/kihyun1998/flutter_table_plus/issues/238))
+    *   **What a consumer sees differently.** A table under a `MediaQuery` padding, such as a safe-area inset passed down by a `Scaffold`, painted each scrollbar thumb moved by that padding: across the strip by the bottom or right padding, along it by the left or top padding, and wholly outside the track once the padding was wider than the track. The padding at both ends of a strip also shortened the run the thumb travels along, and with it the thumb. Flutter's scrollbars inset their thumb by the padding to keep it clear of a notch at the screen's edge; the table's thumbs run inside their own track, so they now ignore it on every platform
+    *   **Unchanged.** With no padding the thumbs paint as before
+
 *   **FIX**: a scrollbar thumb thicker than its track is painted inside the track ([#237](https://github.com/kihyun1998/flutter_table_plus/issues/237))
     *   **What a consumer sees differently.** A `TablePlusScrollbarTheme.thickness` larger than the track had room for painted the thumb partly outside the track, over the table: `thickness: 12` on the default 12 px track spanned 2 px past the track's inner edge on Windows, macOS, Linux and iOS. A `trackBorder` takes room inside the track that the thumb did not leave. On the default 12 px track the default thickness was painted over the border once the border was wider than 0.8 px on each side, and past the track once it was wider than 1.6 px; on Android, 1.8 px and 3.6 px. The painted thumb is now capped at `trackWidth`, less the part of `trackBorder` drawn inside the track on each side across the scrollbar, less the 2 px margin (none on Android)
     *   **Unchanged.** A thumb that already fit paints as before. `thickness` keeps the value it was given; only the painted thumb is capped

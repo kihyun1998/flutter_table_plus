@@ -244,8 +244,8 @@ master, so the next author is free to reverse it without knowing what breaks.
   the one painted; it equals Material's default (`_kScrollbarMargin`,
   `material/scrollbar.dart`, Flutter 3.41.9), so a thumb that fitted paints
   as before. `TablePlusScrollbarTheme.thickness` keeps the value given.
-  `MediaQuery` padding, which the painter also insets the thumb by, is not
-  in the cap (#238). `test/scrollbar_thumb_theme_test.dart` pins the cap
+  `MediaQuery` padding is not in the cap: the thumb is built without it, as
+  the #238 entry below says. `test/scrollbar_thumb_theme_test.dart` pins the cap
   per platform and axis, with borders on both or one side and drawn inside,
   centred on and outside the edge; the last two are the cases a cap summed
   from the caller's widths gets wrong.
@@ -254,6 +254,30 @@ master, so the next author is free to reverse it without knowing what breaks.
   `trackWidth - margin` (its #122, #146), which has no border term because
   its track has no border field; documentation only; and leaving it.
   It did not cover the `MediaQuery` padding term, left to #238.
+- **A thumb ignores `MediaQuery` padding** (#238). Both scrollbars inset
+  their painter by `MediaQuery` padding: Material's `Scrollbar` always
+  (`_MaterialScrollbarState.updateScrollbarPainter`, Flutter 3.41.9; it has
+  no `padding` argument), `RawScrollbar` unless its `padding` is given
+  (`RawScrollbarState.updateScrollbarPainter`). That default keeps a scrollbar
+  drawn along the screen's edge clear of a notch or a system bar. A strip's
+  thumb runs inside its own track, which the table lays out, so the inset only
+  moves it off the track. `_ScrollbarStripThumb` wraps both paths in
+  `MediaQuery.removePadding` on all four sides, so the cap above holds
+  under any padding. The padding at both ends of a strip also shortened the
+  run the thumb travels along. Under a `Scaffold` the body keeps the top
+  padding when there is no app bar, the bottom padding when there is no bottom
+  bar or footer, and the left and right padding always, so a table in a real
+  app is under a padding.
+  **Maintainer's call** (2026-11-17): the thumbs ignore the padding on every
+  platform, removed in the context Material's `Scrollbar` reads it from.
+  **Derivation** (open to a better one): the iOS `RawScrollbar` path takes
+  the same wrapper rather than `padding: EdgeInsets.zero`, so one mechanism
+  covers both paths and one test exercises both. The wrapper also reaches the
+  strip's `SingleChildScrollView`, which reads no `MediaQuery` padding
+  (`widgets/single_child_scroll_view.dart`, Flutter 3.41.9). Not covered by
+  the call: `MediaQuery` read anywhere else in the table.
+  `test/scrollbar_thumb_theme_test.dart` pins the painted rect with and
+  without padding per platform and axis.
 - **The constraint is a floor.** `SyncedScrollControllers` builds on
   `ScrollbarController`, which 0.1.6 introduced. Below that, 0.1.0 declared
   Flutter `>=3.41.0`, the SDK it was built with, so a 3.32 user could not resolve
@@ -267,7 +291,7 @@ master, so the next author is free to reverse it without knowing what breaks.
 `utils/clamped_scroll_delta.dart` — `clampedScrollDelta`
 `test/smooth_wheel_scroll_test.dart` — per-frame alignment under `wheelMotion`
 `test/scrollbar_thumb_drag_test.dart` — a thumb drag past either end, the iOS thumb fling, and the thumb and track on Android and iOS
-`test/scrollbar_thumb_theme_test.dart` — the thumb painted from `TablePlusScrollbarTheme` on every platform, under a `ScrollbarTheme` too
+`test/scrollbar_thumb_theme_test.dart` — the thumb painted from `TablePlusScrollbarTheme` on every platform, under a `ScrollbarTheme` too, capped to its room, and in the same place under a `MediaQuery` padding
 
 ## Reference behaviour
 
@@ -334,6 +358,16 @@ thickness with `Border.all(width: 2)` spanned -0.4 to 8.0 off Android and
 1.6 to 10 on Android, against a room of 2 to 10; `thickness: 10` with
 `Border.all(width: 1)` spanned -1 to 9 and 1 to 11. The thumb is now capped
 as the design model's #237 entry says.
+
+**Closed: `MediaQuery` padding moved the thumbs off their tracks** (#238).
+Measured 2026-11-17 on Flutter 3.41.9, thickness 6, a 400x300 table under a
+padding of 20, 30, 40, 50 (left, top, right, bottom), in the painter's
+coordinates: the horizontal thumb spanned -46 to -40 across on iOS and
+Windows and -44 to -38 on Android, against 4 to 10 and 6 to 12 with no
+padding, and ran from 20 to 121.4 along instead of 0 to 133.3; the vertical
+thumb spanned -36 to -30 and -34 to -28, and started at 30 instead of 0. Both were painted wholly
+outside the track. The thumb is now built as the design model's #238 entry
+says.
 
 **Closed: a `ScrollbarTheme` around the table restyled the strips, and on
 iOS `TablePlusScrollbarTheme` did not reach them** (#235). Both were found
