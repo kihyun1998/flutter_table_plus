@@ -213,4 +213,5 @@ worth watching.
 [a measurement is given what the paint resolves](invariant/measure-what-the-paint-resolves.md) ·
 [a caller's function is not a cache key](invariant/a-callers-function-is-not-a-key.md) ·
 [a defect in these files produces no signal](invariant/no-signal-on-failure.md) ·
-[a file's directory is decided before it is written](invariant/tree-rule.md)
+[a file's directory is decided before it is written](invariant/tree-rule.md) ·
+[`MediaQuery` padding is the screen's edge, not the table's](invariant/media-padding-is-the-screens-edge.md)

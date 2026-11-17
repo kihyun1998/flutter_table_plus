@@ -449,45 +449,48 @@ class TablePlusBodyState<T> extends State<TablePlusBody<T>>
     // fallback the builder returns.
     final uniformHeight = indices == null && widget.calculateRowHeight == null;
 
-    return ListView.builder(
-      controller: widget.verticalController,
-      physics: widget.scrollPhysics,
-      itemExtent: uniformHeight ? widget.theme.rowHeight : null,
-      itemExtentBuilder: uniformHeight
-          ? null
-          : (int index, _) {
-              final actualIndex = indices?[index] ?? index;
-              final group = _getMergedGroupForRow(actualIndex);
-              if (group != null) {
-                return _getMergedGroupExtent(group);
-              }
-              return _calculateRowHeight(actualIndex) ?? widget.theme.rowHeight;
-            },
-      itemCount: indices?.length ?? widget.data.length,
-      itemBuilder: (context, index) {
-        final actualIndex = indices?[index] ?? index;
-        final row = _buildRowWidget(actualIndex, index);
+    return _WithoutVerticalPadding(
+      child: ListView.builder(
+        controller: widget.verticalController,
+        physics: widget.scrollPhysics,
+        itemExtent: uniformHeight ? widget.theme.rowHeight : null,
+        itemExtentBuilder: uniformHeight
+            ? null
+            : (int index, _) {
+                final actualIndex = indices?[index] ?? index;
+                final group = _getMergedGroupForRow(actualIndex);
+                if (group != null) {
+                  return _getMergedGroupExtent(group);
+                }
+                return _calculateRowHeight(actualIndex) ??
+                    widget.theme.rowHeight;
+              },
+        itemCount: indices?.length ?? widget.data.length,
+        itemBuilder: (context, index) {
+          final actualIndex = indices?[index] ?? index;
+          final row = _buildRowWidget(actualIndex, index);
 
-        // The row is the hover region; the pointer is the anchor. A row's
-        // RenderBox is `contentWidth` wide, so anchoring to it would aim at the
-        // centre of the visible slice — the viewport's centre, wherever the
-        // cursor happens to be along the row.
-        //
-        // A merged row stands for several data rows, so there is no single
-        // `rowData` to hand the builder; it gets no tooltip.
-        final builder = widget.rowTooltipBuilder;
-        if (builder == null || !widget.rowTooltipTheme.enabled) return row;
-        if (_getMergedGroupForRow(actualIndex) != null) return row;
-        final card = builder(context, widget.data[actualIndex]);
-        if (card == null) return row;
+          // The row is the hover region; the pointer is the anchor. A row's
+          // RenderBox is `contentWidth` wide, so anchoring to it would aim at the
+          // centre of the visible slice — the viewport's centre, wherever the
+          // cursor happens to be along the row.
+          //
+          // A merged row stands for several data rows, so there is no single
+          // `rowData` to hand the builder; it gets no tooltip.
+          final builder = widget.rowTooltipBuilder;
+          if (builder == null || !widget.rowTooltipTheme.enabled) return row;
+          if (_getMergedGroupForRow(actualIndex) != null) return row;
+          final card = builder(context, widget.data[actualIndex]);
+          if (card == null) return row;
 
-        return FlutterTooltipPlus(
-          anchor: TooltipAnchor.pointer,
-          tooltipBuilder: (_) => card,
-          theme: widget.rowTooltipTheme,
-          child: row,
-        );
-      },
+          return FlutterTooltipPlus(
+            anchor: TooltipAnchor.pointer,
+            tooltipBuilder: (_) => card,
+            theme: widget.rowTooltipTheme,
+            child: row,
+          );
+        },
+      ),
     );
   }
 
@@ -709,6 +712,26 @@ class TablePlusBodyState<T> extends State<TablePlusBody<T>>
       hoverButtonPosition: widget.hoverButtonPosition,
       hoverButtonTheme: widget.hoverButtonTheme,
       isDim: isDimmed,
+    );
+  }
+}
+
+/// [child] under the ambient [MediaQuery] with its top and bottom `padding`
+/// set to zero; `viewPadding` and the left and right padding are kept.
+class _WithoutVerticalPadding extends StatelessWidget {
+  const _WithoutVerticalPadding({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.maybeOf(context);
+    if (mediaQuery == null) return child;
+    return MediaQuery(
+      data: mediaQuery.copyWith(
+        padding: mediaQuery.padding.copyWith(top: 0, bottom: 0),
+      ),
+      child: child,
     );
   }
 }

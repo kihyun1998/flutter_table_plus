@@ -82,10 +82,51 @@ calculation ultimately asks.
   conditional. `smart` reads the parent's `needsVerticalScroll`, which is decided
   against the body's own height, the horizontal scrollbar's spacer left out
   ([Synced scrolling](synced-scrolling.md), #231).
+- **The body list takes no `MediaQuery` padding along its axis** (#242). A
+  vertical `ListView` with no `padding` pads its rows by the top and bottom
+  `MediaQuery` padding (`BoxScrollView.buildSlivers`,
+  `widgets/scroll_view.dart`, Flutter 3.41.9), which keeps a full-screen list's
+  first and last item clear of a notch or a system bar. The table's body sits
+  under its header, and `RowGeometry` and drag selection put row 0 at the
+  body's top, so that padding moved every row down while hit tests stayed put.
+  Measured under padding top 30, bottom 50: row 0 drawn 30 px below the
+  header, a drag across the visible rows 0 to 3 selected 1 to 4, and the
+  scroll extent 80 px longer. `TablePlusBodyState.build` wraps the list in
+  `_WithoutVerticalPadding`, a `MediaQuery` whose `padding` has top and
+  bottom 0. The list then pads by
+  nothing, and a cell sees what it saw before: the left and right padding
+  (the list passes them on, as before) and the whole `viewPadding` (the SDK
+  list leaves it alone).
+  **Maintainer's call** (2026-11-17), shown three options:
+  `MediaQuery.removePadding` on top and bottom, `padding: EdgeInsets.zero` on
+  the list (a cell would see top and bottom padding it does not see today),
+  and `removePadding` at the table's root (a cell would lose the left and
+  right too). They chose `removePadding`, then were shown the measured
+  difference it makes inside a cell: `viewPadding` top and bottom 30 and 50
+  before, 0 and 0 after, because `MediaQueryData.removePadding` takes
+  `padding` out of `viewPadding` too. They chose the `copyWith` above
+  instead, so a cell's `MediaQuery` stays as it was.
+  **Why it differs from the scrollbar strips** (#238 in
+  [Synced scrolling](synced-scrolling.md)): a strip's thumb is the table's own
+  paint with no consumer child, so `removePadding` on all four sides there
+  changes nothing a consumer reads; the body's children are the consumer's
+  cells. Not covered by either call: `viewInsets` (untouched by both).
+  **Derivation** (open to a better one): the `MediaQuery` is read in a widget
+  of its own, with the list built by the body and passed in as its child.
+  Read in `TablePlusBodyState.build`, any `MediaQuery` change rebuilt the
+  body, which builds a new list delegate, and every visible row with it:
+  measured 40 cell builds over five `viewInsets` changes with eight rows,
+  against 0 before the change and 0 with the separate widget. The SDK list
+  reads `MediaQuery.maybeOf` and so does this one; with none above, it adds
+  nothing.
+  `test/body_media_padding_test.dart` pins the row position, the drag, the
+  scroll extent, a cell's `padding` and `viewPadding`, and that a
+  `viewInsets` change rebuilds no cell.
 
 ## Code
 
-`widgets/table_body.dart` — `TablePlusBody`, `TablePlusBodyState`
+`widgets/table_body.dart` — `TablePlusBody`, `TablePlusBodyState`, `_WithoutVerticalPadding`
+`test/body_media_padding_test.dart` — the body under a `MediaQuery` padding: row position, drag, scroll extent, and what a cell sees
 `widgets/row_geometry.dart` — `RowGeometry`
 `widgets/row_lookup.dart` — `RowLookup`
 `utils/table_metrics.dart` — `TableMetrics`
@@ -106,6 +147,7 @@ calculation ultimately asks.
 → [Never hand-maintain a list a later addition must join](../invariant/no-hand-enumeration.md) — two widgets cached row heights off two hand-written conditions, and the lists disagreed twice (#120, #128)
 → [Observe at the screen, assert by count](../invariant/observe-at-the-screen.md) — geometry is asserted through widget tests, where counting beats naming
 → [A decorated box hands its child less than it declares](../invariant/decoration-eats-the-child.md) — the plain row and the body's list slots build the same decorated-box shape
+→ [`MediaQuery` padding is the screen's edge, not the table's](../invariant/media-padding-is-the-screens-edge.md) — the body list padded its rows below the header by the top padding (#242)
 → [A defect in these files produces no signal](../invariant/no-signal-on-failure.md) — the cached geometry a hit test answers from, never exercised against changing row heights (#128)
 
 ## Blast radius
