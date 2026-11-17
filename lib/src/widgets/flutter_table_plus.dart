@@ -1682,6 +1682,8 @@ class _ScaleBlockingScrollPhysics extends ClampingScrollPhysics {
 /// the strip that [child] is laid out in, less the cross-axis margin, and
 /// never below zero.
 ///
+/// The thumb and [child] are built with no [MediaQuery] padding on any side.
+///
 /// A Material [Scrollbar] under a [ScrollbarTheme] of these values on every
 /// platform but iOS, with Material's own cross-axis margin set explicitly and
 /// its own minimum lengths. On iOS, a [RawScrollbar] given the values
@@ -1724,35 +1726,41 @@ class _ScrollbarStripThumb extends StatelessWidget {
         ? _androidCrossAxisMargin
         : _materialCrossAxisMargin;
     final paintedThickness = max(0.0, min(thickness, room - crossAxisMargin));
-    if (platform == TargetPlatform.iOS) {
-      return RawScrollbar(
-        controller: controller,
-        thumbVisibility: true,
-        trackVisibility: false,
-        interactive: true,
-        thumbColor: thumbColor,
-        thickness: paintedThickness,
-        radius: radius,
-        crossAxisMargin: crossAxisMargin,
-        minThumbLength: _materialMinThumbLength,
-        minOverscrollLength: _rawMinOverscrollLength,
-        child: child,
-      );
-    }
-    return ScrollbarTheme(
-      data: ScrollbarThemeData(
-        thumbColor: WidgetStateProperty.all(thumbColor),
-        radius: radius,
-        thickness: WidgetStateProperty.all(paintedThickness),
-        crossAxisMargin: crossAxisMargin,
-      ),
-      child: Scrollbar(
-        controller: controller,
-        thumbVisibility: true,
-        trackVisibility: false,
-        interactive: true,
-        child: child,
-      ),
+    return MediaQuery.removePadding(
+      context: context,
+      removeLeft: true,
+      removeTop: true,
+      removeRight: true,
+      removeBottom: true,
+      child: platform == TargetPlatform.iOS
+          ? RawScrollbar(
+              controller: controller,
+              thumbVisibility: true,
+              trackVisibility: false,
+              interactive: true,
+              thumbColor: thumbColor,
+              thickness: paintedThickness,
+              radius: radius,
+              crossAxisMargin: crossAxisMargin,
+              minThumbLength: _materialMinThumbLength,
+              minOverscrollLength: _rawMinOverscrollLength,
+              child: child,
+            )
+          : ScrollbarTheme(
+              data: ScrollbarThemeData(
+                thumbColor: WidgetStateProperty.all(thumbColor),
+                radius: radius,
+                thickness: WidgetStateProperty.all(paintedThickness),
+                crossAxisMargin: crossAxisMargin,
+              ),
+              child: Scrollbar(
+                controller: controller,
+                thumbVisibility: true,
+                trackVisibility: false,
+                interactive: true,
+                child: child,
+              ),
+            ),
     );
   }
 }
