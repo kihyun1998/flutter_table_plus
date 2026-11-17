@@ -1,5 +1,9 @@
 ## Unreleased
 
+*   **FIX**: the table body is no longer inset by a `MediaQuery` padding ([#242](https://github.com/kihyun1998/flutter_table_plus/issues/242))
+    *   **What a consumer sees differently.** A table under a top or bottom `MediaQuery` padding, such as a safe-area inset passed down by a `Scaffold`, drew its first row that far below the header and added the padding to the end of the body's scroll. Drag selection did not know about the gap and selected rows below the ones under the pointer: under a 30 px top padding, a drag across the visible rows 0 to 3 selected rows 1 to 4. Rows now start right under the header and the scroll ends at the last row
+    *   **Unchanged.** A cell sees the same `MediaQuery` padding and view padding as before. With no padding the table draws as before
+
 *   **FIX**: a scrollbar thumb stays on its track under a `MediaQuery` padding ([#238](https://github.com/kihyun1998/flutter_table_plus/issues/238))
     *   **What a consumer sees differently.** A table under a `MediaQuery` padding, such as a safe-area inset passed down by a `Scaffold`, painted each scrollbar thumb moved by that padding: across the strip by the bottom or right padding, along it by the left or top padding, and wholly outside the track once the padding was wider than the track. The padding at both ends of a strip also shortened the run the thumb travels along, and with it the thumb. Flutter's scrollbars inset their thumb by the padding to keep it clear of a notch at the screen's edge; the table's thumbs run inside their own track, so they now ignore it on every platform
     *   **Unchanged.** With no padding the thumbs paint as before

@@ -275,7 +275,9 @@ master, so the next author is free to reverse it without knowing what breaks.
   covers both paths and one test exercises both. The wrapper also reaches the
   strip's `SingleChildScrollView`, which reads no `MediaQuery` padding
   (`widgets/single_child_scroll_view.dart`, Flutter 3.41.9). Not covered by
-  the call: `MediaQuery` read anywhere else in the table.
+  the call: `MediaQuery` read anywhere else in the table. The body list's
+  padding is #242, in [row rendering and geometry](row-render-geometry.md),
+  which keeps a cell's `viewPadding` and so does not use `removePadding`.
   `test/scrollbar_thumb_theme_test.dart` pins the painted rect with and
   without padding per platform and axis.
 - **The constraint is a floor.** `SyncedScrollControllers` builds on
@@ -323,6 +325,7 @@ pixels and extents and both end in `position.pointerScroll`, which is where
 → [A decorated box hands its child less than it declares](../invariant/decoration-eats-the-child.md) — the scrollbar track's border insets the thumb's painter, and the thumb's cap reads that room (#237)
 → [A measurement is given what the paint resolves, never what the caller wrote](../invariant/measure-what-the-paint-resolves.md) — the thumb's cap reads the track border from the decoration's `padding`, which follows `strokeAlign`, not from the widths the caller wrote (#237)
 → [Widths and offsets are clamped on every path](../invariant/clamped-dimensions.md) — `clampedScrollDelta` and `NoCascadeGuard.resolveJump` are two of its sites
+→ [`MediaQuery` padding is the screen's edge, not the table's](../invariant/media-padding-is-the-screens-edge.md) — both scrollbar thumbs were inset off their tracks by it (#238)
 → [A defect in these files produces no signal](../invariant/no-signal-on-failure.md) — the single coordinate frame is on the register: break it and every drag coordinate is wrong by a constant offset nothing reports
 → [A literal test pointer id can be a held gesture's id](../invariant/test-pointer-ids.md) — the wheel helper builds its pointer with `tester.nextPointer`; two single-test literal ids and one pair pinned by hand beside a held scrollbar-thumb gesture stay
 
