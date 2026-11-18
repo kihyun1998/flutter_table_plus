@@ -18,7 +18,7 @@ import 'flutter_tooltip_plus.dart';
 /// showing nothing; the wrap had to be skipped here to prevent it. 0.4.4 gates
 /// that claim on having something to draw, so an empty-message tooltip is now
 /// inert — built, silent, and harmless to the card. Under 0.4.3 this function
-/// would reissue that bug; the `^0.5.1` floor keeps it out.
+/// would reissue that bug; the `^0.6.0` floor keeps it out.
 ///
 /// A tooltip showing [fallbackMessage] repeats the text [child] already shows,
 /// so it is excluded from semantics. One from `tooltipFormatter` or

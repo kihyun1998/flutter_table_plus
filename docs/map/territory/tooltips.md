@@ -22,8 +22,13 @@ what went wrong, not what the rule is for the next case.
   innermost tooltip wins; since 0.4.4 "innermost" means the innermost one *with
   something to draw*. This package holds **no** priority logic, and the local
   empty-message guard that used to substitute for it is gone — the floor
-  (`^0.5.1` now, which includes 0.4.4's rule) is not a preference, and the
+  (`^0.6.0` now, which includes 0.4.4's rule) is not a preference, and the
   guard must not come back.
+- **A covered tooltip is upstream's to hide.** Since just_tooltip 0.6.0 a
+  tooltip hides while a route covers it (`hideWhenCovered`, on by default).
+  `FlutterTooltipPlus` does not pass `hideWhenCovered` and
+  `TablePlusTooltipTheme` has no field for it, so every table tooltip takes the
+  upstream default and a consumer cannot turn it off.
 - **A screen reader hears a tooltip only where the table did not already draw
   its text.** Since just_tooltip 0.5.1 a tooltip's text is put on its child's
   semantics node, so a tooltip that repeats the child would be read twice. The
