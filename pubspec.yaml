@@ -13,7 +13,7 @@ topics:
 # The binding floor is the max of what our dependencies demand: flutter_checkbox
 # 0.3.3 declares Flutter `>=3.27.0` / Dart `>=3.6.0` (its newest call is
 # `Color.withValues`, 3.27+; everything else needs only Dart 3.0), just_tooltip
-# 0.5.1 declares Flutter `>=3.32.0` / Dart `>=3.8.0` (it positions the tooltip
+# 0.6.0 declares Flutter `>=3.32.0` / Dart `>=3.8.0` (it positions the tooltip
 # through `OverlayPortal.overlayChildLayoutBuilder`), and
 # flutter_smooth_wheel_scroll 0.1.6 declares Flutter `>=3.32.0` / Dart `^3.8.0`
 # (`SpringDescription.withDurationAndBounce`, flutter#164411, first stable in
@@ -42,13 +42,16 @@ dependencies:
   # (upstream #13). The table's default checkbox style leaves `checkColor`
   # null, so every table in a dark app inherited it.
   flutter_checkbox: ^0.3.3
-  # 0.5.1 is a floor, not a preference: the header and cell tooltips pass
+  # 0.6.0 is taken for its behaviour, not for an API: no call here needs more
+  # than 0.5.1. Under 0.6.0 a table tooltip hides while a route covers it, and
+  # a tooltip opened by a tap no longer stays shown under a dialog and after it.
+  # The floor cannot go below 0.5.1: the header and cell tooltips pass
   # `excludeFromSemantics` and `tap`, which 0.5.1 and 0.5.0 introduced. It also
   # keeps 0.4.4's rule that a tooltip with nothing to draw does not suppress the
   # row card; this package used to do that itself by not building such a
   # tooltip at all, and that guard is gone, so 0.4.3 would reissue the bug
   # (#88) rather than merely miss the fix.
-  just_tooltip: ^0.5.1
+  just_tooltip: ^0.6.0
   # A floor, not a preference; see docs/map/territory/synced-scrolling.md. This
   # dependency is what sets the environment floor above.
   flutter_smooth_wheel_scroll: ^0.1.6

@@ -1,5 +1,13 @@
 ## Unreleased
 
+*   **BREAKING**: `just_tooltip: ^0.5.1` → `^0.6.0`. The Flutter floor is unchanged: 0.6.0 declares Flutter `>=3.32.0` / Dart `>=3.8.0`, the floor this package already has. No class, method or field of this package changed
+    *   **If your own `pubspec.yaml` names `just_tooltip`.** A constraint of `^0.5.x` no longer resolves alongside this version. Raise it to `^0.6.0`, and read just_tooltip's own migration notes for 0.6.0 if you use it directly
+    *   **A table tooltip hides while a route covers it.** A dialog, page, sheet or menu pushed as a route over a shown header, cell or row tooltip used to leave it shown underneath, and a tooltip opened by a tap stayed shown after the route was popped. It now fades out when the route comes in and does not show while covered. After the route is popped it shows again only if the pointer is still over its cell or something shows it anew. A menu drawn in the overlay, such as `MenuAnchor` or `DropdownMenu`, is not a route and hides nothing. This package does not expose just_tooltip's `hideWhenCovered`, so this cannot be turned off
+    *   **`waitDuration` delays only a hidden tooltip.** A pointer returning to a cell while its tooltip is still fading out brings it back at once instead of waiting again
+    *   **A tooltip with `interactive: true` stays shown under the pointer** when the pointer reaches it as it starts to fade out, as it already did when the pointer was on the cell
+    *   just_tooltip 0.6.0 also fixes a long list of show and hide timings around nested tooltips, `showDuration`, Escape and scrolling; see its CHANGELOG
+    *   All 749 package tests and 297 example tests passed against 0.6.0 with no change here
+
 *   **FIX**: the table body is no longer inset by a `MediaQuery` padding ([#242](https://github.com/kihyun1998/flutter_table_plus/issues/242))
     *   **What a consumer sees differently.** A table under a top or bottom `MediaQuery` padding, such as a safe-area inset passed down by a `Scaffold`, drew its first row that far below the header and added the padding to the end of the body's scroll. Drag selection did not know about the gap and selected rows below the ones under the pointer: under a 30 px top padding, a drag across the visible rows 0 to 3 selected rows 1 to 4. Rows now start right under the header and the scroll ends at the last row
     *   **Unchanged.** A cell sees the same `MediaQuery` padding and view padding as before. With no padding the table draws as before
