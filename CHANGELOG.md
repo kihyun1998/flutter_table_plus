@@ -1,4 +1,4 @@
-## Unreleased
+## 2.22.0
 
 *   **BREAKING**: `just_tooltip: ^0.5.1` → `^0.6.0`. The Flutter floor is unchanged: 0.6.0 declares Flutter `>=3.32.0` / Dart `>=3.8.0`, the floor this package already has. No class, method or field of this package changed
     *   **If your own `pubspec.yaml` names `just_tooltip`.** A constraint of `^0.5.x` no longer resolves alongside this version. Raise it to `^0.6.0`, and read just_tooltip's own migration notes for 0.6.0 if you use it directly
